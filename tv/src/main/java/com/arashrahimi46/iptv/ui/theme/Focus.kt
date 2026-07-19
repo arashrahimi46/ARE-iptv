@@ -38,6 +38,10 @@ import androidx.compose.ui.unit.dp
  * @param glowColor tint for the ring/shadow — defaults to the theme's focus-ring color.
  * @param ringWidth stroke width of the focus ring (design system uses 3dp/2dp variants).
  * @param disableScale set true for controls (e.g. Switch) whose own thumb/track already animate.
+ * @param ownsFocusable set false when a descendant composable (e.g. [androidx.compose.foundation.text.BasicTextField])
+ *   already registers the focus target for this [interactionSource] -- applying `.focusable()` again here would
+ *   create a second, nested focus node and break single-press D-pad focus travel. The visuals (ring/glow/scale)
+ *   still track the shared [interactionSource] either way.
  */
 @Composable
 fun Modifier.tvFocusable(
@@ -46,6 +50,7 @@ fun Modifier.tvFocusable(
     glowColor: Color = AreIptvTheme.colors.focusRing,
     ringWidth: Dp = 3.dp,
     disableScale: Boolean = false,
+    ownsFocusable: Boolean = true,
 ): Modifier = composed {
     val motion = AreIptvTheme.motion
     val focused by interactionSource.collectIsFocusedAsState()
@@ -69,7 +74,7 @@ fun Modifier.tvFocusable(
     )
 
     this
-        .focusable(interactionSource = interactionSource)
+        .then(if (ownsFocusable) Modifier.focusable(interactionSource = interactionSource) else Modifier)
         .graphicsLayer {
             scaleX = scale
             scaleY = scale

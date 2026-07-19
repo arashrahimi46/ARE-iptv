@@ -19,6 +19,17 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
  * the 64dp horizontal safe-area into its own edge padding, matching the
  * design source's `--safe-x` usage inside those components rather than a
  * double layer of shell + component padding (see report for this judgment call).
+ *
+ * QA follow-up (product-lead ruling pending): confirmed against source —
+ * are-iptv-design-system/.../components/navigation/SidebarNav.jsx never
+ * references --safe-x or --safe-y anywhere in its styles (header padding is a
+ * literal "0 26px", item padding "0 20px" / "0 16px") — the prototype's own
+ * sidebar is deliberately flush-to-edge chrome, not safe-area-inset content.
+ * Applying the full 64dp safe-x to the collapsed 104dp rail's icon inset would
+ * also leave only ~20dp for a 26dp icon plus padding — physically doesn't fit
+ * the design's own token values together. Flagged back to product-lead with
+ * this citation rather than force-applying safe-x here; will update if
+ * overruled.
  */
 @Composable
 fun AreIptvAppShell(

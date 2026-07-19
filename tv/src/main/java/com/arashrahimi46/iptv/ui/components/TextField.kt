@@ -3,7 +3,6 @@ package com.arashrahimi46.iptv.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +16,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +27,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.tvFocusable
 
 /**
  * TextField — labeled input (TextField.jsx). `mono` renders the value in the
@@ -50,15 +49,14 @@ fun AreTextField(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
-    val focused by interactionSource.collectIsFocusedAsState()
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
 
-    val borderColor = when {
-        error != null -> colors.danger
-        focused -> colors.focusRing
-        else -> colors.borderDefault
-    }
-    val borderWidth = if (error != null || focused) 2.dp else 1.dp
+    // Resting/error border is always visible (even unfocused); the focus ring/glow/scale on
+    // top of it comes from the shared tvFocusable() primitive below, driven by the same
+    // interactionSource that BasicTextField owns. Scale is disabled -- growing a text input
+    // 1.06x on focus reflows sibling layout and moves the caret; the ring/glow alone is the
+    // correct treatment for inputs per the design system's focus-visible rule.
+    val restingBorderColor = if (error != null) colors.danger else colors.borderDefault
 
     Column(modifier = modifier) {
         if (label != null) {
@@ -69,8 +67,15 @@ fun AreTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
+                .tvFocusable(
+                    interactionSource = interactionSource,
+                    shape = shape,
+                    glowColor = if (error != null) colors.danger else colors.focusRing,
+                    disableScale = true,
+                    ownsFocusable = false,
+                )
                 .background(colors.surface1, shape)
-                .border(borderWidth, borderColor, shape)
+                .border(1.dp, restingBorderColor, shape)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),

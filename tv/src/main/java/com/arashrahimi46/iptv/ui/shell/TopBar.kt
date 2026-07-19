@@ -43,6 +43,12 @@ fun AreTopBar(
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    // Vertical inset is intentionally the literal 18dp from the source, NOT spacing.safeY (40dp):
+    // are-iptv-design-system/.../ui_kits/are-tv/app.jsx top-bar div uses
+    // `padding: "18px var(--safe-x)"` -- horizontal safe-x applies, vertical does not use --safe-y.
+    // --safe-y (40px) is defined in tokens/spacing.css but is not referenced by any screen or the
+    // app shell in the actual prototype source -- flagged to product-lead for confirmation this
+    // reading is correct rather than silently deviating from the pixel-perfect source.
     Row(
         modifier = modifier
             .fillMaxWidth()
