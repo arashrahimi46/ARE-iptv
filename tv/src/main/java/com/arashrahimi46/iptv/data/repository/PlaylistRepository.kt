@@ -110,16 +110,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             val source = PlaylistSource(name = name, type = SourceType.M3U, url = url, epgUrl = epgUrl)
             val sourceId = db.playlistSourceDao().insert(source)
 
-            // M3U has no explicit content-type field; classify by group-title keyword as a best-effort
-            // heuristic (real playlists commonly label VOD groups "Movies"/"VOD" and "Series"/"Shows").
-            // Scoped to the M3U path ONLY -- addXtreamSource() below uses the authoritative
-            // get_live_streams/get_vod_streams/get_series endpoints directly, no heuristic involved.
-            // Known real-world false positive: this substring match misclassifies live/linear
-            // channel groups whose names happen to contain these words, e.g. "USA Movies HD"
-            // (a 24/7 linear movie channel, not on-demand) or "Kids Shows" (a live kids bouquet)
-            // would be routed into Movies/Series instead of Live TV. Accepted tradeoff for v1
-            // since M3U provides no authoritative type signal; revisit if this proves common
-            // enough in real provider playlists (per qa-reviewer Phase 1 finding).
+            // Classification heuristic lives in M3uGroupClassifier.kt (unit-tested) -- see its
+            // doc comment for the M3U-only scope and the known real-world false-positive pattern.
             val channels = mutableListOf<Channel>()
             val movies = mutableListOf<VodTitle>()
             val series = mutableListOf<VodTitle>()
@@ -127,12 +119,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
             entries.forEach { entry ->
                 val group = entry.groupTitle?.trim().orEmpty()
-                val groupLower = group.lowercase()
-                val type = when {
-                    "series" in groupLower || "show" in groupLower -> ContentType.SERIES
-                    "movie" in groupLower || "vod" in groupLower -> ContentType.MOVIE
-                    else -> ContentType.LIVE
-                }
+                val type = classifyM3uGroup(group)
                 if (group.isNotEmpty()) {
                     categories.putIfAbsent(type to group, Category(sourceId, type, group))
                 }
@@ -252,7 +239,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         return try {
             httpClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    throw IllegalStateException("Server returned HTTP ${response.code}")
+                    throw IllegalStateException("Server returned HTTP ${response.code} -- check the playlist URL")
                 }
                 response.body?.string() ?: throw IllegalStateException("Empty response body")
             }
@@ -261,7 +248,16 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         } catch (e: IllegalStateException) {
             throw e
         } catch (e: Exception) {
-            throw IllegalStateException("Could not fetch playlist: ${e.message}", e)
+            // Distinguishes common network-failure shapes instead of one catch-all bucket
+            // (mirrors XtreamClient's networkErrorMessage), per qa-reviewer's Phase 1 finding.
+            val message = when (e) {
+                is java.net.UnknownHostException -> "Could not find that server -- check the playlist URL and your connection"
+                is java.net.SocketTimeoutException -> "The server took too long to respond -- check your connection and try again"
+                is java.net.ConnectException -> "Could not connect to the server -- it may be down"
+                is javax.net.ssl.SSLException -> "Secure connection failed -- check the playlist URL"
+                else -> "Could not fetch playlist: ${e.message}"
+            }
+            throw IllegalStateException(message, e)
         }
     }
 }

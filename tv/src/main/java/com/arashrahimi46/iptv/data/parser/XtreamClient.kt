@@ -6,7 +6,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.ConnectException
+import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLException
 
 data class XtreamCategory(val id: String, val name: String)
 data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?)
@@ -48,14 +51,14 @@ class XtreamClient(
         try {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    throw XtreamException("Server returned HTTP ${response.code} for action=$action")
+                    throw XtreamException(httpErrorMessage(response.code))
                 }
                 response.body?.string() ?: throw XtreamException("Empty response body for action=$action")
             }
         } catch (e: XtreamException) {
             throw e
         } catch (e: Exception) {
-            throw XtreamException("Could not reach $host: ${e.message}", e)
+            throw XtreamException(networkErrorMessage(e), e)
         }
     }
 
@@ -189,6 +192,31 @@ class XtreamClient(
             // Some malformed portals return {} instead of [] when a section is empty.
             if (body.trim().startsWith("{")) JSONArray() else throw XtreamException("Malformed JSON response")
         }
+
+    /**
+     * Distinguishes credentials-shaped HTTP failures (401/403) from generic server
+     * errors, per qa-reviewer's Phase 1 finding -- was previously a single
+     * "Server returned HTTP N" bucket for every non-2xx response.
+     */
+    private fun httpErrorMessage(code: Int): String = when (code) {
+        401, 403 -> "Invalid username or password"
+        else -> "Server returned an error (HTTP $code) -- check the server URL and try again"
+    }
+
+    /**
+     * Distinguishes common network-failure shapes instead of one catch-all
+     * "Could not reach host: <exception message>" bucket, per qa-reviewer's
+     * Phase 1 finding -- a bad URL/DNS, a down server, and a slow/unreachable
+     * network now read differently to the user instead of depending on
+     * whatever incidental string the underlying exception happens to produce.
+     */
+    private fun networkErrorMessage(e: Exception): String = when (e) {
+        is UnknownHostException -> "Could not find server \"$host\" -- check the address and your connection"
+        is java.net.SocketTimeoutException -> "Server \"$host\" took too long to respond -- check your connection and try again"
+        is ConnectException -> "Could not connect to \"$host\" -- the server may be down"
+        is SSLException -> "Secure connection to \"$host\" failed -- check the server address"
+        else -> "Could not reach $host: ${e.message}"
+    }
 
     companion object {
         private val defaultClient = OkHttpClient.Builder()
