@@ -6,16 +6,20 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
+import com.arashrahimi46.iptv.ui.live.LiveScreen
 import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
+import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
@@ -33,8 +37,10 @@ class MainActivity : ComponentActivity() {
 /**
  * Top-level app graph (real back stack, not a boolean flag -- see report):
  * "onboarding" while there's no active [com.arashrahimi46.iptv.data.model.PlaylistSource],
- * "home" once one exists. Later overlay flows (Detail/LivePlayer/MultiView,
- * Phase 2/3) build on this same NavHost.
+ * "home"/"live"/"guide" (each wrapped in [AreIptvAppShell]) once one exists,
+ * and "player/{channelId}" (content-id-driven, the same convention Detail
+ * will use in Phase 3) as a full-bleed overlay outside the shell -- same
+ * pattern Onboarding already uses.
  */
 @Composable
 fun AreIptvApp() {
@@ -58,13 +64,49 @@ fun AreIptvApp() {
             })
         }
         composable("home") {
-            var activeNav by remember { mutableStateOf("home") }
-            AreIptvAppShell(activeNav = activeNav, onNavSelect = { activeNav = it }) {
-                HomeScreen()
+            ShellScreen(navController, activeNav = "home") { HomeScreen() }
+        }
+        composable("live") {
+            ShellScreen(navController, activeNav = "live") {
+                LiveScreen(onChannelSelected = { channelId -> navController.navigate("player/$channelId") })
             }
+        }
+        composable("guide") {
+            ShellScreen(navController, activeNav = "guide") {
+                GuideScreen(onChannelSelected = { channelId -> navController.navigate("player/$channelId") })
+            }
+        }
+        composable(
+            route = "player/{channelId}",
+            arguments = listOf(navArgument("channelId") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val channelId = backStackEntry.arguments?.getLong("channelId") ?: return@composable
+            LivePlayerScreen(channelId = channelId, onBack = { navController.popBackStack() })
         }
     }
 }
+
+/** Wraps a top-level nav destination in [AreIptvAppShell], routing sidebar taps for the built routes to real navigation. */
+@Composable
+private fun ShellScreen(navController: NavHostController, activeNav: String, content: @Composable () -> Unit) {
+    AreIptvAppShell(
+        activeNav = activeNav,
+        onNavSelect = { id ->
+            if (id != activeNav && id in KnownRoutes) {
+                navController.navigate(id) {
+                    popUpTo(0) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        },
+    ) {
+        content()
+    }
+}
+
+/** Routes that actually exist in the NavHost -- other sidebar items (Movies/Series/Search/Favorites/Settings) are inert until later phases. */
+private val KnownRoutes = setOf("home", "live", "guide")
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L

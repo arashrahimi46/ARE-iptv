@@ -2,6 +2,7 @@ package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +34,10 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
  * by the caller (proportional to duration). Marks the live/now program with
  * an accent edge bar; long titles simply ellipsize in Phase 0 (the design
  * source's on-focus marquee scroll is a Phase 1+ polish item — see report).
+ *
+ * [onFocusChange] mirrors GuideCell.jsx's `onFocusChange` prop -- the Guide
+ * screen wires this into the sticky "focused-program info bar" (no tooltips
+ * on TV) via a shared focus state.
  */
 @Composable
 fun AreGuideCell(
@@ -43,11 +50,14 @@ fun AreGuideCell(
     catchup: Boolean = false,
     progress: Float = 0f,
     width: Dp = AreIptvTheme.spacing.guideChannelWidth,
+    onFocusChange: (Boolean) -> Unit = {},
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
     val background = if (now) colors.accentWash else colors.surface1
+    val focused by interactionSource.collectIsFocusedAsState()
+    LaunchedEffect(focused) { onFocusChange(focused) }
 
     TvFocusable(
         onClick = onClick,

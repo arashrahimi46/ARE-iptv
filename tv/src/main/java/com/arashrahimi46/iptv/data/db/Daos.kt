@@ -9,6 +9,7 @@ import androidx.room.Upsert
 import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.VodTitle
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +55,9 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name")
     fun observeForSource(sourceId: Long): Flow<List<Channel>>
 
+    @Query("SELECT * FROM channels WHERE id = :channelId LIMIT 1")
+    suspend fun getById(channelId: Long): Channel?
+
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name LIMIT :limit")
     fun observeForSourceLimited(sourceId: Long, limit: Int): Flow<List<Channel>>
 
@@ -80,4 +84,16 @@ interface VodTitleDao {
 
     @Query("SELECT COUNT(*) FROM vod_titles WHERE sourceId = :sourceId AND isSeries = 1")
     suspend fun countSeriesForSource(sourceId: Long): Int
+}
+
+@Dao
+interface EPGProgramDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(programs: List<EPGProgram>)
+
+    @Query("DELETE FROM epg_programs WHERE channelId IN (:channelIds)")
+    suspend fun deleteForChannels(channelIds: List<Long>)
+
+    @Query("SELECT * FROM epg_programs WHERE channelId IN (:channelIds) AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
+    fun observeForChannelsInWindow(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>>
 }

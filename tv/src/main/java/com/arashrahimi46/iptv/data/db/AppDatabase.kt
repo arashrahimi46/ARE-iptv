@@ -15,9 +15,10 @@ import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 
 /**
- * Local Room database. [EPGProgram], [Favorite] and [ContinueWatchingEntry]
- * are schema stubs registered now so a later phase populating them doesn't
- * need a breaking migration -- they have no DAOs yet.
+ * Local Room database. [Favorite] and [ContinueWatchingEntry] are schema
+ * stubs registered now so a later phase populating them doesn't need a
+ * breaking migration -- they have no DAOs yet. [EPGProgram] is populated
+ * starting this phase (Guide/EPG) via [epgProgramDao].
  */
 @Database(
     entities = [
@@ -39,6 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun channelDao(): ChannelDao
     abstract fun vodTitleDao(): VodTitleDao
+    abstract fun epgProgramDao(): EPGProgramDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null

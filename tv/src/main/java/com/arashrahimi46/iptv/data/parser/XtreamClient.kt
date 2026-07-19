@@ -12,6 +12,7 @@ data class XtreamCategory(val id: String, val name: String)
 data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?)
 data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?)
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
+data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
 
 /** Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns (bad credentials). */
 class XtreamException(message: String, cause: Throwable? = null) : Exception(message, cause)
@@ -34,6 +35,9 @@ class XtreamClient(
 
     fun streamUrl(kind: String, streamId: String, ext: String): String =
         "${baseUrl()}/$kind/$username/$password/$streamId.$ext"
+
+    /** Bulk XMLTV export most Xtream portals expose -- one fetch for the whole EPG rather than N per-channel calls. */
+    fun xmltvUrl(): String = "${baseUrl()}/xmltv.php?username=$username&password=$password"
 
     private suspend fun fetch(action: String): String = withContext(Dispatchers.IO) {
         val url = "${baseUrl()}/player_api.php?username=$username&password=$password&action=$action"
@@ -94,6 +98,34 @@ class XtreamClient(
         }
     }
 
+    /** Per-channel short EPG (`action=get_short_epg`) -- fallback when the bulk XMLTV export isn't usable. */
+    suspend fun getShortEpg(streamId: String, limit: Int = 8): List<XtreamShortEpgEntry> = withContext(Dispatchers.IO) {
+        val url = "${baseUrl()}/player_api.php?username=$username&password=$password&action=get_short_epg&stream_id=$streamId&limit=$limit"
+        val request = Request.Builder().url(url).build()
+        val body = try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext emptyList()
+                response.body?.string() ?: return@withContext emptyList()
+            }
+        } catch (e: Exception) {
+            return@withContext emptyList()
+        }
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return@withContext emptyList()
+        val listings = json.optJSONArray("epg_listings") ?: return@withContext emptyList()
+        (0 until listings.length()).mapNotNull { i ->
+            val entry = listings.optJSONObject(i) ?: return@mapNotNull null
+            val startMs = entry.optLong("start_timestamp", -1L) * 1000
+            val stopMs = entry.optLong("stop_timestamp", -1L) * 1000
+            if (startMs <= 0 || stopMs <= 0) return@mapNotNull null
+            XtreamShortEpgEntry(
+                title = decodeMaybeBase64(entry.optString("title")),
+                description = entry.optStringOrNull("description")?.let(::decodeMaybeBase64),
+                startMs = startMs,
+                stopMs = stopMs,
+            )
+        }
+    }
+
     suspend fun getSeries(): List<XtreamSeries> {
         val arr = parseArray(fetch("get_series"))
         return arr.mapNotNullIndexed { obj ->
@@ -126,6 +158,10 @@ class XtreamClient(
             .build()
     }
 }
+
+/** Xtream commonly base64-encodes EPG title/description text; falls back to the raw string when it isn't. */
+private fun decodeMaybeBase64(value: String): String =
+    runCatching { String(android.util.Base64.decode(value, android.util.Base64.DEFAULT)) }.getOrDefault(value)
 
 private fun JSONObject.optStringOrNull(key: String): String? =
     if (has(key) && !isNull(key)) opt(key)?.toString()?.takeIf { it.isNotBlank() } else null
