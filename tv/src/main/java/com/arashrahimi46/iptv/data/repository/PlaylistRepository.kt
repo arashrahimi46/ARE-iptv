@@ -75,6 +75,14 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
             // M3U has no explicit content-type field; classify by group-title keyword as a best-effort
             // heuristic (real playlists commonly label VOD groups "Movies"/"VOD" and "Series"/"Shows").
+            // Scoped to the M3U path ONLY -- addXtreamSource() below uses the authoritative
+            // get_live_streams/get_vod_streams/get_series endpoints directly, no heuristic involved.
+            // Known real-world false positive: this substring match misclassifies live/linear
+            // channel groups whose names happen to contain these words, e.g. "USA Movies HD"
+            // (a 24/7 linear movie channel, not on-demand) or "Kids Shows" (a live kids bouquet)
+            // would be routed into Movies/Series instead of Live TV. Accepted tradeoff for v1
+            // since M3U provides no authoritative type signal; revisit if this proves common
+            // enough in real provider playlists (per qa-reviewer Phase 1 finding).
             val channels = mutableListOf<Channel>()
             val movies = mutableListOf<VodTitle>()
             val series = mutableListOf<VodTitle>()

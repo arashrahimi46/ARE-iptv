@@ -87,9 +87,11 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         // "Recommended" has no real personalization engine yet -- shown as a
         // catalog sample (first titles across movies+series) rather than
         // hardcoded mock data, clearly a placeholder pending a real Phase 4+ engine.
+        // Copy and the "Smart"/AI badge are both neutral until there's a real
+        // recommender behind this rail (product-lead ruling on qa's Phase 1 finding).
         val recommended = (state.movies + state.series).take(12)
         if (recommended.isNotEmpty()) {
-            AreRail(title = "Recommended for you", smart = true) {
+            AreRail(title = "Browse movies & series") {
                 items(recommended) { title ->
                     ArePosterTile(title = title.name, onClick = {}, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating)
                 }
