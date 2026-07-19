@@ -23,6 +23,13 @@ import com.arashrahimi46.iptv.data.model.VodTitle
  * [com.arashrahimi46.iptv.data.repository.PlaylistRepository.ensureSeriesEpisodesLoaded].
  * [Favorite] is populated starting Phase 4 via [favoriteDao] -- see
  * [com.arashrahimi46.iptv.data.repository.FavoritesRepository].
+ *
+ * Bumped to version 2: [PlaylistSource] dropped its plaintext username/password
+ * columns (credentials moved to encrypted-at-rest storage, see
+ * [com.arashrahimi46.iptv.data.settings.CredentialsStore]). No production installs
+ * exist yet (app hasn't shipped), so a destructive fallback is used instead of a
+ * real Migration -- acceptable pre-release; would need a real migration path once
+ * this ships and real user data is at stake.
  */
 @Database(
     entities = [
@@ -35,7 +42,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
         Favorite::class,
         ContinueWatchingEntry::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -57,7 +64,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).build().also { instance = it }
+                ).fallbackToDestructiveMigration(true).build().also { instance = it }
             }
     }
 }

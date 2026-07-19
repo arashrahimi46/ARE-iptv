@@ -12,6 +12,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.parser.XtreamException
+import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -62,6 +63,7 @@ interface PlaylistRepository {
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
     private val db = AppDatabase.get(context)
     private val settings = UserSettings(context)
+    private val credentials = CredentialsStore(context)
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
@@ -82,9 +84,11 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         if (!vodTitle.isSeries || vodTitle.externalId == null) return@withContext
         if (db.seriesEpisodeDao().countForSeries(vodTitle.id) > 0) return@withContext
         val source = db.playlistSourceDao().getById(vodTitle.sourceId) ?: return@withContext
-        if (source.type != SourceType.XTREAM || source.username == null || source.password == null) return@withContext
+        if (source.type != SourceType.XTREAM) return@withContext
+        val username = credentials.username(source.id) ?: return@withContext
+        val password = credentials.password(source.id) ?: return@withContext
 
-        val xtream = XtreamClient(source.url, source.username, source.password)
+        val xtream = XtreamClient(source.url, username, password)
         val episodes = xtream.getSeriesInfo(vodTitle.externalId)
         val entities = episodes.map { ep ->
             SeriesEpisode(
@@ -180,11 +184,12 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             name = name,
             type = SourceType.XTREAM,
             url = host,
-            username = username,
-            password = password,
             epgUrl = epgUrl,
         )
         val sourceId = db.playlistSourceDao().insert(source)
+        // Credentials never touch the Room row -- encrypted-at-rest, keyed by the id Room
+        // just generated (see CredentialsStore's doc comment for why).
+        credentials.save(sourceId, username, password)
 
         val liveCatNames = liveCategories.associate { it.id to it.name }
         val vodCatNames = vodCategories.associate { it.id to it.name }

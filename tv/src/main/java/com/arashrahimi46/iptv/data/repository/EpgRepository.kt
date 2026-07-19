@@ -8,6 +8,7 @@ import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.parser.XmlTvParser
 import com.arashrahimi46.iptv.data.parser.XtreamClient
+import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit
  */
 class EpgRepository(context: Context) {
     private val db = AppDatabase.get(context)
+    private val credentials = CredentialsStore(context)
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
@@ -41,7 +43,13 @@ class EpgRepository(context: Context) {
         if (channels.isEmpty()) return@withContext
 
         val xmlTvUrl = source.epgUrl ?: if (source.type == SourceType.XTREAM) {
-            runCatching { XtreamClient(source.url, source.username.orEmpty(), source.password.orEmpty()).xmltvUrl() }.getOrNull()
+            val username = credentials.username(source.id)
+            val password = credentials.password(source.id)
+            if (username != null && password != null) {
+                runCatching { XtreamClient(source.url, username, password).xmltvUrl() }.getOrNull()
+            } else {
+                null
+            }
         } else {
             null
         }
@@ -72,8 +80,10 @@ class EpgRepository(context: Context) {
         }
 
         // Fallback: per-channel Xtream short EPG, only for channels the bulk export didn't cover.
-        if (!matched && source.type == SourceType.XTREAM) {
-            val xtream = XtreamClient(source.url, source.username.orEmpty(), source.password.orEmpty())
+        val fallbackUsername = credentials.username(source.id)
+        val fallbackPassword = credentials.password(source.id)
+        if (!matched && source.type == SourceType.XTREAM && fallbackUsername != null && fallbackPassword != null) {
+            val xtream = XtreamClient(source.url, fallbackUsername, fallbackPassword)
             val rows = mutableListOf<EPGProgram>()
             channels.forEach { channel ->
                 val streamId = channel.externalId ?: return@forEach

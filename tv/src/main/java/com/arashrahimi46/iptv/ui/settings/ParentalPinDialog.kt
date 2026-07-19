@@ -59,10 +59,27 @@ fun ParentalPinDialog(
     var firstEntry by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var verifying by remember { mutableStateOf(false) }
+    // Attempt throttling (Verify mode only) -- the more meaningful protection for a 4-digit
+    // PIN than hash strength alone (product-lead/qa-reviewer follow-up on the Phase 4 PIN
+    // review): a short lockout after repeated wrong entries stops trivial keypad-mashing,
+    // independent of how strong the underlying hash is.
+    var wrongAttempts by remember { mutableStateOf(0) }
+    var lockedUntilMs by remember { mutableStateOf(0L) }
+    var lockRemainingSec by remember { mutableStateOf(0) }
 
     val title = when (mode) {
         ParentalPinDialogMode.Set -> if (firstEntry == null) "Set a 4-digit PIN" else "Confirm your PIN"
         ParentalPinDialogMode.Verify -> "Enter PIN"
+    }
+
+    // Ticks the lockout countdown while active; keypad input is ignored during this window
+    // (see AreNumericKeypad's onDigit below).
+    LaunchedEffect(lockedUntilMs) {
+        while (System.currentTimeMillis() < lockedUntilMs) {
+            lockRemainingSec = ((lockedUntilMs - System.currentTimeMillis()) / 1000L).toInt() + 1
+            kotlinx.coroutines.delay(250)
+        }
+        lockRemainingSec = 0
     }
 
     LaunchedEffect(pin, mode) {
@@ -86,10 +103,25 @@ fun ParentalPinDialog(
                 val ok = onVerify(pin)
                 verifying = false
                 if (ok) {
+                    wrongAttempts = 0
                     onVerified()
                 } else {
-                    error = "Incorrect PIN"
+                    wrongAttempts++
                     pin = ""
+                    // 3 wrong: 3s lockout. 4th: 6s. 5th+: 10s. Short enough not to be
+                    // punishing on a genuine mistake, long enough to kill mash-guessing.
+                    val lockoutSec = when {
+                        wrongAttempts >= 5 -> 10
+                        wrongAttempts == 4 -> 6
+                        wrongAttempts >= 3 -> 3
+                        else -> 0
+                    }
+                    if (lockoutSec > 0) {
+                        lockedUntilMs = System.currentTimeMillis() + lockoutSec * 1000L
+                        error = null
+                    } else {
+                        error = "Incorrect PIN"
+                    }
                 }
             }
         }
@@ -100,7 +132,14 @@ fun ParentalPinDialog(
             Column {
                 PinDots(length = pin.length)
                 Box(Modifier.padding(top = 14.dp))
-                if (error != null) {
+                if (lockRemainingSec > 0) {
+                    Text(
+                        text = "Too many wrong attempts -- try again in ${lockRemainingSec}s",
+                        style = AreIptvTheme.typography.caption,
+                        color = AreIptvTheme.colors.danger,
+                    )
+                    Box(Modifier.padding(top = 10.dp))
+                } else if (error != null) {
                     Text(text = error!!, style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.danger)
                     Box(Modifier.padding(top = 10.dp))
                 } else if (verifying) {
@@ -108,9 +147,9 @@ fun ParentalPinDialog(
                     Box(Modifier.padding(top = 10.dp))
                 }
                 AreNumericKeypad(
-                    onDigit = { digit -> if (pin.length < 4) { error = null; pin += digit } },
-                    onBackspace = { pin = pin.dropLast(1) },
-                    onClear = { pin = "" },
+                    onDigit = { digit -> if (lockRemainingSec == 0 && pin.length < 4) { error = null; pin += digit } },
+                    onBackspace = { if (lockRemainingSec == 0) pin = pin.dropLast(1) },
+                    onClear = { if (lockRemainingSec == 0) pin = "" },
                 )
             }
         }

@@ -10,9 +10,10 @@ enum class ContentType { LIVE, MOVIE, SERIES }
 enum class SourceType { XTREAM, M3U }
 
 /**
- * A user-added playlist/portal. Credentials are stored plaintext-at-rest in
- * Room for v1 (local-only, single-user TV box) -- a known limitation, not a
- * blocker; see report. Never written to logs.
+ * A user-added playlist/portal. Xtream username/password are NOT stored on this entity --
+ * they live encrypted-at-rest in [com.arashrahimi46.iptv.data.settings.CredentialsStore],
+ * keyed by [id], hardened out of the plaintext-Room-column v1 state (tracked since Phase 1,
+ * addressed in a dedicated Phase 4 pass). Never written to logs.
  */
 @Entity(tableName = "playlist_sources")
 data class PlaylistSource(
@@ -21,8 +22,6 @@ data class PlaylistSource(
     val type: SourceType,
     /** Xtream: base portal URL (scheme+host[:port]). M3U: the playlist URL (or a local file URI). */
     val url: String,
-    val username: String? = null,
-    val password: String? = null,
     /** Optional custom XMLTV EPG URL; null when using Xtream auto-derived EPG. */
     val epgUrl: String? = null,
     val createdAtMs: Long = System.currentTimeMillis(),
