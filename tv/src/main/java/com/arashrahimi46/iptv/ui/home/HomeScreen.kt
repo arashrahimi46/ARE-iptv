@@ -14,6 +14,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -31,11 +33,18 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
  * Real Home dashboard (Home.jsx): Hero + rails, sourced from the active
  * playlist's parsed catalog via [HomeViewModel]. Rails degrade gracefully to
  * an empty/onboarding-prompt state rather than crashing on a fresh install
- * with no (or an empty) catalog. Tiles are not wired to navigation yet
- * (Detail/LivePlayer land in Phase 2/3) -- clicks are no-ops.
+ * with no (or an empty) catalog. Channel/poster tiles open the real
+ * [com.arashrahimi46.iptv.ui.player.LivePlayerScreen]/[com.arashrahimi46.iptv.ui.detail.DetailScreen]
+ * for that exact row's id -- Home is one of the entry points the spec
+ * requires to prove Detail is genuinely content-id-driven, not a single
+ * hardcoded record.
  */
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    onChannelSelected: (Channel) -> Unit,
+    onTitleSelected: (VodTitle) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModel.factory(context.applicationContext as android.app.Application),
@@ -56,8 +65,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         if (featuredChannel != null) AreBadge("Live", tone = AreBadgeTone.Live, glow = true)
                     },
                     actions = {
-                        AreButton("Play now", onClick = {}, variant = AreButtonVariant.Primary)
-                        AreButton("More info", onClick = {}, variant = AreButtonVariant.Secondary)
+                        AreButton(
+                            "Play now",
+                            onClick = {
+                                if (featuredChannel != null) onChannelSelected(featuredChannel) else featuredMovie?.let(onTitleSelected)
+                            },
+                            variant = AreButtonVariant.Primary,
+                        )
+                        AreButton(
+                            "More info",
+                            onClick = { featuredMovie?.let(onTitleSelected) },
+                            variant = AreButtonVariant.Secondary,
+                        )
                     },
                 )
             } else {
@@ -71,7 +90,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         if (state.channels.isNotEmpty()) {
             AreRail(title = "Live now") {
                 items(state.channels.take(20)) { channel ->
-                    AreChannelTile(channel = channel.name, onClick = {}, number = channel.number, now = channel.categoryName)
+                    AreChannelTile(channel = channel.name, onClick = { onChannelSelected(channel) }, number = channel.number, now = channel.categoryName)
                 }
             }
         }
@@ -93,7 +112,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         if (recommended.isNotEmpty()) {
             AreRail(title = "Browse movies & series") {
                 items(recommended) { title ->
-                    ArePosterTile(title = title.name, onClick = {}, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating)
+                    ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating)
                 }
             }
         }
@@ -101,7 +120,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         if (state.movies.isNotEmpty()) {
             AreRail(title = "Movies") {
                 items(state.movies.take(20)) { movie ->
-                    ArePosterTile(title = movie.name, onClick = {}, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating)
+                    ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating)
                 }
             }
         }
@@ -109,7 +128,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         if (state.series.isNotEmpty()) {
             AreRail(title = "Series") {
                 items(state.series.take(20)) { show ->
-                    ArePosterTile(title = show.name, onClick = {}, meta = show.categoryName, rating = show.rating)
+                    ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating)
                 }
             }
         }

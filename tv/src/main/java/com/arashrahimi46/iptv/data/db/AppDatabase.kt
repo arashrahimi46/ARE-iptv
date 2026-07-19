@@ -18,7 +18,9 @@ import com.arashrahimi46.iptv.data.model.VodTitle
  * Local Room database. [Favorite] and [ContinueWatchingEntry] are schema
  * stubs registered now so a later phase populating them doesn't need a
  * breaking migration -- they have no DAOs yet. [EPGProgram] is populated
- * starting this phase (Guide/EPG) via [epgProgramDao].
+ * starting Phase 2 (Guide/EPG). [SeriesEpisode] is populated starting this
+ * phase (Detail) via [seriesEpisodeDao], Xtream sources only -- see
+ * [com.arashrahimi46.iptv.data.repository.PlaylistRepository.ensureSeriesEpisodesLoaded].
  */
 @Database(
     entities = [
@@ -41,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun channelDao(): ChannelDao
     abstract fun vodTitleDao(): VodTitleDao
     abstract fun epgProgramDao(): EPGProgramDao
+    abstract fun seriesEpisodeDao(): SeriesEpisodeDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null

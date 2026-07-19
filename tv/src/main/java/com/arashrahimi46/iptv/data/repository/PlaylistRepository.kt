@@ -6,6 +6,7 @@ import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
@@ -44,6 +45,18 @@ interface PlaylistRepository {
         password: String,
         epgUrl: String?,
     ): ImportSummary
+
+    /** Real per-series episode list (Room-cached) -- empty for M3U titles/titles with no episodes loaded yet. */
+    fun observeSeriesEpisodes(seriesTitleId: Long): Flow<List<SeriesEpisode>>
+
+    /**
+     * Populates [observeSeriesEpisodes] for [vodTitle] from Xtream's
+     * `get_series_info` on first view (Room-cached after that). No-op for
+     * non-series titles, M3U titles (no `externalId` -- no authoritative
+     * episode structure available), or once already cached. Throws on
+     * network failure so the caller can surface it.
+     */
+    suspend fun ensureSeriesEpisodesLoaded(vodTitle: VodTitle)
 }
 
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
@@ -61,6 +74,30 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
     override fun observeChannels(sourceId: Long): Flow<List<Channel>> = db.channelDao().observeForSource(sourceId)
     override fun observeMovies(sourceId: Long): Flow<List<VodTitle>> = db.vodTitleDao().observeMoviesForSource(sourceId)
     override fun observeSeries(sourceId: Long): Flow<List<VodTitle>> = db.vodTitleDao().observeSeriesForSource(sourceId)
+
+    override fun observeSeriesEpisodes(seriesTitleId: Long): Flow<List<SeriesEpisode>> =
+        db.seriesEpisodeDao().observeForSeries(seriesTitleId)
+
+    override suspend fun ensureSeriesEpisodesLoaded(vodTitle: VodTitle): Unit = withContext(Dispatchers.IO) {
+        if (!vodTitle.isSeries || vodTitle.externalId == null) return@withContext
+        if (db.seriesEpisodeDao().countForSeries(vodTitle.id) > 0) return@withContext
+        val source = db.playlistSourceDao().getById(vodTitle.sourceId) ?: return@withContext
+        if (source.type != SourceType.XTREAM || source.username == null || source.password == null) return@withContext
+
+        val xtream = XtreamClient(source.url, source.username, source.password)
+        val episodes = xtream.getSeriesInfo(vodTitle.externalId)
+        val entities = episodes.map { ep ->
+            SeriesEpisode(
+                seriesTitleId = vodTitle.id,
+                season = ep.season,
+                episode = ep.episode,
+                name = ep.title,
+                streamUrl = xtream.streamUrl("series", ep.id, ep.containerExtension ?: "mp4"),
+                externalId = ep.id,
+            )
+        }
+        if (entities.isNotEmpty()) db.seriesEpisodeDao().insertAll(entities)
+    }
 
     override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =
         withContext(Dispatchers.IO) {

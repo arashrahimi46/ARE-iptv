@@ -14,13 +14,16 @@ data class XtreamVodStream(val id: String, val name: String, val categoryId: Str
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
 data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
 
+/** A single episode from `get_series_info`, grouped by [season] (as Xtream returns them, keyed by season number). */
+data class XtreamSeriesEpisode(val id: String, val season: Int, val episode: Int, val title: String, val containerExtension: String?)
+
 /** Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns (bad credentials). */
 class XtreamException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
  * Minimal Xtream Codes `player_api.php` client -- enough to populate the
- * top-level catalog (categories + live/VOD/series lists). Series episode
- * drill-down (`get_series_info`) is left for a later phase.
+ * top-level catalog (categories + live/VOD/series lists) plus per-series
+ * episode drill-down via [getSeriesInfo].
  */
 class XtreamClient(
     private val host: String,
@@ -39,8 +42,8 @@ class XtreamClient(
     /** Bulk XMLTV export most Xtream portals expose -- one fetch for the whole EPG rather than N per-channel calls. */
     fun xmltvUrl(): String = "${baseUrl()}/xmltv.php?username=$username&password=$password"
 
-    private suspend fun fetch(action: String): String = withContext(Dispatchers.IO) {
-        val url = "${baseUrl()}/player_api.php?username=$username&password=$password&action=$action"
+    private suspend fun fetch(action: String, extraParams: String = ""): String = withContext(Dispatchers.IO) {
+        val url = "${baseUrl()}/player_api.php?username=$username&password=$password&action=$action$extraParams"
         val request = Request.Builder().url(url).build()
         try {
             client.newCall(request).execute().use { response ->
@@ -137,6 +140,42 @@ class XtreamClient(
                 cover = obj.optStringOrNull("cover"),
             )
         }
+    }
+
+    /**
+     * `action=get_series_info` -- the season/episode drill-down for a single
+     * series. Xtream returns `{"episodes": {"1": [ {...}, ... ], "2": [...] }}`
+     * keyed by season number (as a string); each episode object carries its
+     * own `id`/`episode_num`/`title`/`container_extension`. Malformed/missing
+     * entries are skipped rather than throwing, so one bad episode doesn't
+     * blank the whole season list.
+     */
+    suspend fun getSeriesInfo(seriesId: String): List<XtreamSeriesEpisode> {
+        val body = fetch("get_series_info", "&series_id=$seriesId")
+        val json = runCatching { JSONObject(body) }.getOrElse {
+            throw XtreamException("Malformed JSON response for get_series_info")
+        }
+        val episodesObj = json.optJSONObject("episodes") ?: return emptyList()
+        val seasonKeys = episodesObj.names() ?: JSONArray()
+        val out = mutableListOf<XtreamSeriesEpisode>()
+        for (i in 0 until seasonKeys.length()) {
+            val seasonKey = seasonKeys.optString(i) ?: continue
+            val season = seasonKey.toIntOrNull() ?: continue
+            val arr = episodesObj.optJSONArray(seasonKey) ?: continue
+            for (j in 0 until arr.length()) {
+                val ep = arr.optJSONObject(j) ?: continue
+                val id = ep.optStringOrNull("id") ?: continue
+                val episodeNum = ep.optInt("episode_num", j + 1)
+                out += XtreamSeriesEpisode(
+                    id = id,
+                    season = season,
+                    episode = episodeNum,
+                    title = ep.optString("title", "Episode $episodeNum"),
+                    containerExtension = ep.optStringOrNull("container_extension"),
+                )
+            }
+        }
+        return out
     }
 
     private fun parseCategories(body: String): List<XtreamCategory> =

@@ -9,8 +9,10 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -53,48 +55,57 @@ import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
- * Real Live TV playback (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
- * the prototype's static background image is replaced end-to-end). Full-bleed,
- * outside [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell] (own NavHost
- * destination), System Back dismisses via [BackHandler] rather than falling
- * through to app-exit or the underlying screen.
+ * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
+ * the prototype's static background image is replaced end-to-end). Drives
+ * from a [PlaybackSource] rather than a raw streamUrl so both live channels
+ * and VOD (movies/episodes, from Detail's Play action) share this exact
+ * screen/ExoPlayer lifecycle instead of a duplicated VOD player -- see report
+ * for the reuse-vs-duplicate call. Full-bleed, outside
+ * [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell] (own NavHost destination),
+ * System Back dismisses via [BackHandler] rather than falling through to
+ * app-exit or the underlying screen.
  */
 @Composable
-fun LivePlayerScreen(channelId: Long, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: LivePlayerViewModel = viewModel(
-        factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, channelId),
+        factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, source),
     )
     val state by viewModel.uiState.collectAsState()
 
     BackHandler(onBack = onBack)
 
     Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
-        val channel = state.channel
+        val media = state.media
         if (state.loading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 BufferingIndicator()
             }
-        } else if (channel == null) {
+        } else if (media == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                PlayerErrorState(message = state.errorMessage ?: "Channel not found", onBack = onBack)
+                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = onBack)
             }
         } else {
             var playing by remember { mutableStateOf(true) }
             var isBuffering by remember { mutableStateOf(true) }
             var playerError by remember { mutableStateOf<String?>(null) }
+            // Bumped by the error state's Retry action. Changing this changes exoPlayer's
+            // remember() key below, which tears down the old instance through the existing
+            // DisposableEffect(exoPlayer) cleanup and builds a fresh one -- same single
+            // release() call site as backgrounding, just triggered by a different key change.
+            var retryCount by remember { mutableStateOf(0) }
 
-            val exoPlayer = remember(channel.streamUrl) {
+            val exoPlayer = remember(media.streamUrl, retryCount) {
                 ExoPlayer.Builder(context).build().apply {
                     // No hardcoded "HLS-only" assumption -- Media3's DefaultMediaSourceFactory
                     // (used implicitly by setMediaItem/prepare) inspects the URI to pick
                     // HlsMediaSource for .m3u8 (media3-exoplayer-hls is on the classpath)
                     // or falls back to ProgressiveMediaSource (bundled TS/MP4/etc extractors)
                     // for raw .ts / other URLs -- covers both shapes real M3U/Xtream sources hand back.
-                    setMediaItem(MediaItem.fromUri(channel.streamUrl))
+                    setMediaItem(MediaItem.fromUri(media.streamUrl))
                     playWhenReady = true
                     prepare()
-                }
+                }.also { playerError = null }
             }
 
             DisposableEffect(exoPlayer) {
@@ -121,14 +132,17 @@ fun LivePlayerScreen(channelId: Long, onBack: () -> Unit, modifier: Modifier = M
                 }
             }
 
+            // Backgrounding exits the player (rather than just pause()-ing in place) so the
+            // ExoPlayer instance releases fully through the SAME DisposableEffect(exoPlayer)
+            // cleanup path already verified above -- one release() call site, not two racing
+            // against each other. TV-box memory is more constrained than mobile and there's no
+            // PiP mode yet to justify holding the decoder/audio focus alive with nothing visible
+            // (product-lead ruling on qa's Phase 2 finding). PiP, when built later, is the
+            // natural place to special-case "stay alive while backgrounded" for that mode only.
             val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifecycleOwner, exoPlayer) {
+            DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
-                    when (event) {
-                        Lifecycle.Event.ON_STOP -> exoPlayer.pause()
-                        Lifecycle.Event.ON_START -> if (playerError == null) exoPlayer.play()
-                        else -> Unit
-                    }
+                    if (event == Lifecycle.Event.ON_STOP) onBack()
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -177,18 +191,18 @@ fun LivePlayerScreen(channelId: Long, onBack: () -> Unit, modifier: Modifier = M
                 }
                 Box(Modifier.fillMaxSize().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
                     if (playerError != null) {
-                        PlayerErrorState(message = playerError!!, onBack = onBack)
+                        PlayerErrorState(message = playerError!!, onBack = onBack, onRetry = { retryCount++ })
                     } else if (isBuffering) {
                         BufferingIndicator()
                     }
                 }
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     ArePlayerControls(
-                        title = channel.name,
-                        subtitle = channel.categoryName,
-                        live = true,
+                        title = media.title,
+                        subtitle = media.subtitle,
+                        live = media.isLive,
                         playing = playing,
-                        channelLogoInitials = channel.name.take(3).uppercase(),
+                        channelLogoInitials = media.title.take(3).uppercase(),
                         onPlayPause = {
                             if (playing) exoPlayer.pause() else exoPlayer.play()
                         },
@@ -220,7 +234,7 @@ private fun BufferingIndicator() {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun PlayerErrorState(message: String, onBack: () -> Unit) {
+private fun PlayerErrorState(message: String, onBack: () -> Unit, onRetry: (() -> Unit)? = null) {
     val colors = AreIptvTheme.colors
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
@@ -233,6 +247,14 @@ private fun PlayerErrorState(message: String, onBack: () -> Unit) {
         Box(Modifier.padding(top = 6.dp))
         Text(text = message, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         Box(Modifier.padding(top = 20.dp))
-        AreIconButton(icon = Icons.Filled.ArrowBack, contentDescription = "Back", onClick = onBack, variant = AreIconButtonVariant.Solid)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            AreIconButton(icon = Icons.Filled.ArrowBack, contentDescription = "Back", onClick = onBack, variant = AreIconButtonVariant.Solid)
+            // Content-not-found (no resolved media at all) has nothing to retry -- onRetry is
+            // omitted for that call site below, so this button only appears for real transient
+            // playback failures (network/codec/etc) where rebuilding the player might succeed.
+            if (onRetry != null) {
+                AreIconButton(icon = Icons.Filled.Autorenew, contentDescription = "Retry", onClick = onRetry, variant = AreIconButtonVariant.Solid)
+            }
+        }
     }
 }

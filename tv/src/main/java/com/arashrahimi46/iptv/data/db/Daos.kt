@@ -11,6 +11,7 @@ import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import kotlinx.coroutines.flow.Flow
 
@@ -84,6 +85,10 @@ interface VodTitleDao {
 
     @Query("SELECT COUNT(*) FROM vod_titles WHERE sourceId = :sourceId AND isSeries = 1")
     suspend fun countSeriesForSource(sourceId: Long): Int
+
+    /** Content-id-driven lookup for Detail/Search -- mirrors [ChannelDao.getById]. */
+    @Query("SELECT * FROM vod_titles WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): VodTitle?
 }
 
 @Dao
@@ -96,4 +101,24 @@ interface EPGProgramDao {
 
     @Query("SELECT * FROM epg_programs WHERE channelId IN (:channelIds) AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
     fun observeForChannelsInWindow(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>>
+}
+
+/**
+ * Episodes for a series [VodTitle] (Xtream `get_series_info` only -- see
+ * [com.arashrahimi46.iptv.data.repository.PlaylistRepository.ensureSeriesEpisodesLoaded]).
+ * Populated lazily on first Detail view rather than at import time.
+ */
+@Dao
+interface SeriesEpisodeDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(episodes: List<SeriesEpisode>)
+
+    @Query("SELECT * FROM series_episodes WHERE seriesTitleId = :seriesTitleId ORDER BY season, episode")
+    fun observeForSeries(seriesTitleId: Long): Flow<List<SeriesEpisode>>
+
+    @Query("SELECT COUNT(*) FROM series_episodes WHERE seriesTitleId = :seriesTitleId")
+    suspend fun countForSeries(seriesTitleId: Long): Int
+
+    @Query("SELECT * FROM series_episodes WHERE id = :episodeId LIMIT 1")
+    suspend fun getById(episodeId: Long): SeriesEpisode?
 }

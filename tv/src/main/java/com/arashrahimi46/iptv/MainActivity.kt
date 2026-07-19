@@ -15,12 +15,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.detail.DetailScreen
+import com.arashrahimi46.iptv.ui.detail.PlayTarget
 import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
 import com.arashrahimi46.iptv.ui.live.LiveScreen
+import com.arashrahimi46.iptv.ui.movies.MoviesScreen
 import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
 import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
+import com.arashrahimi46.iptv.ui.player.PlaybackSource
+import com.arashrahimi46.iptv.ui.search.SearchScreen
+import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
+import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 class MainActivity : ComponentActivity() {
@@ -37,9 +44,11 @@ class MainActivity : ComponentActivity() {
 /**
  * Top-level app graph (real back stack, not a boolean flag -- see report):
  * "onboarding" while there's no active [com.arashrahimi46.iptv.data.model.PlaylistSource],
- * "home"/"live"/"guide" (each wrapped in [AreIptvAppShell]) once one exists,
- * and "player/{channelId}" (content-id-driven, the same convention Detail
- * will use in Phase 3) as a full-bleed overlay outside the shell -- same
+ * "home"/"live"/"guide"/"movies"/"series"/"search" (each wrapped in
+ * [AreIptvAppShell]) once one exists, and the full-bleed overlays
+ * "player/{channelId}", "player/vod/{vodTitleId}", "player/episode/{episodeId}"
+ * and "detail/{contentType}/{contentId}" (content-id-driven, mirroring
+ * "player/{channelId}"'s existing convention) outside the shell -- same
  * pattern Onboarding already uses.
  */
 @Composable
@@ -55,6 +64,10 @@ fun AreIptvApp() {
 
     val startDestination = if (activeSourceId == null) "onboarding" else "home"
 
+    fun openDetail(contentType: String, contentId: Long) {
+        navController.navigate("detail/$contentType/$contentId")
+    }
+
     NavHost(navController = navController, startDestination = startDestination) {
         composable("onboarding") {
             OnboardingFlow(onFinished = {
@@ -64,7 +77,12 @@ fun AreIptvApp() {
             })
         }
         composable("home") {
-            ShellScreen(navController, activeNav = "home") { HomeScreen() }
+            ShellScreen(navController, activeNav = "home") {
+                HomeScreen(
+                    onChannelSelected = { channel -> navController.navigate("player/${channel.id}") },
+                    onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
+                )
+            }
         }
         composable("live") {
             ShellScreen(navController, activeNav = "live") {
@@ -76,17 +94,68 @@ fun AreIptvApp() {
                 GuideScreen(onChannelSelected = { channelId -> navController.navigate("player/$channelId") })
             }
         }
+        composable("movies") {
+            ShellScreen(navController, activeNav = "movies") {
+                MoviesScreen(onMovieSelected = { movie -> openDetail("movie", movie.id) })
+            }
+        }
+        composable("series") {
+            ShellScreen(navController, activeNav = "series") {
+                SeriesScreen(onSeriesSelected = { series -> openDetail("series", series.id) })
+            }
+        }
+        composable("search") {
+            ShellScreen(navController, activeNav = "search") {
+                SearchScreen(
+                    onChannelSelected = { channel -> navController.navigate("player/${channel.id}") },
+                    onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
+                )
+            }
+        }
         composable(
             route = "player/{channelId}",
             arguments = listOf(navArgument("channelId") { type = NavType.LongType }),
         ) { backStackEntry ->
             val channelId = backStackEntry.arguments?.getLong("channelId") ?: return@composable
-            LivePlayerScreen(channelId = channelId, onBack = { navController.popBackStack() })
+            LivePlayerScreen(source = PlaybackSource.Channel(channelId), onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = "player/vod/{vodTitleId}",
+            arguments = listOf(navArgument("vodTitleId") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val vodTitleId = backStackEntry.arguments?.getLong("vodTitleId") ?: return@composable
+            LivePlayerScreen(source = PlaybackSource.Vod(vodTitleId), onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = "player/episode/{episodeId}",
+            arguments = listOf(navArgument("episodeId") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val episodeId = backStackEntry.arguments?.getLong("episodeId") ?: return@composable
+            LivePlayerScreen(source = PlaybackSource.Episode(episodeId), onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = "detail/{contentType}/{contentId}",
+            arguments = listOf(
+                navArgument("contentType") { type = NavType.StringType },
+                navArgument("contentId") { type = NavType.LongType },
+            ),
+        ) { backStackEntry ->
+            val contentId = backStackEntry.arguments?.getLong("contentId") ?: return@composable
+            DetailScreen(
+                contentId = contentId,
+                onBack = { navController.popBackStack() },
+                onPlay = { target ->
+                    when (target) {
+                        is PlayTarget.Movie -> navController.navigate("player/vod/${target.vodTitleId}")
+                        is PlayTarget.Episode -> navController.navigate("player/episode/${target.episodeId}")
+                    }
+                },
+            )
         }
     }
 }
 
-/** Wraps a top-level nav destination in [AreIptvAppShell], routing sidebar taps for the built routes to real navigation. */
+/** Wraps a top-level nav destination in [AreIptvAppShell], routing sidebar taps and the top-bar search icon to real navigation. */
 @Composable
 private fun ShellScreen(navController: NavHostController, activeNav: String, content: @Composable () -> Unit) {
     AreIptvAppShell(
@@ -100,13 +169,26 @@ private fun ShellScreen(navController: NavHostController, activeNav: String, con
                 }
             }
         },
+        topBar = {
+            AreTopBar(
+                onSearch = {
+                    if (activeNav != "search") {
+                        navController.navigate("search") {
+                            popUpTo(0) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+            )
+        },
     ) {
         content()
     }
 }
 
-/** Routes that actually exist in the NavHost -- other sidebar items (Movies/Series/Search/Favorites/Settings) are inert until later phases. */
-private val KnownRoutes = setOf("home", "live", "guide")
+/** Routes that actually exist in the NavHost -- other sidebar items (Favorites/Settings) are inert until later phases. */
+private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "search")
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L
