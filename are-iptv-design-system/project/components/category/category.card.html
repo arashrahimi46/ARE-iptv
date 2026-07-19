@@ -1,0 +1,74 @@
+<!-- @dsCard group="Components" viewport="1040x620" name="Category — Cards & Filter Rows" subtitle="The grouping every content type shares — Live TV, Movies, Series, EPG" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--bg-base);padding:26px 0;font-family:var(--font-body)}
+.lbl{font:var(--fw-bold) 11px/1 var(--font-body);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--text-tertiary);margin:0 0 14px;padding:0 28px}
+.row{display:flex;gap:20px;padding:0 28px 26px;overflow:hidden}
+.cols{display:flex;gap:36px;padding:0 28px}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { CategoryCard, CategoryRow } = window.AREIptvDesignSystem_632b75;
+const img = (s,w,h)=>`https://picsum.photos/seed/${s}/${w}/${h}`;
+const p4 = (s)=>[img(s+'a',200,300),img(s+'b',200,300),img(s+'c',200,300),img(s+'d',200,300)];
+function Card(){
+  const [cat,setCat]=React.useState("sports");
+  return (<div>
+    <p className="lbl">CategoryCard — with artwork (2×2 mosaic) · focus = scale + glow</p>
+    <div className="row">
+      <CategoryCard kind="live" name="Sports" count={128} posters={p4('sport')} width={260} focused/>
+      <CategoryCard kind="movies" name="Action & Adventure" count={642} posters={p4('act')} width={260}/>
+      <CategoryCard kind="series" name="Crime & Drama" count={214} posters={p4('crime')} width={260}/>
+      <CategoryCard kind="series" name="Suggested for you" count={40} posters={p4('sug')} smart width={260}/>
+    </div>
+    <p className="lbl">Artless — the common real-playlist case (no images needed)</p>
+    <div className="row">
+      <CategoryCard kind="live" name="News" count={64} width={260} focused/>
+      <CategoryCard kind="live" name="International" count={486} width={260}/>
+      <CategoryCard kind="movies" name="Documentary" count={61} width={260}/>
+      <CategoryCard kind="catchup" name="Catch-up" count={12} width={260}/>
+    </div>
+    <p className="lbl">compact — dense tile for big category walls (100+)</p>
+    <div className="row">
+      <CategoryCard kind="live" name="Sports" count={128} compact width={220}/>
+      <CategoryCard kind="live" name="Kids" count={39} compact width={220}/>
+      <CategoryCard kind="live" name="Music" count={44} compact width={220}/>
+      <CategoryCard kind="live" name="4K & UHD" count={72} compact width={220}/>
+    </div>
+    <div className="cols">
+      <div style={{width:340}}>
+        <p className="lbl" style={{padding:0}}>CategoryRow — Live TV filter column</p>
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          <CategoryRow kind="live" name="All channels" count={1240} active={cat==='all'} onClick={()=>setCat('all')}/>
+          <CategoryRow kind="live" name="Sports" count={128} active={cat==='sports'} onClick={()=>setCat('sports')}/>
+          <CategoryRow kind="live" name="News" count={64} active={cat==='news'} onClick={()=>setCat('news')}/>
+          <CategoryRow kind="live" name="Kids" count={39} active={cat==='kids'} onClick={()=>setCat('kids')}/>
+          <CategoryRow kind="favorites" name="Favorites" count={12} active={cat==='fav'} onClick={()=>setCat('fav')}/>
+        </div>
+      </div>
+      <div style={{width:340}}>
+        <p className="lbl" style={{padding:0}}>Movies / Series filter column</p>
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          <CategoryRow kind="movies" name="Recently added" count={90} smart/>
+          <CategoryRow kind="movies" name="Action" count={642} active/>
+          <CategoryRow kind="movies" name="Comedy" count={388}/>
+          <CategoryRow kind="series" name="Documentary" count={57}/>
+          <CategoryRow kind="catchup" name="Catch-up" count={7}/>
+        </div>
+      </div>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Card/>);
+</script>
+</body>
+</html>

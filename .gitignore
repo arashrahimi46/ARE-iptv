@@ -1,0 +1,29 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Release signing (release-manager: never commit real keystores/credentials)
+*.jks
+*.keystore
+!debug.keystore
+keystore.properties
+
+# Agent/orchestration runtime state (logs, sessions, memory dbs) — not app source
+.monomind/
+.swarm/
+
+# Generated reports / org runtime event logs — not app source
+/GRAPH_REPORT.md
+/data/

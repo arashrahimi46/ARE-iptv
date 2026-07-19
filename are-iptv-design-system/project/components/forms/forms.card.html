@@ -1,0 +1,39 @@
+<!-- @dsCard group="Components" viewport="720x460" name="Forms — Inputs, Switch & Wizard steps" subtitle="Playlist URL / Xtream params, toggles, onboarding progress" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--bg-base);padding:26px 28px;font-family:var(--font-body)}
+.lbl{font:var(--fw-bold) 11px/1 var(--font-body);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--text-tertiary);margin:0 0 14px}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { TextField, Switch, StepIndicator, Icon } = window.AREIptvDesignSystem_632b75;
+function Card(){
+  const [a,setA]=React.useState(true),[b,setB]=React.useState(false);
+  return (<div>
+    <StepIndicator current={1} steps={["Source","Credentials","EPG","Confirm"]}/>
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20,margin:'28px 0'}}>
+      <TextField label="M3U playlist URL" mono prefix="http://" placeholder="host:8080/get.php?..." icon={<Icon name="link" size={18}/>} focused/>
+      <TextField label="Portal name" placeholder="Living room" value="Living room"/>
+      <TextField label="Username" mono value="are_user_01"/>
+      <TextField label="Password" mono type="password" value="••••••••" error="Check your credentials"/>
+    </div>
+    <p className="lbl">Toggles</p>
+    <div style={{display:'flex',gap:40,alignItems:'center'}}>
+      <label style={{display:'flex',gap:12,alignItems:'center',color:'var(--text-secondary)',font:'var(--text-label)'}}><Switch checked={a} onChange={setA}/> Dark theme</label>
+      <label style={{display:'flex',gap:12,alignItems:'center',color:'var(--text-secondary)',font:'var(--text-label)'}}><Switch checked={b} onChange={setB}/> Parental lock</label>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Card/>);
+</script>
+</body>
+</html>

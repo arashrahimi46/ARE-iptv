@@ -1,0 +1,48 @@
+<!-- @dsCard group="Components" viewport="900x560" name="Media — Tiles, Rails & Hero" subtitle="Posters, live channels, continue-watching, featured hero" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--bg-base);padding:24px 0;font-family:var(--font-body)}
+.lbl{font:var(--fw-bold) 11px/1 var(--font-body);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--text-tertiary);margin:0 0 14px;padding:0 28px}
+.row{display:flex;gap:20px;padding:0 28px 26px;overflow:hidden}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { PosterTile, ChannelTile, ContinueCard, Hero, Badge, Button, Icon } = window.AREIptvDesignSystem_632b75;
+const img = (s,w,h)=>`https://picsum.photos/seed/${s}/${w}/${h}`;
+function Card(){
+  return (<div>
+    <div style={{padding:'0 28px 26px'}}>
+      <Hero kicker="Featured tonight" title="Silverstone GP" meta="LIVE · Sky Sports F1 · 4K HDR"
+        synopsis="Lights out for the British Grand Prix — the championship battle heads to Silverstone."
+        image={img('f1race',1200,600)} height={300}
+        badges={[<Badge tone="live" glow>LIVE</Badge>, <Badge tone="quality">4K HDR</Badge>]}
+        actions={<><Button size="lg" icon={<Icon name="play" size={22}/>}>Watch live</Button><Button variant="secondary" size="lg">Open guide</Button></>}/>
+    </div>
+    <p className="lbl">PosterTile — VOD (focus = scale + glow)</p>
+    <div className="row">
+      <PosterTile title="Dune: Part Two" meta="2024 · Sci-Fi" image={img('dune',300,450)} rating="9.1" badges={[<Badge tone="quality">4K</Badge>]} focused/>
+      <PosterTile title="Oppenheimer" meta="2023 · Drama" image={img('oppen',300,450)} rating="8.9"/>
+      <PosterTile title="The Bear" meta="S3 · Comedy" image={img('bear',300,450)} progress={62}/>
+      <PosterTile title="No Poster" meta="Fallback chip"/>
+    </div>
+    <p className="lbl">ChannelTile — live · &nbsp; ContinueCard — resume</p>
+    <div className="row">
+      <ChannelTile channel="BBC One HD" number="101" now="The News at Ten" next="Match of the Day" progress={70} health="stable" quality="FHD" codec="H.264" catchup fav focused/>
+      <ChannelTile channel="ESPN" number="204" now="NBA: Lakers @ Celtics" next="SportsCenter" progress={40} health="moderate" quality="HD" codec="H.264"/>
+      <ContinueCard title="The Last of Us" meta="S2 · E4" image={img('lou',400,225)} progress={45} remaining="26 min left"/>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Card/>);
+</script>
+</body>
+</html>

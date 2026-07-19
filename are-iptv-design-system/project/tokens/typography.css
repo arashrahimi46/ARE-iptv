@@ -1,0 +1,55 @@
+/* ============================================================
+   ARE iptv — TYPOGRAPHY
+   Space Grotesk = display/headings (distinctive, premium).
+   Manrope = body/UI (humanist, legible at 10ft).
+   JetBrains Mono = technical (URLs, Xtream params, codes).
+   Sizes run LARGE — this is a lean-back 10-foot interface.
+   ============================================================ */
+:root {
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body:    "Manrope", system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  /* Weights */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium:  500; /* @kind font */
+  --fw-semibold:600; /* @kind font */
+  --fw-bold:    700; /* @kind font */
+  --fw-extra:   800; /* @kind font */
+
+  /* Type scale (px). TV-safe: nothing below 16 for UI, 14 mono caption. */
+  --fs-hero:      64px;   /* featured hero title */
+  --fs-display:   44px;   /* screen titles */
+  --fs-h1:        34px;
+  --fs-h2:        26px;
+  --fs-h3:        21px;
+  --fs-title:     18px;   /* tile / card titles */
+  --fs-body:      16px;   /* base UI text */
+  --fs-label:     15px;
+  --fs-caption:   14px;   /* metadata, secondary */
+  --fs-micro:     12px;   /* badges, overline */
+
+  /* Line heights */
+  --lh-tight:  1.05; /* @kind font */
+  --lh-snug:   1.2; /* @kind font */
+  --lh-normal: 1.45; /* @kind font */
+  --lh-relaxed:1.6; /* @kind font */
+
+  /* Letter spacing */
+  --ls-tight:  -0.02em; /* @kind font */
+  --ls-normal: 0; /* @kind font */
+  --ls-wide:   0.04em; /* @kind font */
+  --ls-caps:   0.10em;   /* @kind font */
+
+  /* ---- Composite text roles ---- */
+  --text-hero:    var(--fw-bold) var(--fs-hero)/var(--lh-tight) var(--font-display); /* @kind font */
+  --text-display: var(--fw-bold) var(--fs-display)/var(--lh-tight) var(--font-display); /* @kind font */
+  --text-h1:      var(--fw-bold) var(--fs-h1)/var(--lh-snug) var(--font-display); /* @kind font */
+  --text-h2:      var(--fw-semibold) var(--fs-h2)/var(--lh-snug) var(--font-display); /* @kind font */
+  --text-h3:      var(--fw-semibold) var(--fs-h3)/var(--lh-snug) var(--font-display); /* @kind font */
+  --text-tile:    var(--fw-semibold) var(--fs-title)/var(--lh-snug) var(--font-body); /* @kind font */
+  --text-body:    var(--fw-regular) var(--fs-body)/var(--lh-normal) var(--font-body); /* @kind font */
+  --text-label:   var(--fw-semibold) var(--fs-label)/var(--lh-snug) var(--font-body); /* @kind font */
+  --text-caption: var(--fw-medium) var(--fs-caption)/var(--lh-normal) var(--font-body); /* @kind font */
+  --text-mono:    var(--fw-medium) var(--fs-caption)/var(--lh-normal) var(--font-mono); /* @kind font */
+}

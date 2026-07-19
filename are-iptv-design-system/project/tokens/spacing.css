@@ -1,0 +1,37 @@
+/* ============================================================
+   ARE iptv — SPACING & LAYOUT
+   8px base grid. TV safe-area margins are generous (overscan).
+   ============================================================ */
+:root {
+  --sp-0:  0; /* @kind spacing */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  /* TV overscan safe area — keep content off the panel edge */
+  --safe-x: 64px;
+  --safe-y: 40px;
+
+  /* Rails */
+  --rail-gap:  20px;   /* gap between tiles in a rail */
+  --rail-peek: 80px;   /* how much the next tile peeks in */
+
+  /* Common sizing */
+  --sidebar-w:      104px;  /* collapsed rail nav */
+  --sidebar-w-open: 280px;  /* expanded nav */
+  --tile-poster-w:  208px;  /* portrait poster tile */
+  --tile-poster-h:  312px;
+  --tile-land-w:    320px;  /* landscape / channel tile */
+  --tile-land-h:    180px;
+  --guide-row-h:    64px;   /* EPG row height */
+  --guide-chan-w:   220px;  /* EPG channel column */
+}

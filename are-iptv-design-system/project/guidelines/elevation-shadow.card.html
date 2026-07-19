@@ -1,0 +1,12 @@
+<!-- @dsCard group="Elevation" viewport="700x160" name="Shadow & glass" subtitle="Dark UI leans on layered surfaces, glow and blur" -->
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css">
+<style>body{margin:0;background:var(--bg-base);padding:28px 26px;font-family:var(--font-body);display:flex;gap:22px;align-items:center}
+.b{width:130px;height:84px;border-radius:var(--r-md);display:grid;place-items:center;font:var(--fw-bold) 11px/1 var(--font-body);letter-spacing:var(--ls-caps);text-transform:uppercase;color:var(--text-secondary);background:var(--surface-2)}
+.stage{position:relative;width:170px;height:84px;border-radius:var(--r-md);overflow:hidden;background:center/cover url(https://picsum.photos/seed/glass/200/120)}
+.glass{position:absolute;inset:16px;border-radius:var(--r-sm);background:var(--surface-glass);backdrop-filter:blur(var(--blur-glass));border:1px solid var(--border-default);display:grid;place-items:center;font:var(--fw-bold) 11px/1 var(--font-body);letter-spacing:var(--ls-caps);color:#fff}</style></head>
+<body>
+<div class="b" style="box-shadow:var(--shadow-md)">shadow-md</div>
+<div class="b" style="box-shadow:var(--shadow-lg)">shadow-lg</div>
+<div class="b" style="box-shadow:var(--glow-accent);color:var(--accent-hover)">glow</div>
+<div class="stage"><div class="glass">glass</div></div>
+</body></html>

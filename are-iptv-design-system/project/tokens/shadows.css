@@ -1,0 +1,39 @@
+/* ============================================================
+   ARE iptv — ELEVATION & SHADOW
+   Dark UI leans on GLOW and layered surfaces more than drop
+   shadow. Poster tiles get a soft ambient lift; focused
+   elements get the accent glow (see --focus-glow in colors).
+   ============================================================ */
+:root {
+  --shadow-none: none;
+
+  /* Ambient depth for resting cards/tiles on dark bg */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:  0 6px 18px rgba(0,0,0,0.45);
+  --shadow-lg:  0 16px 40px rgba(0,0,0,0.55);
+  --shadow-xl:  0 28px 70px rgba(0,0,0,0.6);
+
+  /* Poster / tile lift on focus (paired with scale + ring) */
+  --shadow-tile:      0 10px 30px rgba(0,0,0,0.5);
+  --shadow-tile-focus:0 22px 54px rgba(0,0,0,0.62);
+
+  /* Glass overlays (player controls, guide scrim) */
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.5);
+  --blur-glass: 20px; /* @kind other */
+  --blur-scrim: 8px; /* @kind other */
+
+  /* Accent-tinted glow for LIVE / smart pills */
+  --glow-accent: 0 0 24px rgba(59,130,246,0.45);
+  --glow-live:   0 0 20px rgba(239,68,68,0.5);
+  --glow-smart:  0 0 22px rgba(139,92,246,0.45);
+}
+
+[data-theme="light"] {
+  --shadow-sm:  0 1px 2px rgba(15,20,30,0.08);
+  --shadow-md:  0 6px 18px rgba(15,20,30,0.10);
+  --shadow-lg:  0 16px 40px rgba(15,20,30,0.14);
+  --shadow-xl:  0 28px 70px rgba(15,20,30,0.18);
+  --shadow-tile:      0 8px 24px rgba(15,20,30,0.12);
+  --shadow-tile-focus:0 20px 48px rgba(15,20,30,0.20);
+  --shadow-glass: 0 8px 32px rgba(15,20,30,0.14);
+}

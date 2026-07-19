@@ -1,0 +1,15 @@
+/* ============================================================
+   ARE iptv — RADIUS
+   Soft but not pill-y. Posters & tiles use md/lg; the
+   featured hero and dialogs use xl. Pills for chips/badges.
+   ============================================================ */
+:root {
+  --r-xs:   6px;
+  --r-sm:   10px;
+  --r-md:   14px;   /* tiles, inputs, buttons */
+  --r-lg:   20px;   /* cards, panels */
+  --r-xl:   28px;   /* hero, dialogs, sheets */
+  --r-2xl:  36px;
+  --r-pill: 999px;  /* chips, badges, toggles */
+  --r-round:50%;
+}

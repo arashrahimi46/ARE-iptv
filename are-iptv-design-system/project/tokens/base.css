@@ -1,0 +1,39 @@
+/* ============================================================
+   ARE iptv — BASE RESET
+   Minimal, opinionated resets. App shells set bg/color from
+   tokens. Selection + focus-visible defaults live here.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font: var(--text-body);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, p { margin: 0; }
+
+::selection { background: var(--accent-wash); color: var(--text-primary); }
+
+/* Keyboard / D-pad focus baseline. Components override with
+   the tile/glow treatments, but nothing should ever be focusable
+   without a visible indicator. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-glow-tight);
+  border-radius: var(--r-sm);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+img { display: block; max-width: 100%; }
+
+/* Utility: TV safe-area padding for full screens */
+.tv-safe { padding: var(--safe-y) var(--safe-x); }

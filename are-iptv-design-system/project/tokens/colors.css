@@ -1,0 +1,133 @@
+/* ============================================================
+   ARE iptv — COLOR SYSTEM
+   Dark-first. Light theme scoped under [data-theme="light"].
+   Base ramps -> semantic aliases. Reference the *semantic*
+   aliases in components, never the raw ramps.
+   ============================================================ */
+
+:root, [data-theme="dark"] {
+  /* ---- Brand: electric blue ---- */
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;   /* primary accent */
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-glow: rgba(59, 130, 246, 0.55);
+  --blue-wash: rgba(59, 130, 246, 0.14);
+
+  /* ---- Neutral ramp (cool, slightly blue-black) ---- */
+  --ink-950: #06070a;
+  --ink-900: #0a0b0f;
+  --ink-850: #0e1015;
+  --ink-800: #14161c;
+  --ink-750: #191c23;
+  --ink-700: #1f232c;
+  --ink-600: #262a34;
+  --ink-500: #333844;
+  --ink-400: #4b515f;
+  --ink-300: #6b7280;
+  --ink-200: #9aa2b1;
+  --ink-100: #c4cad4;
+  --ink-050: #e7eaf0;
+  --white:   #f6f8fc;
+
+  /* ---- Status ramps ---- */
+  --green-500: #22c55e;  /* stream stable */
+  --green-400: #4ade80;
+  --amber-500: #eab308;  /* stream moderate */
+  --amber-400: #facc15;
+  --red-500:   #ef4444;  /* stream poor / LIVE */
+  --red-400:   #f87171;
+  --violet-500:#8b5cf6;  /* AI / smart features */
+  --violet-400:#a78bfa;
+
+  /* ============ SEMANTIC ALIASES ============ */
+  /* Surfaces (lean-back depth stack) */
+  --bg-sunken:    var(--ink-950);
+  --bg-base:      var(--ink-900);
+  --surface-1:    var(--ink-800);
+  --surface-2:    var(--ink-700);
+  --surface-3:    var(--ink-600);
+  --surface-overlay: rgba(14, 16, 21, 0.82); /* glass scrims */
+  --surface-glass:   rgba(30, 34, 44, 0.55);
+
+  /* Text */
+  --text-primary:   var(--white);
+  --text-secondary: var(--ink-200);
+  --text-tertiary:  var(--ink-300);
+  --text-disabled:  var(--ink-400);
+  --text-on-accent: #ffffff;
+
+  /* Borders / dividers */
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  /* Accent semantics */
+  --accent:         var(--blue-500);
+  --accent-hover:   var(--blue-400);
+  --accent-press:   var(--blue-600);
+  --accent-wash:    var(--blue-wash);
+  --accent-fg:      var(--text-on-accent);
+
+  /* Focus — the defining TV interaction (D-pad) */
+  --focus-ring:     var(--blue-400);
+  --focus-glow:     0 0 0 3px var(--bg-base), 0 0 0 6px var(--blue-400), 0 0 28px 4px var(--blue-glow);
+  --focus-glow-tight: 0 0 0 3px var(--blue-400), 0 0 22px 2px var(--blue-glow);
+
+  /* Feedback semantics */
+  --success: var(--green-500);
+  --warning: var(--amber-500);
+  --danger:  var(--red-500);
+  --live:    var(--red-500);
+  --smart:   var(--violet-500);   /* AI-driven surfaces */
+
+  /* Stream-health traffic light */
+  --health-stable:   var(--green-500);
+  --health-moderate: var(--amber-500);
+  --health-poor:     var(--red-500);
+
+  /* Scrims / protection gradients over poster art */
+  --scrim-bottom: linear-gradient(to top, rgba(6,7,10,0.96) 0%, rgba(6,7,10,0.6) 42%, rgba(6,7,10,0) 100%); /* @kind color */
+  --scrim-left:   linear-gradient(to right, rgba(6,7,10,0.94) 0%, rgba(6,7,10,0.5) 48%, rgba(6,7,10,0) 100%); /* @kind color */
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+[data-theme="light"] {
+  --bg-sunken:    #e9edf3;
+  --bg-base:      #f3f5f9;
+  --surface-1:    #ffffff;
+  --surface-2:    #f7f9fc;
+  --surface-3:    #eef1f6;
+  --surface-overlay: rgba(255, 255, 255, 0.86);
+  --surface-glass:   rgba(255, 255, 255, 0.6);
+
+  --text-primary:   #0d1017;
+  --text-secondary: #4a5163;
+  --text-tertiary:  #757d8e;
+  --text-disabled:  #a5abb8;
+  --text-on-accent: #ffffff;
+
+  --border-subtle:  rgba(15, 20, 30, 0.07);
+  --border-default: rgba(15, 20, 30, 0.12);
+  --border-strong:  rgba(15, 20, 30, 0.20);
+
+  --accent:       var(--blue-600);
+  --accent-hover: var(--blue-500);
+  --accent-press: var(--blue-700);
+  --accent-wash:  rgba(37, 99, 235, 0.10);
+  --accent-fg:    #ffffff;
+
+  --focus-ring:   var(--blue-600);
+  --focus-glow:      0 0 0 3px var(--bg-base), 0 0 0 6px var(--blue-500), 0 0 24px 4px rgba(59,130,246,0.4);
+  --focus-glow-tight: 0 0 0 3px var(--blue-500), 0 0 18px 2px rgba(59,130,246,0.35);
+
+  --scrim-bottom: linear-gradient(to top, rgba(10,12,18,0.9) 0%, rgba(10,12,18,0.45) 45%, rgba(10,12,18,0) 100%); /* @kind color */
+  --scrim-left:   linear-gradient(to right, rgba(10,12,18,0.85) 0%, rgba(10,12,18,0.4) 50%, rgba(10,12,18,0) 100%); /* @kind color */
+
+  color-scheme: light;
+}
