@@ -1,34 +1,105 @@
 package com.arashrahimi46.iptv.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
 
+val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
+val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
+val LocalAreIptvSpacing = staticCompositionLocalOf { AreIptvSpacingDefault }
+val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
+
+/**
+ * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /
+ * `MaterialTheme.typography`. Always read tokens through this object (or the
+ * underlying CompositionLocals) rather than hardcoding values.
+ */
+object AreIptvTheme {
+    val colors: AreIptvColors
+        @Composable get() = LocalAreIptvColors.current
+
+    val typography: AreIptvTypography
+        @Composable get() = LocalAreIptvTypography.current
+
+    val spacing: AreIptvSpacing
+        @Composable get() = LocalAreIptvSpacing.current
+
+    val radius: AreIptvRadius
+        @Composable get() = LocalAreIptvRadius.current
+
+    val motion: AreIptvMotion
+        @Composable get() = LocalAreIptvMotion.current
+}
+
+/**
+ * Root theme composable for the ARE iptv TV app. Wraps `androidx.tv.material3.MaterialTheme`
+ * for base TV component compatibility (Card, Button, etc. focus/scale defaults) while
+ * exposing the custom design-token layer via [AreIptvTheme].
+ *
+ * @param isDark false switches every color token to the light ramp (single theme
+ *   object, not a build variant — see tokens/colors.css `[data-theme="light"]`).
+ * @param reducedMotion drives [LocalReducedMotion] and collapses [AreIptvTheme.motion]
+ *   to the reduced-motion token set. Not yet backed by a real Settings screen.
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun IptvTheme(
-    isInDarkTheme: Boolean = isSystemInDarkTheme(),
+fun AreIptvTheme(
+    isDark: Boolean = true,
+    reducedMotion: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (isInDarkTheme) {
+    val colors = if (isDark) AreIptvDarkColors else AreIptvLightColors
+    val motion = if (reducedMotion) AreIptvMotionReduced else AreIptvMotionDefault
+
+    val tvColorScheme = if (isDark) {
         darkColorScheme(
-            primary = Purple80,
-            secondary = PurpleGrey80,
-            tertiary = Pink80
+            primary = colors.accent,
+            onPrimary = colors.accentFg,
+            secondary = colors.surface2,
+            onSecondary = colors.textPrimary,
+            background = colors.bgBase,
+            onBackground = colors.textPrimary,
+            surface = colors.surface1,
+            onSurface = colors.textPrimary,
+            surfaceVariant = colors.surface2,
+            onSurfaceVariant = colors.textSecondary,
+            border = colors.borderDefault,
+            borderVariant = colors.borderSubtle,
+            error = colors.danger,
         )
     } else {
         lightColorScheme(
-            primary = Purple40,
-            secondary = PurpleGrey40,
-            tertiary = Pink40
+            primary = colors.accent,
+            onPrimary = colors.accentFg,
+            secondary = colors.surface2,
+            onSecondary = colors.textPrimary,
+            background = colors.bgBase,
+            onBackground = colors.textPrimary,
+            surface = colors.surface1,
+            onSurface = colors.textPrimary,
+            surfaceVariant = colors.surface2,
+            onSurfaceVariant = colors.textSecondary,
+            border = colors.borderDefault,
+            borderVariant = colors.borderSubtle,
+            error = colors.danger,
         )
     }
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+
+    CompositionLocalProvider(
+        LocalAreIptvColors provides colors,
+        LocalAreIptvTypography provides AreIptvTypographyDefault,
+        LocalAreIptvSpacing provides AreIptvSpacingDefault,
+        LocalAreIptvRadius provides AreIptvRadiusDefault,
+        LocalAreIptvMotion provides motion,
+        LocalReducedMotion provides reducedMotion,
+    ) {
+        MaterialTheme(
+            colorScheme = tvColorScheme,
+            content = content,
+        )
+    }
 }

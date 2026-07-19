@@ -1,0 +1,75 @@
+package com.arashrahimi46.iptv.ui.shell
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
+import com.arashrahimi46.iptv.ui.components.AreIconButton
+import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+
+/**
+ * Persistent top app bar (app.jsx top bar row): multi-view, search,
+ * add-playlist actions plus an avatar. Floats over the content area of every
+ * non-overlay screen — the caller is responsible for stacking it above the
+ * screen content (see [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell]).
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun AreTopBar(
+    modifier: Modifier = Modifier,
+    onMultiView: () -> Unit = {},
+    onSearch: () -> Unit = {},
+    onAddPlaylist: () -> Unit = {},
+    onAvatar: () -> Unit = {},
+) {
+    val colors = AreIptvTheme.colors
+    val spacing = AreIptvTheme.spacing
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(PaddingValues(horizontal = spacing.safeX, vertical = 18.dp)),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(Modifier.weight(1f))
+        AreIconButton(Icons.Filled.GridView, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Solid)
+        AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
+        AreIconButton(Icons.Filled.Add, "Add playlist", onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .border(2.dp, colors.borderStrong, CircleShape)
+                .background(colors.surface2, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = colors.textSecondary, modifier = Modifier.size(28.dp))
+        }
+    }
+}
+
+@Preview(widthDp = 1600, heightDp = 120, showBackground = true)
+@Composable
+private fun AreTopBarPreview() {
+    AreIptvTheme {
+        AreTopBar()
+    }
+}
