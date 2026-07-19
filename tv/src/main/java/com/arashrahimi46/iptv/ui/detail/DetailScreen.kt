@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -66,6 +68,7 @@ fun DetailScreen(
         factory = DetailViewModel.factory(context.applicationContext as android.app.Application, contentId),
     )
     val state by viewModel.uiState.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val colors = AreIptvTheme.colors
 
     BackHandler(onBack = onBack)
@@ -107,6 +110,12 @@ fun DetailScreen(
                                 icon = Icons.Filled.PlayArrow,
                             )
                             AreButton(text = "More info", onClick = {}, variant = AreButtonVariant.Secondary)
+                            AreIconButton(
+                                icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                                onClick = viewModel::toggleFavorite,
+                                variant = AreIconButtonVariant.Solid,
+                            )
                         }
                     }
                 }

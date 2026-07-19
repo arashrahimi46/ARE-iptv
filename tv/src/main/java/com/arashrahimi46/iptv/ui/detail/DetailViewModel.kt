@@ -6,15 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class DetailUiState(
@@ -37,6 +42,12 @@ data class DetailUiState(
 class DetailViewModel(app: Application, private val contentId: Long) : AndroidViewModel(app) {
     private val db = AppDatabase.get(app)
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
+    private val favoritesRepository = FavoritesRepository(app)
+
+    /** True once this title's own id shows up in the real favorites table -- drives Detail's favorite toggle button. */
+    val isFavorite: StateFlow<Boolean> = favoritesRepository.favoriteVodIds
+        .map { contentId in it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
@@ -62,6 +73,12 @@ class DetailViewModel(app: Application, private val contentId: Long) : AndroidVi
                 }
             }
         }
+    }
+
+    fun toggleFavorite() {
+        val isSeries = _uiState.value.title?.isSeries ?: return
+        val contentType = if (isSeries) ContentType.SERIES else ContentType.MOVIE
+        viewModelScope.launch { favoritesRepository.toggleVod(contentId, contentType) }
     }
 
     companion object {

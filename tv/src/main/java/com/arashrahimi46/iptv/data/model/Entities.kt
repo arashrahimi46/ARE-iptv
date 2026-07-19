@@ -92,7 +92,12 @@ data class EPGProgram(
     val description: String? = null,
 )
 
-/** A favorited channel or VOD title. Schema stub -- not populated/wired to UI in this phase. */
+/**
+ * A favorited channel or VOD title, keyed by exactly one of [channelId]/[vodTitleId]
+ * (globally-unique ids, mirroring [Channel]/[VodTitle] lookup elsewhere in the app --
+ * no [Favorite.contentType] + id compound key is needed for uniqueness, only for
+ * Favorites-tab classification). Populated via [com.arashrahimi46.iptv.data.repository.FavoritesRepository].
+ */
 @Entity(tableName = "favorites")
 data class Favorite(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

@@ -5,17 +5,22 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class MoviesCategorySummary(val name: String, val count: Int)
 
@@ -44,6 +49,10 @@ data class MoviesUiState(
 class MoviesViewModel(app: Application) : AndroidViewModel(app) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
     private val settings = UserSettings(app)
+    private val favoritesRepository = FavoritesRepository(app)
+
+    val favoriteVodIds: StateFlow<Set<Long>> = favoritesRepository.favoriteVodIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     private val _uiState = MutableStateFlow(MoviesUiState())
     val uiState: StateFlow<MoviesUiState> = _uiState.asStateFlow()
@@ -77,6 +86,10 @@ class MoviesViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectCategory(index: Int) {
         _uiState.value = _uiState.value.copy(selectedCategoryIndex = index)
+    }
+
+    fun toggleFavorite(vodTitleId: Long) {
+        viewModelScope.launch { favoritesRepository.toggleVod(vodTitleId, ContentType.MOVIE) }
     }
 
     companion object {

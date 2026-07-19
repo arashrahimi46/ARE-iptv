@@ -27,6 +27,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         factory = SeriesViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
     val colors = AreIptvTheme.colors
 
     if (!state.hasSource) {
@@ -59,6 +60,8 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
             onClick = { onSeriesSelected(show) },
             meta = listOfNotNull(show.year, show.categoryName).joinToString(" · ").ifEmpty { null },
             rating = show.rating,
+            isFavorite = show.id in favoriteVodIds,
+            onToggleFavorite = { viewModel.toggleFavorite(show.id) },
         )
     }
 }

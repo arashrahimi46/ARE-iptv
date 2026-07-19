@@ -15,6 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,6 +51,9 @@ fun AreChannelTile(
     codec: String? = null,
     catchup: Boolean = false,
     width: Dp = AreIptvTheme.spacing.tileLandWidth,
+    /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
+    isFavorite: Boolean? = null,
+    onToggleFavorite: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -106,6 +112,16 @@ fun AreChannelTile(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                }
+                if (onToggleFavorite != null) {
+                    AreIconButton(
+                        icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                        onClick = onToggleFavorite,
+                        variant = AreIconButtonVariant.Glass,
+                        size = AreIconButtonSize.Small,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                    )
                 }
             }
             // info panel

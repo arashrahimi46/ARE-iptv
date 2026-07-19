@@ -33,6 +33,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         factory = LiveViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
     val colors = AreIptvTheme.colors
 
     if (!state.hasSource) {
@@ -72,6 +73,8 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             onClick = { onChannelSelected(channel.id) },
             number = channel.number,
             now = channel.categoryName,
+            isFavorite = channel.id in favoriteChannelIds,
+            onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
         )
     }
 }

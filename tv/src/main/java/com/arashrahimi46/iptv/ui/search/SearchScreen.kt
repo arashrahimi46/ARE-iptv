@@ -43,6 +43,8 @@ fun SearchScreen(
         factory = SearchViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
+    val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
 
@@ -92,7 +94,14 @@ fun SearchScreen(
                         Box(Modifier.padding(top = 12.dp, bottom = 22.dp)) {
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                                 state.channelResults.forEach { channel ->
-                                    AreChannelTile(channel = channel.name, onClick = { onChannelSelected(channel) }, number = channel.number, now = channel.categoryName)
+                                    AreChannelTile(
+                                        channel = channel.name,
+                                        onClick = { onChannelSelected(channel) },
+                                        number = channel.number,
+                                        now = channel.categoryName,
+                                        isFavorite = channel.id in favoriteChannelIds,
+                                        onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
+                                    )
                                 }
                             }
                         }
@@ -107,6 +116,8 @@ fun SearchScreen(
                                         onClick = { onTitleSelected(title) },
                                         meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
                                         rating = title.rating,
+                                        isFavorite = title.id in favoriteVodIds,
+                                        onToggleFavorite = { viewModel.toggleVodFavorite(title) },
                                     )
                                 }
                             }

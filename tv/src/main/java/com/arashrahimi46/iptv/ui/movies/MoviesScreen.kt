@@ -27,6 +27,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         factory = MoviesViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
     val colors = AreIptvTheme.colors
 
     if (!state.hasSource) {
@@ -59,6 +60,8 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             onClick = { onMovieSelected(movie) },
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,
+            isFavorite = movie.id in favoriteVodIds,
+            onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.navigation.navArgument
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.detail.DetailScreen
 import com.arashrahimi46.iptv.ui.detail.PlayTarget
+import com.arashrahimi46.iptv.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
 import com.arashrahimi46.iptv.ui.live.LiveScreen
@@ -26,6 +27,7 @@ import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
 import com.arashrahimi46.iptv.ui.player.PlaybackSource
 import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
+import com.arashrahimi46.iptv.ui.settings.SettingsScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -34,9 +36,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AreIptvTheme {
-                AreIptvApp()
-            }
+            AreIptvApp()
         }
     }
 }
@@ -56,6 +56,11 @@ fun AreIptvApp() {
     val context = LocalContext.current
     val settings = remember { UserSettings(context) }
     val activeSourceId by settings.activeSourceId.collectAsState(initial = UNKNOWN)
+    // Real wiring of the Settings screen's theme/reduced-motion toggles: this is the single
+    // composition root wrapping the whole NavHost in AreIptvTheme, so a change from
+    // SettingsScreen recomposes here immediately -- no restart, no separate "apply" step.
+    val isDarkTheme by settings.isDarkTheme.collectAsState(initial = true)
+    val isReducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     val navController = rememberNavController()
 
     // Wait for the first real read from DataStore before deciding the start
@@ -68,6 +73,7 @@ fun AreIptvApp() {
         navController.navigate("detail/$contentType/$contentId")
     }
 
+    AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("onboarding") {
             OnboardingFlow(onFinished = {
@@ -152,6 +158,20 @@ fun AreIptvApp() {
                 },
             )
         }
+        composable("favorites") {
+            ShellScreen(navController, activeNav = "favorites") {
+                FavoritesScreen(
+                    onChannelSelected = { channelId -> navController.navigate("player/$channelId") },
+                    onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
+                )
+            }
+        }
+        composable("settings") {
+            ShellScreen(navController, activeNav = "settings") {
+                SettingsScreen()
+            }
+        }
+    }
     }
 }
 
@@ -187,8 +207,8 @@ private fun ShellScreen(navController: NavHostController, activeNav: String, con
     }
 }
 
-/** Routes that actually exist in the NavHost -- other sidebar items (Favorites/Settings) are inert until later phases. */
-private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "search")
+/** Routes that actually exist in the NavHost. */
+private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "search", "favorites", "settings")
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L

@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -46,6 +48,9 @@ fun ArePosterTile(
     progress: Float? = null,
     width: androidx.compose.ui.unit.Dp = AreIptvTheme.spacing.tilePosterWidth,
     badges: @Composable (() -> Unit)? = null,
+    /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
+    isFavorite: Boolean? = null,
+    onToggleFavorite: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -108,6 +113,16 @@ fun ArePosterTile(
                                 .background(colors.accent),
                         )
                     }
+                }
+                if (onToggleFavorite != null) {
+                    AreIconButton(
+                        icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                        onClick = onToggleFavorite,
+                        variant = AreIconButtonVariant.Glass,
+                        size = AreIconButtonSize.Small,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                    )
                 }
             }
         }

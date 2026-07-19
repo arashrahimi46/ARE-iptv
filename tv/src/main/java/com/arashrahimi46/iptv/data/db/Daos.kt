@@ -10,6 +10,7 @@ import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.EPGProgram
+import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
@@ -121,4 +122,35 @@ interface SeriesEpisodeDao {
 
     @Query("SELECT * FROM series_episodes WHERE id = :episodeId LIMIT 1")
     suspend fun getById(episodeId: Long): SeriesEpisode?
+}
+
+/**
+ * Real favorites persistence (Phase 4) -- see [com.arashrahimi46.iptv.data.repository.FavoritesRepository]
+ * for the toggle/query surface consumed by the UI layer.
+ */
+@Dao
+interface FavoriteDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(favorite: Favorite): Long
+
+    @Query("DELETE FROM favorites WHERE channelId = :channelId")
+    suspend fun deleteByChannel(channelId: Long)
+
+    @Query("DELETE FROM favorites WHERE vodTitleId = :vodTitleId")
+    suspend fun deleteByVod(vodTitleId: Long)
+
+    @Query("SELECT COUNT(*) FROM favorites WHERE channelId = :channelId")
+    suspend fun countByChannel(channelId: Long): Int
+
+    @Query("SELECT COUNT(*) FROM favorites WHERE vodTitleId = :vodTitleId")
+    suspend fun countByVod(vodTitleId: Long): Int
+
+    @Query("SELECT * FROM favorites ORDER BY addedAtMs DESC")
+    fun observeAll(): Flow<List<Favorite>>
+
+    @Query("SELECT channelId FROM favorites WHERE channelId IS NOT NULL")
+    fun observeFavoriteChannelIds(): Flow<List<Long>>
+
+    @Query("SELECT vodTitleId FROM favorites WHERE vodTitleId IS NOT NULL")
+    fun observeFavoriteVodIds(): Flow<List<Long>>
 }

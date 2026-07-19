@@ -42,11 +42,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.ArePlayerControls
@@ -72,6 +74,8 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
         factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, source),
     )
     val state by viewModel.uiState.collectAsState()
+    val settings = remember { UserSettings(context) }
+    val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
 
     BackHandler(onBack = onBack)
 
@@ -95,8 +99,21 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
             // release() call site as backgrounding, just triggered by a different key change.
             var retryCount by remember { mutableStateOf(0) }
 
-            val exoPlayer = remember(media.streamUrl, retryCount) {
-                ExoPlayer.Builder(context).build().apply {
+            val exoPlayer = remember(media.streamUrl, retryCount, hardwareDecoding) {
+                // Real wiring of the Settings "Hardware decoding" preference -- a player
+                // configuration flag only, not new playback-surface work. ON (default) keeps
+                // Media3's default platform-decoder-only behavior (EXTENSION_RENDERER_MODE_OFF);
+                // OFF additionally allows software/extension decoders as a compatibility
+                // fallback (EXTENSION_RENDERER_MODE_ON) for streams the platform decoder can't
+                // handle, at the cost of more CPU/battery use.
+                val renderersFactory = DefaultRenderersFactory(context).apply {
+                    setExtensionRendererMode(
+                        if (hardwareDecoding) DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF
+                        else DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON,
+                    )
+                    setEnableDecoderFallback(true)
+                }
+                ExoPlayer.Builder(context, renderersFactory).build().apply {
                     // No hardcoded "HLS-only" assumption -- Media3's DefaultMediaSourceFactory
                     // (used implicitly by setMediaItem/prepare) inspects the URI to pick
                     // HlsMediaSource for .m3u8 (media3-exoplayer-hls is on the classpath)

@@ -6,16 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class LiveCategorySummary(val name: String, val count: Int)
 
@@ -44,6 +48,11 @@ data class LiveUiState(
 class LiveViewModel(app: Application) : AndroidViewModel(app) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
     private val settings = UserSettings(app)
+    private val favoritesRepository = FavoritesRepository(app)
+
+    /** Real-time favorited-channel-id membership, driving each [com.arashrahimi46.iptv.ui.components.AreChannelTile]'s heart icon. */
+    val favoriteChannelIds: StateFlow<Set<Long>> = favoritesRepository.favoriteChannelIds
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     private val _uiState = MutableStateFlow(LiveUiState())
     val uiState: StateFlow<LiveUiState> = _uiState.asStateFlow()
@@ -77,6 +86,10 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectCategory(index: Int) {
         _uiState.value = _uiState.value.copy(selectedCategoryIndex = index)
+    }
+
+    fun toggleFavorite(channelId: Long) {
+        viewModelScope.launch { favoritesRepository.toggleChannel(channelId) }
     }
 
     companion object {
