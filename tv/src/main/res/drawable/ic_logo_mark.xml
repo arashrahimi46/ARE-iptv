@@ -5,7 +5,7 @@
     android:viewportHeight="96">
     <!--
       Hand-ported from are-iptv-design-system/project/assets/logo-mark.svg
-      (the design system's real logo mark) -- Android has no native SVG
+      (the design system's real logo mark). Android has no native SVG
       renderer, so this VectorDrawable mirrors its shapes/colors/opacities
       1:1: rounded-square backplate + border, the "play" triangle, and the
       two signal-wave arcs.
