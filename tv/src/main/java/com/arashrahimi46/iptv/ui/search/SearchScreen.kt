@@ -81,7 +81,14 @@ fun SearchScreen(
         Box(Modifier.padding(top = spacing.sp6))
 
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
-            Column(modifier = Modifier.width(420.dp)) {
+            // QA MEDIUM defect: L, O, P appeared "missing" from the keyboard -- they're
+            // exactly the trailing keys of the two widest rows (QWERTYUIOP is 10 keys x
+            // 48dp + 9 gaps x 8dp = 552dp; ASDFGHJKL is 496dp), both wider than this
+            // column's old fixed 420dp -- the results Column to the right, drawn after,
+            // painted over the overflowing keys rather than an actual data/layout bug in
+            // AreOnScreenKeyboard itself (all 26 letters are really in DefaultKeyboardRows).
+            // 560dp gives the widest row (552dp) real room.
+            Column(modifier = Modifier.width(560.dp)) {
                 AreTextField(
                     value = state.query,
                     onValueChange = viewModel::setQuery,
@@ -99,8 +106,12 @@ fun SearchScreen(
 
             Column(modifier = Modifier.weight(1f)) {
                 // Search.jsx's scope chips (All / Live TV / Movies / Series) -- Catch-up
-                // omitted, an accepted v1 scope cut (see product-lead ruling).
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // omitted, an accepted v1 scope cut (see product-lead ruling). QA MEDIUM defect:
+                // a plain Row here doesn't reflow, so when the sidebar auto-expands (104->280dp)
+                // and steals width from this weight(1f) column, the trailing chips get pushed
+                // past the physical screen edge and clip almost entirely out of view -- FlowRow
+                // (already used for the results below) wraps them to a second line instead.
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ScopeChip("All", SearchScope.All, state.scope, viewModel::setScope)
                     ScopeChip("Live TV", SearchScope.LiveTv, state.scope, viewModel::setScope)
                     ScopeChip("Movies", SearchScope.Movies, state.scope, viewModel::setScope)
