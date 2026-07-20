@@ -43,7 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -119,28 +119,49 @@ fun LivePlayerScreen(
         }
     }
 
-    BackHandler(onBack = handleBack)
-
-    // QA MAJOR finding: "no in-player channel switcher". Channel-up/down on the D-pad is the
-    // real remote convention for this, and doesn't collide with the transport HUD's Left/Right
-    // button navigation (the HUD row has nothing above/below it to focus into) -- so this Box
-    // grabs initial focus and claims Up/Down itself; every other key still falls through to
-    // Compose's default focus-move into the HUD buttons. No-ops via switchChannel for
-    // VOD/episode playback or a single-channel catalog.
+    // The full-screen Box grabs initial focus and owns the player D-pad model.
     val channelSwitchFocusRequester = remember { FocusRequester() }
+    val hudFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { channelSwitchFocusRequester.requestFocus() }
 
-    // Transport HUD auto-hides after a few seconds of no D-pad input; any key press
-    // brings it back. interactionTick resets the timer on each press; when the HUD
-    // hides, focus returns to this full-screen surface so the D-pad still works.
+    // Player D-pad model:
+    //  - panel CLOSED: Up/Down = prev/next channel; OK/Left/Right = open the control
+    //    panel (focus moves inside); Back = leave the player.
+    //  - panel OPEN: Left/Right/OK operate the controls; Up/Down still switch channel
+    //    (they bubble up from the single control row); Back closes the panel.
+    // On a channel switch the panel also "flashes" info then auto-hides, but only while
+    // focus is still on the video (panelFocused == false) -- never while the user is
+    // actively navigating inside it.
     var controlsVisible by remember { mutableStateOf(true) }
+    var panelFocused by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableStateOf(0) }
-    LaunchedEffect(interactionTick) {
-        delay(4500)
-        controlsVisible = false
+    LaunchedEffect(interactionTick, controlsVisible, panelFocused) {
+        if (controlsVisible && !panelFocused) {
+            delay(3500)
+            controlsVisible = false
+        }
     }
     LaunchedEffect(controlsVisible) {
-        if (!controlsVisible) channelSwitchFocusRequester.requestFocus()
+        if (!controlsVisible) {
+            panelFocused = false
+            channelSwitchFocusRequester.requestFocus()
+        }
+    }
+    LaunchedEffect(panelFocused) {
+        if (panelFocused) {
+            controlsVisible = true
+            delay(50)
+            runCatching { hudFocusRequester.requestFocus() }
+        }
+    }
+
+    // Back closes the open panel first; only then does it leave the player.
+    BackHandler {
+        if (panelFocused) {
+            controlsVisible = false
+        } else {
+            handleBack()
+        }
     }
 
     Box(
@@ -149,21 +170,37 @@ fun LivePlayerScreen(
             .background(Color.Black)
             .focusRequester(channelSwitchFocusRequester)
             .focusable()
-            .onKeyEvent { keyEvent ->
+            // onPreviewKeyEvent (not onKeyEvent) so Up/Down are intercepted on the way
+            // DOWN, before the focus system can consume them to move focus -- otherwise
+            // Up/Down with a control focused just moves focus (or escapes the player)
+            // instead of switching channel.
+            .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {
-                    val wasHidden = !controlsVisible
-                    controlsVisible = true
-                    interactionTick++
-                    when {
-                        // First press just reveals the controls -- don't also act on it.
-                        wasHidden -> true
-                        keyEvent.key == Key.DirectionUp -> {
+                    when (keyEvent.key) {
+                        // Up/Down always switch channel and flash the panel's channel info.
+                        Key.DirectionUp -> {
                             viewModel.switchChannel(1)
+                            controlsVisible = true
+                            interactionTick++
                             true
                         }
-                        keyEvent.key == Key.DirectionDown -> {
+                        Key.DirectionDown -> {
                             viewModel.switchChannel(-1)
+                            controlsVisible = true
+                            interactionTick++
                             true
+                        }
+                        // OK/Left/Right open the panel and move focus into it. Once it's open
+                        // (panelFocused) these fall through to the focused control instead.
+                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter,
+                        Key.DirectionLeft, Key.DirectionRight -> {
+                            if (!panelFocused) {
+                                panelFocused = true
+                                interactionTick++
+                                true
+                            } else {
+                                false
+                            }
                         }
                         else -> false
                     }
@@ -398,6 +435,7 @@ fun LivePlayerScreen(
                         onJumpToLive = { exoPlayer.seekToDefaultPosition() },
                         onOpenGuide = onOpenGuide,
                         onMultiView = onMultiView,
+                        playPauseFocusRequester = hudFocusRequester,
                     )
                 }
                 }

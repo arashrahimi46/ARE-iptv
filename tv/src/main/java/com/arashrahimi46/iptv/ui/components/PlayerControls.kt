@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +61,9 @@ fun ArePlayerControls(
     onJumpToLive: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
     onMultiView: () -> Unit = {},
+    // When set, the play/pause button carries this requester so the screen can move
+    // focus straight onto it when the panel is opened.
+    playPauseFocusRequester: FocusRequester? = null,
 ) {
     val colors = AreIptvTheme.colors
 
@@ -132,6 +137,7 @@ fun ArePlayerControls(
                 variant = AreIconButtonVariant.Glass,
                 size = AreIconButtonSize.Large,
                 active = true,
+                modifier = if (playPauseFocusRequester != null) Modifier.focusRequester(playPauseFocusRequester) else Modifier,
             )
             AreIconButton(Icons.Filled.FastForward, "Fast forward", onClick = onFastForward, variant = AreIconButtonVariant.Glass)
             Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
