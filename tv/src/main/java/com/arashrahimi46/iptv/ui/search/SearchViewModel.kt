@@ -42,8 +42,9 @@ data class SearchUiState(
 /**
  * Local-only search (no ranking backend, no external service, per spec):
  * substring match over the already-loaded [Channel]/[VodTitle] catalog in
- * Room for the active source. Query text is driven by [AreOnScreenKeyboard]
- * button presses (append/backspace), not hardware-keyboard IME input.
+ * Room for the active source. Query text comes from [setQuery], driven by
+ * Android TV's native IME via [com.arashrahimi46.iptv.ui.components.AreTextField]
+ * (issue #10 -- no custom on-screen keyboard).
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SearchViewModel(app: Application) : AndroidViewModel(app) {
@@ -100,22 +101,6 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
             .filter { it.name.contains(trimmed, ignoreCase = true) }
             .take(30)
         return SearchUiState(hasSource = true, query = query, scope = scope, channelResults = channelResults, titleResults = titleResults)
-    }
-
-    fun appendCharacter(char: Char) {
-        _query.value += char
-    }
-
-    fun appendSpace() {
-        _query.value += " "
-    }
-
-    fun backspace() {
-        _query.value = _query.value.dropLast(1)
-    }
-
-    fun clear() {
-        _query.value = ""
     }
 
     fun setQuery(value: String) {
