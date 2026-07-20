@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
@@ -135,12 +137,30 @@ fun ArePlayerControls(
             Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
             AreIconButton(Icons.Filled.SkipNext, "Jump to live", onClick = onJumpToLive, variant = AreIconButtonVariant.Glass)
             Box(Modifier.weight(1f))
-            AreIconButton(Icons.Filled.VolumeUp, "Audio track", onClick = {}, variant = AreIconButtonVariant.Glass)
-            AreIconButton(Icons.Filled.ClosedCaption, "Subtitles", onClick = {}, variant = AreIconButtonVariant.Glass)
+            // Audio track / subtitle track selection need a real track-selector UI (which
+            // ExoPlayer track group to expose, how to present it) -- a product decision to make
+            // before building, not something to fake. Picture-in-picture is an existing, accepted
+            // v1 scope cut (see LivePlayerScreen's PiP comment). All three were focusable no-ops
+            // before this fix -- a silent dead-focus-trap, the same defect class QA found on the
+            // avatar icon and the "+" Add Playlist glyph -- so all three render as static, dimmed,
+            // non-focusable glyphs until built for real, same treatment as Add Playlist.
+            StaticGlyph(Icons.Filled.VolumeUp, "Audio track")
+            StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
             AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Glass)
-            AreIconButton(Icons.Filled.PictureInPicture, "Picture in picture", onClick = {}, variant = AreIconButtonVariant.Glass)
+            StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
             AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
         }
+    }
+}
+
+/** A dimmed, non-interactive glyph -- same footprint as [AreIconButton] but deliberately outside
+ * the focus chain, for HUD actions not built yet (see call sites' comments for why). */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun StaticGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, contentDescription: String) {
+    val colors = AreIptvTheme.colors
+    Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = contentDescription, tint = colors.textTertiary, modifier = Modifier.size(24.dp))
     }
 }
 
