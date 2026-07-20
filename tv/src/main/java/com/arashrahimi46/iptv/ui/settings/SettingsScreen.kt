@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -233,8 +234,12 @@ private fun SettingsSection(title: String, content: @Composable () -> Unit) {
 @Composable
 private fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, control: @Composable () -> Unit) {
     val colors = AreIptvTheme.colors
+    // QA MEDIUM defect (PIN row wrapping one-char-per-line): this Row had no fillMaxWidth,
+    // so it sized to wrap-content and the label Column's weight(1f) had no real remaining
+    // space to expand into -- every row was affected, the AreButton control (PIN) just made
+    // it most visible. fillMaxWidth is the real fix, not a per-row special case.
     Row(
-        modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
