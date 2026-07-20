@@ -79,9 +79,20 @@ fun AreButton(
         backgroundColor = if (disabled) background.copy(alpha = 0.4f) else background,
         enabled = !disabled,
     ) { _, _ ->
+        // QA regression root cause (onboarding Continue engulfed by Skip's hit-region, Settings
+        // PIN row squeezed to near-zero): this Row unconditionally called .fillMaxWidth(),
+        // which measures with the OUTER Box's loosened min-width-0-but-max-width-unchanged
+        // constraint from wrapContentWidth() above and greedily fills it -- defeating
+        // wrapContentWidth() entirely for every full=false button (every AreButton call site
+        // that doesn't pass full=true). The outer Box then reports THAT large size to its own
+        // parent Row, so a "Skip for now"/"Change PIN" button's real clickable bounds became
+        // however much slack was available in the parent Row, not its own label's intrinsic
+        // size -- exactly the reported "one button's tap region covers a sibling" defect class.
+        // fillMaxWidth only makes sense here when the outer Box is ALSO deliberately full-width
+        // (full=true), so centering the icon/text within that intentional full width does
+        // something; otherwise this Row must be free to report its own intrinsic size.
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = (if (full) Modifier.fillMaxWidth() else Modifier)
                 .padding(horizontal = spec.paddingH),
             horizontalArrangement = Arrangement.spacedBy(spec.gap, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
