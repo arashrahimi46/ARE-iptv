@@ -6,10 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.repository.EpgRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /** ExoPlayer-facing player state, driven by [androidx.media3.common.Player.Listener] callbacks in the screen. */
@@ -30,6 +34,9 @@ sealed class PlaybackSource {
 
 /** Normalized playable content -- whichever [PlaybackSource] resolved it, the screen only sees this. */
 data class PlayableMedia(val title: String, val subtitle: String?, val streamUrl: String, val isLive: Boolean)
+
+/** One upcoming/now-playing programme for the currently-playing channel's mini up-next panel. */
+data class UpNextProgram(val title: String, val startMs: Long, val endMs: Long, val isNow: Boolean)
 
 data class LivePlayerUiState(
     val media: PlayableMedia? = null,
@@ -57,11 +64,38 @@ data class LivePlayerUiState(
 class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : AndroidViewModel(app) {
     private val db = AppDatabase.get(app)
 
+    // Reuses the same EpgRepository/Room data the Guide screen renders, rather than a second
+    // EPG-fetching path -- the mini up-next panel is just a narrower view (one channel, ordered
+    // list) over the same [com.arashrahimi46.iptv.data.model.EPGProgram] rows.
+    private val epgRepository = EpgRepository(app)
+
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
 
+    private val _upNext = MutableStateFlow<List<UpNextProgram>>(emptyList())
+    val upNext: StateFlow<List<UpNextProgram>> = _upNext.asStateFlow()
+
     init {
         loadMedia(initialSource)
+        observeUpNext()
+    }
+
+    /** Re-queries the up-next list whenever the playing channel changes (initial load or [switchChannel]). */
+    private fun observeUpNext() {
+        viewModelScope.launch {
+            _uiState.map { it.currentChannelId }.distinctUntilChanged().collectLatest { channelId ->
+                if (channelId == null) {
+                    _upNext.value = emptyList()
+                    return@collectLatest
+                }
+                val nowMs = System.currentTimeMillis()
+                epgRepository.observeForChannels(listOf(channelId), nowMs, nowMs + 6 * 3_600_000L).collectLatest { programs ->
+                    _upNext.value = programs
+                        .sortedBy { it.startMs }
+                        .map { p -> UpNextProgram(title = p.title, startMs = p.startMs, endMs = p.endMs, isNow = nowMs in p.startMs until p.endMs) }
+                }
+            }
+        }
     }
 
     private fun loadMedia(source: PlaybackSource) {

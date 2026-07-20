@@ -5,6 +5,7 @@ import org.xmlpull.v1.XmlPullParser
 import java.io.StringReader
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 
 /** One `<programme>` entry from an XMLTV document, keyed by the XMLTV `channel` id (matches [com.arashrahimi46.iptv.data.model.Channel.tvgId]). */
 data class XmlTvProgramme(
@@ -22,10 +23,15 @@ data class XmlTvProgramme(
  * [XmlPullParser] rather than a third-party XML library.
  */
 object XmlTvParser {
-    // XMLTV datetime: "20240115193000 +0000" (offset optional).
+    // XMLTV datetime: "20240115193000 +0000" (offset optional). Per the XMLTV spec, a
+    // datetime with no offset is UTC -- NOT the parsing device's local time -- so each
+    // pattern is paired with the [TimeZone] SimpleDateFormat should assume when the string
+    // itself carries no zone info ("yyyyMMddHHmmss Z"'s literal " +0000"/etc always wins;
+    // the device default here previously silently shifted every no-offset programme by the
+    // device's UTC offset, corrupting both display time and window filtering -- see report).
     private val formats = listOf(
-        "yyyyMMddHHmmss Z",
-        "yyyyMMddHHmmss",
+        "yyyyMMddHHmmss Z" to null,
+        "yyyyMMddHHmmss" to TimeZone.getTimeZone("UTC"),
     )
 
     fun parse(xml: String): List<XmlTvProgramme> {
@@ -83,9 +89,11 @@ object XmlTvParser {
 
     private fun parseXmlTvTime(raw: String?): Long? {
         if (raw.isNullOrBlank()) return null
-        for (pattern in formats) {
+        for ((pattern, fallbackZone) in formats) {
             val parsed = runCatching {
-                SimpleDateFormat(pattern, Locale.US).parse(raw.trim())
+                val sdf = SimpleDateFormat(pattern, Locale.US)
+                if (fallbackZone != null) sdf.timeZone = fallbackZone
+                sdf.parse(raw.trim())
             }.getOrNull()
             if (parsed != null) return parsed.time
         }

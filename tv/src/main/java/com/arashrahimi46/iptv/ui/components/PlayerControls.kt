@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
@@ -60,6 +61,7 @@ fun ArePlayerControls(
     onFastForward: () -> Unit = {},
     onJumpToLive: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
+    onUpNext: () -> Unit = {},
     onMultiView: () -> Unit = {},
     // When set, the play/pause button carries this requester so the screen can move
     // focus straight onto it when the panel is opened.
@@ -154,6 +156,9 @@ fun ArePlayerControls(
             StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
             AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Glass)
             StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+            // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
+            // guide" below (which leaves the player for the full multi-channel TV Guide).
+            AreIconButton(Icons.Filled.Schedule, "Up next", onClick = onUpNext, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
         }
     }

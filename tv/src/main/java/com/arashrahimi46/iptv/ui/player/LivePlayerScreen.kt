@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -49,6 +50,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -64,6 +67,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.ArePlayerControls
@@ -72,6 +76,9 @@ import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import kotlinx.coroutines.delay
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
@@ -97,6 +104,8 @@ fun LivePlayerScreen(
         factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, source),
     )
     val state by viewModel.uiState.collectAsState()
+    val upNext by viewModel.upNext.collectAsState()
+    var showUpNext by remember { mutableStateOf(false) }
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
 
@@ -434,10 +443,64 @@ fun LivePlayerScreen(
                         // button is meant for.
                         onJumpToLive = { exoPlayer.seekToDefaultPosition() },
                         onOpenGuide = onOpenGuide,
+                        onUpNext = { showUpNext = true },
                         onMultiView = onMultiView,
                         playPauseFocusRequester = hudFocusRequester,
                     )
                 }
+                }
+            }
+        }
+    }
+
+    if (showUpNext) {
+        UpNextDialog(
+            channelTitle = state.media?.title,
+            programs = upNext,
+            onDismiss = { showUpNext = false },
+        )
+    }
+}
+
+/**
+ * Mini "up next" EPG panel for the channel currently playing -- reuses [LivePlayerViewModel.upNext]
+ * (itself backed by the same [com.arashrahimi46.iptv.data.repository.EpgRepository]/Room data the
+ * full TV Guide renders) rather than a second EPG query path. Rendered in a real Dialog window
+ * (same pattern as the shell's exit-confirm dialog) so it traps D-pad focus and Back dismisses it.
+ */
+@Composable
+private fun UpNextDialog(channelTitle: String?, programs: List<UpNextProgram>, onDismiss: () -> Unit) {
+    val colors = AreIptvTheme.colors
+    val zone = ZoneId.systemDefault()
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        AreDialog(onDismiss = onDismiss, title = channelTitle?.let { "Up next -- $it" } ?: "Up next") {
+            if (programs.isEmpty()) {
+                Text(text = "No programme data", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+            } else {
+                Column {
+                    programs.forEach { program ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Text(
+                                text = Instant.ofEpochMilli(program.startMs).atZone(zone).format(timeFormatter),
+                                style = AreIptvTheme.typography.mono,
+                                color = if (program.isNow) colors.accentHover else colors.textTertiary,
+                            )
+                            Text(
+                                text = program.title,
+                                style = AreIptvTheme.typography.body,
+                                color = colors.textPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
                 }
             }
         }

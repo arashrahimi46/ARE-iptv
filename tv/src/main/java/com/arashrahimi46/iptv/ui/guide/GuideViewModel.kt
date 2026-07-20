@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -80,6 +81,11 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
     private var epgRefreshedForSource: Long? = null
 
     init {
+        // Restore the last-selected category filter (persisted in [UserSettings]) so
+        // reopening the Guide keeps the user's chosen channel group instead of resetting to "All".
+        viewModelScope.launch {
+            _selectedGroup.value = settings.guideSelectedCategory.first()
+        }
         viewModelScope.launch {
             settings.activeSourceId.collectLatest { sourceId ->
                 if (sourceId == null) {
@@ -108,6 +114,9 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
 
     private suspend fun observeRows(channels: List<Channel>) {
         val groups = listOf("All") + channels.mapNotNull { it.categoryName }.distinct().sorted()
+        // A restored/previously-picked group that doesn't exist on this source (e.g. the user
+        // switched playlists) would otherwise filter every channel out silently -- fall back to "All".
+        if (_selectedGroup.value !in groups) _selectedGroup.value = "All"
 
         combine(_day, _selectedGroup) { day, group -> day to group }
             .flatMapLatest { (day, group) ->
@@ -170,6 +179,7 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectGroup(group: String) {
         _selectedGroup.value = group
+        viewModelScope.launch { settings.setGuideSelectedCategory(group) }
     }
 
     fun setFocused(info: GuideFocusedInfo?) {

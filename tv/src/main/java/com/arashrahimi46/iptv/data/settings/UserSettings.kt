@@ -31,6 +31,7 @@ class UserSettings(private val context: Context) {
         val PARENTAL_LOCK_ENABLED = booleanPreferencesKey("parental_lock_enabled")
         val PARENTAL_PIN_HASH = stringPreferencesKey("parental_pin_hash")
         val PARENTAL_PIN_SALT = stringPreferencesKey("parental_pin_salt")
+        val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
     }
 
     val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
@@ -68,6 +69,9 @@ class UserSettings(private val context: Context) {
     /** Salted SHA-256 hash -- never the raw PIN. Null when no PIN has been set yet. */
     val parentalPinHash: Flow<String?> = context.dataStore.data.map { it[Keys.PARENTAL_PIN_HASH] }
     val parentalPinSalt: Flow<String?> = context.dataStore.data.map { it[Keys.PARENTAL_PIN_SALT] }
+
+    /** Last channel-group filter picked on the Guide screen (see [com.arashrahimi46.iptv.ui.guide.GuideViewModel]); "All" when unset. */
+    val guideSelectedCategory: Flow<String> = context.dataStore.data.map { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
 
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
@@ -114,5 +118,9 @@ class UserSettings(private val context: Context) {
             it.remove(Keys.PARENTAL_PIN_HASH)
             it.remove(Keys.PARENTAL_PIN_SALT)
         }
+    }
+
+    suspend fun setGuideSelectedCategory(category: String) {
+        context.dataStore.edit { it[Keys.GUIDE_SELECTED_CATEGORY] = category }
     }
 }
