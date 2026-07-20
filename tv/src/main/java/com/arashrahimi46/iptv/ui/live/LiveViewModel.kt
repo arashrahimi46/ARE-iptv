@@ -57,6 +57,16 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
     private val _uiState = MutableStateFlow(LiveUiState())
     val uiState: StateFlow<LiveUiState> = _uiState.asStateFlow()
 
+    /**
+     * Source of truth for category restoration across navigation (e.g. Live -> player -> back):
+     * tracked by NAME rather than raw index so a rebuilt [LiveUiState.categories] list (possibly
+     * reordered) still resolves back to the exact same category, not just "whatever was at that
+     * position". Session-only (this ViewModel is scoped to the "live" nav back stack entry and
+     * survives the round trip through the player screen the same way [PlaylistRepository]'s
+     * observed [Channel] list does) -- no disk persistence needed here.
+     */
+    private var selectedCategoryName: String = "All channels"
+
     init {
         settings.activeSourceId
             .flatMapLatest { sourceId ->
@@ -75,16 +85,19 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
         }
         val categories = listOf(LiveCategorySummary("All channels", channels.size)) +
             counts.map { (name, count) -> LiveCategorySummary(name, count) }
-        val previousSelection = _uiState.value.selectedCategoryIndex.coerceIn(0, categories.lastIndex.coerceAtLeast(0))
+        // Exact restoration by name; falls back to "All channels" if the previously-selected
+        // category no longer exists (e.g. the source changed).
+        val restoredIndex = categories.indexOfFirst { it.name == selectedCategoryName }.let { if (it >= 0) it else 0 }
         return LiveUiState(
             hasSource = true,
             allChannels = channels,
             categories = categories,
-            selectedCategoryIndex = previousSelection,
+            selectedCategoryIndex = restoredIndex,
         )
     }
 
     fun selectCategory(index: Int) {
+        _uiState.value.categories.getOrNull(index)?.let { selectedCategoryName = it.name }
         _uiState.value = _uiState.value.copy(selectedCategoryIndex = index)
     }
 
