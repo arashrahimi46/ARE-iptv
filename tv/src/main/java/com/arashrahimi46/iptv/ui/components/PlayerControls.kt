@@ -52,6 +52,7 @@ fun ArePlayerControls(
     total: String = "20:45",
     channelLogoInitials: String = "SKY",
     onPlayPause: () -> Unit = {},
+    onMultiView: () -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
 
@@ -132,7 +133,7 @@ fun ArePlayerControls(
             Box(Modifier.weight(1f))
             AreIconButton(Icons.Filled.VolumeUp, "Audio track", onClick = {}, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.ClosedCaption, "Subtitles", onClick = {}, variant = AreIconButtonVariant.Glass)
-            AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = {}, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.PictureInPicture, "Picture in picture", onClick = {}, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.GridView, "Open guide", onClick = {}, variant = AreIconButtonVariant.Glass)
         }

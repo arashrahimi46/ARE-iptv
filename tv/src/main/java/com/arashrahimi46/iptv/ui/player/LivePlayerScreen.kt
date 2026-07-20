@@ -68,7 +68,7 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
  * app-exit or the underlying screen.
  */
 @Composable
-fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modifier = Modifier, onMultiView: () -> Unit = {}) {
     val context = LocalContext.current
     val viewModel: LivePlayerViewModel = viewModel(
         factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, source),
@@ -223,6 +223,7 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
                         onPlayPause = {
                             if (playing) exoPlayer.pause() else exoPlayer.play()
                         },
+                        onMultiView = onMultiView,
                     )
                 }
             }

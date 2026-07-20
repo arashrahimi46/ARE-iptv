@@ -21,6 +21,7 @@ import com.arashrahimi46.iptv.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
 import com.arashrahimi46.iptv.ui.live.LiveScreen
+import com.arashrahimi46.iptv.ui.multiview.MultiViewScreen
 import com.arashrahimi46.iptv.ui.movies.MoviesScreen
 import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
 import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
@@ -123,21 +124,33 @@ fun AreIptvApp() {
             arguments = listOf(navArgument("channelId") { type = NavType.LongType }),
         ) { backStackEntry ->
             val channelId = backStackEntry.arguments?.getLong("channelId") ?: return@composable
-            LivePlayerScreen(source = PlaybackSource.Channel(channelId), onBack = { navController.popBackStack() })
+            LivePlayerScreen(
+                source = PlaybackSource.Channel(channelId),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+            )
         }
         composable(
             route = "player/vod/{vodTitleId}",
             arguments = listOf(navArgument("vodTitleId") { type = NavType.LongType }),
         ) { backStackEntry ->
             val vodTitleId = backStackEntry.arguments?.getLong("vodTitleId") ?: return@composable
-            LivePlayerScreen(source = PlaybackSource.Vod(vodTitleId), onBack = { navController.popBackStack() })
+            LivePlayerScreen(
+                source = PlaybackSource.Vod(vodTitleId),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+            )
         }
         composable(
             route = "player/episode/{episodeId}",
             arguments = listOf(navArgument("episodeId") { type = NavType.LongType }),
         ) { backStackEntry ->
             val episodeId = backStackEntry.arguments?.getLong("episodeId") ?: return@composable
-            LivePlayerScreen(source = PlaybackSource.Episode(episodeId), onBack = { navController.popBackStack() })
+            LivePlayerScreen(
+                source = PlaybackSource.Episode(episodeId),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+            )
         }
         composable(
             route = "detail/{contentType}/{contentId}",
@@ -157,6 +170,9 @@ fun AreIptvApp() {
                     }
                 },
             )
+        }
+        composable("multiview") {
+            MultiViewScreen(onBack = { navController.popBackStack() })
         }
         composable("favorites") {
             ShellScreen(navController, activeNav = "favorites") {
@@ -191,6 +207,7 @@ private fun ShellScreen(navController: NavHostController, activeNav: String, con
         },
         topBar = {
             AreTopBar(
+                onMultiView = { navController.navigate("multiview") },
                 onSearch = {
                     if (activeNav != "search") {
                         navController.navigate("search") {
