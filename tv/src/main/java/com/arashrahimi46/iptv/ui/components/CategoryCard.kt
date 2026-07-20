@@ -81,7 +81,7 @@ fun AreCategoryCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(12.dp)
+                    .padding(10.dp)
                     .size(if (compact) 30.dp else 36.dp)
                     .background(colors.accentWash, RoundedCornerShape(AreIptvTheme.radius.sm)),
                 contentAlignment = Alignment.Center,
@@ -96,7 +96,7 @@ fun AreCategoryCard(
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(horizontal = 14.dp)
+                    .padding(horizontal = 10.dp)
                     .padding(bottom = if (compact) 10.dp else 12.dp),
             ) {
                 Text(
