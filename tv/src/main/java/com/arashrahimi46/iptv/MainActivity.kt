@@ -36,6 +36,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.detail.DetailScreen
 import com.arashrahimi46.iptv.ui.detail.PlayTarget
@@ -87,6 +88,15 @@ fun AreIptvApp() {
     val context = LocalContext.current
     val settings = remember { UserSettings(context) }
     val activeSourceId by settings.activeSourceId.collectAsState(initial = UNKNOWN)
+    // Product decision: the startup picker (added so multiple saved sources are actually
+    // listed somewhere) is only worth showing when there's something to PICK BETWEEN. With
+    // exactly one saved source there's nothing to choose -- landing on a picker every cold
+    // start would be worse UX than the "existing sources were invisible" bug it fixes -- so
+    // that case skips straight to the shell, same as before this picker existed. `null`
+    // (not yet loaded) is treated like "unknown" below, same reasoning as activeSourceId/
+    // hasAcceptedTerms, so a real source count doesn't get raced by a default empty list.
+    val playlistRepository = remember { PlaylistRepositoryImpl(context) }
+    val sources by playlistRepository.observeSources().collectAsState(initial = null)
     // Real wiring of the Settings screen's theme/reduced-motion toggles: this is the single
     // composition root wrapping the whole NavHost in AreIptvTheme, so a change from
     // SettingsScreen recomposes here immediately -- no restart, no separate "apply" step.
@@ -109,17 +119,20 @@ fun AreIptvApp() {
         return
     }
 
-    // Wait for the first real read from DataStore before deciding the start
+    // Wait for the first real read from DataStore/Room before deciding the start
     // destination, so a source that already exists on launch doesn't flash Onboarding.
-    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null) return
+    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null || sources == null) return
+    val hasMultipleSources = (sources?.size ?: 0) > 1
 
-    // A non-null activeSourceId means at least one playlist has been added. Rather than
-    // jump straight into the shell, always land on the picker so the user can see and
-    // choose which added playlist to open (their existing sources were never listed before).
+    // A non-null activeSourceId means at least one playlist has been added. With more than
+    // one, land on the picker so the user can see and choose which added playlist to open
+    // (their existing sources were never listed before); with exactly one, there's nothing
+    // to pick between, so go straight to the shell as before.
     val startDestination = when {
         hasAcceptedTerms == false -> "privacy"
         activeSourceId == null -> "onboarding"
-        else -> "sources"
+        hasMultipleSources -> "sources"
+        else -> "shell"
     }
 
     AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
@@ -129,7 +142,12 @@ fun AreIptvApp() {
             PrivacyTermsStep(onAccepted = {
                 scope.launch {
                     settings.setTermsAccepted(true)
-                    navController.navigate(if (activeSourceId == null) "onboarding" else "sources") {
+                    val destination = when {
+                        activeSourceId == null -> "onboarding"
+                        hasMultipleSources -> "sources"
+                        else -> "shell"
+                    }
+                    navController.navigate(destination) {
                         popUpTo("privacy") { inclusive = true }
                     }
                 }
@@ -278,23 +296,30 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                     )
                 }
             }
+            // P0.2: live/guide/movies/series now use FullSizeTab, NOT ScrollableTab --
+            // BrowseLayout (Live/Movies/Series) and GuideScreen each own a real lazy
+            // layout internally (LazyVerticalGrid/LazyColumn) and need a genuine bounded
+            // height from their parent to be valid. ScrollableTab's verticalScroll is an
+            // unbounded-height container on the same (vertical) axis, which a lazy layout
+            // can't be measured inside ("infinite height" crash) -- these screens fill the
+            // available size themselves and scroll their own content instead.
             composable("live") {
-                ScrollableTab {
+                FullSizeTab {
                     LiveScreen(onChannelSelected = { channelId -> rootNav.navigate("player/$channelId") })
                 }
             }
             composable("guide") {
-                ScrollableTab {
+                FullSizeTab {
                     GuideScreen(onChannelSelected = { channelId -> rootNav.navigate("player/$channelId") })
                 }
             }
             composable("movies") {
-                ScrollableTab {
+                FullSizeTab {
                     MoviesScreen(onMovieSelected = { movie -> openDetail("movie", movie.id) })
                 }
             }
             composable("series") {
-                ScrollableTab {
+                FullSizeTab {
                     SeriesScreen(onSeriesSelected = { series -> openDetail("series", series.id) })
                 }
             }
@@ -378,6 +403,20 @@ private fun ScrollableTab(content: @Composable () -> Unit) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
+        content()
+    }
+}
+
+/**
+ * P0.2: for tabs that own a real lazy layout internally (BrowseLayout-backed
+ * Live/Movies/Series, GuideScreen) -- just hands down a bounded fillMaxSize, no
+ * scroll container. A lazy layout can't be nested inside another unbounded-height
+ * vertical scroll on the same axis (that's [ScrollableTab]), so these screens scroll
+ * their own content instead of the tab scrolling around them.
+ */
+@Composable
+private fun FullSizeTab(content: @Composable () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
         content()
     }
 }

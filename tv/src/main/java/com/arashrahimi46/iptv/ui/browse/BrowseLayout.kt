@@ -4,14 +4,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
@@ -33,26 +43,21 @@ data class BrowseCategoryOption(
  * only the [BrowseCategoryOption] list, the item type [T] and [itemContent]
  * differ per screen.
  *
- * Note: this is a plain (non-lazy) [FlowRow] grid, not [androidx.compose.foundation.lazy.grid.LazyVerticalGrid] --
- * the caller (Live/Home) already lives inside [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell]'s
- * single outer `verticalScroll` Column, and nesting an unbounded-height lazy
- * grid inside another vertical scroll container isn't a valid Compose layout
- * (infinite constraints). A real virtualized grid needs that shell-scroll
- * architecture reworked first -- out of scope for this pass (QA flagged it as
- * a perf *risk*, not a reproduced crash/ANR) -- so as a bounded mitigation in
- * the meantime, rendering is capped at [MAX_RENDERED_ITEMS] per category
- * (see below) rather than composing an entire multi-thousand-row Xtream
- * catalog unbounded in one FlowRow. True virtualization is still the real
- * fix and stays backlogged.
- * Likewise the left column reads as "sticky" in the design source (CSS
- * `position: sticky`) but here is a plain non-scrolling column; true
- * scroll-independent stickiness needs a custom two-pane layout, cut for time
- * -- see report.
+ * P0.2: the content grid is now a real [LazyVerticalGrid] (list mode: [LazyColumn]),
+ * not a plain [FlowRow] eagerly composing the whole catalog -- callers (Live/Movies/
+ * Series) no longer wrap this in [com.arashrahimi46.iptv.MainActivity]'s scrolling
+ * `ScrollableTab`; they get a plain fillMaxSize tab instead (see MainActivity's
+ * `FullSizeTab`), so this Composable owns its own bounded-height layout end to end
+ * (root fillMaxSize -> weighted category/content Row -> weighted grid) instead of
+ * inheriting an outer `verticalScroll`'s unbounded height, which is what made a real
+ * lazy grid invalid here before (nesting an unbounded-height lazy layout inside
+ * another vertical scroll container throws at runtime). No item cap anymore -- lazy
+ * composition only builds what's actually on screen regardless of catalog size.
+ * The left column reads as "sticky" in the design source (CSS `position: sticky`);
+ * true scroll-independent stickiness still needs a custom two-pane layout (cut for
+ * time -- see report), but it now scrolls independently of the content grid instead
+ * of just clipping once the category list is taller than the screen.
  */
-
-/** Bounded mitigation for the unbounded-FlowRow risk documented above -- large enough that
- * real-world categories (almost always well under this) never notice the cap. */
-private const val MAX_RENDERED_ITEMS = 300
 @Composable
 fun <T> BrowseLayout(
     title: String,
@@ -68,9 +73,13 @@ fun <T> BrowseLayout(
     sectionCountLabel: ((Int) -> String)? = null,
     emptyLabel: String = "No items in this category yet.",
     /** Table/list rendering (Settings' "List view" toggle, Issue #9): items stack in a single
-     * column instead of wrapping across the [FlowRow] grid. Switching this resets scroll to
+     * column instead of wrapping across the grid. Switching this resets scroll to
      * the top by design (product decision) -- no scroll-position preservation across modes. */
     listMode: Boolean = false,
+    /** Minimum column width for the [LazyVerticalGrid]'s [GridCells.Adaptive] -- matches
+     * whatever [itemContent] actually renders (channel tiles vs. narrower poster tiles) so
+     * the grid wraps the same number of columns per row the old [FlowRow] did. */
+    minItemWidth: Dp = AreIptvTheme.spacing.tileLandWidth,
     itemContent: @Composable (T) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -81,9 +90,11 @@ fun <T> BrowseLayout(
     // root Column (built from the caller's plain `modifier` param, itself never
     // fillMaxWidth'd by any BrowseLayout caller) was still sizing itself to wrap
     // content, so the weight(1f) content column's real available width stayed
-    // undersized. Claiming the full width here too so the whole chain resolves
-    // against the actual screen width, not each level's own wrap-content guess.
-    Column(modifier = modifier.fillMaxWidth().padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    // undersized. Claiming the full size here too so the whole chain resolves
+    // against the actual screen size (height, now that the content grid below is a
+    // real lazy layout and needs a genuine bounded height to lay out against), not
+    // each level's own wrap-content guess.
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp6, bottom = spacing.sp10)) {
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)
@@ -96,13 +107,21 @@ fun <T> BrowseLayout(
         // itself, so the weight(1f) column had no real remaining space to expand into -- its
         // Text children (e.g. Live TV's "N channels" label) wrapped one character per line.
         // fillMaxWidth is the real fix here too, shared by every BrowseLayout caller (Live,
-        // Movies, Series).
+        // Movies, Series). weight(1f) here (this Row is the last child of the fillMaxSize
+        // root Column above) claims the remaining height after the title row -- that's what
+        // gives both the category column and the content grid below a real bounded height.
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.safeX),
+            modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
         ) {
-            // Category filter column.
-            Column(modifier = Modifier.width(300.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            // Category filter column -- scrolls independently of the content grid now that
+            // it has a real bounded height, rather than just clipping once there are enough
+            // categories to exceed the screen (previously masked by the whole screen scrolling
+            // together as one unbounded column).
+            Column(
+                modifier = Modifier.width(300.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
                 Text(
                     text = categoryColumnHeader.uppercase(),
                     style = AreIptvTheme.typography.caption,
@@ -122,7 +141,7 @@ fun <T> BrowseLayout(
             }
 
             // Content grid for the selected category.
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 if (sectionTitle != null) {
                     // Round 3 of the QA MEDIUM text-wrap defect: the real root cause here
                     // wasn't a missing fillMaxWidth (rounds 1-2) -- it's that this content
@@ -143,28 +162,20 @@ fun <T> BrowseLayout(
                 }
                 if (items.isEmpty()) {
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
-                } else {
-                    val rendered = items.take(MAX_RENDERED_ITEMS)
-                    if (listMode) {
-                        // List/table mode: one item per row instead of wrapping across columns.
-                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            rendered.forEach { item -> itemContent(item) }
-                        }
-                    } else {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(18.dp),
-                        ) {
-                            rendered.forEach { item -> itemContent(item) }
-                        }
+                } else if (listMode) {
+                    // List/table mode: one item per row instead of wrapping across columns.
+                    // No cap -- lazy composition only builds visible rows regardless of catalog size.
+                    LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        items(items, key = itemKey) { item -> itemContent(item) }
                     }
-                    if (items.size > rendered.size) {
-                        Box(Modifier.height(14.dp))
-                        Text(
-                            text = "Showing ${rendered.size} of ${items.size} -- pick a category to narrow this down.",
-                            style = AreIptvTheme.typography.caption,
-                            color = colors.textTertiary,
-                        )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minItemWidth),
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(18.dp),
+                    ) {
+                        items(items, key = itemKey) { item -> itemContent(item) }
                     }
                 }
             }

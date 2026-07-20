@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,7 +80,15 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
 
     val zone = ZoneId.systemDefault()
 
-    Column(modifier = modifier.padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    // P0.2: fillMaxSize (not just padding) so this root Column has a real bounded height to
+    // hand down -- GuideScreen's caller (MainActivity) no longer wraps this tab in a
+    // `verticalScroll` (see FullSizeTab there); this Composable owns its own layout end to
+    // end instead. That bounded height is what makes the LazyColumn below (and the .weight(1f)
+    // it and its sibling Row get further down) a valid virtualized layout rather than throwing
+    // "measured with an unbounded amount of height" -- a lazy layout can't live inside another
+    // unbounded-height vertical scroll container (same-axis nesting), which is exactly what
+    // wrapping this tab in a scrolling container would still do.
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp6, bottom = spacing.sp10)) {
         // Header: title + day chips.
         Row(
             modifier = Modifier.padding(horizontal = spacing.safeX).fillMaxWidth(),
@@ -109,45 +120,60 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
         }
         Box(Modifier.height(spacing.sp5))
 
+        // Shared horizontal ScrollState -- the SAME instance applied to the timeline header
+        // and every row below keeps them scrolling in lockstep (Compose's standard
+        // synced-header pattern), now that rows are virtualized (below) and can no longer
+        // all live under one shared-scroll Column together.
         val scrollState = rememberScrollState()
-        Column(
-            modifier = Modifier
-                .padding(horizontal = spacing.safeX)
-                .horizontalScroll(scrollState),
-        ) {
-            TimelineHeader(windowStartMs = state.windowStartMs, windowEndMs = state.windowEndMs, zone = zone)
+        // weight(1f) -- this is the last child of the fillMaxSize root Column above, so it
+        // claims exactly the height left over after the header rows/chips/info-bar -- the real
+        // bounded height the LazyColumn below needs to be a valid lazy layout.
+        Column(modifier = Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
+            Row(modifier = Modifier.horizontalScroll(scrollState)) {
+                TimelineHeader(windowStartMs = state.windowStartMs, windowEndMs = state.windowEndMs, zone = zone)
+            }
             Box(Modifier.height(8.dp))
-            state.rows.forEach { row ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    ChannelHeaderCell(name = row.channel.name, number = row.channel.number)
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        row.slots.forEach { slot ->
-                            val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
-                            val focusRequester = rememberPlaybackFocusRequester(
-                                savedId = lastPlayedChannelId?.takeIf { lastPlayedSlotStartMs == slot.startMs },
-                                itemId = row.channel.id,
-                            ) {
-                                lastPlayedChannelId = null
-                                lastPlayedSlotStartMs = null
+            // P0.2: was a plain Column.forEach that eagerly composed every channel row for
+            // the whole ~6h window regardless of what's on screen -- with large catalogs
+            // that's hundreds of rows composed up front. LazyColumn only composes the rows
+            // actually visible (plus a small buffer). weight(1f) fills the remaining height
+            // left in this Column after the timeline header row above.
+            LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(state.rows, key = { it.channel.id }) { row ->
+                    Row(
+                        modifier = Modifier.horizontalScroll(scrollState),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ChannelHeaderCell(name = row.channel.name, number = row.channel.number)
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            row.slots.forEach { slot ->
+                                val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
+                                val focusRequester = rememberPlaybackFocusRequester(
+                                    savedId = lastPlayedChannelId?.takeIf { lastPlayedSlotStartMs == slot.startMs },
+                                    itemId = row.channel.id,
+                                ) {
+                                    lastPlayedChannelId = null
+                                    lastPlayedSlotStartMs = null
+                                }
+                                AreGuideCell(
+                                    title = slot.title,
+                                    time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(TimeFormatter),
+                                    onClick = {
+                                        lastPlayedChannelId = row.channel.id
+                                        lastPlayedSlotStartMs = slot.startMs
+                                        onChannelSelected(row.channel.id)
+                                    },
+                                    live = slot.isNow,
+                                    now = slot.isNow,
+                                    width = (DpPerMinute * durationMinutes.toInt()) - 6.dp,
+                                    onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
+                                    modifier = Modifier.focusRequester(focusRequester),
+                                )
                             }
-                            AreGuideCell(
-                                title = slot.title,
-                                time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(TimeFormatter),
-                                onClick = {
-                                    lastPlayedChannelId = row.channel.id
-                                    lastPlayedSlotStartMs = slot.startMs
-                                    onChannelSelected(row.channel.id)
-                                },
-                                live = slot.isNow,
-                                now = slot.isNow,
-                                width = (DpPerMinute * durationMinutes.toInt()) - 6.dp,
-                                onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
-                                modifier = Modifier.focusRequester(focusRequester),
-                            )
                         }
                     }
                 }
-                Box(Modifier.height(8.dp))
             }
         }
     }
