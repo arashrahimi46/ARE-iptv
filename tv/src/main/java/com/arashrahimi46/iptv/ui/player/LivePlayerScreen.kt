@@ -231,11 +231,17 @@ fun LivePlayerScreen(
             var playing by remember { mutableStateOf(true) }
             var isBuffering by remember { mutableStateOf(true) }
             var playerError by remember { mutableStateOf<String?>(null) }
-            // Bumped by the error state's Retry action. Changing this changes exoPlayer's
+            // Bumped by the error state's Retry action (manual) AND by the auto-retry
+            // LaunchedEffect below (automatic). Changing this changes exoPlayer's
             // remember() key below, which tears down the old instance through the existing
             // DisposableEffect(exoPlayer) cleanup and builds a fresh one -- same single
             // release() call site as backgrounding, just triggered by a different key change.
             var retryCount by remember { mutableStateOf(0) }
+            // P0.1: auto-retry attempts made against the CURRENT source since it last became
+            // healthy. Resets per source (media.streamUrl) and on recovery (STATE_READY) --
+            // see the listener below and the reset LaunchedEffect -- so a source that recovers
+            // gets a fresh retry budget instead of inheriting exhaustion from an earlier stretch.
+            var autoRetryAttempt by remember(media.streamUrl) { mutableStateOf(0) }
 
             val exoPlayer = remember(media.streamUrl, retryCount, hardwareDecoding) {
                 // Real wiring of the Settings "Hardware decoding" preference -- a player
@@ -281,7 +287,10 @@ fun LivePlayerScreen(
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         isBuffering = playbackState == Player.STATE_BUFFERING
-                        if (playbackState == Player.STATE_READY) playerError = null
+                        if (playbackState == Player.STATE_READY) {
+                            playerError = null
+                            autoRetryAttempt = 0
+                        }
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
@@ -295,6 +304,25 @@ fun LivePlayerScreen(
                     exoPlayer.removeListener(listener)
                     exoPlayer.release()
                 }
+            }
+
+            // P0.1: degraded/failed stream health (StreamHealth indicator's Poor/Moderate --
+            // playerError or sustained buffering) drives automatic retry with exponential
+            // backoff, then falls back to the next available source for this channel once
+            // retries are exhausted, instead of leaving the user stuck on a manual-only Retry
+            // button. Re-runs whenever health or the attempt count changes; a health recovery
+            // (isBuffering/playerError going away) cancels the pending retry via LaunchedEffect's
+            // normal key-change cancellation.
+            LaunchedEffect(playerError, isBuffering, autoRetryAttempt) {
+                val degraded = playerError != null || isBuffering
+                if (!degraded) return@LaunchedEffect
+                if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
+                    viewModel.fallbackToAlternateSource()
+                    return@LaunchedEffect
+                }
+                delay(if (playerError != null) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
+                autoRetryAttempt++
+                retryCount++
             }
 
             // Real seek-bar/elapsed/buffered data (QA blocker: these were hardcoded

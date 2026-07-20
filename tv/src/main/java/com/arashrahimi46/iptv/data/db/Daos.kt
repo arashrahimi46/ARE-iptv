@@ -65,6 +65,12 @@ interface ChannelDao {
 
     @Query("SELECT COUNT(*) FROM channels WHERE sourceId = :sourceId")
     suspend fun countForSource(sourceId: Long): Int
+
+    /** Stream-health fallback (P0.1): another catalog entry for the same logical channel
+     * (same name, different row -- e.g. a duplicate listing from another category/source)
+     * to switch to once retry/backoff on [excludeId] is exhausted. */
+    @Query("SELECT * FROM channels WHERE name = :name AND id != :excludeId ORDER BY id LIMIT 1")
+    suspend fun findAlternateByName(name: String, excludeId: Long): Channel?
 }
 
 @Dao

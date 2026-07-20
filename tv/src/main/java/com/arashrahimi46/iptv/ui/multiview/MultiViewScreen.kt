@@ -40,6 +40,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
@@ -48,9 +49,11 @@ import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
+import com.arashrahimi46.iptv.ui.player.StreamRetryPolicy
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import kotlinx.coroutines.delay
 
 /**
  * MultiView -- 2-up/4-up simultaneous live streams, one active (audio) pane
@@ -139,11 +142,19 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
 private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val colors = AreIptvTheme.colors
+    // P0.1: the pane was previously a dead end on failure -- a static red dot, no recovery.
+    // currentSource is local, separate from the `channel` prop, so a fallback (below) can
+    // swap the playing source without needing the parent's channel list to change.
+    var currentSource by remember(channel.id) { mutableStateOf(channel) }
     var health by remember(channel.id) { mutableStateOf(AreStreamHealthLevel.Moderate) }
+    // Bumped by the auto-retry effect below to force exoPlayer's remember() key to change
+    // (a fresh instance/reconnect attempt), same pattern as LivePlayerScreen's retryCount.
+    var retryCount by remember(channel.id) { mutableStateOf(0) }
+    var autoRetryAttempt by remember(currentSource.id) { mutableStateOf(0) }
 
-    val exoPlayer = remember(channel.streamUrl) {
+    val exoPlayer = remember(currentSource.streamUrl, retryCount) {
         ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(channel.streamUrl))
+            setMediaItem(MediaItem.fromUri(currentSource.streamUrl))
             playWhenReady = true
             prepare()
         }
@@ -153,7 +164,10 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 health = when (playbackState) {
-                    Player.STATE_READY -> AreStreamHealthLevel.Stable
+                    Player.STATE_READY -> {
+                        autoRetryAttempt = 0
+                        AreStreamHealthLevel.Stable
+                    }
                     Player.STATE_BUFFERING -> AreStreamHealthLevel.Moderate
                     else -> health
                 }
@@ -168,6 +182,24 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
             exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
+    }
+
+    // P0.1: same degraded-health -> auto-retry-with-backoff -> fallback-to-next-source
+    // policy as LivePlayerScreen (see StreamRetryPolicy), applied per pane instead of
+    // leaving a failed pane permanently dead.
+    LaunchedEffect(health, autoRetryAttempt, currentSource.id) {
+        if (health == AreStreamHealthLevel.Stable) return@LaunchedEffect
+        if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
+            val alternate = AppDatabase.get(context).channelDao().findAlternateByName(currentSource.name, currentSource.id)
+            if (alternate != null) {
+                currentSource = alternate
+                autoRetryAttempt = 0
+            }
+            return@LaunchedEffect
+        }
+        delay(if (health == AreStreamHealthLevel.Poor) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
+        autoRetryAttempt++
+        retryCount++
     }
 
     // Only the active pane's audio plays -- every pane keeps decoding video so switching
