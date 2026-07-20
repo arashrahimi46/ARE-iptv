@@ -36,13 +36,22 @@ data class BrowseCategoryOption(
  * the caller (Live/Home) already lives inside [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell]'s
  * single outer `verticalScroll` Column, and nesting an unbounded-height lazy
  * grid inside another vertical scroll container isn't a valid Compose layout
- * (infinite constraints). A real virtualized grid is a polish item for a
- * later pass once catalogs are large enough for it to matter -- see report.
+ * (infinite constraints). A real virtualized grid needs that shell-scroll
+ * architecture reworked first -- out of scope for this pass (QA flagged it as
+ * a perf *risk*, not a reproduced crash/ANR) -- so as a bounded mitigation in
+ * the meantime, rendering is capped at [MAX_RENDERED_ITEMS] per category
+ * (see below) rather than composing an entire multi-thousand-row Xtream
+ * catalog unbounded in one FlowRow. True virtualization is still the real
+ * fix and stays backlogged.
  * Likewise the left column reads as "sticky" in the design source (CSS
  * `position: sticky`) but here is a plain non-scrolling column; true
  * scroll-independent stickiness needs a custom two-pane layout, cut for time
  * -- see report.
  */
+
+/** Bounded mitigation for the unbounded-FlowRow risk documented above -- large enough that
+ * real-world categories (almost always well under this) never notice the cap. */
+private const val MAX_RENDERED_ITEMS = 300
 @Composable
 fun <T> BrowseLayout(
     title: String,
@@ -108,11 +117,20 @@ fun <T> BrowseLayout(
                 if (items.isEmpty()) {
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
                 } else {
+                    val rendered = items.take(MAX_RENDERED_ITEMS)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(18.dp),
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                     ) {
-                        items.forEach { item -> itemContent(item) }
+                        rendered.forEach { item -> itemContent(item) }
+                    }
+                    if (items.size > rendered.size) {
+                        Box(Modifier.height(14.dp))
+                        Text(
+                            text = "Showing ${rendered.size} of ${items.size} -- pick a category to narrow this down.",
+                            style = AreIptvTheme.typography.caption,
+                            color = colors.textTertiary,
+                        )
                     }
                 }
             }
