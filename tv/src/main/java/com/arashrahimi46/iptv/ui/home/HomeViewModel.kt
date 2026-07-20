@@ -27,6 +27,13 @@ data class HomeUiState(
     val movies: List<VodTitle> = emptyList(),
     val series: List<VodTitle> = emptyList(),
     val categories: List<HomeCategorySummary> = emptyList(),
+    /** QA LOW defect: a real source existed, but Room hadn't emitted its first catalog read
+     * yet (cold-start DB open on a large catalog took 1.5-7s in QA's test) -- [hasSource]'s
+     * default-constructed `false` was indistinguishable from "confirmed no source", flashing
+     * "No playlist yet" during that window. True only before the very first emission below;
+     * every real emission (source or no-source) sets it false, whether or not the catalog
+     * itself turns out empty. */
+    val isInitializing: Boolean = true,
 )
 
 /**
@@ -47,7 +54,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         settings.activeSourceId
             .flatMapLatest { sourceId ->
                 if (sourceId == null) {
-                    flowOf(HomeUiState(hasSource = false))
+                    flowOf(HomeUiState(hasSource = false, isInitializing = false))
                 } else {
                     combine(
                         repository.observeChannels(sourceId),
@@ -66,6 +73,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             movies = movies,
                             series = series,
                             categories = categoryCounts.map { (name, count) -> HomeCategorySummary(name, count) },
+                            isInitializing = false,
                         )
                     }
                 }

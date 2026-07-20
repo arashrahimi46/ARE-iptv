@@ -80,6 +80,12 @@ fun HomeScreen(
                         )
                     },
                 )
+            } else if (state.isInitializing) {
+                // QA LOW defect: a real source existed but Room hadn't emitted its first
+                // catalog read yet (cold-start DB open on a large catalog can take several
+                // seconds) -- showing EmptyHero() here read as "your playlist vanished"
+                // rather than "still loading".
+                LoadingHero()
             } else {
                 EmptyHero()
             }
@@ -133,6 +139,14 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadingHero() {
+    val colors = AreIptvTheme.colors
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp)) {
+        Text(text = "Loading your catalog…", style = AreIptvTheme.typography.h1, color = colors.textPrimary)
     }
 }
 
