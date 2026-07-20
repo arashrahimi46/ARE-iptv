@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -55,6 +57,7 @@ import com.arashrahimi46.iptv.ui.components.ArePlayerControls
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import kotlinx.coroutines.delay
 
 /**
  * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
@@ -149,6 +152,32 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
                 }
             }
 
+            // Real seek-bar/elapsed/buffered data (QA blocker: these were hardcoded
+            // ArePlayerControls defaults before, never actually bound to the player).
+            // ExoPlayer has no position-changed callback, so this polls at a UI-refresh
+            // cadence -- cheap reads (currentPosition/duration/bufferedPosition are all
+            // non-blocking getters), stopped via onDispose when the composable leaves.
+            var positionMs by remember { mutableStateOf(0L) }
+            var durationMs by remember { mutableStateOf(C.TIME_UNSET) }
+            var bufferedPositionMs by remember { mutableStateOf(0L) }
+            LaunchedEffect(exoPlayer) {
+                while (true) {
+                    positionMs = exoPlayer.currentPosition
+                    durationMs = exoPlayer.duration
+                    bufferedPositionMs = exoPlayer.bufferedPosition
+                    delay(500)
+                }
+            }
+            // Live streams' HLS timeline usually reports no fixed duration (C.TIME_UNSET) --
+            // there's no "total" to divide by, so the seek bar reads as parked at the live
+            // edge (matches the design's TimeShift-seek-bar-at-live-edge default) rather than
+            // computing a meaningless ratio.
+            val hasKnownDuration = durationMs > 0 && durationMs != C.TIME_UNSET
+            val seekPosition = if (hasKnownDuration) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
+            val seekBuffered = if (hasKnownDuration) (bufferedPositionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
+            val elapsedLabel = formatPlaybackTime(positionMs)
+            val totalLabel = if (hasKnownDuration) formatPlaybackTime(durationMs) else elapsedLabel
+
             // Backgrounding exits the player (rather than just pause()-ing in place) so the
             // ExoPlayer instance releases fully through the SAME DisposableEffect(exoPlayer)
             // cleanup path already verified above -- one release() call site, not two racing
@@ -219,6 +248,10 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
                         subtitle = media.subtitle,
                         live = media.isLive,
                         playing = playing,
+                        position = seekPosition,
+                        buffered = seekBuffered,
+                        elapsed = elapsedLabel,
+                        total = totalLabel,
                         channelLogoInitials = media.title.take(3).uppercase(),
                         onPlayPause = {
                             if (playing) exoPlayer.pause() else exoPlayer.play()
@@ -228,6 +261,19 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
                 }
             }
         }
+    }
+}
+
+/** Formats a millisecond duration as `m:ss` (or `h:mm:ss` past an hour) for the transport HUD's elapsed/total labels. */
+private fun formatPlaybackTime(ms: Long): String {
+    val totalSeconds = (ms.coerceAtLeast(0) / 1000)
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+    val seconds = totalSeconds % 60
+    return if (hours > 0) {
+        "%d:%02d:%02d".format(hours, minutes, seconds)
+    } else {
+        "%d:%02d".format(minutes, seconds)
     }
 }
 
