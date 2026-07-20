@@ -60,6 +60,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             onClick = { onMovieSelected(movie) },
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,
+            posterUrl = movie.posterUrl,
             isFavorite = movie.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
         )

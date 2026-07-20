@@ -28,18 +28,17 @@ import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreChip
-import com.arashrahimi46.iptv.ui.components.AreOnScreenKeyboard
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
- * Local search (Search.jsx): a query field driven entirely by
- * [AreOnScreenKeyboard] key presses (D-pad + select, no IME) plus grouped
- * result rows -- live channels and movies/series -- reusing
- * [AreChannelTile]/[ArePosterTile]. No ranking backend: plain substring
- * match over the already-loaded catalog, per spec.
+ * Local search (Search.jsx): a query field driven by [AreTextField], which
+ * focuses Android TV's native IME/D-pad remote text input (no custom
+ * on-screen keyboard), plus grouped result rows -- live channels and
+ * movies/series -- reusing [AreChannelTile]/[ArePosterTile]. No ranking
+ * backend: plain substring match over the already-loaded catalog, per spec.
  */
 @Composable
 private fun ScopeChip(label: String, value: SearchScope, current: SearchScope, onSelect: (SearchScope) -> Unit) {
@@ -79,38 +78,30 @@ fun SearchScreen(
         return
     }
 
-    // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner keyboard+
+    // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner field+
     // results Row alone (round 1) and on this outer root Column (round 2) were real fixes
     // but didn't touch the actual root cause -- see the BoxWithConstraints comment below.
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = spacing.safeX, vertical = spacing.sp6)) {
         Text(text = "Search", style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp6))
 
-        // Round 3 of the QA MEDIUM text-wrap defect: QA's uiautomator measurements showed
-        // that with the sidebar expanded (280dp), the fixed 560dp keyboard column plus the
-        // 32dp gap alone exceed the width physically left over, so the results column was
-        // being handed a near-zero (or negative, clamped to a sliver) remainder -- no
-        // fillMaxWidth-style modifier fix can manufacture width that isn't there. Neither
-        // column can safely shrink (560dp keyboard width and the categories column's fixed
-        // width were themselves earlier QA fixes for keyboard-key clipping / label wrap), so
+        // Same class as the QA MEDIUM text-wrap defect elsewhere in this screen: neither
+        // column can safely shrink (the field column's fixed width and the categories
+        // column's fixed width were themselves earlier QA fixes for label wrap), so
         // BoxWithConstraints measures the real available width and stacks the two columns
         // vertically instead of forcing them side by side when there genuinely isn't room for
         // both -- deterministic on measured dp, unlike relying on FlowRow's line-wrap
         // heuristics interacting with weight().
-        val keyboardColumnWidth = 560.dp
+        val fieldColumnWidth = 420.dp
         val columnGap = 32.dp
         val minResultsWidth = 320.dp
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            if (maxWidth < keyboardColumnWidth + columnGap + minResultsWidth) {
+            if (maxWidth < fieldColumnWidth + columnGap + minResultsWidth) {
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    SearchKeyboardColumn(
-                        modifier = Modifier.width(keyboardColumnWidth),
+                    SearchFieldColumn(
+                        modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
                         onQueryChange = viewModel::setQuery,
-                        onCharacter = viewModel::appendCharacter,
-                        onSpace = viewModel::appendSpace,
-                        onBackspace = viewModel::backspace,
-                        onClear = viewModel::clear,
                     )
                     SearchResultsColumn(
                         modifier = Modifier.fillMaxWidth(),
@@ -125,14 +116,10 @@ fun SearchScreen(
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(columnGap)) {
-                    SearchKeyboardColumn(
-                        modifier = Modifier.width(keyboardColumnWidth),
+                    SearchFieldColumn(
+                        modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
                         onQueryChange = viewModel::setQuery,
-                        onCharacter = viewModel::appendCharacter,
-                        onSpace = viewModel::appendSpace,
-                        onBackspace = viewModel::backspace,
-                        onClear = viewModel::clear,
                     )
                     SearchResultsColumn(
                         modifier = Modifier.weight(1f),
@@ -151,35 +138,19 @@ fun SearchScreen(
 }
 
 @Composable
-private fun SearchKeyboardColumn(
+private fun SearchFieldColumn(
     modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
-    onCharacter: (Char) -> Unit,
-    onSpace: () -> Unit,
-    onBackspace: () -> Unit,
-    onClear: () -> Unit,
 ) {
-    // QA MEDIUM defect: L, O, P appeared "missing" from the keyboard -- they're
-    // exactly the trailing keys of the two widest rows (QWERTYUIOP is 10 keys x
-    // 48dp + 9 gaps x 8dp = 552dp; ASDFGHJKL is 496dp), both wider than this
-    // column's old fixed 420dp -- the results Column to the right, drawn after,
-    // painted over the overflowing keys rather than an actual data/layout bug in
-    // AreOnScreenKeyboard itself (all 26 letters are really in DefaultKeyboardRows).
-    // 560dp (the caller's fixed width) gives the widest row (552dp) real room.
+    // Issue #10: no custom on-screen keyboard -- AreTextField's BasicTextField
+    // focuses Android TV's native IME, which the D-pad remote can drive directly.
     Column(modifier = modifier) {
         AreTextField(
             value = query,
             onValueChange = onQueryChange,
             placeholder = "Search channels, movies, series…",
             icon = Icons.Filled.Search,
-        )
-        Box(Modifier.padding(top = 20.dp))
-        AreOnScreenKeyboard(
-            onCharacter = onCharacter,
-            onSpace = onSpace,
-            onBackspace = onBackspace,
-            onClear = onClear,
         )
     }
 }
@@ -218,7 +189,7 @@ private fun SearchResultsColumn(
         }
         if (state.categoryFilter == null && state.query.isBlank()) {
             Text(
-                text = "Type on the keyboard to search your catalog.",
+                text = "Type to search your catalog.",
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
@@ -236,6 +207,7 @@ private fun SearchResultsColumn(
                                 onClick = { onChannelSelected(channel) },
                                 number = channel.number,
                                 now = channel.categoryName,
+                                logoUrl = channel.logoUrl,
                                 isFavorite = channel.id in favoriteChannelIds,
                                 onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
                             )
@@ -253,6 +225,7 @@ private fun SearchResultsColumn(
                                 onClick = { onTitleSelected(title) },
                                 meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
                                 rating = title.rating,
+                                posterUrl = title.posterUrl,
                                 isFavorite = title.id in favoriteVodIds,
                                 onToggleFavorite = { viewModel.toggleVodFavorite(title) },
                             )

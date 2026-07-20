@@ -73,6 +73,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             onClick = { onChannelSelected(channel.id) },
             number = channel.number,
             now = channel.categoryName,
+            logoUrl = channel.logoUrl,
             isFavorite = channel.id in favoriteChannelIds,
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
         )

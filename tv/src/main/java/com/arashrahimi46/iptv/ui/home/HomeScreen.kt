@@ -51,6 +51,7 @@ fun HomeScreen(
         factory = HomeViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val nowPlayingTitles by viewModel.nowPlayingTitles.collectAsState()
     val spacing = AreIptvTheme.spacing
 
     Column(modifier = modifier.padding(bottom = spacing.sp16)) {
@@ -104,7 +105,7 @@ fun HomeScreen(
         if (state.channels.isNotEmpty()) {
             AreRail(title = "Live now") {
                 items(state.channels.take(20)) { channel ->
-                    AreChannelTile(channel = channel.name, onClick = { onChannelSelected(channel) }, number = channel.number, now = channel.categoryName)
+                    AreChannelTile(channel = channel.name, onClick = { onChannelSelected(channel) }, number = channel.number, now = nowPlayingTitles[channel.id], logoUrl = channel.logoUrl)
                 }
             }
         }
@@ -126,7 +127,7 @@ fun HomeScreen(
         if (recommended.isNotEmpty()) {
             AreRail(title = "Browse movies & series") {
                 items(recommended) { title ->
-                    ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating)
+                    ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl)
                 }
             }
         }
@@ -134,7 +135,7 @@ fun HomeScreen(
         if (state.movies.isNotEmpty()) {
             AreRail(title = "Movies") {
                 items(state.movies.take(20)) { movie ->
-                    ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating)
+                    ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl)
                 }
             }
         }
@@ -142,7 +143,7 @@ fun HomeScreen(
         if (state.series.isNotEmpty()) {
             AreRail(title = "Series") {
                 items(state.series.take(20)) { show ->
-                    ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating)
+                    ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl)
                 }
             }
         }

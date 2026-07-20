@@ -60,6 +60,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
             onClick = { onSeriesSelected(show) },
             meta = listOfNotNull(show.year, show.categoryName).joinToString(" · ").ifEmpty { null },
             rating = show.rating,
+            posterUrl = show.posterUrl,
             isFavorite = show.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(show.id) },
         )

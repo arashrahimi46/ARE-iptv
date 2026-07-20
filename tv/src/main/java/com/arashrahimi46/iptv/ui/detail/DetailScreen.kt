@@ -24,10 +24,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -49,10 +54,8 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
  * to app-exit.
  *
  * Hero uses [VodTitle.posterUrl] as the only art source -- the schema has no
- * `backdropUrl` column; a real image loader isn't wired up yet either
- * (Phase 0 already renders initials in place of artwork everywhere), so this
- * is poster-as-hero, an acceptable v1 shape rather than a true Detail.jsx
- * backdrop. Synopsis/cast are also not in the schema (no field in [VodTitle])
+ * `backdropUrl` column, so this is poster-as-hero, an acceptable v1 shape
+ * rather than a true Detail.jsx backdrop. Synopsis/cast are also not in the schema (no field in [VodTitle])
  * -- the meta row (year/rating/category) is shown in their place; a real
  * synopsis needs a schema addition + a metadata source, cut for this phase.
  *
@@ -166,15 +169,30 @@ private fun resolvePlayTarget(title: VodTitle, state: DetailUiState): PlayTarget
 @Composable
 private fun HeroArt(title: VodTitle) {
     val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.lg)
     val initials = title.name.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     Box(
         modifier = Modifier
             .width(240.dp)
             .aspectRatio(2f / 3f)
-            .background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.lg)),
+            .background(colors.surface3, shape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
+        if (title.posterUrl != null) {
+            SubcomposeAsyncImage(
+                model = title.posterUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().clip(shape),
+            ) {
+                when (painter.state) {
+                    is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                    else -> Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
+                }
+            }
+        } else {
+            Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
+        }
     }
 }
 

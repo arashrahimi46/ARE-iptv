@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -23,11 +25,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
@@ -37,11 +43,13 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
  * chip over an in-card info panel: now-playing program + progress, next up,
  * and quality/health info.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AreChannelTile(
     channel: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    logoUrl: String? = null,
     number: String? = null,
     now: String? = null,
     next: String? = null,
@@ -72,7 +80,7 @@ fun AreChannelTile(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = colors.surface2,
-    ) { _, _ ->
+    ) { focused, _ ->
         Column(Modifier.fillMaxWidth()) {
             // logo zone
             Box(
@@ -111,7 +119,21 @@ fun AreChannelTile(
                         .background(colors.surfaceOverlay, RoundedCornerShape(AreIptvTheme.radius.sm)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    if (logoUrl != null) {
+                        SubcomposeAsyncImage(
+                            model = logoUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.fillMaxSize().padding(8.dp),
+                        ) {
+                            when (painter.state) {
+                                is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
+                                else -> Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                            }
+                        }
+                    } else {
+                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    }
                 }
                 if (onToggleFavorite != null) {
                     AreIconButton(
@@ -145,7 +167,7 @@ fun AreChannelTile(
                         color = colors.textPrimary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
                     )
                 }
                 if (now != null) {
@@ -155,6 +177,7 @@ fun AreChannelTile(
                         color = colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = if (focused) Modifier.basicMarquee() else Modifier,
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -164,7 +187,7 @@ fun AreChannelTile(
                         color = colors.textTertiary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
                     )
                     if (codec != null) {
                         Text(text = codec, style = AreIptvTheme.typography.mono, color = colors.textTertiary)

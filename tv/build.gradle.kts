@@ -92,9 +92,13 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.coil.compose)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
+    // Only needed so XmlTvParserTest can exercise android.util.Xml.newPullParser() on the
+    // JVM (unmocked otherwise) -- see XmlTvParserTest's @RunWith(RobolectricTestRunner::class).
+    testImplementation(libs.robolectric)
 }

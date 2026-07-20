@@ -153,6 +153,7 @@ private fun ChannelGrid(
             AreChannelTile(
                 channel = channel.name,
                 onClick = { onChannelSelected(channel.id) },
+                logoUrl = channel.logoUrl,
                 number = channel.number,
                 now = channel.categoryName,
                 isFavorite = true,
@@ -179,6 +180,7 @@ private fun MovieGrid(
             ArePosterTile(
                 title = movie.name,
                 onClick = { onTitleSelected(movie) },
+                posterUrl = movie.posterUrl,
                 meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
                 rating = movie.rating,
                 isFavorite = true,
@@ -208,6 +210,7 @@ private fun MixedGrid(
                 is FavoriteContent.ChannelItem -> AreChannelTile(
                     channel = item.channel.name,
                     onClick = { onChannelSelected(item.channel.id) },
+                    logoUrl = item.channel.logoUrl,
                     number = item.channel.number,
                     now = item.channel.categoryName,
                     isFavorite = true,
@@ -216,6 +219,7 @@ private fun MixedGrid(
                 is FavoriteContent.TitleItem -> ArePosterTile(
                     title = item.title.name,
                     onClick = { onTitleSelected(item.title) },
+                    posterUrl = item.title.posterUrl,
                     meta = listOfNotNull(item.title.year, item.title.categoryName).joinToString(" · ").ifEmpty { null },
                     rating = item.title.rating,
                     isFavorite = true,
