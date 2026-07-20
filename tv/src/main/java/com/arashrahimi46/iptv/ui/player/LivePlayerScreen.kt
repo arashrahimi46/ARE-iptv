@@ -301,7 +301,11 @@ fun LivePlayerScreen(
                         )
                     }
                 }
-                Box(Modifier.fillMaxSize().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
+                // QA CRITICAL: fillMaxSize() here claimed the Column's entire remaining
+                // height, pushing the transport HUD Box below entirely outside layout
+                // bounds -- the HUD has never actually rendered, for any stream. weight(1f)
+                // takes only the space left after the top bar and HUD boxes below.
+                Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
                     if (playerError != null) {
                         PlayerErrorState(message = playerError!!, onBack = handleBack, onRetry = { retryCount++ })
                     } else if (isBuffering) {
