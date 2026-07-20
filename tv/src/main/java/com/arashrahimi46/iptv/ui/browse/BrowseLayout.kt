@@ -120,7 +120,16 @@ fun <T> BrowseLayout(
             // Content grid for the selected category.
             Column(modifier = Modifier.weight(1f)) {
                 if (sectionTitle != null) {
-                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // Round 3 of the QA MEDIUM text-wrap defect: the real root cause here
+                    // wasn't a missing fillMaxWidth (rounds 1-2) -- it's that this content
+                    // column's *actual* available width, when the sidebar is in its expanded
+                    // (280dp) state, genuinely isn't enough for both texts on one line (QA's
+                    // uiautomator measurements confirmed the numbers add up exactly). A plain
+                    // Row has nowhere to put the overflow but force sectionCountLabel's Text
+                    // narrower and narrower until it wraps per character. FlowRow (same fix
+                    // already proven for the Search scope chips below) lets the count drop to
+                    // its own full-width line instead when space is genuinely too tight.
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                         if (sectionCountLabel != null) {
                             Text(text = sectionCountLabel(items.size), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
