@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * Backs the real Settings screen (Phase 4): every flow here is a live read
@@ -40,8 +41,13 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val hasPinSet: StateFlow<Boolean> = flowState(settings.parentalPinHash.map { it != null }, false)
 
-    fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { settings.setDarkTheme(enabled) }
-    fun setReducedMotion(enabled: Boolean) = viewModelScope.launch { settings.setReducedMotion(enabled) }
+    // QA HIGH defect: dark-theme (and, by the same async-write-vs-process-death race,
+    // reduced-motion) toggles were lost across an immediate `am force-stop` right after
+    // flipping them -- viewModelScope.launch { ... } is fire-and-forget, so a process kill
+    // could land before the DataStore write actually completed. These two block the caller
+    // (a quick, single-key disk write) until the write is durable, closing that window.
+    fun setDarkTheme(enabled: Boolean) = runBlocking { settings.setDarkTheme(enabled) }
+    fun setReducedMotion(enabled: Boolean) = runBlocking { settings.setReducedMotion(enabled) }
     fun setHardwareDecoding(enabled: Boolean) = viewModelScope.launch { settings.setHardwareDecoding(enabled) }
     fun setAutoplayNextEpisode(enabled: Boolean) = viewModelScope.launch { settings.setAutoplayNextEpisode(enabled) }
 
