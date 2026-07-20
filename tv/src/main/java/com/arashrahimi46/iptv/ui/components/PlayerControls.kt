@@ -106,18 +106,18 @@ fun ArePlayerControls(
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
 
         // TimeShift seek bar
-        Box(Modifier.fillMaxWidth().height(6.dp).background(colors.surface3, RoundedCornerShape(3.dp))) {
+        Box(Modifier.fillMaxWidth().height(6.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.pill))) {
             Box(
                 Modifier
                     .fillMaxWidth(buffered.coerceIn(0f, 1f))
                     .height(6.dp)
-                    .background(colors.borderStrong, RoundedCornerShape(3.dp)),
+                    .background(colors.borderStrong, RoundedCornerShape(AreIptvTheme.radius.pill)),
             )
             Box(
                 Modifier
                     .fillMaxWidth(position.coerceIn(0f, 1f))
                     .height(6.dp)
-                    .background(colors.accent, RoundedCornerShape(3.dp)),
+                    .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.pill)),
             )
         }
 

@@ -65,6 +65,7 @@ import com.arashrahimi46.iptv.ui.components.ArePlayerControls
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.Ink950
 import kotlinx.coroutines.delay
 
 /**
@@ -256,7 +257,7 @@ fun LivePlayerScreen(
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color(0xB2060709), Color(0x00060709)),
+                            colors = listOf(Ink950.copy(alpha = 0.70f), Ink950.copy(alpha = 0f)),
                             endY = 400f,
                         ),
                     ),

@@ -50,6 +50,7 @@ import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
 /**
@@ -203,7 +204,7 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color(0x00060709), Color(0xD9060709)),
+                            colors = listOf(Ink950.copy(alpha = 0f), Ink950.copy(alpha = 0.85f)),
                             startY = 0.45f,
                         ),
                     ),

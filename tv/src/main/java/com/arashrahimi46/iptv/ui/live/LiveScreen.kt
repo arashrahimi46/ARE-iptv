@@ -90,6 +90,6 @@ private fun OnAirNowBadge() {
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         androidx.compose.foundation.layout.Box(Modifier.size(8.dp).background(colors.live, CircleShape))
-        Text(text = "ON AIR NOW", style = AreIptvTheme.typography.caption, color = Color(0xFFF87171))
+        Text(text = "ON AIR NOW", style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.onAirText)
     }
 }

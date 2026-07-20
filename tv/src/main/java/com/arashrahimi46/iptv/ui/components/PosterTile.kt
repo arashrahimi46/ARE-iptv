@@ -94,7 +94,7 @@ fun ArePosterTile(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFACC15), modifier = Modifier.height(12.dp))
+                        Icon(Icons.Filled.Star, contentDescription = null, tint = colors.ratingStar, modifier = Modifier.height(12.dp))
                         Text(text = rating, style = AreIptvTheme.typography.caption, color = colors.textPrimary)
                     }
                 }

@@ -15,12 +15,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.Ink950
 
 /**
  * Dialog — modal sheet on a scrim (Dialog.jsx): confirm remove, parental PIN,
@@ -40,7 +40,10 @@ fun AreDialog(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0x99060708)),
+            // Dialog.jsx's own backdrop is a fixed dark scrim (rgba(6,7,10,0.6)) regardless of
+            // app theme -- Ink950 is that same value already named in the theme (was a raw,
+            // slightly-off hex literal here: 060708 instead of Ink950's 06070A).
+            .background(Ink950.copy(alpha = 0.6f)),
         contentAlignment = Alignment.Center,
     ) {
         Column(

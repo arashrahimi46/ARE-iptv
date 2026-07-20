@@ -89,6 +89,13 @@ data class AreIptvColors(
     val healthModerate: Color = Amber500,
     val healthPoor: Color = Red500,
     val violetText: Color,
+    // The -400 (lighter) tint of each status hue, for text/icon use over the -500 solid
+    // indicator dots above -- these were being reached via raw hex literals at call sites
+    // (PosterTile's rating star, LiveScreen's "ON AIR NOW" label, Badge's catch-up text)
+    // instead of through the theme, same class of violation as everything else in this pass.
+    val ratingStar: Color = Amber400,
+    val onAirText: Color = Red400,
+    val catchupText: Color = Green400,
 )
 
 val AreIptvDarkColors = AreIptvColors(

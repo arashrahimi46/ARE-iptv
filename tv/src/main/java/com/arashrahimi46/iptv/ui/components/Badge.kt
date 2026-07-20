@@ -43,7 +43,7 @@ fun AreBadge(
         AreBadgeTone.Live -> ToneStyle(colors.live, Color.White, null, colors.live)
         AreBadgeTone.New -> ToneStyle(colors.accent, Color.White, null, colors.accent)
         AreBadgeTone.Quality -> ToneStyle(colors.surfaceGlass, colors.textPrimary, colors.borderStrong, null)
-        AreBadgeTone.Catchup -> ToneStyle(colors.success.copy(alpha = 0.16f), Color(0xFF4ADE80), colors.success.copy(alpha = 0.4f), null)
+        AreBadgeTone.Catchup -> ToneStyle(colors.success.copy(alpha = 0.16f), colors.catchupText, colors.success.copy(alpha = 0.4f), null)
         AreBadgeTone.Smart -> ToneStyle(colors.smart.copy(alpha = 0.16f), colors.violetText, colors.smart.copy(alpha = 0.45f), colors.smart)
         AreBadgeTone.Neutral -> ToneStyle(colors.surface2, colors.textSecondary, colors.borderDefault, null)
     }

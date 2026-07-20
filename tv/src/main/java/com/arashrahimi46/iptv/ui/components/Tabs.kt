@@ -75,10 +75,10 @@ private fun AreTab(item: TabItem, active: Boolean, onClick: () -> Unit) {
                 Modifier
                     .fillMaxWidth()
                     .height(3.dp)
-                    .background(if (active) colors.accent else Color.Transparent, RoundedCornerShape(3.dp))
+                    .background(if (active) colors.accent else Color.Transparent, RoundedCornerShape(AreIptvTheme.radius.pill))
                     .then(
                         if (active) {
-                            Modifier.shadow(6.dp, RoundedCornerShape(3.dp), ambientColor = colors.accent, spotColor = colors.accent)
+                            Modifier.shadow(6.dp, RoundedCornerShape(AreIptvTheme.radius.pill), ambientColor = colors.accent, spotColor = colors.accent)
                         } else {
                             Modifier
                         },
