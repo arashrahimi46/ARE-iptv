@@ -52,6 +52,7 @@ import com.arashrahimi46.iptv.ui.player.PlaybackSource
 import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.settings.SettingsScreen
+import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
 import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
@@ -112,10 +113,13 @@ fun AreIptvApp() {
     // destination, so a source that already exists on launch doesn't flash Onboarding.
     if (activeSourceId == UNKNOWN || hasAcceptedTerms == null) return
 
+    // A non-null activeSourceId means at least one playlist has been added. Rather than
+    // jump straight into the shell, always land on the picker so the user can see and
+    // choose which added playlist to open (their existing sources were never listed before).
     val startDestination = when {
         hasAcceptedTerms == false -> "privacy"
         activeSourceId == null -> "onboarding"
-        else -> "shell"
+        else -> "sources"
     }
 
     AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
@@ -125,7 +129,7 @@ fun AreIptvApp() {
             PrivacyTermsStep(onAccepted = {
                 scope.launch {
                     settings.setTermsAccepted(true)
-                    navController.navigate(if (activeSourceId == null) "onboarding" else "shell") {
+                    navController.navigate(if (activeSourceId == null) "onboarding" else "sources") {
                         popUpTo("privacy") { inclusive = true }
                     }
                 }
@@ -137,6 +141,18 @@ fun AreIptvApp() {
                     popUpTo("onboarding") { inclusive = true }
                 }
             })
+        }
+        // Startup playlist picker: lists every added source and activates the chosen one
+        // before entering the shell. "Add new" routes back into onboarding.
+        composable("sources") {
+            SelectSourceScreen(
+                onSelected = {
+                    navController.navigate("shell") {
+                        popUpTo("sources") { inclusive = true }
+                    }
+                },
+                onAddNew = { navController.navigate("onboarding") },
+            )
         }
         // Persistent shell. Optional `tab` arg lets full-bleed screens (e.g. the
         // player's "open guide") return to the shell AND select a specific tab.
