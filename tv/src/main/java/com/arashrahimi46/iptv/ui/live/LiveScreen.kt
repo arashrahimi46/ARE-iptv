@@ -7,9 +7,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -21,6 +25,7 @@ import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
  * Live TV browse (Live.jsx): sticky category column + channel grid, backed by
@@ -39,6 +44,9 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
+    // Issue #5: which channel tile started playback -- see HomeScreen's identical use of
+    // rememberPlaybackFocusRequester for the full explanation.
+    var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     if (!state.hasSource) {
         Text(
@@ -73,14 +81,16 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         listMode = isListMode,
         modifier = modifier,
     ) { channel ->
+        val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }
         AreChannelTile(
             channel = channel.name,
-            onClick = { onChannelSelected(channel.id) },
+            onClick = { lastPlayedChannelId = channel.id; onChannelSelected(channel.id) },
             number = channel.number,
             now = channel.categoryName,
             logoUrl = channel.logoUrl,
             isFavorite = channel.id in favoriteChannelIds,
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
+            modifier = Modifier.focusRequester(focusRequester),
         )
     }
 }

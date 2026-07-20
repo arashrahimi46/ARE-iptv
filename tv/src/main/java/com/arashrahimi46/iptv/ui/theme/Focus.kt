@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import android.graphics.BlurMaskFilter
@@ -166,6 +168,30 @@ fun Modifier.tvGlow(
     drawIntoCanvas { canvas ->
         canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
     }
+}
+
+/**
+ * Restores D-pad focus to the exact tile that started playback when a screen
+ * re-enters composition -- most notably pressing Back out of the player, which
+ * otherwise leaves focus on the sidebar (the shell's default initial focus)
+ * instead of the channel tile the user just came from. Callers hold the "last
+ * played" id themselves via `rememberSaveable` (which survives the origin
+ * screen being paused while the player destination is pushed on top, since it
+ * stays on the back stack rather than being popped) and pass it in as
+ * [savedId]; once this tile's [itemId] matches, focus is requested once and
+ * [onConsumed] clears the saved id so an unrelated later recomposition (e.g.
+ * scrolling a lazy rail) doesn't keep re-stealing focus.
+ */
+@Composable
+fun rememberPlaybackFocusRequester(savedId: Long?, itemId: Long, onConsumed: () -> Unit): FocusRequester {
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        if (savedId == itemId) {
+            focusRequester.requestFocus()
+            onConsumed()
+        }
+    }
+    return focusRequester
 }
 
 /**

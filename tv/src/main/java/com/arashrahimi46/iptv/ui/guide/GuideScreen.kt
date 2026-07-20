@@ -17,8 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -38,8 +43,9 @@ private val TimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 /**
  * TV Guide (Guide.jsx): 6-hour rolling window, day chips, channel-group
  * filter, timeline header, and the sticky "focused-program info bar" (no
- * tooltips on TV -- driven by [AreGuideCell]'s `onFocusChange`). Selecting a
- * currently-live cell opens the real [com.arashrahimi46.iptv.ui.player.LivePlayerScreen].
+ * tooltips on TV -- driven by [AreGuideCell]'s `onFocusChange`). Selecting any
+ * cell in a channel's row (any programme, not just the live one) immediately
+ * plays that channel via the real [com.arashrahimi46.iptv.ui.player.LivePlayerScreen].
  */
 @Composable
 fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier = Modifier) {
@@ -51,6 +57,13 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
     val focused by viewModel.focused.collectAsState()
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    // Issue #5: which cell started playback -- channel id alone doesn't disambiguate
+    // which of a row's several programme cells was clicked (any cell can start playback,
+    // not just the live one -- see issue #4 above), so the clicked slot's start time is
+    // tracked alongside it. See HomeScreen's rememberPlaybackFocusRequester for the rest
+    // of the explanation (survives the screen pausing while the player is on top).
+    var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var lastPlayedSlotStartMs by rememberSaveable { mutableStateOf<Long?>(null) }
 
     if (!state.hasSource) {
         Text(
@@ -110,14 +123,26 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         row.slots.forEach { slot ->
                             val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
+                            val focusRequester = rememberPlaybackFocusRequester(
+                                savedId = lastPlayedChannelId?.takeIf { lastPlayedSlotStartMs == slot.startMs },
+                                itemId = row.channel.id,
+                            ) {
+                                lastPlayedChannelId = null
+                                lastPlayedSlotStartMs = null
+                            }
                             AreGuideCell(
                                 title = slot.title,
                                 time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(TimeFormatter),
-                                onClick = { if (slot.isNow) onChannelSelected(row.channel.id) },
+                                onClick = {
+                                    lastPlayedChannelId = row.channel.id
+                                    lastPlayedSlotStartMs = slot.startMs
+                                    onChannelSelected(row.channel.id)
+                                },
                                 live = slot.isNow,
                                 now = slot.isNow,
                                 width = (DpPerMinute * durationMinutes.toInt()) - 6.dp,
                                 onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
+                                modifier = Modifier.focusRequester(focusRequester),
                             )
                         }
                     }

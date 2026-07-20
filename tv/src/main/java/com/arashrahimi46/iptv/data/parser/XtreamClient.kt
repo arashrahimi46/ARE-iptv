@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 
 data class XtreamCategory(val id: String, val name: String)
-data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?)
+data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null)
 data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?)
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
 data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
@@ -87,6 +87,10 @@ class XtreamClient(
                 name = obj.optString("name", "Unnamed"),
                 categoryId = obj.optStringOrNull("category_id"),
                 logo = obj.optStringOrNull("stream_icon"),
+                // Xtream's per-stream XMLTV channel id -- lets us match this live
+                // stream to the bulk xmltv.php export by tvgId instead of relying
+                // solely on the N-per-channel get_short_epg fallback (see EpgRepository).
+                epgChannelId = obj.optStringOrNull("epg_channel_id")?.ifBlank { null },
             )
         }
     }

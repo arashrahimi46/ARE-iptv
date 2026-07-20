@@ -55,53 +55,60 @@ class EpgRepository(context: Context) {
         }
 
         val byTvgId = channels.filter { !it.tvgId.isNullOrBlank() }.associateBy { it.tvgId }
-        var matched = false
+        val bulkRows = mutableListOf<EPGProgram>()
+        // Channels the bulk XMLTV export actually produced a programme for -- tracked
+        // per-channel (not a single source-wide flag) so channels lacking a usable tvgId
+        // (e.g. an Xtream portal that doesn't expose `epg_channel_id`) still fall through
+        // to the per-channel fallback below instead of being starved whenever *any other*
+        // channel in the batch happened to match.
+        val coveredChannelIds = mutableSetOf<Long>()
 
         if (xmlTvUrl != null) {
             val body = runCatching { fetchText(xmlTvUrl) }.getOrNull()
             if (body != null) {
                 val programmes = runCatching { XmlTvParser.parse(body) }.getOrDefault(emptyList())
-                val rows = programmes.mapNotNull { p ->
-                    val channel = byTvgId[p.channelRef] ?: return@mapNotNull null
-                    EPGProgram(
+                programmes.forEach { p ->
+                    val channel = byTvgId[p.channelRef] ?: return@forEach
+                    bulkRows += EPGProgram(
                         channelId = channel.id,
                         title = p.title,
                         startMs = p.startMs,
                         endMs = p.stopMs,
                         description = p.description,
                     )
-                }
-                if (rows.isNotEmpty()) {
-                    db.epgProgramDao().deleteForChannels(channels.map { it.id })
-                    db.epgProgramDao().insertAll(rows)
-                    matched = true
+                    coveredChannelIds += channel.id
                 }
             }
         }
 
         // Fallback: per-channel Xtream short EPG, only for channels the bulk export didn't cover.
-        val fallbackUsername = credentials.username(source.id)
-        val fallbackPassword = credentials.password(source.id)
-        if (!matched && source.type == SourceType.XTREAM && fallbackUsername != null && fallbackPassword != null) {
-            val xtream = XtreamClient(source.url, fallbackUsername, fallbackPassword)
-            val rows = mutableListOf<EPGProgram>()
-            channels.forEach { channel ->
-                val streamId = channel.externalId ?: return@forEach
-                val entries = runCatching { xtream.getShortEpg(streamId) }.getOrDefault(emptyList())
-                entries.forEach { entry ->
-                    rows += EPGProgram(
-                        channelId = channel.id,
-                        title = entry.title,
-                        startMs = entry.startMs,
-                        endMs = entry.stopMs,
-                        description = entry.description,
-                    )
+        val fallbackRows = mutableListOf<EPGProgram>()
+        val uncoveredChannels = channels.filter { it.id !in coveredChannelIds }
+        if (uncoveredChannels.isNotEmpty() && source.type == SourceType.XTREAM) {
+            val fallbackUsername = credentials.username(source.id)
+            val fallbackPassword = credentials.password(source.id)
+            if (fallbackUsername != null && fallbackPassword != null) {
+                val xtream = XtreamClient(source.url, fallbackUsername, fallbackPassword)
+                uncoveredChannels.forEach { channel ->
+                    val streamId = channel.externalId ?: return@forEach
+                    val entries = runCatching { xtream.getShortEpg(streamId) }.getOrDefault(emptyList())
+                    entries.forEach { entry ->
+                        fallbackRows += EPGProgram(
+                            channelId = channel.id,
+                            title = entry.title,
+                            startMs = entry.startMs,
+                            endMs = entry.stopMs,
+                            description = entry.description,
+                        )
+                    }
                 }
             }
-            if (rows.isNotEmpty()) {
-                db.epgProgramDao().deleteForChannels(channels.map { it.id })
-                db.epgProgramDao().insertAll(rows)
-            }
+        }
+
+        val rows = bulkRows + fallbackRows
+        if (rows.isNotEmpty()) {
+            db.epgProgramDao().deleteForChannels(channels.map { it.id })
+            db.epgProgramDao().insertAll(rows)
         }
     }
 

@@ -83,7 +83,7 @@ fun ArePosterTile(
                     SubcomposeAsyncImage(
                         model = posterUrl,
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize().clip(shape),
                     ) {
                         when (painter.state) {

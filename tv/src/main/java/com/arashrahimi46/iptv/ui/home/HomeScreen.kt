@@ -8,29 +8,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.ui.components.AreBadge
-import com.arashrahimi46.iptv.ui.components.AreBadgeTone
-import com.arashrahimi46.iptv.ui.components.AreButton
-import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryCard
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreContinueCard
-import com.arashrahimi46.iptv.ui.components.AreHero
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreRail
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
- * Real Home dashboard (Home.jsx): Hero + rails, sourced from the active
+ * Real Home dashboard (Home.jsx): rails (no top Hero banner -- removed per
+ * design review so more of the catalog fits without scrolling), sourced from the active
  * playlist's parsed catalog via [HomeViewModel]. Rails degrade gracefully to
  * an empty/onboarding-prompt state rather than crashing on a fresh install
  * with no (or an empty) catalog. Channel/poster tiles open the real
@@ -53,59 +54,41 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
     val nowPlayingTitles by viewModel.nowPlayingTitles.collectAsState()
     val spacing = AreIptvTheme.spacing
+    // Issue #5: which channel tile started playback -- survives the screen being paused
+    // while the player is pushed on top (see [rememberPlaybackFocusRequester]) so Back
+    // can restore D-pad focus to it instead of leaving focus on the sidebar.
+    var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
 
+    // Design review: the big top-of-screen Hero banner is gone -- rail tiles/cards
+    // below are sized down instead (see the explicit `width =` overrides on each rail
+    // item further down) so more of the catalog fits on screen without scrolling as much.
     Column(modifier = modifier.padding(bottom = spacing.sp16)) {
-        Box(modifier = Modifier.padding(horizontal = spacing.safeX)) {
-            if (state.hasSource && (state.channels.isNotEmpty() || state.movies.isNotEmpty())) {
-                val featuredChannel = state.channels.firstOrNull()
-                val featuredMovie = state.movies.firstOrNull() ?: state.series.firstOrNull()
-                AreHero(
-                    title = featuredChannel?.name ?: featuredMovie?.name ?: "Welcome to ARE iptv",
-                    kicker = if (featuredChannel != null) "Live now" else "Featured",
-                    meta = featuredChannel?.categoryName ?: featuredMovie?.let { listOfNotNull(it.year, it.categoryName).joinToString(" · ") },
-                    badges = {
-                        if (featuredChannel != null) AreBadge("Live", tone = AreBadgeTone.Live, glow = true)
-                    },
-                    actions = {
-                        AreButton(
-                            "Play now",
-                            onClick = {
-                                if (featuredChannel != null) onChannelSelected(featuredChannel) else featuredMovie?.let(onTitleSelected)
-                            },
-                            variant = AreButtonVariant.Primary,
-                        )
-                        // product-lead ruling: "More info" always targeted featuredMovie, but a
-                        // channel hero has no Detail screen of its own to route "more info" to --
-                        // routing to an unrelated movie/series was actively misleading, not just
-                        // off-topic. "Play now" above already covers "tune in" for a channel hero,
-                        // so this action is simply absent rather than wrong when one is showing.
-                        if (featuredChannel == null) {
-                            AreButton(
-                                "More info",
-                                onClick = { featuredMovie?.let(onTitleSelected) },
-                                variant = AreButtonVariant.Secondary,
-                            )
-                        }
-                    },
-                )
-            } else if (state.isInitializing) {
+        if (!state.hasSource || (state.channels.isEmpty() && state.movies.isEmpty())) {
+            Box(modifier = Modifier.padding(horizontal = spacing.safeX)) {
                 // QA LOW defect: a real source existed but Room hadn't emitted its first
                 // catalog read yet (cold-start DB open on a large catalog can take several
                 // seconds) -- showing EmptyHero() here read as "your playlist vanished"
                 // rather than "still loading".
-                LoadingHero()
-            } else {
-                EmptyHero()
+                if (state.isInitializing) LoadingHero() else EmptyHero()
             }
+            Box(Modifier.padding(top = spacing.sp10))
         }
-        Box(Modifier.padding(top = spacing.sp10))
 
         // Continue watching: no bookmarks recorded yet in this phase (schema-only), so the rail is hidden.
 
         if (state.channels.isNotEmpty()) {
             AreRail(title = "Live now") {
                 items(state.channels.take(20)) { channel ->
-                    AreChannelTile(channel = channel.name, onClick = { onChannelSelected(channel) }, number = channel.number, now = nowPlayingTitles[channel.id], logoUrl = channel.logoUrl)
+                    val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }
+                    AreChannelTile(
+                        channel = channel.name,
+                        onClick = { lastPlayedChannelId = channel.id; onChannelSelected(channel) },
+                        number = channel.number,
+                        now = nowPlayingTitles[channel.id],
+                        logoUrl = channel.logoUrl,
+                        width = 260.dp,
+                        modifier = Modifier.focusRequester(focusRequester),
+                    )
                 }
             }
         }
@@ -113,7 +96,7 @@ fun HomeScreen(
         if (state.categories.isNotEmpty()) {
             AreRail(title = "Browse by category") {
                 items(state.categories.take(20)) { category ->
-                    AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default)
+                    AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                 }
             }
         }
@@ -127,7 +110,7 @@ fun HomeScreen(
         if (recommended.isNotEmpty()) {
             AreRail(title = "Browse movies & series") {
                 items(recommended) { title ->
-                    ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl)
+                    ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
                 }
             }
         }
@@ -135,7 +118,7 @@ fun HomeScreen(
         if (state.movies.isNotEmpty()) {
             AreRail(title = "Movies") {
                 items(state.movies.take(20)) { movie ->
-                    ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl)
+                    ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp)
                 }
             }
         }
@@ -143,7 +126,7 @@ fun HomeScreen(
         if (state.series.isNotEmpty()) {
             AreRail(title = "Series") {
                 items(state.series.take(20)) { show ->
-                    ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl)
+                    ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp)
                 }
             }
         }

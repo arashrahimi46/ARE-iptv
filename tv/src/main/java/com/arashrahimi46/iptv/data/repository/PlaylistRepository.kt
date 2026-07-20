@@ -207,6 +207,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 logoUrl = it.logo,
                 categoryName = it.categoryId?.let(liveCatNames::get),
                 externalId = it.id,
+                tvgId = it.epgChannelId,
             )
         }
         val movies = vodStreams.map {
