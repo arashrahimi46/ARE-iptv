@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
@@ -34,6 +36,8 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     )
     val state by viewModel.uiState.collectAsState()
     val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
+    val settings = remember { UserSettings(context) }
+    val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
 
     if (!state.hasSource) {
@@ -66,6 +70,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
         sectionCountLabel = { count -> "$count channels" },
         emptyLabel = "No channels in this group yet.",
+        listMode = isListMode,
         modifier = modifier,
     ) { channel ->
         AreChannelTile(

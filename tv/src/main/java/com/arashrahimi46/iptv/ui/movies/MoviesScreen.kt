@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
@@ -28,6 +30,8 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     )
     val state by viewModel.uiState.collectAsState()
     val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
+    val settings = remember { UserSettings(context) }
+    val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
 
     if (!state.hasSource) {
@@ -53,6 +57,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
         sectionCountLabel = { count -> "$count titles" },
         emptyLabel = "No movies in this genre yet.",
+        listMode = isListMode,
         modifier = modifier,
     ) { movie ->
         ArePosterTile(

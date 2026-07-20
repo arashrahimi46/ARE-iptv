@@ -39,6 +39,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isPictureInPicture: StateFlow<Boolean> = flowState(settings.isPictureInPicture, false)
     val externalPlayer: StateFlow<ExternalPlayerChoice> = flowState(settings.externalPlayer, ExternalPlayerChoice.BUILT_IN)
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
+    val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
     val hasPinSet: StateFlow<Boolean> = flowState(settings.parentalPinHash.map { it != null }, false)
 
     // QA HIGH defect: dark-theme (and, by the same async-write-vs-process-death race,
@@ -55,6 +56,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setPictureInPicture(enabled: Boolean) = viewModelScope.launch { settings.setPictureInPicture(enabled) }
 
     fun setExternalPlayer(choice: ExternalPlayerChoice) = viewModelScope.launch { settings.setExternalPlayer(choice) }
+
+    fun setBrowseListMode(enabled: Boolean) = viewModelScope.launch { settings.setBrowseListMode(enabled) }
 
     /** Turning the lock ON never needs a PIN check; the caller (SettingsScreen) only calls this after a PIN exists. */
     fun setParentalLockEnabled(enabled: Boolean) = viewModelScope.launch { settings.setParentalLockEnabled(enabled) }

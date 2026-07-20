@@ -67,6 +67,10 @@ fun <T> BrowseLayout(
     sectionTitle: String? = null,
     sectionCountLabel: ((Int) -> String)? = null,
     emptyLabel: String = "No items in this category yet.",
+    /** Table/list rendering (Settings' "List view" toggle, Issue #9): items stack in a single
+     * column instead of wrapping across the [FlowRow] grid. Switching this resets scroll to
+     * the top by design (product decision) -- no scroll-position preservation across modes. */
+    listMode: Boolean = false,
     itemContent: @Composable (T) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -141,11 +145,18 @@ fun <T> BrowseLayout(
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
                 } else {
                     val rendered = items.take(MAX_RENDERED_ITEMS)
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(18.dp),
-                        verticalArrangement = Arrangement.spacedBy(18.dp),
-                    ) {
-                        rendered.forEach { item -> itemContent(item) }
+                    if (listMode) {
+                        // List/table mode: one item per row instead of wrapping across columns.
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            rendered.forEach { item -> itemContent(item) }
+                        }
+                    } else {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(18.dp),
+                            verticalArrangement = Arrangement.spacedBy(18.dp),
+                        ) {
+                            rendered.forEach { item -> itemContent(item) }
+                        }
                     }
                     if (items.size > rendered.size) {
                         Box(Modifier.height(14.dp))

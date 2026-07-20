@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PictureInPictureAlt
@@ -81,6 +82,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val isHardwareDecoding by viewModel.isHardwareDecoding.collectAsState()
     val isAutoplayNextEpisode by viewModel.isAutoplayNextEpisode.collectAsState()
     val isPictureInPicture by viewModel.isPictureInPicture.collectAsState()
+    val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
     val externalPlayer by viewModel.externalPlayer.collectAsState()
     val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
     val hasPinSet by viewModel.hasPinSet.collectAsState()
@@ -101,6 +103,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             }
             SettingsRow(icon = Icons.Filled.Bolt, title = "Reduce motion", desc = "Softer focus animations.") {
                 AreSwitch(checked = isReducedMotion, onCheckedChange = viewModel::setReducedMotion)
+            }
+            SettingsRow(
+                icon = Icons.Filled.ViewAgenda,
+                title = "List view",
+                desc = "Show channels, movies and series as a list instead of a tile grid.",
+            ) {
+                AreSwitch(checked = isBrowseListMode, onCheckedChange = viewModel::setBrowseListMode)
             }
         }
 

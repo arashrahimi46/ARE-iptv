@@ -32,6 +32,7 @@ class UserSettings(private val context: Context) {
         val PARENTAL_PIN_HASH = stringPreferencesKey("parental_pin_hash")
         val PARENTAL_PIN_SALT = stringPreferencesKey("parental_pin_salt")
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
+        val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
     }
 
     val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
@@ -72,6 +73,9 @@ class UserSettings(private val context: Context) {
 
     /** Last channel-group filter picked on the Guide screen (see [com.arashrahimi46.iptv.ui.guide.GuideViewModel]); "All" when unset. */
     val guideSelectedCategory: Flow<String> = context.dataStore.data.map { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
+
+    /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
+    val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
 
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
@@ -122,5 +126,9 @@ class UserSettings(private val context: Context) {
 
     suspend fun setGuideSelectedCategory(category: String) {
         context.dataStore.edit { it[Keys.GUIDE_SELECTED_CATEGORY] = category }
+    }
+
+    suspend fun setBrowseListMode(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.BROWSE_LIST_MODE] = enabled }
     }
 }
