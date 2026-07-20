@@ -55,6 +55,12 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
  * backdrop. Synopsis/cast are also not in the schema (no field in [VodTitle])
  * -- the meta row (year/rating/category) is shown in their place; a real
  * synopsis needs a schema addition + a metadata source, cut for this phase.
+ *
+ * Detail.jsx's Cast & crew tab, More like this (related titles) tab and
+ * Trailer action are explicit product-lead scope cuts for v1 (backlogged
+ * alongside Continue Watching/PiP/catch-up) -- same root cause as the
+ * backdrop/synopsis above (no cast/trailer data in the schema, no metadata
+ * source to back them), not an oversight.
  */
 @Composable
 fun DetailScreen(
@@ -109,7 +115,6 @@ fun DetailScreen(
                                 variant = AreButtonVariant.Primary,
                                 icon = Icons.Filled.PlayArrow,
                             )
-                            AreButton(text = "More info", onClick = {}, variant = AreButtonVariant.Secondary)
                             AreIconButton(
                                 icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                                 contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",

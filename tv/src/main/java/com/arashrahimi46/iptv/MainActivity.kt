@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -88,6 +89,7 @@ fun AreIptvApp() {
                 HomeScreen(
                     onChannelSelected = { channel -> navController.navigate("player/${channel.id}") },
                     onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
+                    onCategorySelected = { category -> navController.navigate("search?category=${Uri.encode(category)}") },
                 )
             }
         }
@@ -111,11 +113,16 @@ fun AreIptvApp() {
                 SeriesScreen(onSeriesSelected = { series -> openDetail("series", series.id) })
             }
         }
-        composable("search") {
+        composable(
+            route = "search?category={category}",
+            arguments = listOf(navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null }),
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category")
             ShellScreen(navController, activeNav = "search") {
                 SearchScreen(
                     onChannelSelected = { channel -> navController.navigate("player/${channel.id}") },
                     onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
+                    initialCategory = category,
                 )
             }
         }
@@ -211,6 +218,20 @@ private fun ShellScreen(navController: NavHostController, activeNav: String, con
                 onSearch = {
                     if (activeNav != "search") {
                         navController.navigate("search") {
+                            popUpTo(0) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                // QA MEDIUM defect: onAvatar was declared on AreTopBar but never attached to
+                // anything, and the Box it decorated wasn't even focusable. Settings is the
+                // closest existing real destination for an account/profile icon (no dedicated
+                // profile screen exists) -- see report re: "+" Add Playlist needing a product
+                // call before wiring, unlike this one.
+                onAvatar = {
+                    if (activeNav != "settings") {
+                        navController.navigate("settings") {
                             popUpTo(0) { saveState = true }
                             launchSingleTop = true
                             restoreState = true

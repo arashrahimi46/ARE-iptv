@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,6 +21,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreOnScreenKeyboard
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
@@ -37,11 +42,18 @@ fun SearchScreen(
     onChannelSelected: (Channel) -> Unit,
     onTitleSelected: (VodTitle) -> Unit,
     modifier: Modifier = Modifier,
+    /** Home's "Browse by category" cards have no dedicated category-browse screen of
+     * their own -- they route here with an exact category to filter by (see report),
+     * distinct from a typed text query. */
+    initialCategory: String? = null,
 ) {
     val context = LocalContext.current
     val viewModel: SearchViewModel = viewModel(
         factory = SearchViewModel.factory(context.applicationContext as android.app.Application),
     )
+    LaunchedEffect(initialCategory) {
+        if (!initialCategory.isNullOrBlank()) viewModel.setCategoryFilter(initialCategory)
+    }
     val state by viewModel.uiState.collectAsState()
     val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
     val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
@@ -80,14 +92,22 @@ fun SearchScreen(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                if (state.query.isBlank()) {
+                if (state.categoryFilter != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(text = "Category: ${state.categoryFilter}", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
+                        AreButton(text = "Clear", onClick = { viewModel.setCategoryFilter(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Small)
+                    }
+                    Box(Modifier.padding(top = 16.dp))
+                }
+                if (state.categoryFilter == null && state.query.isBlank()) {
                     Text(
                         text = "Type on the keyboard to search your catalog.",
                         style = AreIptvTheme.typography.body,
                         color = colors.textSecondary,
                     )
                 } else if (state.channelResults.isEmpty() && state.titleResults.isEmpty()) {
-                    Text(text = "No results for \"${state.query}\".", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                    val label = state.categoryFilter ?: state.query
+                    Text(text = "No results for \"$label\".", style = AreIptvTheme.typography.body, color = colors.textSecondary)
                 } else {
                     if (state.channelResults.isNotEmpty()) {
                         Text(text = "Live TV", style = AreIptvTheme.typography.h3, color = colors.textSecondary)

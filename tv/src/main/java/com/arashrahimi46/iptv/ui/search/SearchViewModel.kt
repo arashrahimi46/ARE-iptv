@@ -27,6 +27,9 @@ import kotlinx.coroutines.launch
 data class SearchUiState(
     val hasSource: Boolean = false,
     val query: String = "",
+    /** Set when arriving from Home's "Browse by category" cards (see SearchScreen) --
+     * an exact categoryName match, distinct from [query]'s substring-on-name search. */
+    val categoryFilter: String? = null,
     val channelResults: List<Channel> = emptyList(),
     val titleResults: List<VodTitle> = emptyList(),
 )
@@ -51,6 +54,7 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     private data class Catalog(val channels: List<Channel>, val movies: List<VodTitle>, val series: List<VodTitle>)
 
     private val _query = MutableStateFlow("")
+    private val _categoryFilter = MutableStateFlow<String?>(null)
 
     private val catalog = settings.activeSourceId.flatMapLatest { sourceId ->
         if (sourceId == null) {
@@ -66,13 +70,18 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     init {
-        combine(catalog, _query) { c, query -> c to query }
-            .onEach { (c, query) -> _uiState.value = buildState(c, query) }
+        combine(catalog, _query, _categoryFilter) { c, query, categoryFilter -> Triple(c, query, categoryFilter) }
+            .onEach { (c, query, categoryFilter) -> _uiState.value = buildState(c, query, categoryFilter) }
             .launchIn(viewModelScope)
     }
 
-    private fun buildState(catalog: Catalog?, query: String): SearchUiState {
-        if (catalog == null) return SearchUiState(hasSource = false, query = query)
+    private fun buildState(catalog: Catalog?, query: String, categoryFilter: String?): SearchUiState {
+        if (catalog == null) return SearchUiState(hasSource = false, query = query, categoryFilter = categoryFilter)
+        if (categoryFilter != null) {
+            val channelResults = catalog.channels.filter { it.categoryName == categoryFilter }.take(30)
+            val titleResults = (catalog.movies + catalog.series).filter { it.categoryName == categoryFilter }.take(30)
+            return SearchUiState(hasSource = true, query = query, categoryFilter = categoryFilter, channelResults = channelResults, titleResults = titleResults)
+        }
         val trimmed = query.trim()
         if (trimmed.isEmpty()) return SearchUiState(hasSource = true, query = query)
         val channelResults = catalog.channels.filter { it.name.contains(trimmed, ignoreCase = true) }.take(30)
@@ -99,7 +108,14 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setQuery(value: String) {
+        _categoryFilter.value = null
         _query.value = value
+    }
+
+    /** Null clears back to normal text search (e.g. the category header's "Clear" action). */
+    fun setCategoryFilter(category: String?) {
+        _categoryFilter.value = category
+        _query.value = ""
     }
 
     fun toggleChannelFavorite(channelId: Long) {

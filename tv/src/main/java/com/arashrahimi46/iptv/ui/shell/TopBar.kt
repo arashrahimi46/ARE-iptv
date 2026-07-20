@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +25,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
+import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -60,14 +62,20 @@ fun AreTopBar(
         AreIconButton(Icons.Filled.GridView, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Solid)
         AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
         AreIconButton(Icons.Filled.Add, "Add playlist", onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .border(2.dp, colors.borderStrong, CircleShape)
-                .background(colors.surface2, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = colors.textSecondary, modifier = Modifier.size(28.dp))
+        // QA MEDIUM defect: this was a plain Box -- not focusable at all, D-pad couldn't
+        // land on it and onAvatar was declared but never attached to anything.
+        TvFocusable(
+            onClick = onAvatar,
+            modifier = Modifier.size(44.dp),
+            shape = CircleShape,
+            backgroundColor = colors.surface2,
+        ) { _, _ ->
+            Box(
+                modifier = Modifier.fillMaxSize().border(2.dp, colors.borderStrong, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = colors.textSecondary, modifier = Modifier.size(28.dp))
+            }
         }
     }
 }

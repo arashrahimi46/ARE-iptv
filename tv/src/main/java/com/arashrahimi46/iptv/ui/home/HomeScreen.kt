@@ -44,6 +44,7 @@ fun HomeScreen(
     onChannelSelected: (Channel) -> Unit,
     onTitleSelected: (VodTitle) -> Unit,
     modifier: Modifier = Modifier,
+    onCategorySelected: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
@@ -98,7 +99,7 @@ fun HomeScreen(
         if (state.categories.isNotEmpty()) {
             AreRail(title = "Browse by category") {
                 items(state.categories.take(20)) { category ->
-                    AreCategoryCard(name = category.name, onClick = {}, count = category.count, kind = AreCategoryKind.Default)
+                    AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default)
                 }
             }
         }
