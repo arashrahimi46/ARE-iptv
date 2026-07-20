@@ -43,7 +43,9 @@ object AreIptvTheme {
  * @param isDark false switches every color token to the light ramp (single theme
  *   object, not a build variant — see tokens/colors.css `[data-theme="light"]`).
  * @param reducedMotion drives [LocalReducedMotion] and collapses [AreIptvTheme.motion]
- *   to the reduced-motion token set. Not yet backed by a real Settings screen.
+ *   to the reduced-motion token set. Backed by the real Settings "Reduce motion" toggle
+ *   since Phase 4 (via [com.arashrahimi46.iptv.data.settings.UserSettings.isReducedMotion],
+ *   read at the composition root in MainActivity) -- this doc-comment was stale.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable

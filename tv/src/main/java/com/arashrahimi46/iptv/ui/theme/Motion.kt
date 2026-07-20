@@ -59,9 +59,9 @@ val AreIptvMotionReduced = AreIptvMotion(
 )
 
 /**
- * Global "reduce motion" preference. Not yet backed by a real Settings
- * screen/DataStore (Phase 1+) — defaults to false in-memory so every
- * animation in the component library is already wired to respect it.
+ * Global "reduce motion" preference. Backed by the real Settings "Reduce motion" toggle
+ * since Phase 4 (see AreIptvTheme's `reducedMotion` param) -- `false` here is only the
+ * CompositionLocal's structural default before a real value is provided.
  */
 val LocalReducedMotion = staticCompositionLocalOf { false }
 
