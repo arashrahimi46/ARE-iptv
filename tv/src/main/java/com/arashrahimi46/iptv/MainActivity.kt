@@ -46,14 +46,18 @@ import com.arashrahimi46.iptv.ui.live.LiveScreen
 import com.arashrahimi46.iptv.ui.multiview.MultiViewScreen
 import com.arashrahimi46.iptv.ui.movies.MoviesScreen
 import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
+import com.arashrahimi46.iptv.ui.onboarding.PrivacyTermsStep
 import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
 import com.arashrahimi46.iptv.ui.player.PlaybackSource
 import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.settings.SettingsScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
+import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,16 +91,46 @@ fun AreIptvApp() {
     // SettingsScreen recomposes here immediately -- no restart, no separate "apply" step.
     val isDarkTheme by settings.isDarkTheme.collectAsState(initial = true)
     val isReducedMotion by settings.isReducedMotion.collectAsState(initial = false)
+    // Issue #11: first-run Privacy & Terms acceptance gate. `null` distinguishes "DataStore
+    // hasn't emitted yet" from a real false, same reasoning as UNKNOWN below for activeSourceId.
+    val hasAcceptedTerms: Boolean? by settings.hasAcceptedTerms.collectAsState(initial = null)
     val navController = rememberNavController()
+
+    // Issue #13: cold-start splash, shown unconditionally for a couple of seconds before any
+    // real decision is made below. No androidx.core.splashscreen setup exists in the manifest
+    // yet, so this is a plain Compose state gate rather than the system splash API.
+    var showSplash by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) { delay(SPLASH_DURATION_MS); showSplash = false }
+    if (showSplash) {
+        AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
+            AreSplashScreen()
+        }
+        return
+    }
 
     // Wait for the first real read from DataStore before deciding the start
     // destination, so a source that already exists on launch doesn't flash Onboarding.
-    if (activeSourceId == UNKNOWN) return
+    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null) return
 
-    val startDestination = if (activeSourceId == null) "onboarding" else "shell"
+    val startDestination = when {
+        hasAcceptedTerms == false -> "privacy"
+        activeSourceId == null -> "onboarding"
+        else -> "shell"
+    }
 
     AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("privacy") {
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            PrivacyTermsStep(onAccepted = {
+                scope.launch {
+                    settings.setTermsAccepted(true)
+                    navController.navigate(if (activeSourceId == null) "onboarding" else "shell") {
+                        popUpTo("privacy") { inclusive = true }
+                    }
+                }
+            })
+        }
         composable("onboarding") {
             OnboardingFlow(onFinished = {
                 navController.navigate("shell") {
@@ -354,3 +388,6 @@ private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "se
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L
+
+/** How long [AreSplashScreen] stays up on cold start (Issue #13) -- product-lead placeholder duration. */
+private const val SPLASH_DURATION_MS = 1800L

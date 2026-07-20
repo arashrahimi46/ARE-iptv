@@ -33,6 +33,7 @@ class UserSettings(private val context: Context) {
         val PARENTAL_PIN_SALT = stringPreferencesKey("parental_pin_salt")
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
+        val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
     }
 
     val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
@@ -73,6 +74,9 @@ class UserSettings(private val context: Context) {
 
     /** Last channel-group filter picked on the Guide screen (see [com.arashrahimi46.iptv.ui.guide.GuideViewModel]); "All" when unset. */
     val guideSelectedCategory: Flow<String> = context.dataStore.data.map { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
+
+    /** First-run Privacy & Terms acceptance (Issue #11) -- false until the user explicitly accepts once. */
+    val hasAcceptedTerms: Flow<Boolean> = context.dataStore.data.map { it[Keys.TERMS_ACCEPTED] ?: false }
 
     /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
     val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
@@ -130,5 +134,9 @@ class UserSettings(private val context: Context) {
 
     suspend fun setBrowseListMode(enabled: Boolean) {
         context.dataStore.edit { it[Keys.BROWSE_LIST_MODE] = enabled }
+    }
+
+    suspend fun setTermsAccepted(accepted: Boolean) {
+        context.dataStore.edit { it[Keys.TERMS_ACCEPTED] = accepted }
     }
 }

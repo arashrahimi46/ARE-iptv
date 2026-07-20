@@ -13,7 +13,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
@@ -35,6 +37,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import android.content.Intent
+import android.net.Uri
+import com.arashrahimi46.iptv.BuildConfig
 import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
@@ -175,6 +180,29 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 AreButton(
                     text = if (hasPinSet) "Change" else "Set PIN",
                     onClick = { pinDialog = if (hasPinSet) PinFlow.VerifyThenChange else PinFlow.SetOnly },
+                    variant = AreButtonVariant.Secondary,
+                    size = AreButtonSize.Small,
+                )
+            }
+        }
+
+        // Issue #11: About section -- app version + a donation link. Everything else under
+        // Settings.jsx's original "About & support" (store rating, licenses, etc.) is still out
+        // of scope, per this file's class doc.
+        SettingsSection(title = "About") {
+            SettingsRow(icon = Icons.Filled.Info, title = "Version", desc = "ARE iptv ${BuildConfig.VERSION_NAME}") {}
+            SettingsRow(
+                icon = Icons.Filled.Favorite,
+                title = "Support this app",
+                desc = "Buy me a coffee if ARE iptv is useful to you.",
+            ) {
+                AreButton(
+                    text = "Donate",
+                    onClick = {
+                        // PLACEHOLDER URL -- needs a real donation link from product.
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://paypal.me/change-me"))
+                        context.startActivity(intent)
+                    },
                     variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Small,
                 )
