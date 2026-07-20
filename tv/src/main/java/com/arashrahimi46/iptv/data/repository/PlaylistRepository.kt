@@ -24,6 +24,31 @@ import java.util.concurrent.TimeUnit
 /** Derived counts shown on the onboarding Confirm step, from a *real* parse -- never hardcoded. */
 data class ImportSummary(val channels: Int, val movies: Int, val series: Int)
 
+/** Xtream `get.php` keys are lowercase by spec, and the server is case-sensitive on them. */
+private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
+
+/**
+ * Trim the URL and lowercase only the known Xtream query-parameter KEYS (values left
+ * untouched), so a pasted link like `...&Password=...` -- which 404s because the server
+ * only recognizes `password` -- just works. Non-Xtream query keys are left alone, so
+ * ordinary M3U URLs with case-sensitive params aren't disturbed.
+ */
+internal fun normalizeSourceUrl(raw: String): String {
+    val trimmed = raw.trim()
+    val q = trimmed.indexOf('?')
+    if (q < 0) return trimmed
+    val base = trimmed.substring(0, q)
+    val query = trimmed.substring(q + 1)
+    if (query.isEmpty()) return trimmed
+    val normalized = query.split('&').joinToString("&") { pair ->
+        val eq = pair.indexOf('=')
+        if (eq < 0) return@joinToString pair
+        val key = pair.substring(0, eq)
+        if (key.lowercase() in XTREAM_QUERY_KEYS) key.lowercase() + pair.substring(eq) else pair
+    }
+    return "$base?$normalized"
+}
+
 /**
  * Repository pattern wrapping Room DAOs + the M3U/Xtream parsers behind a
  * single surface. All network/parsing work runs on [Dispatchers.IO].
@@ -105,13 +130,16 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
     override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =
         withContext(Dispatchers.IO) {
-            val body = fetchText(url)
+            // Normalize a pasted link (e.g. capitalized `Password`) so it doesn't 404, then
+            // persist the normalized form so later refreshes hit the same working URL.
+            val normalizedUrl = normalizeSourceUrl(url)
+            val body = fetchText(normalizedUrl)
             val entries = M3uParser.parse(body)
             if (entries.isEmpty()) {
                 throw IllegalStateException("No channels found -- check the playlist URL/format")
             }
 
-            val source = PlaylistSource(name = name, type = SourceType.M3U, url = url, epgUrl = epgUrl)
+            val source = PlaylistSource(name = name, type = SourceType.M3U, url = normalizedUrl, epgUrl = epgUrl)
             val sourceId = db.playlistSourceDao().insert(source)
 
             // Classification heuristic lives in M3uGroupClassifier.kt (unit-tested) -- see its
