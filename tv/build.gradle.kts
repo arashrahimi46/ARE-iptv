@@ -85,6 +85,10 @@ dependencies {
     implementation(libs.squareup.okhttp)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.hls)
+    // QA BLOCKER: real Xtream/M3U sources commonly resolve to .mpd (DASH), not just HLS --
+    // DefaultMediaSourceFactory needs this on the classpath or it crashes with
+    // ClassNotFoundException on DashMediaSource$Factory the moment a DASH stream is selected.
+    implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.security.crypto)
