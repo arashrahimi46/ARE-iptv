@@ -46,6 +46,16 @@ data class GuideChannelRow(val channel: Channel, val slots: List<GuideProgramSlo
 
 data class GuideFocusedInfo(val channel: Channel, val slot: GuideProgramSlot)
 
+/**
+ * Pure resolution of the effective category filter: falls back to "All" when [rawGroup] isn't
+ * (or is no longer) present in [groups] -- e.g. a persisted [UserSettings.guideSelectedCategory]
+ * restored asynchronously in [GuideViewModel.init] for a category that doesn't exist on the
+ * current source. Extracted as a top-level pure function so the race-condition fix in
+ * [GuideViewModel.observeRows] is unit-testable without standing up Room/AndroidViewModel.
+ */
+internal fun resolveGuideGroup(rawGroup: String, groups: List<String>): String =
+    if (rawGroup in groups) rawGroup else "All"
+
 data class GuideUiState(
     val hasSource: Boolean = false,
     val groups: List<String> = listOf("All"),
@@ -114,12 +124,17 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
 
     private suspend fun observeRows(channels: List<Channel>) {
         val groups = listOf("All") + channels.mapNotNull { it.categoryName }.distinct().sorted()
-        // A restored/previously-picked group that doesn't exist on this source (e.g. the user
-        // switched playlists) would otherwise filter every channel out silently -- fall back to "All".
-        if (_selectedGroup.value !in groups) _selectedGroup.value = "All"
 
         combine(_day, _selectedGroup) { day, group -> day to group }
-            .flatMapLatest { (day, group) ->
+            .flatMapLatest { (day, rawGroup) ->
+                // A restored/previously-picked group that doesn't exist on this source (e.g. the
+                // user switched playlists, or the persisted category from UserSettings finishes
+                // loading -- asynchronously, in `init` -- only after this pipeline has already
+                // started with "All") would otherwise filter every channel out silently, leaving
+                // the guide looking empty/unscrollable. Re-validating on every emission (instead
+                // of once before this pipeline starts) closes that race and always falls back to
+                // "All" rather than rendering zero rows.
+                val group = resolveGuideGroup(rawGroup, groups)
                 val window = windowFor(day)
                 val visible = if (group == "All") channels else channels.filter { it.categoryName == group }
                 val ids = visible.map { it.id }
