@@ -72,7 +72,14 @@ fun <T> BrowseLayout(
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
 
-    Column(modifier = modifier.padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner
+    // categories+content Row alone did not fix the on-device repro -- this outer
+    // root Column (built from the caller's plain `modifier` param, itself never
+    // fillMaxWidth'd by any BrowseLayout caller) was still sizing itself to wrap
+    // content, so the weight(1f) content column's real available width stayed
+    // undersized. Claiming the full width here too so the whole chain resolves
+    // against the actual screen width, not each level's own wrap-content guess.
+    Column(modifier = modifier.fillMaxWidth().padding(top = spacing.sp6, bottom = spacing.sp10)) {
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)

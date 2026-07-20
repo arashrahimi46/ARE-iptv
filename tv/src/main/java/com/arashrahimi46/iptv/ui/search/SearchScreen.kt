@@ -77,7 +77,12 @@ fun SearchScreen(
         return
     }
 
-    Column(modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp6)) {
+    // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner keyboard+
+    // results Row alone did not fix the on-device repro -- this outer root Column (built
+    // from the caller's plain `modifier` param, never fillMaxWidth'd by any caller) was
+    // still sizing itself to wrap content, so the weight(1f) results column's real
+    // available width stayed undersized.
+    Column(modifier = modifier.fillMaxWidth().padding(horizontal = spacing.safeX, vertical = spacing.sp6)) {
         Text(text = "Search", style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp6))
 
