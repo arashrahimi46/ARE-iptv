@@ -25,6 +25,7 @@ import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
+import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreOnScreenKeyboard
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreTextField
@@ -37,6 +38,11 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
  * [AreChannelTile]/[ArePosterTile]. No ranking backend: plain substring
  * match over the already-loaded catalog, per spec.
  */
+@Composable
+private fun ScopeChip(label: String, value: SearchScope, current: SearchScope, onSelect: (SearchScope) -> Unit) {
+    AreChip(text = label, selected = value == current, onClick = { onSelect(value) })
+}
+
 @Composable
 fun SearchScreen(
     onChannelSelected: (Channel) -> Unit,
@@ -92,6 +98,15 @@ fun SearchScreen(
             }
 
             Column(modifier = Modifier.weight(1f)) {
+                // Search.jsx's scope chips (All / Live TV / Movies / Series) -- Catch-up
+                // omitted, an accepted v1 scope cut (see product-lead ruling).
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ScopeChip("All", SearchScope.All, state.scope, viewModel::setScope)
+                    ScopeChip("Live TV", SearchScope.LiveTv, state.scope, viewModel::setScope)
+                    ScopeChip("Movies", SearchScope.Movies, state.scope, viewModel::setScope)
+                    ScopeChip("Series", SearchScope.Series, state.scope, viewModel::setScope)
+                }
+                Box(Modifier.padding(top = 18.dp))
                 if (state.categoryFilter != null) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(text = "Category: ${state.categoryFilter}", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
