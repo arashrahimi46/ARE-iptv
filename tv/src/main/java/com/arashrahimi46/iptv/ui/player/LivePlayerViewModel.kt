@@ -9,6 +9,7 @@ import com.arashrahimi46.iptv.data.db.AppDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** ExoPlayer-facing player state, driven by [androidx.media3.common.Player.Listener] callbacks in the screen. */
@@ -35,21 +36,37 @@ data class LivePlayerUiState(
     val loading: Boolean = true,
     val phase: PlaybackPhase = PlaybackPhase.Idle,
     val errorMessage: String? = null,
+    /** Only set for [PlaybackSource.Channel] -- the currently-playing channel id and the full,
+     * same-source channel list (already Room-ordered by name) it belongs to, so the screen's
+     * channel-up/down handling can compute the next/previous id without its own query. */
+    val currentChannelId: Long? = null,
+    val siblingChannelIds: List<Long> = emptyList(),
 )
 
 /**
  * Looks up the real playable row for [source] from Room (one-shot queries --
  * channel/VOD-title/episode ids are all globally unique regardless of source)
  * so [LivePlayerScreen] hands ExoPlayer a real `streamUrl`, never a mocked one.
+ *
+ * Channel switching (QA MAJOR finding: "no in-player channel switcher") reuses
+ * this same ViewModel instance rather than a fresh nav destination per channel --
+ * [switchChannel] reloads in place, and [LivePlayerScreen]'s ExoPlayer already
+ * keys off `media.streamUrl`, so a new channel naturally tears down/rebuilds the
+ * player through the existing DisposableEffect(exoPlayer) path, no new plumbing.
  */
-class LivePlayerViewModel(app: Application, private val source: PlaybackSource) : AndroidViewModel(app) {
+class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : AndroidViewModel(app) {
     private val db = AppDatabase.get(app)
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
 
     init {
+        loadMedia(initialSource)
+    }
+
+    private fun loadMedia(source: PlaybackSource) {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(loading = true, errorMessage = null)
             val media = when (val s = source) {
                 is PlaybackSource.Channel -> db.channelDao().getById(s.channelId)?.let {
                     PlayableMedia(title = it.name, subtitle = it.categoryName, streamUrl = it.streamUrl, isLive = true)
@@ -70,13 +87,35 @@ class LivePlayerViewModel(app: Application, private val source: PlaybackSource) 
                     }
                 }
             }
+            val siblingIds = if (source is PlaybackSource.Channel && media != null) {
+                db.channelDao().getById(source.channelId)?.let { channel ->
+                    db.channelDao().observeForSource(channel.sourceId).first().map { it.id }
+                } ?: emptyList()
+            } else {
+                emptyList()
+            }
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
                 errorMessage = if (media == null) "Content not found" else null,
                 phase = if (media == null) PlaybackPhase.Error else PlaybackPhase.Idle,
+                currentChannelId = (source as? PlaybackSource.Channel)?.channelId,
+                siblingChannelIds = siblingIds,
             )
         }
+    }
+
+    /** [direction] +1 = channel up (next), -1 = channel down (previous). No-op for VOD/episode
+     * playback or a single-channel catalog (nothing meaningful to switch to). */
+    fun switchChannel(direction: Int) {
+        val state = _uiState.value
+        val ids = state.siblingChannelIds
+        val current = state.currentChannelId ?: return
+        if (ids.size < 2) return
+        val index = ids.indexOf(current)
+        if (index == -1) return
+        val nextIndex = ((index + direction) % ids.size + ids.size) % ids.size
+        loadMedia(PlaybackSource.Channel(ids[nextIndex]))
     }
 
     fun setPhase(phase: PlaybackPhase, errorMessage: String? = null) {

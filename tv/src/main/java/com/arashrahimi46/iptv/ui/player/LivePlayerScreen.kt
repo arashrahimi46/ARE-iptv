@@ -9,6 +9,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,8 +32,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
@@ -88,7 +96,39 @@ fun LivePlayerScreen(
 
     BackHandler(onBack = onBack)
 
-    Box(modifier = modifier.fillMaxSize().background(Color.Black)) {
+    // QA MAJOR finding: "no in-player channel switcher". Channel-up/down on the D-pad is the
+    // real remote convention for this, and doesn't collide with the transport HUD's Left/Right
+    // button navigation (the HUD row has nothing above/below it to focus into) -- so this Box
+    // grabs initial focus and claims Up/Down itself; every other key still falls through to
+    // Compose's default focus-move into the HUD buttons. No-ops via switchChannel for
+    // VOD/episode playback or a single-channel catalog.
+    val channelSwitchFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) { channelSwitchFocusRequester.requestFocus() }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .focusRequester(channelSwitchFocusRequester)
+            .focusable()
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyUp) {
+                    when (keyEvent.key) {
+                        Key.DirectionUp -> {
+                            viewModel.switchChannel(1)
+                            true
+                        }
+                        Key.DirectionDown -> {
+                            viewModel.switchChannel(-1)
+                            true
+                        }
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            },
+    ) {
         val media = state.media
         if (state.loading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
