@@ -98,7 +98,7 @@ fun <T> BrowseLayout(
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
         ) {
             // Category filter column.
-            Column(modifier = Modifier.width(300.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(modifier = Modifier.width(300.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     text = categoryColumnHeader.uppercase(),
                     style = AreIptvTheme.typography.caption,

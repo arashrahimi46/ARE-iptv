@@ -9,13 +9,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Stream reliability level, mirrors StreamHealth.jsx `level` prop. */
 enum class AreStreamHealthLevel { Stable, Moderate, Poor }
@@ -52,7 +52,7 @@ fun AreStreamHealth(
         Box(
             modifier = Modifier
                 .size(d)
-                .shadow(6.dp, CircleShape, ambientColor = color, spotColor = color)
+                .tvGlow(color, CircleShape, spread = 5.dp)
                 .background(color, CircleShape),
         )
         if (showLabel) {

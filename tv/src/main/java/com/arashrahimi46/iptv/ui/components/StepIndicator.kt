@@ -13,11 +13,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /**
  * StepIndicator — the onboarding wizard progress header (forms/StepIndicator.jsx).
@@ -49,7 +49,7 @@ fun AreStepIndicator(
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .then(if (active) Modifier.shadow(14.dp, CircleShape, ambientColor = colors.accent, spotColor = colors.accent) else Modifier)
+                        .then(if (active) Modifier.tvGlow(colors.accent, CircleShape) else Modifier)
                         .background(badgeBackground, CircleShape)
                         .then(
                             if (!done && !active) Modifier.border(1.dp, colors.borderDefault, CircleShape) else Modifier,

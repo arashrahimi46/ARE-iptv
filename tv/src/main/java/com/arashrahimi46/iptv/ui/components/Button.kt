@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -92,7 +93,13 @@ fun AreButton(
         // (full=true), so centering the icon/text within that intentional full width does
         // something; otherwise this Row must be free to report its own intrinsic size.
         Row(
+            // fillMaxHeight so the label/icon Row spans the full button height and
+            // CenterVertically actually centers them. Without it the Row wraps to the
+            // text height and TvFocusable's Box pins it to the top edge -- the reported
+            // "Skip for now / Continue text not centered" defect. Mirrors the design
+            // system's `align-items:center; justify-content:center` on the button.
             modifier = (if (full) Modifier.fillMaxWidth() else Modifier)
+                .fillMaxHeight()
                 .padding(horizontal = spec.paddingH),
             horizontalArrangement = Arrangement.spacedBy(spec.gap, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,

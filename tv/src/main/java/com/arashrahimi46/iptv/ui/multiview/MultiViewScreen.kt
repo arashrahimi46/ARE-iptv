@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -178,9 +177,12 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
     }
 
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    // Fill the grid cell (which is already sized by the row/column weights) instead of
+    // forcing a 16:9 aspect ratio -- the 16:9 height exceeded the cell height and made
+    // panes overflow and OVERLAP each other. The PlayerView letterboxes the video inside.
     TvFocusable(
         onClick = onClick,
-        modifier = modifier.aspectRatio(16f / 9f),
+        modifier = modifier,
         shape = shape,
         glowColor = colors.accent,
     ) { _, _ ->

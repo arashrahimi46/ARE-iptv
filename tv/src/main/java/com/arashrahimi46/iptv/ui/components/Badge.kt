@@ -13,12 +13,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Status tone, mirrors Badge.jsx `tone` prop. */
 enum class AreBadgeTone { Live, New, Quality, Catchup, Smart, Neutral }
@@ -51,15 +51,17 @@ fun AreBadge(
     Row(
         modifier = modifier
             .height(22.dp)
-            .background(style.bg, shape)
-            .then(if (style.border != null) Modifier.border(1.dp, style.border, shape) else Modifier)
+            // Glow BEFORE the background so the symmetric halo sits behind the pill,
+            // not painted over its fill (design system `--glow-live`/`--glow-smart`).
             .then(
                 if (glow && style.glowColor != null) {
-                    Modifier.shadow(10.dp, shape, ambientColor = style.glowColor, spotColor = style.glowColor)
+                    Modifier.tvGlow(style.glowColor, shape, spread = 8.dp)
                 } else {
                     Modifier
                 },
             )
+            .background(style.bg, shape)
+            .then(if (style.border != null) Modifier.border(1.dp, style.border, shape) else Modifier)
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(5.dp),

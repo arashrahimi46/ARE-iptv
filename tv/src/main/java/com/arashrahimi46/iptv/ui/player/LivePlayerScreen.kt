@@ -2,6 +2,9 @@ package com.arashrahimi46.iptv.ui.player
 
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -48,6 +52,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -125,6 +130,19 @@ fun LivePlayerScreen(
     val channelSwitchFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { channelSwitchFocusRequester.requestFocus() }
 
+    // Transport HUD auto-hides after a few seconds of no D-pad input; any key press
+    // brings it back. interactionTick resets the timer on each press; when the HUD
+    // hides, focus returns to this full-screen surface so the D-pad still works.
+    var controlsVisible by remember { mutableStateOf(true) }
+    var interactionTick by remember { mutableStateOf(0) }
+    LaunchedEffect(interactionTick) {
+        delay(4500)
+        controlsVisible = false
+    }
+    LaunchedEffect(controlsVisible) {
+        if (!controlsVisible) channelSwitchFocusRequester.requestFocus()
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -133,12 +151,17 @@ fun LivePlayerScreen(
             .focusable()
             .onKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {
-                    when (keyEvent.key) {
-                        Key.DirectionUp -> {
+                    val wasHidden = !controlsVisible
+                    controlsVisible = true
+                    interactionTick++
+                    when {
+                        // First press just reveals the controls -- don't also act on it.
+                        wasHidden -> true
+                        keyEvent.key == Key.DirectionUp -> {
                             viewModel.switchChannel(1)
                             true
                         }
-                        Key.DirectionDown -> {
+                        keyEvent.key == Key.DirectionDown -> {
                             viewModel.switchChannel(-1)
                             true
                         }
@@ -182,7 +205,17 @@ fun LivePlayerScreen(
                     )
                     setEnableDecoderFallback(true)
                 }
-                ExoPlayer.Builder(context, renderersFactory).build().apply {
+                ExoPlayer.Builder(context, renderersFactory)
+                    // Request audio focus and route as media audio so sound actually plays
+                    // (and ducks/pauses correctly around other apps) rather than being silent.
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(C.USAGE_MEDIA)
+                            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                            .build(),
+                        /* handleAudioFocus = */ true,
+                    )
+                    .build().apply {
                     // No hardcoded "HLS-only" assumption -- Media3's DefaultMediaSourceFactory
                     // (used implicitly by setMediaItem/prepare) inspects the URI to pick
                     // HlsMediaSource for .m3u8 (media3-exoplayer-hls is on the classpath)
@@ -282,8 +315,29 @@ fun LivePlayerScreen(
                     ),
             )
 
+            // Bottom scrim so the transport HUD stays readable over busy video; fades
+            // in/out with the controls.
+            AnimatedVisibility(
+                visible = controlsVisible,
+                modifier = Modifier.align(Alignment.BottomCenter),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Ink950.copy(alpha = 0f), Ink950.copy(alpha = 0.85f)),
+                            ),
+                        ),
+                )
+            }
+
             // Top bar (back + stream health) / center error-or-buffering / bottom transport HUD.
             Column(Modifier.fillMaxSize()) {
+                AnimatedVisibility(visible = controlsVisible, enter = fadeIn(), exit = fadeOut()) {
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     AreIconButton(
                         icon = Icons.Filled.ArrowBack,
@@ -301,6 +355,7 @@ fun LivePlayerScreen(
                         )
                     }
                 }
+                }
                 // QA CRITICAL: fillMaxSize() here claimed the Column's entire remaining
                 // height, pushing the transport HUD Box below entirely outside layout
                 // bounds -- the HUD has never actually rendered, for any stream. weight(1f)
@@ -312,6 +367,7 @@ fun LivePlayerScreen(
                         BufferingIndicator()
                     }
                 }
+                AnimatedVisibility(visible = controlsVisible, enter = fadeIn(), exit = fadeOut()) {
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     ArePlayerControls(
                         title = media.title,
@@ -343,6 +399,7 @@ fun LivePlayerScreen(
                         onOpenGuide = onOpenGuide,
                         onMultiView = onMultiView,
                     )
+                }
                 }
             }
         }

@@ -40,6 +40,7 @@ fun AreTopBar(
     modifier: Modifier = Modifier,
     onMultiView: () -> Unit = {},
     onSearch: () -> Unit = {},
+    onAddPlaylist: () -> Unit = {},
     onAvatar: () -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
@@ -60,20 +61,9 @@ fun AreTopBar(
         Box(Modifier.weight(1f))
         AreIconButton(Icons.Filled.GridView, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Solid)
         AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
-        // Add playlist: multi-playlist management is an explicit, accepted v1 scope cut
-        // (see SettingsScreen.kt's "Playlists & sync" doc-comment) -- reusing onboarding
-        // here would half-build switching with no way back to the original source. Kept
-        // as a static, non-focusable glyph (matches app.jsx's topbar row) rather than a
-        // real button, per product-lead: a focusable no-op would be a silent dead-focus
-        // trap, same defect class QA found on the avatar icon below.
-        Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
-            Icon(
-                Icons.Filled.Add,
-                contentDescription = null,
-                tint = colors.textTertiary,
-                modifier = Modifier.size(24.dp),
-            )
-        }
+        // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
+        // management UI, so this effectively adds/replaces the active source.)
+        AreIconButton(Icons.Filled.Add, "Add playlist", onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
         // QA MEDIUM defect: this was a plain Box -- not focusable at all, D-pad couldn't
         // land on it and onAvatar was declared but never attached to anything.
         TvFocusable(

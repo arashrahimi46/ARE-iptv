@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +30,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /**
  * ContinueCard — landscape "continue watching" tile (ContinueCard.jsx). Shows
@@ -67,7 +67,7 @@ fun AreContinueCard(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .size(56.dp)
-                            .shadow(16.dp, CircleShape, ambientColor = colors.accent, spotColor = colors.accent)
+                            .tvGlow(colors.accent, CircleShape)
                             .background(colors.accent, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {

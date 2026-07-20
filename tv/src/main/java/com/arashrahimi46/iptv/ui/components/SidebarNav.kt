@@ -39,7 +39,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,6 +49,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 data class SidebarNavItem(val id: String, val label: String, val icon: ImageVector)
 
@@ -130,7 +130,10 @@ fun AreSidebarNav(
                 .fillMaxWidth()
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                // vertical padding inside the scroll content so the first/last item's
+                // focus glow isn't clipped at the scroll viewport edge (the reported
+                // "top of the Home focus ring disappeared").
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             items.forEach { item ->
@@ -156,7 +159,7 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .shadow(12.dp, RoundedCornerShape(AreIptvTheme.radius.sm), ambientColor = colors.accent, spotColor = colors.accent)
+            .tvGlow(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm))
             .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm)),
         contentAlignment = Alignment.Center,
     ) {
@@ -190,7 +193,13 @@ private fun SidebarNavRow(
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
         Row(
             modifier = Modifier
+                // fillMaxHeight so this content Row spans the full 52dp row height and
+                // CenterVertically can actually center the icon+label. Without it the Row
+                // wraps to the 26dp icon height and TvFocusable's Box places it at the top,
+                // leaving the content visually stuck to the top edge of the focus ring while
+                // the (offset) glow pools in the empty lower half.
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),

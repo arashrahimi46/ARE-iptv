@@ -1,11 +1,11 @@
 package com.arashrahimi46.iptv.ui.shell
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
@@ -48,10 +48,13 @@ fun AreIptvAppShell(
         AreSidebarNav(active = activeNav, onSelect = onNavSelect)
         Column(modifier = Modifier.weight(1f)) {
             topBar()
-            Column(
+            // Bounded content area (no scroll here). The shell used to own a single
+            // verticalScroll, but that can't host the tab NavHost -- each tab now
+            // provides its own scroll (see MainActivity.ScrollableTab).
+            Box(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState()),
+                    .fillMaxWidth(),
             ) {
                 content()
             }

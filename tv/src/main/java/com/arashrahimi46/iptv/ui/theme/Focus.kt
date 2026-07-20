@@ -17,10 +17,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.shadow
+import android.graphics.BlurMaskFilter
+import android.graphics.Paint as NativePaint
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -84,12 +94,13 @@ fun Modifier.tvFocusable(
             scaleX = scale
             scaleY = scale
         }
-        .shadow(
-            elevation = if (focused) 22.dp else 0.dp,
-            shape = shape,
-            ambientColor = glowColor,
-            spotColor = glowColor,
-        )
+        // Design system `--focus-glow-tight` = `0 0 0 3px ring, 0 0 22px glow` -- a
+        // SYMMETRIC (zero-offset) glow + crisp ring. Compose's Modifier.shadow is a
+        // directional elevation shadow (light from the top), which on a dark
+        // background rendered a colored, offset, boxy silhouette *behind* the element
+        // -- the reported "extra box behind the focus ring". [tvGlow] draws the glow
+        // as concentric edge-hugging outlines with no offset, matching the token.
+        .then(if (ringAlpha > 0f) Modifier.tvGlow(glowColor, shape, alpha = ringAlpha) else Modifier)
         .then(
             if (ringAlpha > 0f) {
                 Modifier.border(width = ringWidth, color = glowColor.copy(alpha = ringAlpha), shape = shape)
@@ -97,6 +108,64 @@ fun Modifier.tvFocusable(
                 Modifier
             },
         )
+}
+
+/**
+ * Symmetric accent glow matching the design system's box-shadow glow tokens
+ * (`--focus-glow-tight`, `--glow-accent`, `--glow-live`, `--glow-smart` — all
+ * `0 0 <blur>`, i.e. zero offset). Draws the [shape]'s outline several times
+ * with growing stroke width and fading alpha so the halo hugs the edge and
+ * fades outward — no directional offset, no boxy backplate. Place this BEFORE
+ * any opaque `.background()` in the chain so the element's fill covers the
+ * glow's inner half and only the outer halo shows.
+ */
+fun Modifier.tvGlow(
+    color: Color,
+    shape: Shape,
+    spread: Dp = 7.dp,
+    alpha: Float = 1f,
+): Modifier = this.drawBehind {
+    if (alpha <= 0f) return@drawBehind
+    val spreadPx = spread.toPx()
+    // A thin core stroke that the Gaussian blur softens -- NOT a fat stroke. A wide
+    // stroke (previously == spread) made the halo huge and bleed onto neighbouring
+    // text. Keep the core ~2dp; `spread` controls the blur radius (the softness).
+    val strokePx = 2.dp.toPx()
+    // Push the glow path OUTWARD so the blurred stroke sits just outside the shape
+    // edge instead of straddling it -- otherwise the inner half bleeds INTO the
+    // element ("shadow came into the button"). Any faint inner tail is covered by
+    // the element's own opaque background (drawn on top).
+    val out = spreadPx * 0.5f
+    val path = Path().apply {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawBehind)) {
+            is Outline.Rounded -> {
+                val rr = o.roundRect
+                addRoundRect(
+                    RoundRect(
+                        left = rr.left - out,
+                        top = rr.top - out,
+                        right = rr.right + out,
+                        bottom = rr.bottom + out,
+                        cornerRadius = CornerRadius(rr.topLeftCornerRadius.x + out, rr.topLeftCornerRadius.y + out),
+                    ),
+                )
+            }
+            is Outline.Rectangle -> addRect(o.rect.inflate(out))
+            is Outline.Generic -> addPath(o.path)
+        }
+    }
+    // One real Gaussian blur (BlurMaskFilter) = one smooth halo (no banded layered
+    // strokes). minSdk 36 -> fully hardware-accelerated.
+    val paint = NativePaint().apply {
+        isAntiAlias = true
+        style = NativePaint.Style.STROKE
+        strokeWidth = strokePx
+        this.color = color.copy(alpha = (0.55f * alpha).coerceIn(0f, 1f)).toArgb()
+        maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
+    }
+    drawIntoCanvas { canvas ->
+        canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
+    }
 }
 
 /**
