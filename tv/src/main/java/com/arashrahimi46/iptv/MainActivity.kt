@@ -135,6 +135,13 @@ fun AreIptvApp() {
                 source = PlaybackSource.Channel(channelId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = {
+                    navController.navigate("guide") {
+                        popUpTo(0) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
             )
         }
         composable(
@@ -146,6 +153,13 @@ fun AreIptvApp() {
                 source = PlaybackSource.Vod(vodTitleId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = {
+                    navController.navigate("guide") {
+                        popUpTo(0) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
             )
         }
         composable(
@@ -157,6 +171,13 @@ fun AreIptvApp() {
                 source = PlaybackSource.Episode(episodeId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = {
+                    navController.navigate("guide") {
+                        popUpTo(0) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
             )
         }
         composable(

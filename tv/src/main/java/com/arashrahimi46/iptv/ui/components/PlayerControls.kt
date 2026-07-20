@@ -52,6 +52,10 @@ fun ArePlayerControls(
     total: String = "20:45",
     channelLogoInitials: String = "SKY",
     onPlayPause: () -> Unit = {},
+    onRewind: () -> Unit = {},
+    onFastForward: () -> Unit = {},
+    onJumpToLive: () -> Unit = {},
+    onOpenGuide: () -> Unit = {},
     onMultiView: () -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
@@ -118,7 +122,7 @@ fun ArePlayerControls(
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AreIconButton(Icons.Filled.FastRewind, "Rewind", onClick = {}, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.FastRewind, "Rewind", onClick = onRewind, variant = AreIconButtonVariant.Glass)
             AreIconButton(
                 if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 if (playing) "Pause" else "Play",
@@ -127,15 +131,15 @@ fun ArePlayerControls(
                 size = AreIconButtonSize.Large,
                 active = true,
             )
-            AreIconButton(Icons.Filled.FastForward, "Fast forward", onClick = {}, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.FastForward, "Fast forward", onClick = onFastForward, variant = AreIconButtonVariant.Glass)
             Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
-            AreIconButton(Icons.Filled.SkipNext, "Jump to live", onClick = {}, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.SkipNext, "Jump to live", onClick = onJumpToLive, variant = AreIconButtonVariant.Glass)
             Box(Modifier.weight(1f))
             AreIconButton(Icons.Filled.VolumeUp, "Audio track", onClick = {}, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.ClosedCaption, "Subtitles", onClick = {}, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Glass)
             AreIconButton(Icons.Filled.PictureInPicture, "Picture in picture", onClick = {}, variant = AreIconButtonVariant.Glass)
-            AreIconButton(Icons.Filled.GridView, "Open guide", onClick = {}, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
         }
     }
 }

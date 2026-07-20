@@ -71,7 +71,13 @@ import kotlinx.coroutines.delay
  * app-exit or the underlying screen.
  */
 @Composable
-fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modifier = Modifier, onMultiView: () -> Unit = {}) {
+fun LivePlayerScreen(
+    source: PlaybackSource,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    onMultiView: () -> Unit = {},
+    onOpenGuide: () -> Unit = {},
+) {
     val context = LocalContext.current
     val viewModel: LivePlayerViewModel = viewModel(
         factory = LivePlayerViewModel.factory(context.applicationContext as android.app.Application, source),
@@ -256,6 +262,21 @@ fun LivePlayerScreen(source: PlaybackSource, onBack: () -> Unit, modifier: Modif
                         onPlayPause = {
                             if (playing) exoPlayer.pause() else exoPlayer.play()
                         },
+                        // Real 10s skip -- coerced within [0, duration] when duration is known
+                        // (VOD/episode); live streams with no fixed duration (C.TIME_UNSET) just
+                        // skip relative to current position, same as scrubbing a live DVR window.
+                        onRewind = {
+                            exoPlayer.seekTo((exoPlayer.currentPosition - 10_000).coerceAtLeast(0))
+                        },
+                        onFastForward = {
+                            val target = exoPlayer.currentPosition + 10_000
+                            exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(durationMs) else target)
+                        },
+                        // ExoPlayer resolves "default position" to the live edge for a live window,
+                        // and to the start for VOD -- exactly "jump to live" for the live case this
+                        // button is meant for.
+                        onJumpToLive = { exoPlayer.seekToDefaultPosition() },
+                        onOpenGuide = onOpenGuide,
                         onMultiView = onMultiView,
                     )
                 }
