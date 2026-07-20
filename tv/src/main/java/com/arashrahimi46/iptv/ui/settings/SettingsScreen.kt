@@ -62,7 +62,9 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
  *
  * The "Playlists & sync" / "About & support" sections from Settings.jsx are
  * out of scope for this phase (no multi-playlist management, no backup/export,
- * no store rating/licenses infra) and are intentionally not built here.
+ * no store rating/licenses infra) and are intentionally not built here. Same
+ * reason [com.arashrahimi46.iptv.ui.shell.AreTopBar]'s "Add playlist" glyph is
+ * a static icon, not a real button -- see that file's comment.
  */
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
