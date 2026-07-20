@@ -10,10 +10,16 @@ import com.arashrahimi46.iptv.data.parser.XmlTvParser
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
+
+/** Safe chunk size for `IN (...)` binds -- under SQLite's historical 999 host-parameter limit. */
+private const val SQLITE_MAX_VARIABLES = 900
 
 /**
  * Populates [EPGProgram] rows for the Guide screen (Room schema existed
@@ -35,8 +41,18 @@ class EpgRepository(context: Context) {
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
 
-    fun observeForChannels(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long) =
-        db.epgProgramDao().observeForChannelsInWindow(channelIds, windowStartMs, windowEndMs)
+    fun observeForChannels(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>> {
+        if (channelIds.isEmpty()) return flowOf(emptyList())
+        // SQLite caps host params at 999, so a large playlist's `channelId IN (...)` overflows
+        // ("too many SQL variables" crash). Chunk the IN-list under the cap and merge the results.
+        val chunks = channelIds.chunked(SQLITE_MAX_VARIABLES)
+        if (chunks.size == 1) {
+            return db.epgProgramDao().observeForChannelsInWindow(chunks[0], windowStartMs, windowEndMs)
+        }
+        return combine(chunks.map { db.epgProgramDao().observeForChannelsInWindow(it, windowStartMs, windowEndMs) }) {
+            it.asList().flatten()
+        }
+    }
 
     /** Fetches + persists EPG for [channels] of [source]. Best-effort: swallows network/parse failures per-channel/source. */
     suspend fun refresh(source: PlaylistSource, channels: List<Channel>) = withContext(Dispatchers.IO) {
@@ -107,7 +123,8 @@ class EpgRepository(context: Context) {
 
         val rows = bulkRows + fallbackRows
         if (rows.isNotEmpty()) {
-            db.epgProgramDao().deleteForChannels(channels.map { it.id })
+            // Same SQLite host-param cap as observeForChannels -- chunk the delete's IN(...) list.
+            channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES).forEach { db.epgProgramDao().deleteForChannels(it) }
             db.epgProgramDao().insertAll(rows)
         }
     }

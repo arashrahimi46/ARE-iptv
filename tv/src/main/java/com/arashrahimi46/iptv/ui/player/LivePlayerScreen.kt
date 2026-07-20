@@ -298,9 +298,18 @@ fun LivePlayerScreen(
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
-                        playerError = error.errorCodeName.replace('_', ' ').lowercase()
-                            .replaceFirstChar { it.uppercase() }
-                            .ifBlank { "Playback error" }
+                        // Surface the real HTTP status when the server rejects the stream (e.g. a
+                        // 461/403 from an expired, connection-limited or IP-locked line) -- far more
+                        // actionable than ExoPlayer's generic "bad http status" code name.
+                        playerError = when (val cause = error.cause) {
+                            is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException ->
+                                "Server refused the stream (HTTP ${cause.responseCode}). The line may be expired, connection-limited, or locked to another IP."
+                            is androidx.media3.datasource.HttpDataSource.HttpDataSourceException ->
+                                "Couldn't reach the stream -- check your connection."
+                            else -> error.errorCodeName.replace('_', ' ').lowercase()
+                                .replaceFirstChar { it.uppercase() }
+                                .ifBlank { "Playback error" }
+                        }
                     }
                 }
                 exoPlayer.addListener(listener)
