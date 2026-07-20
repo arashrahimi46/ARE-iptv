@@ -27,6 +27,9 @@ data class ImportSummary(val channels: Int, val movies: Int, val series: Int)
 /** Xtream `get.php` keys are lowercase by spec, and the server is case-sensitive on them. */
 private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
 
+/** Rows flushed to Room per batch during a streaming M3U import (bounds peak memory). */
+private const val IMPORT_BATCH_SIZE = 1500
+
 /**
  * Trim the URL and lowercase only the known Xtream query-parameter KEYS (values left
  * untouched), so a pasted link like `...&Password=...` -- which 404s because the server
@@ -133,62 +136,93 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             // Normalize a pasted link (e.g. capitalized `Password`) so it doesn't 404, then
             // persist the normalized form so later refreshes hit the same working URL.
             val normalizedUrl = normalizeSourceUrl(url)
-            val body = fetchText(normalizedUrl)
-            val entries = M3uParser.parse(body)
-            if (entries.isEmpty()) {
-                throw IllegalStateException("No channels found -- check the playlist URL/format")
-            }
 
             val source = PlaylistSource(name = name, type = SourceType.M3U, url = normalizedUrl, epgUrl = epgUrl)
             val sourceId = db.playlistSourceDao().insert(source)
 
             // Classification heuristic lives in M3uGroupClassifier.kt (unit-tested) -- see its
             // doc comment for the M3U-only scope and the known real-world false-positive pattern.
-            val channels = mutableListOf<Channel>()
-            val movies = mutableListOf<VodTitle>()
-            val series = mutableListOf<VodTitle>()
             val categories = linkedMapOf<Pair<ContentType, String>, Category>()
+            val channelBatch = mutableListOf<Channel>()
+            val vodBatch = mutableListOf<VodTitle>()
+            var channelCount = 0
+            var movieCount = 0
+            var seriesCount = 0
 
-            entries.forEach { entry ->
-                val group = entry.groupTitle?.trim().orEmpty()
-                val type = classifyM3uGroup(group)
-                if (group.isNotEmpty()) {
-                    categories.putIfAbsent(type to group, Category(sourceId, type, group))
+            try {
+                // Stream + batch: a large m3u_plus (100s of MB) is parsed line-by-line and
+                // flushed to Room in bounded chunks, so the whole body is never held in memory
+                // at once (loading it as one String OOM'd -- the response can exceed the heap).
+                streamPlaylist(normalizedUrl) { lines ->
+                    M3uParser.parse(lines).forEach { entry ->
+                        val group = entry.groupTitle?.trim().orEmpty()
+                        val type = classifyM3uGroup(group)
+                        if (group.isNotEmpty()) {
+                            categories.putIfAbsent(type to group, Category(sourceId, type, group))
+                        }
+                        when (type) {
+                            ContentType.LIVE -> {
+                                channelBatch += Channel(
+                                    sourceId = sourceId,
+                                    name = entry.name,
+                                    streamUrl = entry.streamUrl,
+                                    logoUrl = entry.logoUrl,
+                                    categoryName = group.ifEmpty { null },
+                                    tvgId = entry.tvgId,
+                                )
+                                channelCount++
+                            }
+                            ContentType.MOVIE -> {
+                                vodBatch += VodTitle(
+                                    sourceId = sourceId,
+                                    name = entry.name,
+                                    isSeries = false,
+                                    posterUrl = entry.logoUrl,
+                                    categoryName = group.ifEmpty { null },
+                                    streamUrl = entry.streamUrl,
+                                )
+                                movieCount++
+                            }
+                            ContentType.SERIES -> {
+                                vodBatch += VodTitle(
+                                    sourceId = sourceId,
+                                    name = entry.name,
+                                    isSeries = true,
+                                    posterUrl = entry.logoUrl,
+                                    categoryName = group.ifEmpty { null },
+                                    streamUrl = entry.streamUrl,
+                                )
+                                seriesCount++
+                            }
+                        }
+                        if (channelBatch.size >= IMPORT_BATCH_SIZE) {
+                            db.channelDao().insertAll(channelBatch); channelBatch.clear()
+                        }
+                        if (vodBatch.size >= IMPORT_BATCH_SIZE) {
+                            db.vodTitleDao().insertAll(vodBatch); vodBatch.clear()
+                        }
+                    }
                 }
-                when (type) {
-                    ContentType.LIVE -> channels += Channel(
-                        sourceId = sourceId,
-                        name = entry.name,
-                        streamUrl = entry.streamUrl,
-                        logoUrl = entry.logoUrl,
-                        categoryName = group.ifEmpty { null },
-                        tvgId = entry.tvgId,
-                    )
-                    ContentType.MOVIE -> movies += VodTitle(
-                        sourceId = sourceId,
-                        name = entry.name,
-                        isSeries = false,
-                        posterUrl = entry.logoUrl,
-                        categoryName = group.ifEmpty { null },
-                        streamUrl = entry.streamUrl,
-                    )
-                    ContentType.SERIES -> series += VodTitle(
-                        sourceId = sourceId,
-                        name = entry.name,
-                        isSeries = true,
-                        posterUrl = entry.logoUrl,
-                        categoryName = group.ifEmpty { null },
-                        streamUrl = entry.streamUrl,
-                    )
-                }
+                if (channelBatch.isNotEmpty()) db.channelDao().insertAll(channelBatch)
+                if (vodBatch.isNotEmpty()) db.vodTitleDao().insertAll(vodBatch)
+            } catch (e: Throwable) {
+                // Roll back a half-imported source so a failed/interrupted import never leaves a
+                // dead, selectable entry (and its orphaned rows) behind.
+                db.channelDao().deleteForSource(sourceId)
+                db.vodTitleDao().deleteForSource(sourceId)
+                db.playlistSourceDao().delete(source.copy(id = sourceId))
+                throw e
+            }
+
+            if (channelCount + movieCount + seriesCount == 0) {
+                db.playlistSourceDao().delete(source.copy(id = sourceId))
+                throw IllegalStateException("No channels found -- check the playlist URL/format")
             }
 
             db.categoryDao().upsertAll(categories.values.toList())
-            db.channelDao().insertAll(channels)
-            db.vodTitleDao().insertAll(movies + series)
             settings.setActiveSourceId(sourceId)
 
-            ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
+            ImportSummary(channels = channelCount, movies = movieCount, series = seriesCount)
         }
 
     override suspend fun addXtreamSource(
@@ -268,14 +302,20 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
     }
 
-    private fun fetchText(url: String): String {
+    /**
+     * Streams the playlist body line-by-line to [consume] instead of buffering the whole
+     * response into a String (a large m3u_plus can exceed the app heap -> OutOfMemoryError).
+     * The reader and HTTP response are closed once [consume] returns.
+     */
+    private suspend fun <T> streamPlaylist(url: String, consume: suspend (Sequence<String>) -> T): T {
         val request = Request.Builder().url(url).build()
         return try {
             httpClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
                     throw IllegalStateException("Server returned HTTP ${response.code} -- check the playlist URL")
                 }
-                response.body?.string() ?: throw IllegalStateException("Empty response body")
+                val body = response.body ?: throw IllegalStateException("Empty response body")
+                body.charStream().buffered().use { reader -> consume(reader.lineSequence()) }
             }
         } catch (e: XtreamException) {
             throw e

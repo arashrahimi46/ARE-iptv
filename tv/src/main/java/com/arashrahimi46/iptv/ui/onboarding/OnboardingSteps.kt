@@ -1,5 +1,11 @@
 package com.arashrahimi46.iptv.ui.onboarding
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,10 +25,15 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -229,11 +240,15 @@ fun ConfirmStep(
                 .padding(24.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Icon(
-                    Icons.Filled.CheckCircle,
-                    contentDescription = null,
-                    tint = if (state.error != null) colors.danger else colors.success,
-                )
+                if (state.isSubmitting) {
+                    AreSpinner(color = colors.accent)
+                } else {
+                    Icon(
+                        Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = if (state.error != null) colors.danger else colors.success,
+                    )
+                }
                 Text(
                     text = when {
                         state.isSubmitting -> "Adding playlist..."
@@ -248,7 +263,13 @@ fun ConfirmStep(
                 state.result?.let { AreBadge("${it.channels} channels", tone = AreBadgeTone.Catchup) }
             }
             Box(Modifier.height(20.dp))
-            if (state.error != null) {
+            if (state.isSubmitting) {
+                Text(
+                    text = "Downloading and importing your channels. Large playlists can take a little while — please keep the app open.",
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+            } else if (state.error != null) {
                 Text(text = state.error, style = AreIptvTheme.typography.body, color = colors.danger)
             } else {
                 val rows = buildList {
@@ -273,6 +294,30 @@ fun ConfirmStep(
                 }
             }
         }
+    }
+}
+
+/** Indeterminate loading spinner -- a rotating arc drawn on a Canvas (no material dep). */
+@Composable
+private fun AreSpinner(color: Color, size: Dp = 22.dp) {
+    val transition = rememberInfiniteTransition(label = "spinner")
+    val start by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 900, easing = LinearEasing)),
+        label = "sweep",
+    )
+    Canvas(modifier = Modifier.size(size)) {
+        val stroke = 3.dp.toPx()
+        drawArc(
+            color = color,
+            startAngle = start,
+            sweepAngle = 270f,
+            useCenter = false,
+            topLeft = androidx.compose.ui.geometry.Offset(stroke / 2, stroke / 2),
+            size = androidx.compose.ui.geometry.Size(this.size.width - stroke, this.size.height - stroke),
+            style = Stroke(width = stroke, cap = StrokeCap.Round),
+        )
     }
 }
 

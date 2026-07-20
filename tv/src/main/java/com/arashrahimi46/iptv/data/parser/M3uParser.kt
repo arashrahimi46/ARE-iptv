@@ -18,40 +18,50 @@ data class M3uEntry(
 object M3uParser {
     private val attrRegex = Regex("""([a-zA-Z0-9_-]+)="([^"]*)"""")
 
-    fun parse(playlist: String): List<M3uEntry> {
-        val lines = playlist.lineSequence().map { it.trim() }.filter { it.isNotEmpty() }.toList()
-        val entries = mutableListOf<M3uEntry>()
-        var i = 0
-        while (i < lines.size) {
-            val line = lines[i]
+    fun parse(playlist: String): List<M3uEntry> = parse(playlist.lineSequence()).toList()
+
+    /**
+     * Streaming variant: yields entries lazily from a line sequence so a large
+     * playlist (100s of MB) is never fully materialized in memory. Only the
+     * pending `#EXTINF` metadata is held until its URL line arrives; other
+     * directive lines (`#EXTGRP`, etc.) between them are ignored. Behaviour is
+     * identical to [parse] on a String -- which now delegates here.
+     */
+    fun parse(lines: Sequence<String>): Sequence<M3uEntry> = sequence {
+        var pendingName: String? = null
+        var pendingAttrs: Map<String, String> = emptyMap()
+        for (raw in lines) {
+            val line = raw.trim()
+            if (line.isEmpty()) continue
             if (line.startsWith("#EXTINF", ignoreCase = true)) {
-                val info = line.substringAfter(":", "")
-                val commaIdx = info.indexOf(',')
-                val attrsPart = if (commaIdx >= 0) info.substring(0, commaIdx) else info
-                val displayName = if (commaIdx >= 0) info.substring(commaIdx + 1).trim() else ""
-
-                val attrs = attrRegex.findAll(attrsPart).associate { it.groupValues[1].lowercase() to it.groupValues[2] }
-
-                // Find the next non-comment, non-empty line as the stream URL.
-                var j = i + 1
-                while (j < lines.size && lines[j].startsWith("#")) j++
-                val streamUrl = lines.getOrNull(j)
-
-                if (!streamUrl.isNullOrBlank()) {
-                    val name = attrs["tvg-name"]?.takeIf { it.isNotBlank() } ?: displayName.takeIf { it.isNotBlank() } ?: "Unnamed"
-                    entries += M3uEntry(
-                        name = name,
-                        streamUrl = streamUrl,
-                        tvgId = attrs["tvg-id"],
-                        logoUrl = attrs["tvg-logo"],
-                        groupTitle = attrs["group-title"],
-                    )
-                    i = j + 1
-                    continue
+                // First #EXTINF before a URL wins; a second one before any URL is dropped
+                // (matches the non-streaming parser -- see M3uParserTest for the pinned behavior).
+                if (pendingName == null) {
+                    val info = line.substringAfter(":", "")
+                    val commaIdx = info.indexOf(',')
+                    val attrsPart = if (commaIdx >= 0) info.substring(0, commaIdx) else info
+                    val displayName = if (commaIdx >= 0) info.substring(commaIdx + 1).trim() else ""
+                    val attrs = attrRegex.findAll(attrsPart).associate { it.groupValues[1].lowercase() to it.groupValues[2] }
+                    pendingName = attrs["tvg-name"]?.takeIf { it.isNotBlank() } ?: displayName.takeIf { it.isNotBlank() } ?: "Unnamed"
+                    pendingAttrs = attrs
                 }
+            } else if (line.startsWith("#")) {
+                // Directive between #EXTINF and the URL -- keep the pending metadata, skip.
+                continue
+            } else if (pendingName != null) {
+                // First non-comment line after an #EXTINF is that entry's stream URL.
+                yield(
+                    M3uEntry(
+                        name = pendingName,
+                        streamUrl = line,
+                        tvgId = pendingAttrs["tvg-id"],
+                        logoUrl = pendingAttrs["tvg-logo"],
+                        groupTitle = pendingAttrs["group-title"],
+                    ),
+                )
+                pendingName = null
+                pendingAttrs = emptyMap()
             }
-            i++
         }
-        return entries
     }
 }
