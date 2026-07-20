@@ -21,6 +21,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -121,7 +126,24 @@ fun TvFocusable(
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
-            ),
+            )
+            // clickable() above handles Enter/NumPadEnter by default but NOT
+            // Key.DirectionCenter -- the key every real Android TV / Fire TV remote's
+            // physical OK/Select button actually sends. Confirmed missing via a real
+            // device-emulator D-pad test (not an emulator artifact): DPAD_CENTER alone
+            // did nothing on a fully-focused, freshly-launched card across multiple
+            // isolated repro attempts, while KEYCODE_ENTER worked every time. Without
+            // this, nothing in the app would be selectable with a real remote's OK
+            // button -- fixed once, here, so every TvFocusable-based component in the
+            // library inherits it.
+            .onKeyEvent { keyEvent ->
+                if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
+                    onClick()
+                    true
+                } else {
+                    false
+                }
+            },
     ) {
         content(focused, pressed)
     }
