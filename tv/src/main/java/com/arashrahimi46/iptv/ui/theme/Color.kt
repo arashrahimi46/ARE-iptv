@@ -22,6 +22,12 @@ val Ink600 = Color(0xFF262A34)
 val Ink500 = Color(0xFF333844)
 val Ink400 = Color(0xFF4B515F)
 val Ink300 = Color(0xFF6B7280)
+// P0.3 (WCAG 1.4.1/contrast): Ink300 at caption sizes on the dark surfaces textTertiary
+// renders over (surface1/surface2) measured 2.97-4.13:1 -- below the 4.5:1 AA minimum.
+// Ink250 is a dedicated, slightly lighter step for TEXT use specifically (Ink300 itself is
+// left as-is in case something else in the ramp depends on it) that measures ~5:1 against
+// those same surfaces.
+val Ink250 = Color(0xFF8C92A3)
 val Ink200 = Color(0xFF9AA2B1)
 val Ink100 = Color(0xFFC4CAD4)
 val Ink050 = Color(0xFFE7EAF0)
@@ -45,7 +51,9 @@ val LightSurface2 = Color(0xFFF7F9FC)
 val LightSurface3 = Color(0xFFEEF1F6)
 val LightTextPrimary = Color(0xFF0D1017)
 val LightTextSecondary = Color(0xFF4A5163)
-val LightTextTertiary = Color(0xFF757D8E)
+// P0.3: was #757D8E (4.13:1 on LightSurface1/white -- below the 4.5:1 AA minimum at
+// caption sizes). Darkened to measure ~4.8:1.
+val LightTextTertiary = Color(0xFF6B7280)
 val LightTextDisabled = Color(0xFFA5ABB8)
 val LightBorderSubtle = Color(0x120F141E) // rgba(15,20,30,0.07)
 val LightBorderDefault = Color(0x1F0F141E) // rgba(15,20,30,0.12)
@@ -109,7 +117,7 @@ val AreIptvDarkColors = AreIptvColors(
     surfaceGlass = Color(0x8C1E222C), // rgba(30,34,44,0.55)
     textPrimary = White,
     textSecondary = Ink200,
-    textTertiary = Ink300,
+    textTertiary = Ink250,
     textDisabled = Ink400,
     textOnAccent = Color(0xFFFFFFFF),
     borderSubtle = Color(0x0FFFFFFF),

@@ -80,6 +80,10 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/** P0.1: synthetic error surfaced when auto-retry/fallback gives up on a pure-buffering
+ * degradation (no real playerError) with nothing left to fall back to. */
+private const val STUCK_ERROR_MESSAGE = "Stream unavailable"
+
 /**
  * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
  * the prototype's static background image is replaced end-to-end). Drives
@@ -323,10 +327,15 @@ fun LivePlayerScreen(
             LaunchedEffect(playerError, isBuffering, autoRetryAttempt) {
                 val degraded = playerError != null || isBuffering
                 if (!degraded) return@LaunchedEffect
+                // QA nit: once we've already given up (set the synthetic "Stream unavailable"
+                // error below), don't re-query for an alternate every time this effect re-runs
+                // on an unrelated key change -- the answer won't change until autoRetryAttempt
+                // resets (new source/manual retry), which already re-triggers this branch fresh.
+                if (playerError == STUCK_ERROR_MESSAGE) return@LaunchedEffect
                 if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
                     val fellBack = viewModel.fallbackToAlternateSource()
                     if (!fellBack && playerError == null) {
-                        playerError = "Stream unavailable"
+                        playerError = STUCK_ERROR_MESSAGE
                     }
                     return@LaunchedEffect
                 }

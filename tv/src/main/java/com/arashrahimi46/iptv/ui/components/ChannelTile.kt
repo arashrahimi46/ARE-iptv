@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -110,7 +112,15 @@ fun AreChannelTile(
                                 .padding(horizontal = 7.dp, vertical = 3.dp),
                         )
                     }
-                    Box(Modifier.size(9.dp).background(healthColor, CircleShape))
+                    // P0.3 (WCAG 1.4.1): stream health was color-only (dot color alone) --
+                    // contentDescription exposes the same "Stable/Moderate/Poor" status
+                    // AreStreamHealth's own label uses, so it's not color-only for TalkBack.
+                    Box(
+                        Modifier
+                            .size(9.dp)
+                            .background(healthColor, CircleShape)
+                            .semantics { contentDescription = "Stream health: ${health.name}" },
+                    )
                 }
                 Box(
                     modifier = Modifier

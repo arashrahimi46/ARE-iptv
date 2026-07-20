@@ -21,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -83,11 +85,25 @@ fun AreGuideCell(
                         style = AreIptvTheme.typography.mono,
                         color = if (now) colors.accentHover else colors.textTertiary,
                     )
+                    // P0.3 (WCAG 1.4.1): these are color-only status cues to a sighted user
+                    // (a colored dot / a glyph-only chip) -- contentDescription exposes the
+                    // same status to TalkBack instead of relying on color/shape alone.
                     if (live) {
-                        Box(Modifier.padding(start = 8.dp).size(6.dp).background(colors.live, CircleShape))
+                        Box(
+                            Modifier
+                                .padding(start = 8.dp)
+                                .size(6.dp)
+                                .background(colors.live, CircleShape)
+                                .semantics { contentDescription = "Live" },
+                        )
                     }
                     if (catchup) {
-                        Text(text = " ⟲", style = AreIptvTheme.typography.caption, color = colors.success)
+                        Text(
+                            text = " ⟲",
+                            style = AreIptvTheme.typography.caption,
+                            color = colors.success,
+                            modifier = Modifier.semantics { contentDescription = "Catch-up available" },
+                        )
                     }
                 }
                 Box(Modifier.height(4.dp))

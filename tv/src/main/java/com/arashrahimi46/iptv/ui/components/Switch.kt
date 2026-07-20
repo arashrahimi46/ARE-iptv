@@ -16,6 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -41,7 +46,15 @@ fun AreSwitch(
 
     TvFocusable(
         onClick = { if (!disabled) onCheckedChange(!checked) },
-        modifier = modifier.size(width = 58.dp, height = 34.dp),
+        // P0.3: Role.Switch + toggled state so TalkBack announces this as a switch and
+        // reads its on/off state -- previously just a focusable/clickable Box with no
+        // semantics of its own beyond that.
+        modifier = modifier
+            .size(width = 58.dp, height = 34.dp)
+            .semantics {
+                role = Role.Switch
+                toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
+            },
         interactionSource = interactionSource,
         shape = CircleShape,
         backgroundColor = if (disabled) trackColor.copy(alpha = 0.5f) else trackColor,

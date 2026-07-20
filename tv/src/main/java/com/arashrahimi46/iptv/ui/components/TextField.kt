@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -93,7 +95,15 @@ fun AreTextField(
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
-                    modifier = Modifier.fillMaxWidth(),
+                    // P0.3: BasicTextField has no built-in label param (unlike Material's
+                    // TextField) -- the visible label above is purely visual, TalkBack never
+                    // announced it when the field itself gained focus. contentDescription
+                    // links them for TalkBack; falls back to the placeholder if there's no
+                    // label (e.g. this field is used unlabeled with a placeholder only).
+                    modifier = Modifier.fillMaxWidth().semantics {
+                        val description = label ?: placeholder
+                        if (description != null) contentDescription = description
+                    },
                     interactionSource = interactionSource,
                     textStyle = (if (mono) AreIptvTheme.typography.mono else AreIptvTheme.typography.body)
                         .copy(color = colors.textPrimary),
