@@ -123,7 +123,12 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
 
             Box(Modifier.height(36.dp))
             val stepIndex = stepRoutes.indexOf(currentRoute).coerceAtLeast(0)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            // QA BLOCKER: D-pad RIGHT from "Skip for now" never reached "Continue" on a real
+            // remote -- TvFocusable's focus-scale zoom (motion.focusScale, ~6%) grows the
+            // focused button's rendered AND hit-tested bounds (Compose hit-tests through the
+            // graphicsLayer transform), and the old 14dp gap wasn't enough headroom for that
+            // growth before it started covering Continue's tap area. 40dp gives real clearance.
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
                 if (stepIndex > 0) {
                     AreButton("Back", onClick = { navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 }
