@@ -158,16 +158,16 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
 
     /** P0.1: called once auto-retry/backoff on the current channel's source is exhausted.
      * Switches playback to another catalog entry for the same channel name, if one exists,
-     * so a dead source doesn't just retry forever. No-op (screen keeps showing the error/retry
-     * state) when there's nothing to fall back to -- e.g. VOD/episode playback, or a channel
-     * with only one listing. */
-    fun fallbackToAlternateSource() {
-        val currentId = _uiState.value.currentChannelId ?: return
-        viewModelScope.launch {
-            val current = db.channelDao().getById(currentId) ?: return@launch
-            val alternate = db.channelDao().findAlternateByName(current.name, currentId)
-            if (alternate != null) loadMedia(PlaybackSource.Channel(alternate.id))
-        }
+     * so a dead source doesn't just retry forever. Returns whether an alternate was found and
+     * switched to -- the caller needs this (QA finding) to surface a real error/manual-retry
+     * state instead of leaving the screen stuck (e.g. permanently buffering) when there's
+     * nothing to fall back to -- VOD/episode playback, or a channel with only one listing. */
+    suspend fun fallbackToAlternateSource(): Boolean {
+        val currentId = _uiState.value.currentChannelId ?: return false
+        val current = db.channelDao().getById(currentId) ?: return false
+        val alternate = db.channelDao().findAlternateByName(current.name, currentId) ?: return false
+        loadMedia(PlaybackSource.Channel(alternate.id))
+        return true
     }
 
     companion object {

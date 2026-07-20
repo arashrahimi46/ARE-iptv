@@ -313,11 +313,21 @@ fun LivePlayerScreen(
             // button. Re-runs whenever health or the attempt count changes; a health recovery
             // (isBuffering/playerError going away) cancels the pending retry via LaunchedEffect's
             // normal key-change cancellation.
+            //
+            // QA fix: if retries are exhausted and there's no alternate source (fallback
+            // returns false), a pure-buffering degradation (no playerError) previously left
+            // the screen stuck on the buffering spinner forever -- nothing gates the manual
+            // Retry button except playerError being non-null, and none of this effect's keys
+            // would ever change again to re-evaluate. Surface a real error message in that case
+            // so the existing manual-retry path becomes reachable.
             LaunchedEffect(playerError, isBuffering, autoRetryAttempt) {
                 val degraded = playerError != null || isBuffering
                 if (!degraded) return@LaunchedEffect
                 if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
-                    viewModel.fallbackToAlternateSource()
+                    val fellBack = viewModel.fallbackToAlternateSource()
+                    if (!fellBack && playerError == null) {
+                        playerError = "Stream unavailable"
+                    }
                     return@LaunchedEffect
                 }
                 delay(if (playerError != null) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
@@ -436,7 +446,17 @@ fun LivePlayerScreen(
                 // takes only the space left after the top bar and HUD boxes below.
                 Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
                     if (playerError != null) {
-                        PlayerErrorState(message = playerError!!, onBack = handleBack, onRetry = { retryCount++ })
+                        PlayerErrorState(
+                            message = playerError!!,
+                            onBack = handleBack,
+                            // QA fix: reset the auto-retry budget on manual retry too -- without
+                            // this, clicking Retry after auto-retries had already exhausted
+                            // immediately re-triggers the exhausted branch of the auto-retry
+                            // effect (autoRetryAttempt unchanged, playerError -> null on rebuild),
+                            // silently falling back to another source instead of actually
+                            // retrying the source the user asked to retry.
+                            onRetry = { autoRetryAttempt = 0; retryCount++ },
+                        )
                     } else if (isBuffering) {
                         BufferingIndicator()
                     }

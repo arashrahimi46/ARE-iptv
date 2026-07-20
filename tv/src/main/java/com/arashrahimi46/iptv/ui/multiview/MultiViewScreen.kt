@@ -194,6 +194,15 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
             if (alternate != null) {
                 currentSource = alternate
                 autoRetryAttempt = 0
+            } else if (health != AreStreamHealthLevel.Poor) {
+                // QA fix: a pure-buffering degradation (no onPlayerError ever fired) with no
+                // alternate to fall back to previously left the pane stuck on the Moderate
+                // (amber) dot forever, with none of this effect's keys able to change again to
+                // re-evaluate. There's no per-pane manual-retry UI (out of scope per the P0.1
+                // brief), so the recovery signal available within scope is flipping the
+                // existing indicator to Poor -- at least surfaces "this pane is dead" instead
+                // of a spinner that never resolves.
+                health = AreStreamHealthLevel.Poor
             }
             return@LaunchedEffect
         }

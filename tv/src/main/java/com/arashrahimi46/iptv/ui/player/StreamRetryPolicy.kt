@@ -15,6 +15,8 @@ object StreamRetryPolicy {
      * health and enters the same retry/backoff cycle as a hard playback error. */
     const val BUFFERING_GRACE_MS = 8_000L
 
-    /** 1s, 2s, 4s, ... capped at 16s. */
-    fun backoffMillis(attempt: Int): Long = (1_000L shl attempt.coerceIn(0, 4)).coerceAtMost(16_000L)
+    /** attempt 0 -> 1s, 1 -> 2s, 2 -> 4s -- the only values ever requested given
+     * [MAX_RETRIES] = 3 (attempt is always < MAX_RETRIES when this is called). Coerced
+     * defensively in case MAX_RETRIES grows without this comment being updated. */
+    fun backoffMillis(attempt: Int): Long = 1_000L shl attempt.coerceIn(0, MAX_RETRIES - 1)
 }
