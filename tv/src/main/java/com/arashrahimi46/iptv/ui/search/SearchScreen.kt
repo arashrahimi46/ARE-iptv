@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -80,7 +81,12 @@ fun SearchScreen(
         Text(text = "Search", style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp6))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+        // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-560dp
+        // keyboard column plus a weight(1f) results column but never claimed the full width
+        // itself, so the weight(1f) column had no real remaining space to expand into -- its
+        // Text children (hint text, scope chips, category label) wrapped one character per
+        // line at the right edge. fillMaxWidth is the real fix.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
             // QA MEDIUM defect: L, O, P appeared "missing" from the keyboard -- they're
             // exactly the trailing keys of the two widest rows (QWERTYUIOP is 10 keys x
             // 48dp + 9 gaps x 8dp = 552dp; ASDFGHJKL is 496dp), both wider than this

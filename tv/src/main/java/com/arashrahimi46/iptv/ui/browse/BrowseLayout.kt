@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -79,8 +80,14 @@ fun <T> BrowseLayout(
             }
         }
         Box(Modifier.height(spacing.sp6))
+        // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-width
+        // category column plus a weight(1f) content column but never claimed the full width
+        // itself, so the weight(1f) column had no real remaining space to expand into -- its
+        // Text children (e.g. Live TV's "N channels" label) wrapped one character per line.
+        // fillMaxWidth is the real fix here too, shared by every BrowseLayout caller (Live,
+        // Movies, Series).
         Row(
-            modifier = Modifier.padding(horizontal = spacing.safeX),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
         ) {
             // Category filter column.
