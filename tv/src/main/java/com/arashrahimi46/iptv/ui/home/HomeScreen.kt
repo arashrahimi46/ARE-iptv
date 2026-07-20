@@ -73,11 +73,18 @@ fun HomeScreen(
                             },
                             variant = AreButtonVariant.Primary,
                         )
-                        AreButton(
-                            "More info",
-                            onClick = { featuredMovie?.let(onTitleSelected) },
-                            variant = AreButtonVariant.Secondary,
-                        )
+                        // product-lead ruling: "More info" always targeted featuredMovie, but a
+                        // channel hero has no Detail screen of its own to route "more info" to --
+                        // routing to an unrelated movie/series was actively misleading, not just
+                        // off-topic. "Play now" above already covers "tune in" for a channel hero,
+                        // so this action is simply absent rather than wrong when one is showing.
+                        if (featuredChannel == null) {
+                            AreButton(
+                                "More info",
+                                onClick = { featuredMovie?.let(onTitleSelected) },
+                                variant = AreButtonVariant.Secondary,
+                            )
+                        }
                     },
                 )
             } else if (state.isInitializing) {
