@@ -95,7 +95,26 @@ fun LivePlayerScreen(
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
 
-    BackHandler(onBack = onBack)
+    // QA MEDIUM defect: BACK from "Playback failed" intermittently left a blank, unrecoverable
+    // screen (~4/6 attempts). Root cause: TWO independent paths can call onBack() for the same
+    // system-BACK press -- the BackHandler callback below, and the ON_STOP LifecycleEventObserver
+    // further down (added so backgrounding tears the player down) -- because popping this
+    // destination via BackHandler's popBackStack() can itself trigger an ON_STOP on this
+    // composable while it's mid-teardown. A second popBackStack() firing during that transition
+    // could pop an extra entry off the NavHost's back stack, leaving it with nothing to render.
+    // This guard makes onBack fire at most once per screen instance, regardless of which path
+    // reaches it first.
+    var backHandled by remember { mutableStateOf(false) }
+    val handleBack = remember {
+        {
+            if (!backHandled) {
+                backHandled = true
+                onBack()
+            }
+        }
+    }
+
+    BackHandler(onBack = handleBack)
 
     // QA MAJOR finding: "no in-player channel switcher". Channel-up/down on the D-pad is the
     // real remote convention for this, and doesn't collide with the transport HUD's Left/Right
@@ -137,7 +156,7 @@ fun LivePlayerScreen(
             }
         } else if (media == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = onBack)
+                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = handleBack)
             }
         } else {
             var playing by remember { mutableStateOf(true) }
@@ -235,7 +254,7 @@ fun LivePlayerScreen(
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_STOP) onBack()
+                    if (event == Lifecycle.Event.ON_STOP) handleBack()
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -269,7 +288,7 @@ fun LivePlayerScreen(
                     AreIconButton(
                         icon = Icons.Filled.ArrowBack,
                         contentDescription = "Back",
-                        onClick = onBack,
+                        onClick = handleBack,
                         variant = AreIconButtonVariant.Glass,
                     )
                     Box(Modifier.align(Alignment.CenterEnd)) {
@@ -284,7 +303,7 @@ fun LivePlayerScreen(
                 }
                 Box(Modifier.fillMaxSize().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
                     if (playerError != null) {
-                        PlayerErrorState(message = playerError!!, onBack = onBack, onRetry = { retryCount++ })
+                        PlayerErrorState(message = playerError!!, onBack = handleBack, onRetry = { retryCount++ })
                     } else if (isBuffering) {
                         BufferingIndicator()
                     }
