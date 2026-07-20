@@ -6,6 +6,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +35,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -79,6 +83,12 @@ fun AreSidebarNav(
 
     // Tracks which item currently holds D-pad focus (null = none), driving expand/collapse.
     var focusedItemId by remember { mutableStateOf<String?>(null) }
+    // QA MEDIUM defect: each nav destination recomposes a brand-new AreSidebarNav, and
+    // Compose's default initial-focus traversal lands on the first item (Home) rather than
+    // wherever the user actually is -- forcing redundant DOWN presses every navigation.
+    // Requesting focus onto the real [active] item's row on first composition fixes that.
+    val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
+    LaunchedEffect(active) { focusRequesters[active]?.requestFocus() }
     val expanded = focusedItemId != null
     val width by animateDpAsState(
         targetValue = if (expanded) spacing.sidebarWidthOpen else spacing.sidebarWidth,
@@ -109,9 +119,17 @@ fun AreSidebarNav(
 
         Box(Modifier.height(spacing.sp10))
 
+        // HIGH QA defect: fixed-height Column with no scroll clipped/unreachable items
+        // (Settings included) below the fold on shorter/denser TV viewports (e.g. the
+        // 540dp-effective-height Television_1080p AVD profile with all 8 items + header).
+        // .weight(1f) lets this take only the space left after the brand header, and
+        // verticalScroll (with focusable() row items) lets D-pad focus auto-scroll a
+        // below-the-fold item into view instead of just stopping at the last visible one.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
@@ -122,6 +140,7 @@ fun AreSidebarNav(
                     active = item.id == active,
                     expanded = expanded,
                     interactionSource = itemInteractionSource,
+                    focusRequester = focusRequesters.getValue(item.id),
                     onClick = { onSelect(item.id) },
                     onFocusedChanged = { focused ->
                         focusedItemId = if (focused) item.id else focusedItemId.takeUnless { it == item.id }
@@ -152,6 +171,7 @@ private fun SidebarNavRow(
     active: Boolean,
     expanded: Boolean,
     interactionSource: MutableInteractionSource,
+    focusRequester: FocusRequester,
     onClick: () -> Unit,
     onFocusedChanged: (Boolean) -> Unit,
 ) {
@@ -161,7 +181,8 @@ private fun SidebarNavRow(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .height(52.dp)
+            .focusRequester(focusRequester),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
         backgroundColor = if (active) colors.accentWash else Color.Transparent,
