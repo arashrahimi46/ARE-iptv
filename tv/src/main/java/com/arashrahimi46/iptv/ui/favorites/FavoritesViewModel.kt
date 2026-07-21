@@ -20,22 +20,14 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-/** A favorited channel or VOD title resolved to its real row, for the mixed Sports/Kids tabs. */
-sealed class FavoriteContent {
-    data class ChannelItem(val channel: Channel) : FavoriteContent()
-    data class TitleItem(val title: VodTitle) : FavoriteContent()
-}
-
 data class FavoritesUiState(
     val hasSource: Boolean = false,
     /** Channels tab -- favorited [Channel]s, most-recently-favorited first (see [FavoritesViewModel] doc). */
     val channels: List<Channel> = emptyList(),
-    /** Movies tab -- favorited non-series [VodTitle]s, most-recently-favorited first. */
+    /** Movies tab -- favorited movie [VodTitle]s, most-recently-favorited first. */
     val movies: List<VodTitle> = emptyList(),
-    /** Sports tab -- favorited channels/movies/series whose category name contains "sport". */
-    val sports: List<FavoriteContent> = emptyList(),
-    /** Kids tab -- favorited movies/series whose category name contains "kid". */
-    val kids: List<FavoriteContent> = emptyList(),
+    /** Series tab -- favorited series [VodTitle]s, most-recently-favorited first. */
+    val series: List<VodTitle> = emptyList(),
 )
 
 /**
@@ -60,7 +52,7 @@ class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
     val uiState: StateFlow<FavoritesUiState> = _uiState.asStateFlow()
 
     init {
-        // Resolve only the favorited ids to rows (getByIds) instead of loading the whole
+        // Resolve only the favorited stable keys to rows instead of loading the whole
         // catalog to filter it -- favorites are few, the catalog can be 100k+/300k+ rows.
         combine(settings.activeSourceId, favoritesRepository.observeAll()) { sid, favorites -> sid to favorites }
             .mapLatest { (sid, favorites) -> buildState(sid, favorites) }
@@ -87,22 +79,11 @@ class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
         val movies = favorites
             .filter { it.contentType == ContentType.MOVIE }
             .mapNotNull { vodByKey[it.streamKey] }
+        val series = favorites
+            .filter { it.contentType == ContentType.SERIES }
+            .mapNotNull { vodByKey[it.streamKey] }
 
-        val resolved: List<FavoriteContent> = favorites.mapNotNull { fav ->
-            if (fav.contentType == ContentType.LIVE) {
-                channelByKey[fav.streamKey]?.let { FavoriteContent.ChannelItem(it) }
-            } else {
-                vodByKey[fav.streamKey]?.let { FavoriteContent.TitleItem(it) }
-            }
-        }
-        fun categoryOf(item: FavoriteContent): String? = when (item) {
-            is FavoriteContent.ChannelItem -> item.channel.categoryName
-            is FavoriteContent.TitleItem -> item.title.categoryName
-        }
-        val sports = resolved.filter { categoryOf(it)?.contains("sport", ignoreCase = true) == true }
-        val kids = resolved.filter { categoryOf(it)?.contains("kid", ignoreCase = true) == true }
-
-        return FavoritesUiState(hasSource = true, channels = channels, movies = movies, sports = sports, kids = kids)
+        return FavoritesUiState(hasSource = true, channels = channels, movies = movies, series = series)
     }
 
     fun toggleChannelFavorite(channelId: Long) {

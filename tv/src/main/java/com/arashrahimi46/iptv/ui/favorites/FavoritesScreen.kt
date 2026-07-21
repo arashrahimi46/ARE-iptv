@@ -57,8 +57,7 @@ fun FavoritesScreen(
     val tab = selectedTab ?: when {
         state.channels.isNotEmpty() -> "channels"
         state.movies.isNotEmpty() -> "movies"
-        state.sports.isNotEmpty() -> "sports"
-        state.kids.isNotEmpty() -> "kids"
+        state.series.isNotEmpty() -> "series"
         else -> "channels"
     }
 
@@ -80,8 +79,7 @@ fun FavoritesScreen(
                 listOf(
                     "channels" to "Channels",
                     "movies" to "Movies",
-                    "sports" to "Sports",
-                    "kids" to "Kids",
+                    "series" to "Series",
                 ).forEach { (id, label) ->
                     AreChip(text = label, selected = id == tab, onClick = { selectedTab = id })
                 }
@@ -109,21 +107,11 @@ fun FavoritesScreen(
                     onTitleSelected = onTitleSelected,
                     onToggleFavorite = viewModel::toggleVodFavorite,
                 )
-                "sports" -> MixedGrid(
-                    items = state.sports,
-                    emptyLabel = "No favorited sports content yet -- favorite a channel or title in a Sports category.",
-                    onChannelSelected = onChannelSelected,
+                "series" -> MovieGrid(
+                    movies = state.series,
+                    emptyLabel = "No favorited series yet -- tap the heart on a series tile to add one.",
                     onTitleSelected = onTitleSelected,
-                    onToggleChannelFavorite = viewModel::toggleChannelFavorite,
-                    onToggleVodFavorite = viewModel::toggleVodFavorite,
-                )
-                "kids" -> MixedGrid(
-                    items = state.kids,
-                    emptyLabel = "No favorited kids content yet -- favorite a channel or title in a Kids category.",
-                    onChannelSelected = onChannelSelected,
-                    onTitleSelected = onTitleSelected,
-                    onToggleChannelFavorite = viewModel::toggleChannelFavorite,
-                    onToggleVodFavorite = viewModel::toggleVodFavorite,
+                    onToggleFavorite = viewModel::toggleVodFavorite,
                 )
             }
         }
@@ -195,46 +183,6 @@ private fun MovieGrid(
                 isFavorite = true,
                 onToggleFavorite = { onToggleFavorite(movie) },
             )
-        }
-    }
-}
-
-@Composable
-private fun MixedGrid(
-    items: List<FavoriteContent>,
-    emptyLabel: String,
-    onChannelSelected: (Long) -> Unit,
-    onTitleSelected: (VodTitle) -> Unit,
-    onToggleChannelFavorite: (Long) -> Unit,
-    onToggleVodFavorite: (VodTitle) -> Unit,
-) {
-    val colors = AreIptvTheme.colors
-    if (items.isEmpty()) {
-        Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
-        return
-    }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        items.forEach { item ->
-            when (item) {
-                is FavoriteContent.ChannelItem -> AreChannelTile(
-                    channel = item.channel.name,
-                    onClick = { onChannelSelected(item.channel.id) },
-                    logoUrl = item.channel.logoUrl,
-                    number = item.channel.number,
-                    now = item.channel.categoryName,
-                    isFavorite = true,
-                    onToggleFavorite = { onToggleChannelFavorite(item.channel.id) },
-                )
-                is FavoriteContent.TitleItem -> ArePosterTile(
-                    title = item.title.name,
-                    onClick = { onTitleSelected(item.title) },
-                    posterUrl = item.title.posterUrl,
-                    meta = listOfNotNull(item.title.year, item.title.categoryName).joinToString(" · ").ifEmpty { null },
-                    rating = item.title.rating,
-                    isFavorite = true,
-                    onToggleFavorite = { onToggleVodFavorite(item.title) },
-                )
-            }
         }
     }
 }
