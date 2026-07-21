@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +41,7 @@ import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
+import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -215,20 +220,46 @@ private fun MetaRow(title: VodTitle) {
 @Composable
 private fun SeriesEpisodesSection(state: DetailUiState, onPlayEpisode: (SeriesEpisode) -> Unit) {
     val colors = AreIptvTheme.colors
+    val totalEpisodes = state.episodesBySeason.values.sumOf { it.size }
+    val seasons = remember(state.episodesBySeason) { state.episodesBySeason.keys.sorted() }
+    // Selected season tab -- defaults to the first season, resets if the season set changes.
+    var selectedSeason by remember(seasons) { mutableStateOf(seasons.firstOrNull()) }
     Column {
-        Text(text = "Episodes", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+        val header = if (totalEpisodes > 0) {
+            val seasonLabel = if (seasons.size > 1) "${seasons.size} seasons · " else ""
+            "Episodes · $seasonLabel$totalEpisodes total"
+        } else {
+            "Episodes"
+        }
+        Text(text = header, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
         Box(Modifier.padding(top = 18.dp))
         when {
             state.episodesBySeason.isNotEmpty() -> {
-                state.episodesBySeason.toSortedMap().forEach { (season, episodes) ->
-                    Text(text = "Season $season", style = AreIptvTheme.typography.h3, color = colors.textSecondary)
-                    Box(Modifier.padding(top = 10.dp))
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        episodes.sortedBy { it.episode }.forEach { episode ->
-                            EpisodeRow(episode = episode, onClick = { onPlayEpisode(episode) })
+                // Season tabs: pick a season, only its episodes render below -- so a many-season
+                // show is a couple of clicks to any episode instead of a long vertical scroll.
+                if (seasons.size > 1) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        seasons.forEach { season ->
+                            AreChip(
+                                text = "Season $season",
+                                onClick = { selectedSeason = season },
+                                selected = season == selectedSeason,
+                            )
                         }
                     }
-                    Box(Modifier.padding(bottom = 22.dp))
+                    Box(Modifier.padding(top = 18.dp))
+                }
+                val episodes = state.episodesBySeason[selectedSeason].orEmpty().sortedBy { it.episode }
+                Text(
+                    text = "Season ${selectedSeason ?: ""} · ${episodes.size} episodes",
+                    style = AreIptvTheme.typography.h3,
+                    color = colors.textSecondary,
+                )
+                Box(Modifier.padding(top = 10.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    episodes.forEach { episode ->
+                        EpisodeRow(episode = episode, onClick = { onPlayEpisode(episode) })
+                    }
                 }
             }
             state.isM3uSeriesWithoutEpisodes -> {

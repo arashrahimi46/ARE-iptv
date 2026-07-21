@@ -91,10 +91,17 @@ data class VodTitle(
     val streamUrl: String? = null,
     /** Xtream vod/series id; null for M3U. */
     val externalId: String? = null,
+    /** For a series, the number of [SeriesEpisode] rows grouped under it -- shown on the tile/detail.
+     * 0 for movies and for series whose episodes haven't been loaded/grouped yet. */
+    val episodeCount: Int = 0,
 )
 
-/** A single episode belonging to a series [VodTitle]. Schema stub -- not populated/wired to UI in this phase. */
-@Entity(tableName = "series_episodes")
+/**
+ * A single episode belonging to a series [VodTitle]. Populated at M3U import time
+ * (episodes grouped out of per-episode playlist entries) and lazily for Xtream on
+ * first Detail view. Indexed by [seriesTitleId] -- every read filters on it.
+ */
+@Entity(tableName = "series_episodes", indices = [Index(value = ["seriesTitleId"])])
 data class SeriesEpisode(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val seriesTitleId: Long,

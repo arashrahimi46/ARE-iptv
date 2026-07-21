@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
@@ -61,14 +62,19 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         sectionCountLabel = { count -> "$count titles" },
         emptyLabel = "No series in this genre yet.",
         listMode = isListMode,
+        // Dense responsive poster grid: ~160dp columns that the tiles fill, so several covers
+        // with titles show per row instead of one oversized cell.
+        minItemWidth = 160.dp,
         modifier = modifier,
     ) { show ->
+        val episodeMeta = if (show.episodeCount > 0) "${show.episodeCount} episodes" else null
         ArePosterTile(
             title = show.name,
             onClick = { onSeriesSelected(show) },
-            meta = listOfNotNull(show.year, show.categoryName).joinToString(" · ").ifEmpty { null },
+            meta = listOfNotNull(episodeMeta, show.year, show.categoryName).joinToString(" · ").ifEmpty { null },
             rating = show.rating,
             posterUrl = show.posterUrl,
+            fillWidth = true,
             isFavorite = show.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(show.id) },
         )

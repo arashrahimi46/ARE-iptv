@@ -57,6 +57,9 @@ fun ArePosterTile(
     rating: String? = null,
     progress: Float? = null,
     width: androidx.compose.ui.unit.Dp = AreIptvTheme.spacing.tilePosterWidth,
+    /** Grid mode: fill the cell width (set by [GridCells.Adaptive]) instead of a fixed [width], so
+     * browse grids pack a responsive number of columns rather than one fixed-width tile per cell. */
+    fillWidth: Boolean = false,
     badges: @Composable (() -> Unit)? = null,
     /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
     isFavorite: Boolean? = null,
@@ -68,7 +71,7 @@ fun ArePosterTile(
     val initials = title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val focused by interactionSource.collectIsFocusedAsState()
 
-    Column(modifier = modifier.width(width)) {
+    Column(modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width))) {
         TvFocusable(
             onClick = onClick,
             modifier = Modifier

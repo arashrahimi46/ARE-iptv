@@ -98,14 +98,16 @@ fun <T : Any> BrowseLayout(
     // against the actual screen size (height, now that the content grid below is a
     // real lazy layout and needs a genuine bounded height to lay out against), not
     // each level's own wrap-content guess.
-    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp3, bottom = spacing.sp6)) {
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)
                 titleAccessory?.invoke()
             }
         }
-        Box(Modifier.height(spacing.sp6))
+        // Tightened so the content grid sits higher -- the poster covers were pushed down with
+        // unused space above them (and clipped at the bottom) by the original larger gaps.
+        Box(Modifier.height(spacing.sp3))
         // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-width
         // category column plus a weight(1f) content column but never claimed the full width
         // itself, so the weight(1f) column had no real remaining space to expand into -- its
@@ -123,7 +125,9 @@ fun <T : Any> BrowseLayout(
             // categories to exceed the screen (previously masked by the whole screen scrolling
             // together as one unbounded column).
             Column(
-                modifier = Modifier.width(300.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+                // 240dp (was 300dp): the wide filter column left too little room for the content
+                // grid on a ~960dp TV, forcing the poster grid down to a single oversized column.
+                modifier = Modifier.width(240.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
@@ -162,7 +166,7 @@ fun <T : Any> BrowseLayout(
                             Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                         }
                     }
-                    Box(Modifier.height(18.dp))
+                    Box(Modifier.height(10.dp))
                 }
                 // Paged: only "empty" once the first load has settled (avoid flashing the empty
                 // label during the initial page fetch on a huge catalog).

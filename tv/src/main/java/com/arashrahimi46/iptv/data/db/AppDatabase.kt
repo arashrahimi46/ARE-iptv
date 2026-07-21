@@ -44,7 +44,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
         Favorite::class,
         ContinueWatchingEntry::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -76,13 +76,26 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v3 -> v4: series-episode grouping. Adds `vod_titles.episodeCount` (grouped-episode count
+         * shown on the series tile/detail) and an index on `series_episodes.seriesTitleId` (every
+         * episode read filters on it, and the count-refresh UPDATE joins on it). Non-destructive so
+         * an existing large catalog is preserved -- though M3U series only regroup on re-import.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `episodeCount` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_series_episodes_seriesTitleId` ON `series_episodes` (`seriesTitleId`)")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(MIGRATION_2_3)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(true)
                     .build().also { instance = it }
             }

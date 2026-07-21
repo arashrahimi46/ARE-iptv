@@ -121,8 +121,22 @@ interface VodTitleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(titles: List<VodTitle>)
 
+    /** Single insert returning the generated id -- used to create a series parent row before its
+     * grouped [SeriesEpisode]s (which reference it) are batched in during M3U import. */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(title: VodTitle): Long
+
     @Query("DELETE FROM vod_titles WHERE sourceId = :sourceId")
     suspend fun deleteForSource(sourceId: Long)
+
+    /** Recompute [VodTitle.episodeCount] from the grouped `series_episodes` rows for a source's
+     * series (one correlated UPDATE, index-backed on seriesTitleId) -- run once after M3U import. */
+    @Query("UPDATE vod_titles SET episodeCount = (SELECT COUNT(*) FROM series_episodes WHERE series_episodes.seriesTitleId = vod_titles.id) WHERE sourceId = :sourceId AND isSeries = 1")
+    suspend fun refreshEpisodeCounts(sourceId: Long)
+
+    /** Set one series' episode count -- Xtream loads episodes lazily on Detail view, not at import. */
+    @Query("UPDATE vod_titles SET episodeCount = :count WHERE id = :id")
+    suspend fun setEpisodeCount(id: Long, count: Int)
 
     // --- Large-catalog browse (Paging 3): only the visible window is ever in memory. ---
 
@@ -180,6 +194,10 @@ interface EPGProgramDao {
 interface SeriesEpisodeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(episodes: List<SeriesEpisode>)
+
+    /** Rollback cleanup: drop grouped episodes for a half-imported source's series parents. */
+    @Query("DELETE FROM series_episodes WHERE seriesTitleId IN (:seriesTitleIds)")
+    suspend fun deleteForSeries(seriesTitleIds: List<Long>)
 
     @Query("SELECT * FROM series_episodes WHERE seriesTitleId = :seriesTitleId ORDER BY season, episode")
     fun observeForSeries(seriesTitleId: Long): Flow<List<SeriesEpisode>>

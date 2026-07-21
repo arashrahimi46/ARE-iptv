@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
@@ -61,6 +62,9 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         sectionCountLabel = { count -> "$count titles" },
         emptyLabel = "No movies in this genre yet.",
         listMode = isListMode,
+        // Dense responsive poster grid: ~160dp columns that the tiles fill, so several covers
+        // with titles show per row instead of one oversized cell.
+        minItemWidth = 160.dp,
         modifier = modifier,
     ) { movie ->
         ArePosterTile(
@@ -69,6 +73,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,
             posterUrl = movie.posterUrl,
+            fillWidth = true,
             isFavorite = movie.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
         )

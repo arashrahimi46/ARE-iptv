@@ -58,19 +58,22 @@ class DetailViewModel(app: Application, private val contentId: Long) : AndroidVi
             _uiState.value = _uiState.value.copy(loading = false, title = title)
 
             if (title != null && title.isSeries) {
+                // Xtream loads episodes lazily from get_series_info; M3U series were already grouped
+                // into series_episodes at import time. Either way, observe the same table.
                 if (title.externalId != null) {
                     runCatching { repository.ensureSeriesEpisodesLoaded(title) }
                         .onFailure { e -> _uiState.value = _uiState.value.copy(episodesLoadError = e.message) }
-                    repository.observeSeriesEpisodes(title.id)
-                        .onEach { episodes ->
-                            _uiState.value = _uiState.value.copy(episodesBySeason = episodes.groupBy { it.season })
-                        }
-                        .launchIn(viewModelScope)
-                } else {
-                    // M3U series entries have no authoritative season/episode structure --
-                    // the series itself is the single playable item (documented limitation).
-                    _uiState.value = _uiState.value.copy(isM3uSeriesWithoutEpisodes = true)
                 }
+                repository.observeSeriesEpisodes(title.id)
+                    .onEach { episodes ->
+                        _uiState.value = _uiState.value.copy(
+                            episodesBySeason = episodes.groupBy { it.season },
+                            // A series with no grouped episodes and no Xtream backing (e.g. a lone
+                            // M3U entry with no SxxExx marker) plays as a single item.
+                            isM3uSeriesWithoutEpisodes = title.externalId == null && episodes.isEmpty(),
+                        )
+                    }
+                    .launchIn(viewModelScope)
             }
         }
     }

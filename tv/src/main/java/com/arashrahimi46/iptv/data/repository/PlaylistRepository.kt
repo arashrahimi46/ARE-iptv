@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
 import com.arashrahimi46.iptv.data.parser.XtreamClient
+import com.arashrahimi46.iptv.data.parser.parseSeriesEpisode
 import com.arashrahimi46.iptv.data.parser.XtreamException
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
@@ -186,7 +187,10 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 externalId = ep.id,
             )
         }
-        if (entities.isNotEmpty()) db.seriesEpisodeDao().insertAll(entities)
+        if (entities.isNotEmpty()) {
+            db.seriesEpisodeDao().insertAll(entities)
+            db.vodTitleDao().setEpisodeCount(vodTitle.id, entities.size)
+        }
     }
 
     override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =
@@ -203,6 +207,11 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             val categories = linkedMapOf<Pair<ContentType, String>, Category>()
             val channelBatch = mutableListOf<Channel>()
             val vodBatch = mutableListOf<VodTitle>()
+            val episodeBatch = mutableListOf<SeriesEpisode>()
+            // Distinct series parent ids, keyed by lowercased series name -- bounded by the number of
+            // distinct series (thousands), not episodes (100k+), so it stays in memory safely while
+            // per-episode rows batch-flush to Room like everything else.
+            val seriesIdByName = HashMap<String, Long>()
             var channelCount = 0
             var movieCount = 0
             var seriesCount = 0
@@ -242,15 +251,45 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                                 movieCount++
                             }
                             ContentType.SERIES -> {
-                                vodBatch += VodTitle(
-                                    sourceId = sourceId,
-                                    name = entry.name,
-                                    isSeries = true,
-                                    posterUrl = entry.logoUrl,
-                                    categoryName = group.ifEmpty { null },
-                                    streamUrl = entry.streamUrl,
-                                )
-                                seriesCount++
+                                // Group per-episode entries (e.g. "Breaking Bad S01E02") under one
+                                // series VodTitle; the episode itself goes to series_episodes. An
+                                // entry with no season/episode marker is treated as a standalone
+                                // series title (the old behaviour).
+                                val info = parseSeriesEpisode(entry.name)
+                                if (info != null) {
+                                    val key = info.seriesName.lowercase()
+                                    val seriesId = seriesIdByName[key] ?: run {
+                                        val newId = db.vodTitleDao().insert(
+                                            VodTitle(
+                                                sourceId = sourceId,
+                                                name = info.seriesName,
+                                                isSeries = true,
+                                                posterUrl = entry.logoUrl,
+                                                categoryName = group.ifEmpty { null },
+                                            ),
+                                        )
+                                        seriesIdByName[key] = newId
+                                        seriesCount++
+                                        newId
+                                    }
+                                    episodeBatch += SeriesEpisode(
+                                        seriesTitleId = seriesId,
+                                        season = info.season,
+                                        episode = info.episode,
+                                        name = info.episodeTitle,
+                                        streamUrl = entry.streamUrl,
+                                    )
+                                } else {
+                                    vodBatch += VodTitle(
+                                        sourceId = sourceId,
+                                        name = entry.name,
+                                        isSeries = true,
+                                        posterUrl = entry.logoUrl,
+                                        categoryName = group.ifEmpty { null },
+                                        streamUrl = entry.streamUrl,
+                                    )
+                                    seriesCount++
+                                }
                             }
                         }
                         if (channelBatch.size >= IMPORT_BATCH_SIZE) {
@@ -259,13 +298,20 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                         if (vodBatch.size >= IMPORT_BATCH_SIZE) {
                             db.vodTitleDao().insertAll(vodBatch); vodBatch.clear()
                         }
+                        if (episodeBatch.size >= IMPORT_BATCH_SIZE) {
+                            db.seriesEpisodeDao().insertAll(episodeBatch); episodeBatch.clear()
+                        }
                     }
                 }
                 if (channelBatch.isNotEmpty()) db.channelDao().insertAll(channelBatch)
                 if (vodBatch.isNotEmpty()) db.vodTitleDao().insertAll(vodBatch)
+                if (episodeBatch.isNotEmpty()) db.seriesEpisodeDao().insertAll(episodeBatch)
+                // Populate each series' episodeCount from its grouped rows (shown on tile/detail).
+                if (seriesIdByName.isNotEmpty()) db.vodTitleDao().refreshEpisodeCounts(sourceId)
             } catch (e: Throwable) {
                 // Roll back a half-imported source so a failed/interrupted import never leaves a
                 // dead, selectable entry (and its orphaned rows) behind.
+                db.seriesEpisodeDao().deleteForSeries(seriesIdByName.values.toList())
                 db.channelDao().deleteForSource(sourceId)
                 db.vodTitleDao().deleteForSource(sourceId)
                 db.playlistSourceDao().delete(source.copy(id = sourceId))
