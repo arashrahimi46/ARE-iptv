@@ -17,11 +17,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -71,7 +74,19 @@ fun ArePosterTile(
     val initials = title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val focused by interactionSource.collectIsFocusedAsState()
 
-    Column(modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width))) {
+    // Bring the WHOLE tile (poster + title + meta) into view on focus -- the focusable is only the
+    // poster, so without this the grid scrolls to show the poster but leaves the title/meta below it
+    // clipped at the screen edge (and the 1.06x focus scale pushes them further down).
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    LaunchedEffect(focused) {
+        if (focused) bringIntoViewRequester.bringIntoView()
+    }
+
+    Column(
+        modifier = modifier
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width))
+            .bringIntoViewRequester(bringIntoViewRequester),
+    ) {
         TvFocusable(
             onClick = onClick,
             modifier = Modifier
