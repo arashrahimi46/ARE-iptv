@@ -15,6 +15,7 @@ import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.settings.CredentialsStore
 
 /**
  * Local Room database. [ContinueWatchingEntry] remains a schema stub
@@ -24,14 +25,24 @@ import com.arashrahimi46.iptv.data.model.VodTitle
  * [seriesEpisodeDao], Xtream sources only -- see
  * [com.arashrahimi46.iptv.data.repository.PlaylistRepository.ensureSeriesEpisodesLoaded].
  * [Favorite] is populated starting Phase 4 via [favoriteDao] -- see
- * [com.arashrahimi46.iptv.data.repository.FavoritesRepository].
+ * [com.arashrahimi46.iptv.data.repository.FavoritesRepository]. [ContinueWatchingEntry] is
+ * populated starting P1.2 via [continueWatchingDao] -- see
+ * [com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository]. Adding its DAO is not a
+ * schema change (the table/columns were already registered), so no migration bump was needed.
  *
  * Bumped to version 2: [PlaylistSource] dropped its plaintext username/password
  * columns (credentials moved to encrypted-at-rest storage, see
- * [com.arashrahimi46.iptv.data.settings.CredentialsStore]). No production installs
- * exist yet (app hasn't shipped), so a destructive fallback is used instead of a
- * real Migration -- acceptable pre-release; would need a real migration path once
- * this ships and real user data is at stake.
+ * [com.arashrahimi46.iptv.data.settings.CredentialsStore]).
+ *
+ * Every version step (1->2->3->4) now has a real, non-destructive [Migration] --
+ * see [migration1To2] below. There is deliberately no
+ * `fallbackToDestructiveMigration` anymore: that fallback would silently wipe an
+ * upgrading user's whole catalog/favorites/continue-watching on any version bump
+ * it didn't have an exact migration for, which is a real data-loss bug once real
+ * installs exist, not just a "safe pre-release shortcut". If a future version
+ * bump is ever added without its own Migration, Room now fails loudly
+ * (`IllegalStateException`) instead of wiping data -- that failure is the
+ * intended forcing function to add the missing migration before release.
  */
 @Database(
     entities = [
@@ -56,9 +67,48 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun epgProgramDao(): EPGProgramDao
     abstract fun seriesEpisodeDao(): SeriesEpisodeDao
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun continueWatchingDao(): ContinueWatchingDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null
+
+        /**
+         * v1 -> v2: [PlaylistSource] drops its plaintext `username`/`password` columns. Each
+         * row's credentials are copied into encrypted-at-rest [CredentialsStore] BEFORE the
+         * columns are dropped, so an upgrading user's saved Xtream logins survive instead of
+         * silently vanishing. SQLite's `ALTER TABLE ... DROP COLUMN` isn't available on every
+         * Android-bundled SQLite version, so the table is recreated without those two columns
+         * (the standard SQLite "copy to a new table" pattern) rather than altered in place --
+         * every other column/row, and every other table, is untouched.
+         */
+        fun migration1To2(context: Context): Migration = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val credentials = CredentialsStore(context)
+                db.query("SELECT id, username, password FROM playlist_sources").use { cursor ->
+                    val idIndex = cursor.getColumnIndex("id")
+                    val usernameIndex = cursor.getColumnIndex("username")
+                    val passwordIndex = cursor.getColumnIndex("password")
+                    while (cursor.moveToNext()) {
+                        val username = usernameIndex.takeIf { it >= 0 && !cursor.isNull(it) }?.let(cursor::getString)
+                        val password = passwordIndex.takeIf { it >= 0 && !cursor.isNull(it) }?.let(cursor::getString)
+                        if (username != null && password != null) {
+                            credentials.save(cursor.getLong(idIndex), username, password)
+                        }
+                    }
+                }
+
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `playlist_sources_new` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`name` TEXT NOT NULL, `type` TEXT NOT NULL, `url` TEXT NOT NULL, `epgUrl` TEXT, `createdAtMs` INTEGER NOT NULL)",
+                )
+                db.execSQL(
+                    "INSERT INTO `playlist_sources_new` (id, name, type, url, epgUrl, createdAtMs) " +
+                        "SELECT id, name, type, url, epgUrl, createdAtMs FROM `playlist_sources`",
+                )
+                db.execSQL("DROP TABLE `playlist_sources`")
+                db.execSQL("ALTER TABLE `playlist_sources_new` RENAME TO `playlist_sources`")
+            }
+        }
 
         /**
          * v2 -> v3: add the browse/paging covering indices on `channels` and `vod_titles`
@@ -95,8 +145,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
-                    .fallbackToDestructiveMigration(true)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4)
                     .build().also { instance = it }
             }
     }

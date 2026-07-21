@@ -357,53 +357,67 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         // just generated (see CredentialsStore's doc comment for why).
         credentials.save(sourceId, username, password)
 
-        val liveCatNames = liveCategories.associate { it.id to it.name }
-        val vodCatNames = vodCategories.associate { it.id to it.name }
-        val seriesCatNames = seriesCategories.associate { it.id to it.name }
+        try {
+            val liveCatNames = liveCategories.associate { it.id to it.name }
+            val vodCatNames = vodCategories.associate { it.id to it.name }
+            val seriesCatNames = seriesCategories.associate { it.id to it.name }
 
-        val categories = liveCategories.map { Category(sourceId, ContentType.LIVE, it.name, it.id) } +
-            vodCategories.map { Category(sourceId, ContentType.MOVIE, it.name, it.id) } +
-            seriesCategories.map { Category(sourceId, ContentType.SERIES, it.name, it.id) }
+            val categories = liveCategories.map { Category(sourceId, ContentType.LIVE, it.name, it.id) } +
+                vodCategories.map { Category(sourceId, ContentType.MOVIE, it.name, it.id) } +
+                seriesCategories.map { Category(sourceId, ContentType.SERIES, it.name, it.id) }
 
-        val channels = liveStreams.map {
-            Channel(
-                sourceId = sourceId,
-                name = it.name,
-                streamUrl = xtream.streamUrl("live", it.id, "m3u8"),
-                logoUrl = it.logo,
-                categoryName = it.categoryId?.let(liveCatNames::get),
-                externalId = it.id,
-                tvgId = it.epgChannelId,
-            )
+            val channels = liveStreams.map {
+                Channel(
+                    sourceId = sourceId,
+                    name = it.name,
+                    streamUrl = xtream.streamUrl("live", it.id, "m3u8"),
+                    logoUrl = it.logo,
+                    categoryName = it.categoryId?.let(liveCatNames::get),
+                    externalId = it.id,
+                    tvgId = it.epgChannelId,
+                )
+            }
+            val movies = vodStreams.map {
+                VodTitle(
+                    sourceId = sourceId,
+                    name = it.name,
+                    isSeries = false,
+                    posterUrl = it.icon,
+                    categoryName = it.categoryId?.let(vodCatNames::get),
+                    streamUrl = xtream.streamUrl("movie", it.id, "mp4"),
+                    externalId = it.id,
+                )
+            }
+            val series = seriesList.map {
+                VodTitle(
+                    sourceId = sourceId,
+                    name = it.name,
+                    isSeries = true,
+                    posterUrl = it.cover,
+                    categoryName = it.categoryId?.let(seriesCatNames::get),
+                    externalId = it.id,
+                )
+            }
+
+            db.categoryDao().upsertAll(categories)
+            db.channelDao().insertAll(channels)
+            db.vodTitleDao().insertAll(movies + series)
+            settings.setActiveSourceId(sourceId)
+
+            ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
+        } catch (e: Throwable) {
+            // Mirrors addM3uSource's rollback below -- without this, a failure partway through
+            // (e.g. categories/channels inserted but the VOD insert throws) left a half-imported,
+            // un-rolled-back source row behind: the user sees the real error from this call, but
+            // Settings/the source picker would still list a dead, selectable "playlist" with a
+            // partial or empty catalog and orphaned rows under it.
+            db.channelDao().deleteForSource(sourceId)
+            db.vodTitleDao().deleteForSource(sourceId)
+            db.categoryDao().deleteForSource(sourceId)
+            credentials.clear(sourceId)
+            db.playlistSourceDao().delete(source.copy(id = sourceId))
+            throw e
         }
-        val movies = vodStreams.map {
-            VodTitle(
-                sourceId = sourceId,
-                name = it.name,
-                isSeries = false,
-                posterUrl = it.icon,
-                categoryName = it.categoryId?.let(vodCatNames::get),
-                streamUrl = xtream.streamUrl("movie", it.id, "mp4"),
-                externalId = it.id,
-            )
-        }
-        val series = seriesList.map {
-            VodTitle(
-                sourceId = sourceId,
-                name = it.name,
-                isSeries = true,
-                posterUrl = it.cover,
-                categoryName = it.categoryId?.let(seriesCatNames::get),
-                externalId = it.id,
-            )
-        }
-
-        db.categoryDao().upsertAll(categories)
-        db.channelDao().insertAll(channels)
-        db.vodTitleDao().insertAll(movies + series)
-        settings.setActiveSourceId(sourceId)
-
-        ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
     }
 
     /**

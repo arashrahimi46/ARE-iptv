@@ -10,6 +10,7 @@ import androidx.room.Upsert
 import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.PlaylistSource
@@ -238,4 +239,31 @@ interface FavoriteDao {
 
     @Query("SELECT vodTitleId FROM favorites WHERE vodTitleId IS NOT NULL")
     fun observeFavoriteVodIds(): Flow<List<Long>>
+}
+
+/**
+ * Continue-watching / on-deck persistence (P1.2). VOD/series only (live TV doesn't resume) --
+ * see [com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository] for the
+ * find-existing-then-upsert dedup logic that keeps one row per title/episode.
+ */
+@Dao
+interface ContinueWatchingDao {
+    @Query("SELECT * FROM continue_watching WHERE vodTitleId = :vodTitleId LIMIT 1")
+    suspend fun findByVod(vodTitleId: Long): ContinueWatchingEntry?
+
+    @Query("SELECT * FROM continue_watching WHERE seriesEpisodeId = :episodeId LIMIT 1")
+    suspend fun findByEpisode(episodeId: Long): ContinueWatchingEntry?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entry: ContinueWatchingEntry): Long
+
+    @Query("DELETE FROM continue_watching WHERE vodTitleId = :vodTitleId")
+    suspend fun deleteByVod(vodTitleId: Long)
+
+    @Query("DELETE FROM continue_watching WHERE seriesEpisodeId = :episodeId")
+    suspend fun deleteByEpisode(episodeId: Long)
+
+    /** Recent in-progress entries, most-recent first -- bounded for the Home "Continue Watching" rail. */
+    @Query("SELECT * FROM continue_watching ORDER BY updatedAtMs DESC LIMIT :limit")
+    fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>>
 }

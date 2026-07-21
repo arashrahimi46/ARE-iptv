@@ -132,6 +132,7 @@ fun ParentalPinDialog(
             Column {
                 PinDots(length = pin.length)
                 Box(Modifier.padding(top = 14.dp))
+                val currentError = error
                 if (lockRemainingSec > 0) {
                     Text(
                         text = "Too many wrong attempts -- try again in ${lockRemainingSec}s",
@@ -139,8 +140,8 @@ fun ParentalPinDialog(
                         color = AreIptvTheme.colors.danger,
                     )
                     Box(Modifier.padding(top = 10.dp))
-                } else if (error != null) {
-                    Text(text = error!!, style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.danger)
+                } else if (currentError != null) {
+                    Text(text = currentError, style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.danger)
                     Box(Modifier.padding(top = 10.dp))
                 } else if (verifying) {
                     Text(text = "Checking…", style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.textTertiary)

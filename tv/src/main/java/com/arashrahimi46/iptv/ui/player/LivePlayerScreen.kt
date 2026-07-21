@@ -463,9 +463,10 @@ fun LivePlayerScreen(
                 // bounds -- the HUD has never actually rendered, for any stream. weight(1f)
                 // takes only the space left after the top bar and HUD boxes below.
                 Box(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 28.dp), contentAlignment = Alignment.Center) {
-                    if (playerError != null) {
+                    val currentPlayerError = playerError
+                    if (currentPlayerError != null) {
                         PlayerErrorState(
-                            message = playerError!!,
+                            message = currentPlayerError,
                             onBack = handleBack,
                             // QA fix: reset the auto-retry budget on manual retry too -- without
                             // this, clicking Retry after auto-retries had already exhausted
