@@ -1,7 +1,9 @@
 package com.arashrahimi46.iptv.data.repository
 
 import android.content.Context
+import androidx.paging.PagingSource
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.db.CategoryCount
 import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
@@ -59,9 +61,37 @@ internal fun normalizeSourceUrl(raw: String): String {
 interface PlaylistRepository {
     fun observeSources(): Flow<List<PlaylistSource>>
     suspend fun hasAnySource(): Boolean
-    fun observeChannels(sourceId: Long): Flow<List<Channel>>
-    fun observeMovies(sourceId: Long): Flow<List<VodTitle>>
-    fun observeSeries(sourceId: Long): Flow<List<VodTitle>>
+
+    // --- Browse (Paging 3). category == null means the "All" pseudo-category (no filter). ---
+    fun pagingChannels(sourceId: Long, category: String?): PagingSource<Int, Channel>
+    fun pagingMovies(sourceId: Long, category: String?): PagingSource<Int, VodTitle>
+    fun pagingSeries(sourceId: Long, category: String?): PagingSource<Int, VodTitle>
+
+    // --- Category columns + totals (GROUP BY / COUNT -- no catalog rows loaded). ---
+    fun channelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+    fun movieCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+    fun seriesCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+    fun channelCount(sourceId: Long): Flow<Int>
+    fun movieCount(sourceId: Long): Flow<Int>
+    fun seriesCount(sourceId: Long): Flow<Int>
+
+    // --- Bounded loads (Home rails, Guide, MultiView) -- never the whole catalog. ---
+    fun topChannels(sourceId: Long, limit: Int): Flow<List<Channel>>
+    fun topMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>>
+    fun topSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>>
+
+    // --- DB-side search (Search screen). ---
+    suspend fun searchChannels(sourceId: Long, query: String, limit: Int): List<Channel>
+    suspend fun searchMovies(sourceId: Long, query: String, limit: Int): List<VodTitle>
+    suspend fun searchSeries(sourceId: Long, query: String, limit: Int): List<VodTitle>
+    suspend fun channelsByCategory(sourceId: Long, category: String, limit: Int): List<Channel>
+    suspend fun moviesByCategory(sourceId: Long, category: String, limit: Int): List<VodTitle>
+    suspend fun seriesByCategory(sourceId: Long, category: String, limit: Int): List<VodTitle>
+
+    // --- Resolve ids -> rows (Favorites); all ordered channel ids (player prev/next nav). ---
+    suspend fun channelsByIds(ids: List<Long>): List<Channel>
+    suspend fun titlesByIds(ids: List<Long>): List<VodTitle>
+    suspend fun channelIds(sourceId: Long): List<Long>
 
     /** Fetches + parses an M3U playlist and persists the derived catalog. Throws on network/parse failure. */
     suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary
@@ -101,9 +131,37 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
     override suspend fun hasAnySource(): Boolean = db.playlistSourceDao().count() > 0
 
-    override fun observeChannels(sourceId: Long): Flow<List<Channel>> = db.channelDao().observeForSource(sourceId)
-    override fun observeMovies(sourceId: Long): Flow<List<VodTitle>> = db.vodTitleDao().observeMoviesForSource(sourceId)
-    override fun observeSeries(sourceId: Long): Flow<List<VodTitle>> = db.vodTitleDao().observeSeriesForSource(sourceId)
+    private val channelDao get() = db.channelDao()
+    private val vodDao get() = db.vodTitleDao()
+
+    override fun pagingChannels(sourceId: Long, category: String?): PagingSource<Int, Channel> =
+        if (category == null) channelDao.pagingAll(sourceId) else channelDao.pagingByCategory(sourceId, category)
+    override fun pagingMovies(sourceId: Long, category: String?): PagingSource<Int, VodTitle> =
+        if (category == null) vodDao.paging(sourceId, false) else vodDao.pagingByCategory(sourceId, false, category)
+    override fun pagingSeries(sourceId: Long, category: String?): PagingSource<Int, VodTitle> =
+        if (category == null) vodDao.paging(sourceId, true) else vodDao.pagingByCategory(sourceId, true, category)
+
+    override fun channelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = channelDao.observeCategoryCounts(sourceId)
+    override fun movieCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = vodDao.observeCategoryCounts(sourceId, false)
+    override fun seriesCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = vodDao.observeCategoryCounts(sourceId, true)
+    override fun channelCount(sourceId: Long): Flow<Int> = channelDao.observeCountForSource(sourceId)
+    override fun movieCount(sourceId: Long): Flow<Int> = vodDao.observeCount(sourceId, false)
+    override fun seriesCount(sourceId: Long): Flow<Int> = vodDao.observeCount(sourceId, true)
+
+    override fun topChannels(sourceId: Long, limit: Int): Flow<List<Channel>> = channelDao.observeTop(sourceId, limit)
+    override fun topMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeTop(sourceId, false, limit)
+    override fun topSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeTop(sourceId, true, limit)
+
+    override suspend fun searchChannels(sourceId: Long, query: String, limit: Int): List<Channel> = channelDao.search(sourceId, query, limit)
+    override suspend fun searchMovies(sourceId: Long, query: String, limit: Int): List<VodTitle> = vodDao.search(sourceId, false, query, limit)
+    override suspend fun searchSeries(sourceId: Long, query: String, limit: Int): List<VodTitle> = vodDao.search(sourceId, true, query, limit)
+    override suspend fun channelsByCategory(sourceId: Long, category: String, limit: Int): List<Channel> = channelDao.byCategory(sourceId, category, limit)
+    override suspend fun moviesByCategory(sourceId: Long, category: String, limit: Int): List<VodTitle> = vodDao.byCategory(sourceId, false, category, limit)
+    override suspend fun seriesByCategory(sourceId: Long, category: String, limit: Int): List<VodTitle> = vodDao.byCategory(sourceId, true, category, limit)
+
+    override suspend fun channelsByIds(ids: List<Long>): List<Channel> = if (ids.isEmpty()) emptyList() else channelDao.getByIds(ids)
+    override suspend fun titlesByIds(ids: List<Long>): List<VodTitle> = if (ids.isEmpty()) emptyList() else vodDao.getByIds(ids)
+    override suspend fun channelIds(sourceId: Long): List<Long> = channelDao.idsForSource(sourceId)
 
     override fun observeSeriesEpisodes(seriesTitleId: Long): Flow<List<SeriesEpisode>> =
         db.seriesEpisodeDao().observeForSeries(seriesTitleId)

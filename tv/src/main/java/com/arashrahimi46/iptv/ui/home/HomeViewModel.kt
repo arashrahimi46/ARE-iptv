@@ -54,6 +54,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    /** Per-rail preview size -- Home shows a "browse for more" affordance, never the full catalog. */
+    private val RAIL_LIMIT = 40
+
     private val _nowPlayingTitles = MutableStateFlow<Map<Long, String>>(emptyMap())
     /** channelId -> current EPG programme title, for the "Live now" rail. Issue #15: the rail
      * previously showed `channel.categoryName` in the "now playing" slot -- never a program
@@ -72,23 +75,30 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                 if (sourceId == null) {
                     flowOf(HomeUiState(hasSource = false, isInitializing = false))
                 } else {
-                    combine(
-                        repository.observeChannels(sourceId),
-                        repository.observeMovies(sourceId),
-                        repository.observeSeries(sourceId),
-                    ) { channels, movies, series ->
-                        val categoryCounts = linkedMapOf<String, Int>()
-                        (channels.mapNotNull { it.categoryName } +
-                            movies.mapNotNull { it.categoryName } +
-                            series.mapNotNull { it.categoryName }).forEach { name ->
-                            categoryCounts[name] = (categoryCounts[name] ?: 0) + 1
-                        }
+                    // Rails only need a bounded preview, never the whole catalog (which OOM'd
+                    // on large sources). Category counts come from GROUP BY, merged across the
+                    // three catalogs by name -- same shape the old in-memory aggregation produced.
+                    val rails = combine(
+                        repository.topChannels(sourceId, RAIL_LIMIT),
+                        repository.topMovies(sourceId, RAIL_LIMIT),
+                        repository.topSeries(sourceId, RAIL_LIMIT),
+                    ) { channels, movies, series -> Triple(channels, movies, series) }
+                    val categories = combine(
+                        repository.channelCategoryCounts(sourceId),
+                        repository.movieCategoryCounts(sourceId),
+                        repository.seriesCategoryCounts(sourceId),
+                    ) { c, m, s ->
+                        val merged = linkedMapOf<String, Int>()
+                        (c + m + s).forEach { merged[it.name] = (merged[it.name] ?: 0) + it.count }
+                        merged.map { (name, count) -> HomeCategorySummary(name, count) }
+                    }
+                    combine(rails, categories) { (channels, movies, series), cats ->
                         HomeUiState(
                             hasSource = true,
                             channels = channels,
                             movies = movies,
                             series = series,
-                            categories = categoryCounts.map { (name, count) -> HomeCategorySummary(name, count) },
+                            categories = cats,
                             isInitializing = false,
                         )
                     }

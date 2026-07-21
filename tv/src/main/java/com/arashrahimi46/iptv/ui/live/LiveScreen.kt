@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
@@ -40,6 +41,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         factory = LiveViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val channels = viewModel.pagingData.collectAsLazyPagingItems()
     val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
@@ -72,10 +74,11 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
-        items = state.visibleChannels,
+        items = channels,
         itemKey = { it.id },
         categoryColumnHeader = "Channel groups",
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
+        sectionCount = state.selectedCount,
         sectionCountLabel = { count -> "$count channels" },
         emptyLabel = "No channels in this group yet.",
         listMode = isListMode,

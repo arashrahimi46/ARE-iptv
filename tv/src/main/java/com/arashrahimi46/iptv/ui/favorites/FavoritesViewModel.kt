@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
@@ -60,33 +59,24 @@ class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
     private val favoritesRepository = FavoritesRepository(app)
     private val settings = UserSettings(app)
 
-    private data class Catalog(val channels: List<Channel>, val movies: List<VodTitle>, val series: List<VodTitle>)
-
-    private val catalog = settings.activeSourceId.flatMapLatest { sourceId ->
-        if (sourceId == null) {
-            flowOf<Catalog?>(null)
-        } else {
-            combine(repository.observeChannels(sourceId), repository.observeMovies(sourceId), repository.observeSeries(sourceId)) { c, m, s ->
-                Catalog(c, m, s)
-            }
-        }
-    }
-
     private val _uiState = MutableStateFlow(FavoritesUiState())
     val uiState: StateFlow<FavoritesUiState> = _uiState.asStateFlow()
 
     init {
-        combine(catalog, favoritesRepository.observeAll()) { cat, favorites -> cat to favorites }
-            .onEach { (cat, favorites) -> _uiState.value = buildState(cat, favorites) }
+        // Resolve only the favorited ids to rows (getByIds) instead of loading the whole
+        // catalog to filter it -- favorites are few, the catalog can be 100k+/300k+ rows.
+        combine(settings.activeSourceId, favoritesRepository.observeAll()) { sid, favorites -> sid to favorites }
+            .mapLatest { (sid, favorites) -> buildState(sid, favorites) }
+            .onEach { _uiState.value = it }
             .launchIn(viewModelScope)
     }
 
-    private fun buildState(catalog: Catalog?, favorites: List<Favorite>): FavoritesUiState {
-        if (catalog == null) return FavoritesUiState(hasSource = false)
+    private suspend fun buildState(sourceId: Long?, favorites: List<Favorite>): FavoritesUiState {
+        if (sourceId == null) return FavoritesUiState(hasSource = false)
 
         // favorites is already ORDER BY addedAtMs DESC (see FavoriteDao.observeAll) -- "most recently favorited first".
-        val channelById = catalog.channels.associateBy { it.id }
-        val vodById = (catalog.movies + catalog.series).associateBy { it.id }
+        val channelById = repository.channelsByIds(favorites.mapNotNull { it.channelId }).associateBy { it.id }
+        val vodById = repository.titlesByIds(favorites.mapNotNull { it.vodTitleId }).associateBy { it.id }
 
         val channels = favorites.mapNotNull { fav -> fav.channelId?.let(channelById::get) }
         val movies = favorites

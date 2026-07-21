@@ -107,7 +107,9 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                     _uiState.value = GuideUiState(hasSource = false)
                     return@collectLatest
                 }
-                repository.observeChannels(sourceId).collectLatest { channels ->
+                // Bounded channel window for the guide grid -- the full 100k+ catalog would OOM,
+                // and an EPG grid that tall isn't navigable anyway.
+                repository.topChannels(sourceId, GUIDE_CHANNEL_LIMIT).collectLatest { channels ->
                     if (channels.isEmpty()) {
                         _uiState.value = GuideUiState(hasSource = true)
                         return@collectLatest
@@ -202,6 +204,9 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
+        /** Max channels rendered in the EPG grid -- bounds memory + EPG fetch on large catalogs. */
+        private const val GUIDE_CHANNEL_LIMIT = 300
+
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

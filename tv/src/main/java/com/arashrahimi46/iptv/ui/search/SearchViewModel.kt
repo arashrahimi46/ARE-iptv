@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -57,49 +56,45 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     val favoriteVodIds: StateFlow<Set<Long>> = favoritesRepository.favoriteVodIds
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
-    private data class Catalog(val channels: List<Channel>, val movies: List<VodTitle>, val series: List<VodTitle>)
-
     private val _query = MutableStateFlow("")
     private val _categoryFilter = MutableStateFlow<String?>(null)
     private val _scope = MutableStateFlow(SearchScope.All)
-
-    private val catalog = settings.activeSourceId.flatMapLatest { sourceId ->
-        if (sourceId == null) {
-            flowOf<Catalog?>(null)
-        } else {
-            combine(repository.observeChannels(sourceId), repository.observeMovies(sourceId), repository.observeSeries(sourceId)) { c, m, s ->
-                Catalog(c, m, s)
-            }
-        }
-    }
 
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     init {
-        combine(catalog, _query, _categoryFilter, _scope) { c, query, categoryFilter, scope -> SearchInputs(c, query, categoryFilter, scope) }
-            .onEach { inputs -> _uiState.value = buildState(inputs.catalog, inputs.query, inputs.categoryFilter, inputs.scope) }
+        // DB-side search: LIKE + category queries with a bounded LIMIT, run per keystroke via
+        // mapLatest (older in-flight queries cancel). Never loads the catalog into memory --
+        // essential at 100k+ channels / 300k+ titles.
+        combine(settings.activeSourceId, _query, _categoryFilter, _scope) { sid, query, categoryFilter, scope ->
+            SearchInputs(sid, query, categoryFilter, scope)
+        }
+            .mapLatest { buildState(it) }
+            .onEach { _uiState.value = it }
             .launchIn(viewModelScope)
     }
 
-    private data class SearchInputs(val catalog: Catalog?, val query: String, val categoryFilter: String?, val scope: SearchScope)
+    private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope)
 
-    private fun buildState(catalog: Catalog?, query: String, categoryFilter: String?, scope: SearchScope): SearchUiState {
-        if (catalog == null) return SearchUiState(hasSource = false, query = query, categoryFilter = categoryFilter, scope = scope)
-        val channelsInScope = if (scope == SearchScope.All || scope == SearchScope.LiveTv) catalog.channels else emptyList()
-        val moviesInScope = if (scope == SearchScope.All || scope == SearchScope.Movies) catalog.movies else emptyList()
-        val seriesInScope = if (scope == SearchScope.All || scope == SearchScope.Series) catalog.series else emptyList()
+    private suspend fun buildState(inputs: SearchInputs): SearchUiState {
+        val (sourceId, query, categoryFilter, scope) = inputs
+        if (sourceId == null) return SearchUiState(hasSource = false, query = query, categoryFilter = categoryFilter, scope = scope)
+        val wantChannels = scope == SearchScope.All || scope == SearchScope.LiveTv
+        val wantMovies = scope == SearchScope.All || scope == SearchScope.Movies
+        val wantSeries = scope == SearchScope.All || scope == SearchScope.Series
+
         if (categoryFilter != null) {
-            val channelResults = channelsInScope.filter { it.categoryName == categoryFilter }.take(30)
-            val titleResults = (moviesInScope + seriesInScope).filter { it.categoryName == categoryFilter }.take(30)
+            val channelResults = if (wantChannels) repository.channelsByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()
+            val titleResults = (if (wantMovies) repository.moviesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()) +
+                (if (wantSeries) repository.seriesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList())
             return SearchUiState(hasSource = true, query = query, categoryFilter = categoryFilter, scope = scope, channelResults = channelResults, titleResults = titleResults)
         }
         val trimmed = query.trim()
         if (trimmed.isEmpty()) return SearchUiState(hasSource = true, query = query, scope = scope)
-        val channelResults = channelsInScope.filter { it.name.contains(trimmed, ignoreCase = true) }.take(30)
-        val titleResults = (moviesInScope + seriesInScope)
-            .filter { it.name.contains(trimmed, ignoreCase = true) }
-            .take(30)
+        val channelResults = if (wantChannels) repository.searchChannels(sourceId, trimmed, RESULT_LIMIT) else emptyList()
+        val titleResults = (if (wantMovies) repository.searchMovies(sourceId, trimmed, RESULT_LIMIT) else emptyList()) +
+            (if (wantSeries) repository.searchSeries(sourceId, trimmed, RESULT_LIMIT) else emptyList())
         return SearchUiState(hasSource = true, query = query, scope = scope, channelResults = channelResults, titleResults = titleResults)
     }
 
@@ -128,6 +123,9 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
+        /** Max results per catalog (channels / movies / series) -- matches the old in-memory `.take(30)`. */
+        private const val RESULT_LIMIT = 30
+
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

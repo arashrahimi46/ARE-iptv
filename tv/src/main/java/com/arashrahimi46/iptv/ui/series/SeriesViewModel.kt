@@ -5,20 +5,22 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.browse.browsePager
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,24 +28,19 @@ data class SeriesCategorySummary(val name: String, val count: Int)
 
 data class SeriesUiState(
     val hasSource: Boolean = false,
-    val allSeries: List<VodTitle> = emptyList(),
     val categories: List<SeriesCategorySummary> = emptyList(),
     val selectedCategoryIndex: Int = 0,
 ) {
-    /** "All series" is always category 0; anything else filters by [VodTitle.categoryName]. */
-    val visibleSeries: List<VodTitle>
-        get() = if (selectedCategoryIndex == 0 || categories.isEmpty()) {
-            allSeries
-        } else {
-            val name = categories.getOrNull(selectedCategoryIndex)?.name
-            if (name == null) allSeries else allSeries.filter { it.categoryName == name }
-        }
+    /** Total count for the currently-selected category (category 0 = "All series"). */
+    val selectedCount: Int get() = categories.getOrNull(selectedCategoryIndex)?.count ?: 0
 }
 
 /**
- * Series browse state: real [VodTitle] catalog (isSeries = true) for the
- * active source (Room via [PlaylistRepository]), grouped the same way
- * [com.arashrahimi46.iptv.ui.live.LiveViewModel] groups channels.
+ * Series browse state: real [VodTitle] catalog (isSeries = true) for the active source.
+ *
+ * Large-catalog safe (the same way [com.arashrahimi46.iptv.ui.movies.MoviesViewModel] is):
+ * the grid is a Paging 3 [PagingData] stream so only the visible window is in memory
+ * (343k+ series), and the category column comes from a `GROUP BY` query.
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SeriesViewModel(app: Application) : AndroidViewModel(app) {
@@ -54,38 +51,41 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
     val favoriteVodIds: StateFlow<Set<Long>> = favoritesRepository.favoriteVodIds
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
-    private val _uiState = MutableStateFlow(SeriesUiState())
-    val uiState: StateFlow<SeriesUiState> = _uiState.asStateFlow()
+    /** null = the "All series" pseudo-category (no category filter). */
+    private val selectedCategoryName = MutableStateFlow<String?>(null)
 
-    init {
-        settings.activeSourceId
-            .flatMapLatest { sourceId ->
-                if (sourceId == null) flowOf<List<VodTitle>?>(null) else repository.observeSeries(sourceId)
+    val uiState: StateFlow<SeriesUiState> = settings.activeSourceId
+        .flatMapLatest { sourceId ->
+            if (sourceId == null) {
+                flowOf(SeriesUiState(hasSource = false))
+            } else {
+                combine(
+                    repository.seriesCategoryCounts(sourceId),
+                    repository.seriesCount(sourceId),
+                    selectedCategoryName,
+                ) { counts, total, selectedName ->
+                    val categories = listOf(SeriesCategorySummary("All series", total)) +
+                        counts.map { SeriesCategorySummary(it.name, it.count) }
+                    val index = if (selectedName == null) 0
+                        else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }
+                    SeriesUiState(hasSource = true, categories = categories, selectedCategoryIndex = index)
+                }
             }
-            .onEach { series ->
-                _uiState.value = if (series == null) SeriesUiState(hasSource = false) else buildState(series)
-            }
-            .launchIn(viewModelScope)
-    }
-
-    private fun buildState(series: List<VodTitle>): SeriesUiState {
-        val counts = linkedMapOf<String, Int>()
-        series.forEach { title ->
-            title.categoryName?.let { counts[it] = (counts[it] ?: 0) + 1 }
         }
-        val categories = listOf(SeriesCategorySummary("All series", series.size)) +
-            counts.map { (name, count) -> SeriesCategorySummary(name, count) }
-        val previousSelection = _uiState.value.selectedCategoryIndex.coerceIn(0, categories.lastIndex.coerceAtLeast(0))
-        return SeriesUiState(
-            hasSource = true,
-            allSeries = series,
-            categories = categories,
-            selectedCategoryIndex = previousSelection,
-        )
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SeriesUiState())
+
+    val pagingData: Flow<PagingData<VodTitle>> = combine(
+        settings.activeSourceId,
+        selectedCategoryName,
+    ) { sourceId, category -> sourceId to category }
+        .flatMapLatest { (sourceId, category) ->
+            if (sourceId == null) flowOf(PagingData.empty())
+            else browsePager { repository.pagingSeries(sourceId, category) }.flow
+        }
+        .cachedIn(viewModelScope)
 
     fun selectCategory(index: Int) {
-        _uiState.value = _uiState.value.copy(selectedCategoryIndex = index)
+        selectedCategoryName.value = if (index == 0) null else uiState.value.categories.getOrNull(index)?.name
     }
 
     fun toggleFavorite(vodTitleId: Long) {

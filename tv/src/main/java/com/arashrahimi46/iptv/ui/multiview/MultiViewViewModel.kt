@@ -52,7 +52,9 @@ class MultiViewViewModel(app: Application) : AndroidViewModel(app) {
                 if (sourceId == null) {
                     flowOf<List<Channel>?>(null)
                 } else {
-                    combine(repository.observeChannels(sourceId), favoritesRepository.favoriteChannelIds) { channels, favoriteIds ->
+                    // Bounded channel picker (favorites floated to the top) -- never the whole
+                    // catalog, which OOM'd on large sources.
+                    combine(repository.topChannels(sourceId, MULTIVIEW_CHANNEL_LIMIT), favoritesRepository.favoriteChannelIds) { channels, favoriteIds ->
                         channels.sortedByDescending { it.id in favoriteIds }
                     }
                 }
@@ -77,6 +79,10 @@ class MultiViewViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     companion object {
+        /** Bounded picker size -- multi-view only ever shows a handful of panes; a full 100k+
+         * channel list would OOM and is pointless to scroll here. */
+        private const val MULTIVIEW_CHANNEL_LIMIT = 500
+
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /** Content type a [Category] or catalog item belongs to. */
@@ -37,8 +38,20 @@ data class Category(
     val externalId: String? = null,
 )
 
-/** A live TV channel. */
-@Entity(tableName = "channels")
+/**
+ * A live TV channel.
+ *
+ * Indexed for large catalogs (100k+ channels): browse queries filter by [sourceId]
+ * and order/group by [name]/[categoryName], so these covering indices turn full-table
+ * scans + in-memory sorts into index range scans.
+ */
+@Entity(
+    tableName = "channels",
+    indices = [
+        Index(value = ["sourceId", "name"]),
+        Index(value = ["sourceId", "categoryName", "name"]),
+    ],
+)
 data class Channel(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val sourceId: Long,
@@ -52,8 +65,20 @@ data class Channel(
     val externalId: String? = null,
 )
 
-/** A movie or series (series = a [VodTitle] with [isSeries] true; episodes in [SeriesEpisode]). */
-@Entity(tableName = "vod_titles")
+/**
+ * A movie or series (series = a [VodTitle] with [isSeries] true; episodes in [SeriesEpisode]).
+ *
+ * Indexed for large catalogs (300k+ titles): browse/paging filters by [sourceId] + [isSeries]
+ * and orders/groups by [name]/[categoryName]. Without these, ORDER BY name and GROUP BY
+ * categoryName are full-table scans on the whole catalog.
+ */
+@Entity(
+    tableName = "vod_titles",
+    indices = [
+        Index(value = ["sourceId", "isSeries", "name"]),
+        Index(value = ["sourceId", "isSeries", "categoryName", "name"]),
+    ],
+)
 data class VodTitle(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val sourceId: Long,

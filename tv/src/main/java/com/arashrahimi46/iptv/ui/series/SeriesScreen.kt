@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.settings.UserSettings
@@ -29,6 +30,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         factory = SeriesViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    val series = viewModel.pagingData.collectAsLazyPagingItems()
     val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
@@ -51,10 +53,11 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
-        items = state.visibleSeries,
+        items = series,
         itemKey = { it.id },
         categoryColumnHeader = "Genres",
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
+        sectionCount = state.selectedCount,
         sectionCountLabel = { count -> "$count titles" },
         emptyLabel = "No series in this genre yet.",
         listMode = isListMode,

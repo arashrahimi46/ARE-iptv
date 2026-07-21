@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -123,7 +122,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             }
             val siblingIds = if (source is PlaybackSource.Channel && media != null) {
                 db.channelDao().getById(source.channelId)?.let { channel ->
-                    db.channelDao().observeForSource(channel.sourceId).first().map { it.id }
+                    // ids only (not full rows) so prev/next nav doesn't materialize a 100k+ catalog.
+                    db.channelDao().idsForSource(channel.sourceId)
                 } ?: emptyList()
             } else {
                 emptyList()

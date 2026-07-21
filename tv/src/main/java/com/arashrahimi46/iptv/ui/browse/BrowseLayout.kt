@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -23,6 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemKey
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreCategoryRow
@@ -59,17 +60,20 @@ data class BrowseCategoryOption(
  * of just clipping once the category list is taller than the screen.
  */
 @Composable
-fun <T> BrowseLayout(
+fun <T : Any> BrowseLayout(
     title: String,
     categories: List<BrowseCategoryOption>,
     selectedIndex: Int,
     onCategorySelected: (Int) -> Unit,
-    items: List<T>,
+    items: LazyPagingItems<T>,
     itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
     categoryColumnHeader: String = "Categories",
     titleAccessory: @Composable (() -> Unit)? = null,
     sectionTitle: String? = null,
+    /** Authoritative total for the section label (from the catalog's COUNT/GROUP BY), since
+     * [items] is now a paged window and its `itemCount` only reflects loaded pages. */
+    sectionCount: Int? = null,
     sectionCountLabel: ((Int) -> String)? = null,
     emptyLabel: String = "No items in this category yet.",
     /** Table/list rendering (Settings' "List view" toggle, Issue #9): items stack in a single
@@ -155,18 +159,23 @@ fun <T> BrowseLayout(
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                         if (sectionCountLabel != null) {
-                            Text(text = sectionCountLabel(items.size), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+                            Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                         }
                     }
                     Box(Modifier.height(18.dp))
                 }
-                if (items.isEmpty()) {
+                // Paged: only "empty" once the first load has settled (avoid flashing the empty
+                // label during the initial page fetch on a huge catalog).
+                val settled = items.loadState.refresh !is LoadState.Loading
+                if (items.itemCount == 0 && settled) {
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
                 } else if (listMode) {
-                    // List/table mode: one item per row instead of wrapping across columns.
-                    // No cap -- lazy composition only builds visible rows regardless of catalog size.
+                    // List/table mode: one item per row. Paging only holds the visible window
+                    // in memory regardless of catalog size (300k+ titles).
                     LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        items(items, key = itemKey) { item -> itemContent(item) }
+                        items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
+                            items[index]?.let { itemContent(it) }
+                        }
                     }
                 } else {
                     LazyVerticalGrid(
@@ -175,7 +184,9 @@ fun <T> BrowseLayout(
                         horizontalArrangement = Arrangement.spacedBy(18.dp),
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                     ) {
-                        items(items, key = itemKey) { item -> itemContent(item) }
+                        items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
+                            items[index]?.let { itemContent(it) }
+                        }
                     }
                 }
             }
