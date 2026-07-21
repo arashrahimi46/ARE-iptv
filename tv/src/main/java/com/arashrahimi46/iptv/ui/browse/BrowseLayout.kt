@@ -99,15 +99,38 @@ fun <T : Any> BrowseLayout(
     // real lazy layout and needs a genuine bounded height to lay out against), not
     // each level's own wrap-content guess.
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp1, bottom = spacing.sp3)) {
-        Box(Modifier.padding(horizontal = spacing.safeX)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Header band: the page title sits above the category column (matched 240dp width) and the
+        // section title sits on the SAME line, above the content grid -- so both read at one height
+        // and the grid starts as high as possible (poster covers were otherwise pushed down/clipped).
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.safeX),
+            horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                modifier = Modifier.width(240.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)
                 titleAccessory?.invoke()
             }
+            if (sectionTitle != null) {
+                FlowRow(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    if (sectionCountLabel != null) {
+                        Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+                    }
+                }
+            } else {
+                Box(Modifier.weight(1f))
+            }
         }
-        // Tightened so the content grid sits higher -- the poster covers were pushed down with
-        // unused space above them (and clipped at the bottom) by the original larger gaps.
-        Box(Modifier.height(spacing.sp1))
+        Box(Modifier.height(spacing.sp2))
         // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-width
         // category column plus a weight(1f) content column but never claimed the full width
         // itself, so the weight(1f) column had no real remaining space to expand into -- its
@@ -148,26 +171,9 @@ fun <T : Any> BrowseLayout(
                 }
             }
 
-            // Content grid for the selected category.
+            // Content grid for the selected category. The section title/count now lives in the
+            // shared header band above (aligned with the page title), not here.
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                if (sectionTitle != null) {
-                    // Round 3 of the QA MEDIUM text-wrap defect: the real root cause here
-                    // wasn't a missing fillMaxWidth (rounds 1-2) -- it's that this content
-                    // column's *actual* available width, when the sidebar is in its expanded
-                    // (280dp) state, genuinely isn't enough for both texts on one line (QA's
-                    // uiautomator measurements confirmed the numbers add up exactly). A plain
-                    // Row has nowhere to put the overflow but force sectionCountLabel's Text
-                    // narrower and narrower until it wraps per character. FlowRow (same fix
-                    // already proven for the Search scope chips below) lets the count drop to
-                    // its own full-width line instead when space is genuinely too tight.
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
-                        if (sectionCountLabel != null) {
-                            Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
-                        }
-                    }
-                    Box(Modifier.height(6.dp))
-                }
                 // Paged: only "empty" once the first load has settled (avoid flashing the empty
                 // label during the initial page fetch on a huge catalog).
                 val settled = items.loadState.refresh !is LoadState.Loading
