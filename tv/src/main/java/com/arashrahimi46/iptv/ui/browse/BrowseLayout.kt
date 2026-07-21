@@ -98,7 +98,7 @@ fun <T : Any> BrowseLayout(
     // against the actual screen size (height, now that the content grid below is a
     // real lazy layout and needs a genuine bounded height to lay out against), not
     // each level's own wrap-content guess.
-    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp3, bottom = spacing.sp6)) {
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp1, bottom = spacing.sp3)) {
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)
@@ -107,7 +107,7 @@ fun <T : Any> BrowseLayout(
         }
         // Tightened so the content grid sits higher -- the poster covers were pushed down with
         // unused space above them (and clipped at the bottom) by the original larger gaps.
-        Box(Modifier.height(spacing.sp3))
+        Box(Modifier.height(spacing.sp1))
         // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-width
         // category column plus a weight(1f) content column but never claimed the full width
         // itself, so the weight(1f) column had no real remaining space to expand into -- its
@@ -166,7 +166,7 @@ fun <T : Any> BrowseLayout(
                             Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                         }
                     }
-                    Box(Modifier.height(10.dp))
+                    Box(Modifier.height(6.dp))
                 }
                 // Paged: only "empty" once the first load has settled (avoid flashing the empty
                 // label during the initial page fetch on a huge catalog).
