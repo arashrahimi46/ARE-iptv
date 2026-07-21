@@ -23,9 +23,8 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
+import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
-import com.arashrahimi46.iptv.ui.components.AreTabs
-import com.arashrahimi46.iptv.ui.components.TabItem
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -77,16 +76,16 @@ fun FavoritesScreen(
         Column(Modifier.padding(horizontal = spacing.safeX)) {
             Text(text = "Favorites", style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp6))
-            AreTabs(
-                items = listOf(
-                    TabItem("channels", "Channels"),
-                    TabItem("movies", "Movies"),
-                    TabItem("sports", "Sports"),
-                    TabItem("kids", "Kids"),
-                ),
-                active = tab,
-                onSelect = { selectedTab = it },
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf(
+                    "channels" to "Channels",
+                    "movies" to "Movies",
+                    "sports" to "Sports",
+                    "kids" to "Kids",
+                ).forEach { (id, label) ->
+                    AreChip(text = label, selected = id == tab, onClick = { selectedTab = id })
+                }
+            }
         }
 
         Box(Modifier.padding(top = spacing.sp8))
