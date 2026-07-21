@@ -189,7 +189,7 @@ fun AreIptvApp() {
                 source = PlaybackSource.Channel(channelId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
-                onOpenGuide = { navController.openShellTab("guide") },
+                onOpenGuide = { navController.popBackStack() },
             )
         }
         composable(
@@ -201,7 +201,7 @@ fun AreIptvApp() {
                 source = PlaybackSource.Vod(vodTitleId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
-                onOpenGuide = { navController.openShellTab("guide") },
+                onOpenGuide = { navController.popBackStack() },
             )
         }
         composable(
@@ -213,7 +213,7 @@ fun AreIptvApp() {
                 source = PlaybackSource.Episode(episodeId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
-                onOpenGuide = { navController.openShellTab("guide") },
+                onOpenGuide = { navController.popBackStack() },
             )
         }
         composable(
@@ -427,14 +427,6 @@ private fun NavHostController.selectTab(route: String) {
         launchSingleTop = true
         restoreState = true
         popUpTo(graph.findStartDestination().id) { saveState = true }
-    }
-}
-
-/** From a full-bleed overlay, return to the shell and select [tab]. */
-private fun NavHostController.openShellTab(tab: String) {
-    navigate("shell?tab=$tab") {
-        launchSingleTop = true
-        popUpTo("shell") { inclusive = true }
     }
 }
 
