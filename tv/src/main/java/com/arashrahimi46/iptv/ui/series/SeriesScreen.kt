@@ -62,9 +62,10 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         sectionCountLabel = { count -> "$count titles" },
         emptyLabel = "No series in this genre yet.",
         listMode = isListMode,
-        // Dense responsive poster grid: ~160dp columns that the tiles fill, so several covers
-        // with titles show per row instead of one oversized cell.
-        minItemWidth = 160.dp,
+        // Dense responsive poster grid: ~130dp columns that the tiles fill. Adaptive reflows the
+        // column count to the available width, so covers stay small enough to show fully (with
+        // their title) even when the sidebar expands and squeezes the content.
+        minItemWidth = 130.dp,
         modifier = modifier,
     ) { show ->
         val episodeMeta = if (show.episodeCount > 0) "${show.episodeCount} episodes" else null

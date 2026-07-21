@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -130,7 +131,7 @@ fun <T : Any> BrowseLayout(
                 Box(Modifier.weight(1f))
             }
         }
-        Box(Modifier.height(spacing.sp2))
+        Box(Modifier.height(spacing.sp1))
         // QA MEDIUM defect (same class as SettingsRow's fix): this Row held the fixed-width
         // category column plus a weight(1f) content column but never claimed the full width
         // itself, so the weight(1f) column had no real remaining space to expand into -- its
@@ -182,7 +183,11 @@ fun <T : Any> BrowseLayout(
                 } else if (listMode) {
                     // List/table mode: one item per row. Paging only holds the visible window
                     // in memory regardless of catalog size (300k+ titles).
-                    LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                        contentPadding = PaddingValues(vertical = 10.dp),
+                    ) {
                         items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
                             items[index]?.let { itemContent(it) }
                         }
@@ -193,6 +198,10 @@ fun <T : Any> BrowseLayout(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(18.dp),
                         verticalArrangement = Arrangement.spacedBy(18.dp),
+                        // Top: headroom for the focus scale (1.06x) so a focused top row isn't
+                        // clipped under the header. Bottom: room for a focused row's title/meta
+                        // (which sit below the focusable poster) to scroll fully into view.
+                        contentPadding = PaddingValues(top = 10.dp, bottom = 52.dp),
                     ) {
                         items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
                             items[index]?.let { itemContent(it) }

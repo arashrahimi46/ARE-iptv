@@ -169,7 +169,13 @@ fun ArePosterTile(
             modifier = if (focused) Modifier.basicMarquee() else Modifier,
         )
         if (meta != null) {
-            Text(text = meta, style = AreIptvTheme.typography.caption, color = colors.textTertiary)
+            Text(
+                text = meta,
+                style = AreIptvTheme.typography.caption,
+                color = colors.textTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
