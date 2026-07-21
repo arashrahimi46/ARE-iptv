@@ -40,6 +40,9 @@ interface PlaylistSourceDao {
     @Query("SELECT COUNT(*) FROM playlist_sources")
     suspend fun count(): Int
 
+    @Query("UPDATE playlist_sources SET epgUrl = :epgUrl WHERE id = :id")
+    suspend fun setEpgUrl(id: Long, epgUrl: String?)
+
     @Delete
     suspend fun delete(source: PlaylistSource)
 }
@@ -106,6 +109,10 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE id IN (:ids)")
     suspend fun getByIds(ids: List<Long>): List<Channel>
 
+    /** Resolve favorited channel keys to the active source's current rows (see [Favorite.streamKey]). */
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND COALESCE(externalId, streamUrl) IN (:keys)")
+    suspend fun channelsByFavoriteKeys(sourceId: Long, keys: List<String>): List<Channel>
+
     /** Ordered channel ids only (player prev/next nav) -- ids, not full rows, for large catalogs. */
     @Query("SELECT id FROM channels WHERE sourceId = :sourceId ORDER BY name")
     suspend fun idsForSource(sourceId: Long): List<Long>
@@ -169,6 +176,10 @@ interface VodTitleDao {
     @Query("SELECT * FROM vod_titles WHERE id IN (:ids)")
     suspend fun getByIds(ids: List<Long>): List<VodTitle>
 
+    /** Resolve favorited VOD keys to the active source's current rows (see [Favorite.streamKey]). */
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND COALESCE(externalId, streamUrl, name) IN (:keys)")
+    suspend fun titlesByFavoriteKeys(sourceId: Long, keys: List<String>): List<VodTitle>
+
     /** Content-id-driven lookup for Detail/Search -- mirrors [ChannelDao.getById]. */
     @Query("SELECT * FROM vod_titles WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): VodTitle?
@@ -219,26 +230,31 @@ interface FavoriteDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(favorite: Favorite): Long
 
-    @Query("DELETE FROM favorites WHERE channelId = :channelId")
-    suspend fun deleteByChannel(channelId: Long)
+    @Query("DELETE FROM favorites WHERE contentType = :contentType AND streamKey = :streamKey")
+    suspend fun deleteByKey(contentType: ContentType, streamKey: String)
 
-    @Query("DELETE FROM favorites WHERE vodTitleId = :vodTitleId")
-    suspend fun deleteByVod(vodTitleId: Long)
-
-    @Query("SELECT COUNT(*) FROM favorites WHERE channelId = :channelId")
-    suspend fun countByChannel(channelId: Long): Int
-
-    @Query("SELECT COUNT(*) FROM favorites WHERE vodTitleId = :vodTitleId")
-    suspend fun countByVod(vodTitleId: Long): Int
+    @Query("SELECT COUNT(*) FROM favorites WHERE contentType = :contentType AND streamKey = :streamKey")
+    suspend fun countByKey(contentType: ContentType, streamKey: String): Int
 
     @Query("SELECT * FROM favorites ORDER BY addedAtMs DESC")
     fun observeAll(): Flow<List<Favorite>>
 
-    @Query("SELECT channelId FROM favorites WHERE channelId IS NOT NULL")
-    fun observeFavoriteChannelIds(): Flow<List<Long>>
+    // The stable-key expressions below MUST stay in sync with FavoritesRepository.channelKey/vodKey
+    // (Kotlin) -- both compute the same COALESCE(externalId, streamUrl[, name]) identity.
 
-    @Query("SELECT vodTitleId FROM favorites WHERE vodTitleId IS NOT NULL")
-    fun observeFavoriteVodIds(): Flow<List<Long>>
+    /** Row ids of the active source's channels that are favorited, for tile favorite-icon state. */
+    @Query(
+        "SELECT c.id FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.streamUrl) " +
+            "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE'",
+    )
+    fun observeFavoriteChannelIdsInSource(sourceId: Long): Flow<List<Long>>
+
+    /** Row ids of the active source's VOD titles (movies + series) that are favorited. */
+    @Query(
+        "SELECT v.id FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.streamUrl, v.name) " +
+            "WHERE v.sourceId = :sourceId AND f.contentType IN ('MOVIE', 'SERIES')",
+    )
+    fun observeFavoriteVodIdsInSource(sourceId: Long): Flow<List<Long>>
 }
 
 /**

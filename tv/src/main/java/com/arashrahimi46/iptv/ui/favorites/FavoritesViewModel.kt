@@ -10,8 +10,6 @@ import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -55,7 +53,6 @@ data class FavoritesUiState(
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
-    private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
     private val favoritesRepository = FavoritesRepository(app)
     private val settings = UserSettings(app)
 
@@ -75,17 +72,28 @@ class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
         if (sourceId == null) return FavoritesUiState(hasSource = false)
 
         // favorites is already ORDER BY addedAtMs DESC (see FavoriteDao.observeAll) -- "most recently favorited first".
-        val channelById = repository.channelsByIds(favorites.mapNotNull { it.channelId }).associateBy { it.id }
-        val vodById = repository.titlesByIds(favorites.mapNotNull { it.vodTitleId }).associateBy { it.id }
+        // Resolve each favorite's *stable* streamKey to the active source's current row (see Favorite doc);
+        // favorites whose item is no longer in this source resolve to null and are silently dropped.
+        val channelKeys = favorites.filter { it.contentType == ContentType.LIVE }.map { it.streamKey }
+        val vodKeys = favorites.filter { it.contentType != ContentType.LIVE }.map { it.streamKey }
+        val channelByKey = favoritesRepository.channelsByKeys(sourceId, channelKeys)
+            .associateBy { FavoritesRepository.channelKey(it) }
+        val vodByKey = favoritesRepository.titlesByKeys(sourceId, vodKeys)
+            .associateBy { FavoritesRepository.vodKey(it) }
 
-        val channels = favorites.mapNotNull { fav -> fav.channelId?.let(channelById::get) }
+        val channels = favorites
+            .filter { it.contentType == ContentType.LIVE }
+            .mapNotNull { channelByKey[it.streamKey] }
         val movies = favorites
             .filter { it.contentType == ContentType.MOVIE }
-            .mapNotNull { fav -> fav.vodTitleId?.let(vodById::get) }
+            .mapNotNull { vodByKey[it.streamKey] }
 
         val resolved: List<FavoriteContent> = favorites.mapNotNull { fav ->
-            fav.channelId?.let(channelById::get)?.let { FavoriteContent.ChannelItem(it) }
-                ?: fav.vodTitleId?.let(vodById::get)?.let { FavoriteContent.TitleItem(it) }
+            if (fav.contentType == ContentType.LIVE) {
+                channelByKey[fav.streamKey]?.let { FavoriteContent.ChannelItem(it) }
+            } else {
+                vodByKey[fav.streamKey]?.let { FavoriteContent.TitleItem(it) }
+            }
         }
         fun categoryOf(item: FavoriteContent): String? = when (item) {
             is FavoriteContent.ChannelItem -> item.channel.categoryName

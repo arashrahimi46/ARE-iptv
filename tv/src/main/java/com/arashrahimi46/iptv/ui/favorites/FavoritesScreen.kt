@@ -51,7 +51,17 @@ fun FavoritesScreen(
     val state by viewModel.uiState.collectAsState()
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
-    var tab by remember { mutableStateOf("channels") }
+    // Land on the first tab that actually has content (so favoriting only a movie doesn't
+    // drop the user on an empty Channels tab). `null` = "not yet chosen": once the user picks
+    // a tab explicitly it sticks, even if that tab is empty.
+    var selectedTab by remember { mutableStateOf<String?>(null) }
+    val tab = selectedTab ?: when {
+        state.channels.isNotEmpty() -> "channels"
+        state.movies.isNotEmpty() -> "movies"
+        state.sports.isNotEmpty() -> "sports"
+        state.kids.isNotEmpty() -> "kids"
+        else -> "channels"
+    }
 
     if (!state.hasSource) {
         Text(
@@ -64,7 +74,7 @@ fun FavoritesScreen(
     }
 
     Column(modifier = modifier.padding(top = spacing.sp6, bottom = spacing.sp10)) {
-        Box(Modifier.padding(horizontal = spacing.safeX)) {
+        Column(Modifier.padding(horizontal = spacing.safeX)) {
             Text(text = "Favorites", style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp6))
             AreTabs(
@@ -75,7 +85,7 @@ fun FavoritesScreen(
                     TabItem("kids", "Kids"),
                 ),
                 active = tab,
-                onSelect = { tab = it },
+                onSelect = { selectedTab = it },
             )
         }
 
