@@ -55,6 +55,34 @@ internal fun normalizeSourceUrl(raw: String): String {
     return "$base?$normalized"
 }
 
+/** Host + credentials pulled out of an Xtream `get.php` portal link. */
+internal data class XtreamPortalLink(val host: String, val username: String, val password: String)
+
+/**
+ * Detects the very common case of an Xtream portal handed out as an M3U link -- a `get.php` URL
+ * with `username`/`password` query params. That link carries the exact credentials `player_api.php`
+ * needs, so the source can be imported via the authoritative Xtream API -- which returns each item's
+ * real content type and the full VOD/live/series category lists -- instead of the `group-title`
+ * keyword guess, which silently drops every VOD category not literally named "*Movies*"/"*VOD*"
+ * (e.g. "Persian Dubbed", "Arabic Animation", "Netflix| Multi-Language") into Live TV. Returns null
+ * for a plain (non-Xtream) M3U link, which stays on the heuristic path.
+ */
+internal fun parseXtreamGetPhp(raw: String): XtreamPortalLink? {
+    val trimmed = raw.trim()
+    val marker = trimmed.indexOf("get.php", ignoreCase = true)
+    val q = trimmed.indexOf('?')
+    if (marker < 0 || q < marker) return null
+    val params = trimmed.substring(q + 1).split('&').mapNotNull { pair ->
+        val eq = pair.indexOf('=')
+        if (eq < 0) null else pair.substring(0, eq).lowercase() to pair.substring(eq + 1)
+    }.toMap()
+    val username = params["username"]?.takeIf { it.isNotBlank() } ?: return null
+    val secret = params["password"]?.takeIf { it.isNotBlank() } ?: return null
+    val host = trimmed.substring(0, marker).trimEnd('/')
+    if (host.isEmpty()) return null
+    return XtreamPortalLink(host, username, secret)
+}
+
 /**
  * Repository pattern wrapping Room DAOs + the M3U/Xtream parsers behind a
  * single surface. All network/parsing work runs on [Dispatchers.IO].
@@ -195,6 +223,15 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
     override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =
         withContext(Dispatchers.IO) {
+            // An Xtream portal handed out as a get.php M3U link is imported via its authoritative
+            // player_api instead of guessing content type from group-title keywords (which drops
+            // VOD categories not named "*Movies*" into Live TV -- see parseXtreamGetPhp). Fall back
+            // to raw M3U parsing if the portal's player_api is unreachable/disabled (addXtreamSource
+            // fully rolls back its half-imported source first, so no orphan row is left behind).
+            parseXtreamGetPhp(url)?.let { portal ->
+                runCatching { addXtreamSource(name, portal.host, portal.username, portal.password, epgUrl) }
+                    .onSuccess { return@withContext it }
+            }
             // Normalize a pasted link (e.g. capitalized `Password`) so it doesn't 404, then
             // persist the normalized form so later refreshes hit the same working URL.
             val normalizedUrl = normalizeSourceUrl(url)
@@ -215,13 +252,24 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             var channelCount = 0
             var movieCount = 0
             var seriesCount = 0
+            // EPG feed URL declared on the `#EXTM3U` header (`url-tvg`), captured lazily on the
+            // first line as the stream is pulled -- this is how most M3U playlists point at their
+            // XMLTV guide, and without it the source has no EPG at all (blank Guide grid).
+            var headerEpgUrl: String? = null
+            var headerParsed = false
 
             try {
                 // Stream + batch: a large m3u_plus (100s of MB) is parsed line-by-line and
                 // flushed to Room in bounded chunks, so the whole body is never held in memory
                 // at once (loading it as one String OOM'd -- the response can exceed the heap).
                 streamPlaylist(normalizedUrl) { lines ->
-                    M3uParser.parse(lines).forEach { entry ->
+                    val tapped = lines.onEach { raw ->
+                        if (!headerParsed && raw.trim().startsWith("#EXTM3U", ignoreCase = true)) {
+                            headerEpgUrl = M3uParser.extractEpgUrl(raw)
+                            headerParsed = true
+                        }
+                    }
+                    M3uParser.parse(tapped).forEach { entry ->
                         val group = entry.groupTitle?.trim().orEmpty()
                         val type = classifyM3uGroup(group)
                         if (group.isNotEmpty()) {
@@ -324,6 +372,9 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             }
 
             db.categoryDao().upsertAll(categories.values.toList())
+            // Fall back to the playlist's own declared EPG feed when the user didn't supply one,
+            // so an M3U with a `url-tvg` header populates the Guide automatically.
+            if (epgUrl == null && headerEpgUrl != null) db.playlistSourceDao().setEpgUrl(sourceId, headerEpgUrl)
             settings.setActiveSourceId(sourceId)
 
             ImportSummary(channels = channelCount, movies = movieCount, series = seriesCount)
