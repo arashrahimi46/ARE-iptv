@@ -109,7 +109,7 @@ fun <T : Any> BrowseLayout(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.width(240.dp),
+                modifier = Modifier.width(280.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -149,9 +149,10 @@ fun <T : Any> BrowseLayout(
             // categories to exceed the screen (previously masked by the whole screen scrolling
             // together as one unbounded column).
             Column(
-                // 240dp (was 300dp): the wide filter column left too little room for the content
-                // grid on a ~960dp TV, forcing the poster grid down to a single oversized column.
-                modifier = Modifier.width(240.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+                // 280dp: wide enough to show full genre names ("Arabic Movies") without truncating,
+                // now that the row dropped its icon + count. Still leaves the ~960dp TV enough room
+                // for a multi-column poster grid (300dp was too wide and collapsed it to one column).
+                modifier = Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(

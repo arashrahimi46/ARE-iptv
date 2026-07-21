@@ -1,9 +1,7 @@
 package com.arashrahimi46.iptv.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,36 +57,21 @@ fun AreCategoryRow(
                 .fillMaxHeight()
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .background(if (active) colors.accent else colors.surface3, RoundedCornerShape(AreIptvTheme.radius.sm)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    kind.icon,
-                    contentDescription = null,
-                    tint = if (active) colors.accentFg else colors.textTertiary,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = name,
-                    style = AreIptvTheme.typography.label,
-                    color = if (active) colors.textPrimary else colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (smart) {
-                    AreBadge("Smart", tone = AreBadgeTone.Smart)
-                }
-            }
-            if (count != null) {
-                Text(text = "$count", style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+            // Icon and title count removed: the name now owns the full row width (was truncating
+            // to "Arabic M..." in the 240dp column), and the selected category's total already
+            // shows in the header band. `kind`/`count` stay on the API for callers that still pass them.
+            Text(
+                text = name,
+                style = AreIptvTheme.typography.label,
+                color = if (active) colors.textPrimary else colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            if (smart) {
+                AreBadge("Smart", tone = AreBadgeTone.Smart)
             }
             Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(18.dp))
         }
