@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -152,13 +153,12 @@ fun DetailScreen(
                                 variant = AreIconButtonVariant.Solid,
                             )
                         }
+                        // Storyline/cast sit in the free space beside the poster rather than full-width
+                        // below it -- otherwise a movie's tall poster pushes them off the bottom of the
+                        // screen. Width-capped so lines don't run edge-to-edge across a wide TV panel.
+                        StoryAndCredits(title = title, modifier = Modifier.padding(top = 30.dp).widthIn(max = 760.dp))
                     }
                 }
-
-                StoryAndCredits(
-                    title = title,
-                    modifier = Modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = 8.dp),
-                )
 
                 if (title.isSeries) {
                     Box(Modifier.padding(horizontal = AreIptvTheme.spacing.safeX)) {
@@ -172,8 +172,8 @@ fun DetailScreen(
                             },
                         )
                     }
-                    Box(Modifier.padding(bottom = 40.dp))
                 }
+                Box(Modifier.padding(bottom = 40.dp))
             }
         }
     }
