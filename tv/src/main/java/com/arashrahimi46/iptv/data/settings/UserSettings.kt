@@ -7,6 +7,10 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.arashrahimi46.iptv.ui.home.DEFAULT_HOME_LAYOUT
+import com.arashrahimi46.iptv.ui.home.HomeSection
+import com.arashrahimi46.iptv.ui.home.decodeHomeLayout
+import com.arashrahimi46.iptv.ui.home.encodeHomeLayout
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -46,6 +50,7 @@ class UserSettings(private val context: Context) {
         val OPENSUBS_U = stringPreferencesKey("opensubs_u")
         val OPENSUBS_P = stringPreferencesKey("opensubs_p")
         val OMDB_KEY = stringPreferencesKey("omdb_key")
+        val HOME_LAYOUT = stringPreferencesKey("home_layout")
         /** Pinned category names, namespaced per browse screen (see [pinnedCategoriesKey]). */
         fun pinnedCategoriesKey(namespace: String) = stringSetPreferencesKey("pinned_categories_$namespace")
     }
@@ -115,6 +120,12 @@ class UserSettings(private val context: Context) {
 
     /** OpenSubtitles account password, stored to re-authenticate when the login token expires (~24h). */
     val openSubsPhrase: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_P]?.takeIf { k -> k.isNotBlank() } }
+
+    /** Persisted Home rail order/visibility; defaults to [DEFAULT_HOME_LAYOUT] until the user
+     * customizes it (or if the stored value decodes to nothing usable). */
+    val homeLayout: Flow<List<HomeSection>> = context.dataStore.data.map { prefs ->
+        prefs[Keys.HOME_LAYOUT]?.let(::decodeHomeLayout)?.takeIf { it.isNotEmpty() } ?: DEFAULT_HOME_LAYOUT
+    }
 
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
@@ -208,6 +219,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setTermsAccepted(accepted: Boolean) {
         context.dataStore.edit { it[Keys.TERMS_ACCEPTED] = accepted }
+    }
+
+    suspend fun setHomeLayout(sections: List<HomeSection>) {
+        context.dataStore.edit { it[Keys.HOME_LAYOUT] = encodeHomeLayout(sections) }
     }
 
     /**

@@ -20,14 +20,37 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 data class HomeCategorySummary(val name: String, val count: Int)
+
+/** One catalog category not yet pinned to Home (step 6's "+ Add section" picker), with its
+ * [CategoryKind] so the picker can label it ("Sports · Live") and the tile knows which tile
+ * shape (channel vs poster) it'll render as once pinned. */
+data class HomeAvailableCategory(val kind: CategoryKind, val name: String, val count: Int)
+
+/** Resolved content for one pinned [HomeSection.Category] rail (step 5) -- [Live] renders as
+ * [com.arashrahimi46.iptv.ui.components.AreChannelTile]s, [Vod] (movie or series) as
+ * [com.arashrahimi46.iptv.ui.components.ArePosterTile]s. Single-type by construction: a pinned
+ * category is always exactly one [CategoryKind], never a merge of catalogs. */
+sealed interface HomeCategoryContent {
+    data class Live(val channels: List<Channel>) : HomeCategoryContent
+    data class Vod(val titles: List<VodTitle>) : HomeCategoryContent
+}
+
+/** Stable map key for a pinned category rail -- keyed by kind+name rather than the
+ * [HomeSection.Category] value itself, since that data class's `hidden` field is part of its
+ * equality and would otherwise mint a new map entry (and re-trigger a reload) every time the
+ * section is hidden/shown instead of just its position/visibility changing. */
+fun homeCategoryRailKey(kind: CategoryKind, name: String): String = "$kind|$name"
 
 /**
  * One resolved Continue Watching rail entry (P1.2) -- a [ContinueWatchingEntry] joined against
@@ -62,6 +85,15 @@ data class HomeUiState(
      * every real emission (source or no-source) sets it false, whether or not the catalog
      * itself turns out empty. */
     val isInitializing: Boolean = true,
+    /** Persisted Home rail order/visibility (see [com.arashrahimi46.iptv.data.settings.UserSettings.homeLayout]);
+     * defaults to [DEFAULT_HOME_LAYOUT] until the user customizes it. */
+    val sections: List<HomeSection> = DEFAULT_HOME_LAYOUT,
+    /** Step 5: resolved content for every pinned [HomeSection.Category] currently in [sections],
+     * keyed by [homeCategoryRailKey]. A category filtered out by the parental lock, or not yet
+     * loaded, is simply absent from this map -- callers treat "absent" the same as "empty". */
+    val categoryRails: Map<String, HomeCategoryContent> = emptyMap(),
+    /** Step 6: source categories not yet pinned to Home, for the "+ Add section" picker. */
+    val availableCategories: List<HomeAvailableCategory> = emptyList(),
 )
 
 /**
@@ -110,18 +142,38 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         repository.topMovies(sourceId, RAIL_LIMIT),
                         repository.topSeries(sourceId, RAIL_LIMIT),
                     ) { channels, movies, series -> Triple(channels, movies, series) }
-                    val categories = combine(
+                    // Same three GROUP BY count flows drive both the "Browse by category" rail
+                    // (merged by name across catalogs, as before) and step 6's available-categories
+                    // picker (kept per-kind, since a pin must be a single real source category).
+                    val categoryData = combine(
                         repository.channelCategoryCounts(sourceId),
                         repository.movieCategoryCounts(sourceId),
                         repository.seriesCategoryCounts(sourceId),
                     ) { c, m, s ->
                         val merged = linkedMapOf<String, Int>()
                         (c + m + s).forEach { merged[it.name] = (merged[it.name] ?: 0) + it.count }
-                        merged.map { (name, count) -> HomeCategorySummary(name, count) }
+                        val summaries = merged.map { (name, count) -> HomeCategorySummary(name, count) }
+                        // Dedup by (kind, name): real Xtream catalogs can list the same category
+                        // name under more than one provider category id -- step 6's picker keys its
+                        // LazyColumn rows by "kind|name" (a pin must resolve to one real category by
+                        // name via channelsByCategory/moviesByCategory/seriesByCategory anyway, so a
+                        // second same-named entry couldn't be pinned separately), and a duplicate key
+                        // there crashes that LazyColumn's composition -- silently, since it's inside a
+                        // dialog Compose can retry without visibly bringing down the whole screen.
+                        val availableByKey = linkedMapOf<Pair<CategoryKind, String>, Int>()
+                        c.forEach { availableByKey[CategoryKind.LIVE to it.name] = (availableByKey[CategoryKind.LIVE to it.name] ?: 0) + it.count }
+                        m.forEach { availableByKey[CategoryKind.MOVIE to it.name] = (availableByKey[CategoryKind.MOVIE to it.name] ?: 0) + it.count }
+                        s.forEach { availableByKey[CategoryKind.SERIES to it.name] = (availableByKey[CategoryKind.SERIES to it.name] ?: 0) + it.count }
+                        val available = availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
+                        summaries to available
                     }
-                    combine(rails, categories, settings.isParentalLockEnabled) { (channels, movies, series), cats, parentalLock ->
+                    combine(rails, categoryData, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), parentalLock, layout ->
                         // Parental lock: strip adult items from every rail and adult chips from the
                         // category row, so the toggle actually hides adult content on Home too.
+                        val pinned = layout.filterIsInstance<HomeSection.Category>().map { it.kind to it.name }.toSet()
+                        val availableCategories = available
+                            .filterNot { (it.kind to it.name) in pinned }
+                            .let { if (parentalLock) it.filterNot { a -> AdultContentFilter.isAdult(a.name) } else it }
                         HomeUiState(
                             hasSource = true,
                             channels = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels,
@@ -129,11 +181,35 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             series = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series,
                             categories = if (parentalLock) cats.filterNot { AdultContentFilter.isAdult(it.name) } else cats,
                             isInitializing = false,
+                            sections = layout,
+                            availableCategories = availableCategories,
                         )
                     }
                 }
             }
-            .onEach { _uiState.value = it }
+            // Preserves categoryRails (owned by the separate pipeline below) instead of the plain
+            // `_uiState.value = it` this replaced -- that would reset categoryRails to the fresh
+            // HomeUiState()'s emptyMap() default on every rail/category/layout emission.
+            .onEach { state -> _uiState.value = state.copy(categoryRails = _uiState.value.categoryRails) }
+            .launchIn(viewModelScope)
+
+        // Step 5: resolve every pinned category's real content whenever the active source or the
+        // set of pinned categories (or the parental lock, which can hide a whole pinned adult
+        // category) changes. Distinct-by kind+name so toggling `hidden` on a category section --
+        // which HomeSection.Category's equality treats as a different value -- does NOT cause a
+        // pointless requery; only the category set/order or the source itself does.
+        combine(settings.activeSourceId, settings.homeLayout, settings.isParentalLockEnabled) { sourceId, layout, parentalLock ->
+            Triple(sourceId, layout.filterIsInstance<HomeSection.Category>().distinctBy { it.kind to it.name }, parentalLock)
+        }
+            .distinctUntilChanged()
+            .flatMapLatest { (sourceId, categorySections, parentalLock) ->
+                if (sourceId == null || categorySections.isEmpty()) {
+                    flowOf(emptyMap())
+                } else {
+                    flow { emit(loadCategoryRails(sourceId, categorySections, parentalLock)) }
+                }
+            }
+            .onEach { rails -> _uiState.value = _uiState.value.copy(categoryRails = rails) }
             .launchIn(viewModelScope)
 
         _uiState.map { state -> state.channels.map { it.id } }
@@ -196,6 +272,42 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 else -> null
             }
+        }
+    }
+
+    /** Batch-loads real content for every pinned category rail (step 5) -- one suspend query per
+     * pinned category via the same `xByCategory` DAO calls Browse screens use, typed by [CategoryKind]
+     * so each rail stays single-type (no merging live/movie/series under one pin). A category the
+     * parental lock hides is skipped entirely (its rail is simply absent from the result map). */
+    private suspend fun loadCategoryRails(
+        sourceId: Long,
+        categorySections: List<HomeSection.Category>,
+        parentalLock: Boolean,
+    ): Map<String, HomeCategoryContent> {
+        val result = linkedMapOf<String, HomeCategoryContent>()
+        for (section in categorySections) {
+            if (parentalLock && AdultContentFilter.isAdult(section.name)) continue
+            val content = when (section.kind) {
+                CategoryKind.LIVE -> HomeCategoryContent.Live(repository.channelsByCategory(sourceId, section.name, RAIL_LIMIT))
+                CategoryKind.MOVIE -> HomeCategoryContent.Vod(repository.moviesByCategory(sourceId, section.name, RAIL_LIMIT))
+                CategoryKind.SERIES -> HomeCategoryContent.Vod(repository.seriesByCategory(sourceId, section.name, RAIL_LIMIT))
+            }
+            result[homeCategoryRailKey(section.kind, section.name)] = content
+        }
+        return result
+    }
+
+    /** Step 4: persists a reordered/hidden-toggled Home layout. [settings.homeLayout]'s DataStore
+     * Flow re-emits from this write and drives the re-render -- this function only writes. */
+    fun updateLayout(sections: List<HomeSection>) {
+        viewModelScope.launch { settings.setHomeLayout(sections) }
+    }
+
+    /** Step 6: appends a newly-picked category to the end of the current layout and persists. */
+    fun addCategorySection(kind: CategoryKind, name: String) {
+        viewModelScope.launch {
+            val current = settings.homeLayout.first()
+            settings.setHomeLayout(current + HomeSection.Category(kind, name))
         }
     }
 
