@@ -2,10 +2,12 @@ package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,10 +29,15 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -80,6 +87,12 @@ fun ArePlayerControls(
     // When set, the play/pause button carries this requester so the screen can move
     // focus straight onto it when the panel is opened.
     playPauseFocusRequester: FocusRequester? = null,
+    // VOD only: when non-null the progress bar becomes a focusable scrub control -- it carries this
+    // requester (so the screen can focus it) and renders a draggable thumb at the current position
+    // while focused. Null (live) keeps the bar display-only. Left/Right seeking itself is handled by
+    // the screen's D-pad model while this bar holds focus.
+    seekBarFocusRequester: FocusRequester? = null,
+    onSeekBarFocusChanged: (Boolean) -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
 
@@ -126,20 +139,58 @@ fun ArePlayerControls(
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
 
-        // TimeShift seek bar
-        Box(Modifier.fillMaxWidth().height(6.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.pill))) {
+        // TimeShift / VOD seek bar. On VOD (seekBarFocusRequester != null) it's a focusable scrub
+        // control: while focused the track thickens and a thumb rides the end of the blue fill so
+        // the user sees exactly where a Left/Right seek will land.
+        var barFocused by remember { mutableStateOf(false) }
+        val pill = RoundedCornerShape(AreIptvTheme.radius.pill)
+        val interactive = seekBarFocusRequester != null
+        val trackHeight = if (barFocused) 8.dp else 6.dp
+        val pos = position.coerceIn(0f, 1f)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                // Reserve room for the thumb so the row height doesn't jump when it appears.
+                .height(20.dp)
+                .then(
+                    if (interactive) {
+                        Modifier
+                            .focusRequester(seekBarFocusRequester!!)
+                            .onFocusChanged {
+                                barFocused = it.isFocused
+                                onSeekBarFocusChanged(it.isFocused)
+                            }
+                            .focusable()
+                    } else {
+                        Modifier
+                    },
+                ),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            Box(Modifier.fillMaxWidth().height(trackHeight).background(colors.surface3, pill))
             Box(
                 Modifier
                     .fillMaxWidth(buffered.coerceIn(0f, 1f))
-                    .height(6.dp)
-                    .background(colors.borderStrong, RoundedCornerShape(AreIptvTheme.radius.pill)),
+                    .height(trackHeight)
+                    .background(colors.borderStrong, pill),
             )
             Box(
                 Modifier
-                    .fillMaxWidth(position.coerceIn(0f, 1f))
-                    .height(6.dp)
-                    .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.pill)),
+                    .fillMaxWidth(pos)
+                    .height(trackHeight)
+                    .background(colors.accent, pill),
             )
+            // Thumb at the end of the blue fill -- only while the bar is focused (selected).
+            if (barFocused) {
+                Box(Modifier.fillMaxWidth(pos).fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
+                    Box(
+                        Modifier
+                            .size(16.dp)
+                            .background(colors.accent, CircleShape)
+                            .border(2.dp, colors.textPrimary, CircleShape),
+                    )
+                }
+            }
         }
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))

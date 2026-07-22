@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.player
 
+import android.os.SystemClock
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -93,6 +94,12 @@ private const val STUCK_ERROR_MESSAGE = "Stream unavailable"
 /** Idle time before the transport HUD auto-hides, whether focus is on the video or a control. */
 private const val CONTROLS_IDLE_HIDE_MS = 4000L
 
+/** VOD D-pad scrub ladder (ms). Consecutive Left/Right presses climb the ladder so the blue
+ * progress bar crosses a long movie in a handful of presses instead of hundreds of 10s nudges;
+ * a pause longer than [SCRUB_RESET_MS] drops back to the first (finest) rung. Movies/series only. */
+private val SCRUB_STEPS_MS = longArrayOf(10_000L, 30_000L, 60_000L, 120_000L, 300_000L)
+private const val SCRUB_RESET_MS = 800L
+
 /**
  * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
  * the prototype's static background image is replaced end-to-end). Drives
@@ -175,6 +182,17 @@ fun LivePlayerScreen(
     var controlsVisible by remember { mutableStateOf(true) }
     var panelFocused by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableStateOf(0) }
+    // VOD scrub: the blue progress bar is a focusable control (movies/series only). The outer key
+    // handler (declared before the video content, which owns the ExoPlayer) reaches the live player
+    // through this holder and, while the bar is the focused row, ramps the seek step up over
+    // consecutive Left/Right presses. See SCRUB_STEPS_MS.
+    val scrubPlayer = remember { mutableStateOf<ExoPlayer?>(null) }
+    var scrubStepIndex by remember { mutableStateOf(0) }
+    var lastScrubAt by remember { mutableStateOf(0L) }
+    // The seek bar is the top focus row inside the panel; the button row sits below it. Up/Down
+    // move between them (driven explicitly by the handler so focus can't escape the panel).
+    val seekBarFocusRequester = remember { FocusRequester() }
+    var seekBarFocused by remember { mutableStateOf(false) }
     // Auto-hide the HUD after a stretch of inactivity -- EVEN while a control is focused. Any
     // D-pad activity bumps interactionTick (see onPreviewKeyEvent), restarting this timer; only
     // genuine idleness hides it. (Previously it never hid once the panel was focused, so a single
@@ -205,7 +223,12 @@ fun LivePlayerScreen(
         if (panelFocused) {
             controlsVisible = true
             delay(50)
-            runCatching { hudFocusRequester.requestFocus() }
+            runCatching {
+                // VOD opens on the seek bar (the thing the user came to move); live has no
+                // seekable bar, so it opens on the Play button as before.
+                if (state.media?.isLive == false) seekBarFocusRequester.requestFocus()
+                else hudFocusRequester.requestFocus()
+            }
         }
     }
 
@@ -237,28 +260,67 @@ fun LivePlayerScreen(
                     // Any key press is "activity" -- reset the idle-hide timer (also captures OK on
                     // a focused HUD button, which passes through preview before the button handles it).
                     interactionTick++
+                    val isVod = state.media?.isLive == false
                     when (keyEvent.key) {
-                        // Up/Down switch channel ONLY while the panel is closed (focus on the video).
-                        // With the panel open they must NOT change channel -- consume them as no-ops
-                        // so they neither switch nor let focus escape the single control row.
+                        // Panel CLOSED: Up/Down switch channel (live only) -- a movie has no channel
+                        // to switch to, so they just open the panel. Panel OPEN: Up/Down move between
+                        // the two focus rows (seek bar on top, transport buttons below) for VOD, and
+                        // are consumed no-ops on live's single row so focus can't escape the panel.
                         Key.DirectionUp -> {
                             if (!panelFocused) {
-                                viewModel.switchChannel(1)
+                                if (!isVod) viewModel.switchChannel(1)
                                 controlsVisible = true
+                            } else if (isVod && !seekBarFocused) {
+                                // Button row -> back up to the seek bar.
+                                runCatching { seekBarFocusRequester.requestFocus() }
                             }
                             true
                         }
                         Key.DirectionDown -> {
                             if (!panelFocused) {
-                                viewModel.switchChannel(-1)
-                                controlsVisible = true
+                                if (isVod) panelFocused = true
+                                else {
+                                    viewModel.switchChannel(-1)
+                                    controlsVisible = true
+                                }
+                            } else if (isVod && seekBarFocused) {
+                                // Seek bar -> drop to the transport buttons (Play).
+                                runCatching { hudFocusRequester.requestFocus() }
                             }
                             true
                         }
-                        // OK/Left/Right open the panel and move focus into it. Once it's open
-                        // (panelFocused) these fall through to the focused control instead.
-                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter,
+                        // Left/Right scrub the blue bar ONLY when it's the focused row (VOD). Panel
+                        // closed -> open the panel. Panel open with a button focused -> fall through
+                        // so the focus system moves between the transport buttons.
                         Key.DirectionLeft, Key.DirectionRight -> {
+                            val player = scrubPlayer.value
+                            if (panelFocused && seekBarFocused && player != null) {
+                                val now = SystemClock.elapsedRealtime()
+                                scrubStepIndex = if (now - lastScrubAt <= SCRUB_RESET_MS) {
+                                    (scrubStepIndex + 1).coerceAtMost(SCRUB_STEPS_MS.lastIndex)
+                                } else {
+                                    0
+                                }
+                                lastScrubAt = now
+                                val step = SCRUB_STEPS_MS[scrubStepIndex]
+                                val delta = if (keyEvent.key == Key.DirectionRight) step else -step
+                                val dur = player.duration
+                                val target = player.currentPosition + delta
+                                player.seekTo(
+                                    if (dur > 0 && dur != C.TIME_UNSET) target.coerceIn(0L, dur)
+                                    else target.coerceAtLeast(0L),
+                                )
+                                controlsVisible = true
+                                true
+                            } else if (!panelFocused) {
+                                panelFocused = true
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        // OK opens the panel; once open it falls through to the focused control.
+                        Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
                             if (!panelFocused) {
                                 panelFocused = true
                                 true
@@ -490,6 +552,9 @@ fun LivePlayerScreen(
             var durationMs by remember { mutableStateOf(C.TIME_UNSET) }
             var bufferedPositionMs by remember { mutableStateOf(0L) }
             LaunchedEffect(exoPlayer) {
+                // Expose the current player to the outer D-pad handler for VOD scrubbing; it's
+                // rebuilt on retry/fallback, so keep the holder pointed at the live instance.
+                scrubPlayer.value = exoPlayer
                 // P1.2: restore the VOD resume bookmark onto this freshly-built player (no-op /
                 // returns 0 for live). Runs for every exoPlayer instance -- so an auto-retry /
                 // fallback rebuild (P2) also lands back at the last saved position rather than 0:00.
@@ -675,6 +740,10 @@ fun LivePlayerScreen(
                         elapsed = elapsedLabel,
                         total = totalLabel,
                         channelLogoInitials = media.title.take(3).uppercase(),
+                        // Movies/series only: make the progress bar a focusable scrub control (shows
+                        // a thumb when focused). Null on live -> bar stays display-only.
+                        seekBarFocusRequester = if (media.isLive) null else seekBarFocusRequester,
+                        onSeekBarFocusChanged = { seekBarFocused = it },
                         onPlayPause = {
                             if (playing) exoPlayer.pause() else exoPlayer.play()
                         },
