@@ -372,6 +372,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                         onChannelSelected = { channel -> rootNav.navigate("player/${channel.id}") },
                         onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
                         onCategorySelected = { category -> innerNav.navigate("search?category=${Uri.encode(category)}") },
+                        onSeeAll = { route -> if (route != activeNav && route in KnownRoutes) innerNav.selectTab(route) },
                         onResumeVod = { vodTitleId -> rootNav.navigate("player/vod/$vodTitleId") },
                         onResumeEpisode = { episodeId -> rootNav.navigate("player/episode/$episodeId") },
                     )

@@ -5,18 +5,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
 /**
  * Rail — a titled horizontal row of tiles (Rail.jsx), the core Home building
@@ -35,6 +42,10 @@ fun AreRail(
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    // "See all" is horizontally offset from the tiles, so a plain 2D focus search moving UP from a
+    // tile lands on the vertically-aligned tile in the rail above instead of ever reaching it. We
+    // redirect the rail's UP exit to this requester so the button is actually reachable by D-pad.
+    val seeAllFocus = remember { FocusRequester() }
 
     Column(modifier = modifier) {
         Row(
@@ -51,11 +62,28 @@ fun AreRail(
             }
             if (seeAll) {
                 Box(Modifier.weight(1f))
-                Text(text = "See all  ›", style = AreIptvTheme.typography.label, color = colors.textTertiary)
+                // Real focusable/clickable control -- previously a bare Text, so on TV there was
+                // no D-pad target and onSeeAll never fired.
+                TvFocusable(
+                    onClick = onSeeAll,
+                    modifier = Modifier.focusRequester(seeAllFocus),
+                    shape = RoundedCornerShape(AreIptvTheme.radius.sm),
+                ) { focused, _ ->
+                    Text(
+                        text = "See all  ›",
+                        style = AreIptvTheme.typography.label,
+                        color = if (focused) colors.textPrimary else colors.textTertiary,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
             }
         }
         LazyRow(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                // focusProperties only governs a group's exit when the container is an explicit
+                // focusGroup; without it the up-redirect is ignored and focus jumps to the rail above.
+                .then(if (seeAll) Modifier.focusProperties { up = seeAllFocus }.focusGroup() else Modifier),
             contentPadding = PaddingValues(
                 start = spacing.safeX,
                 end = spacing.safeX + spacing.railPeek,

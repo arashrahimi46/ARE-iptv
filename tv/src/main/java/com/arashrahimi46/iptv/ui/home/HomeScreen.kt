@@ -61,6 +61,8 @@ fun HomeScreen(
     // Hoisted to the shell so the top-bar Customize action can drive it (see MainActivity).
     editMode: Boolean = false,
     onCategorySelected: (String) -> Unit = {},
+    // "See all" on a built-in rail -> jump to that full tab (route id, e.g. "live"/"movies"/"series").
+    onSeeAll: (String) -> Unit = {},
     // P1.2: resumes playback directly (bypassing Detail) for a Continue Watching tile --
     // it's the exact bookmarked movie/episode, not "go pick from this title's episode list".
     onResumeVod: (Long) -> Unit = {},
@@ -144,6 +146,8 @@ fun HomeScreen(
                     onCategorySelected = onCategorySelected,
                     onResumeVod = onResumeVod,
                     onResumeEpisode = onResumeEpisode,
+                    showSeeAll = true,
+                    onSeeAll = onSeeAll,
                 )
             }
         } else {
@@ -198,6 +202,8 @@ fun HomeScreen(
                         onCategorySelected = onCategorySelected,
                         onResumeVod = onResumeVod,
                         onResumeEpisode = onResumeEpisode,
+                        showSeeAll = false,
+                        onSeeAll = {},
                     )
                 }
             }
@@ -261,6 +267,8 @@ private fun HomeSectionContent(
     onCategorySelected: (String) -> Unit,
     onResumeVod: (Long) -> Unit,
     onResumeEpisode: (Long) -> Unit,
+    showSeeAll: Boolean,
+    onSeeAll: (String) -> Unit,
 ) {
     when (section) {
         is HomeSection.Builtin -> when (section.key) {
@@ -284,7 +292,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.LIVE_NOW -> {
                 if (state.channels.isNotEmpty()) {
-                    AreRail(title = "Live now") {
+                    AreRail(title = "Live now", seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
                         items(state.channels.take(20), key = { it.id }) { channel ->
                             val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                             AreChannelTile(
@@ -302,7 +310,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.CATEGORIES -> {
                 if (state.categories.isNotEmpty()) {
-                    AreRail(title = "Browse by category") {
+                    AreRail(title = "Browse by category", seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
                         items(state.categories.take(20), key = { it.name }) { category ->
                             AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                         }
@@ -311,7 +319,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.RECOMMENDED -> {
                 if (recommended.isNotEmpty()) {
-                    AreRail(title = "Browse movies & series") {
+                    AreRail(title = "Browse movies & series", seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(recommended, key = { it.id }) { title ->
                             ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
                         }
@@ -320,7 +328,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.MOVIES -> {
                 if (state.movies.isNotEmpty()) {
-                    AreRail(title = "Movies") {
+                    AreRail(title = "Movies", seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(state.movies.take(20), key = { it.id }) { movie ->
                             ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp)
                         }
@@ -329,7 +337,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.SERIES -> {
                 if (state.series.isNotEmpty()) {
-                    AreRail(title = "Series") {
+                    AreRail(title = "Series", seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
                         items(state.series.take(20), key = { it.id }) { show ->
                             ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp)
                         }
@@ -343,7 +351,7 @@ private fun HomeSectionContent(
             when (val content = state.categoryRails[homeCategoryRailKey(section.kind, section.name)]) {
                 is HomeCategoryContent.Live -> {
                     if (content.channels.isNotEmpty()) {
-                        AreRail(title = section.name) {
+                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }) {
                             items(content.channels, key = { it.id }) { channel ->
                                 val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                                 AreChannelTile(
@@ -361,7 +369,7 @@ private fun HomeSectionContent(
                 }
                 is HomeCategoryContent.Vod -> {
                     if (content.titles.isNotEmpty()) {
-                        AreRail(title = section.name) {
+                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }) {
                             items(content.titles, key = { it.id }) { title ->
                                 ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
                             }
