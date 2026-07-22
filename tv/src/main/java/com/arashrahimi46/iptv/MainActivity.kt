@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -317,6 +318,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
         rootNav.navigate("detail/$contentType/$contentId")
     }
 
+    // Home layout edit mode, hoisted here so the top-bar Customize action (rendered in the shell,
+    // outside HomeScreen) can toggle it. Only surfaced on Home; survives inner-tab switches.
+    var homeEditMode by rememberSaveable { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -354,6 +359,8 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 // anything. Settings is the closest existing real destination for an
                 // account/profile icon (no dedicated profile screen exists).
                 onAvatar = { if (activeNav != "settings") innerNav.selectTab("settings") },
+                onCustomize = if (activeNav == "home") ({ homeEditMode = !homeEditMode }) else null,
+                customizeActive = homeEditMode,
             )
         },
     ) {
@@ -361,6 +368,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             composable("home") {
                 ScrollableTab {
                     HomeScreen(
+                        editMode = homeEditMode,
                         onChannelSelected = { channel -> rootNav.navigate("player/${channel.id}") },
                         onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },
                         onCategorySelected = { category -> innerNav.navigate("search?category=${Uri.encode(category)}") },

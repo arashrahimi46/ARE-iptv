@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,6 +58,8 @@ fun HomeScreen(
     onChannelSelected: (Channel) -> Unit,
     onTitleSelected: (VodTitle) -> Unit,
     modifier: Modifier = Modifier,
+    // Hoisted to the shell so the top-bar Customize action can drive it (see MainActivity).
+    editMode: Boolean = false,
     onCategorySelected: (String) -> Unit = {},
     // P1.2: resumes playback directly (bypassing Detail) for a Continue Watching tile --
     // it's the exact bookmarked movie/episode, not "go pick from this title's episode list".
@@ -77,13 +78,14 @@ fun HomeScreen(
     // can restore D-pad focus to it instead of leaving focus on the sidebar.
     var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    var editMode by rememberSaveable { mutableStateOf(false) }
     // Step 4: local editable copy of the layout, seeded from state.sections and re-synced
     // whenever a fresh layout arrives -- EXCEPT mid-grab, where the in-progress reorder is the
     // source of truth until it's dropped (persisted) and the DataStore flow catches back up.
     var workingSections by remember { mutableStateOf(state.sections) }
     var grabbedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddSectionDialog by remember { mutableStateOf(false) }
+    // editMode is hoisted (a param); when it's turned off from the top bar, drop any in-progress grab.
+    LaunchedEffect(editMode) { if (!editMode) grabbedIndex = null }
     LaunchedEffect(state.sections) {
         if (grabbedIndex == null) workingSections = state.sections
     }
@@ -105,15 +107,6 @@ fun HomeScreen(
     // below are sized down instead (see the explicit `width =` overrides on each rail
     // item further down) so more of the catalog fits on screen without scrolling as much.
     Column(modifier = Modifier.padding(bottom = spacing.sp16)) {
-        Box(modifier = Modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp4)) {
-            AreButton(
-                text = if (editMode) "Done" else "Customize",
-                onClick = { editMode = !editMode; grabbedIndex = null },
-                variant = if (editMode) AreButtonVariant.Primary else AreButtonVariant.Secondary,
-                icon = Icons.Filled.Edit,
-            )
-        }
-
         if (!state.hasSource || (state.channels.isEmpty() && state.movies.isEmpty())) {
             Box(modifier = Modifier.padding(horizontal = spacing.safeX)) {
                 // QA LOW defect: a real source existed but Room hadn't emitted its first

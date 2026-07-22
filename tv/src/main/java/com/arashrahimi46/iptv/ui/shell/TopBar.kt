@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,6 +42,10 @@ fun AreTopBar(
     onSearch: () -> Unit = {},
     onAddPlaylist: () -> Unit = {},
     onAvatar: () -> Unit = {},
+    // Home-only: null on every other screen so the Customize action doesn't appear there.
+    // [customizeActive] reflects whether Home is currently in edit mode (accent-highlighted).
+    onCustomize: (() -> Unit)? = null,
+    customizeActive: Boolean = false,
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
@@ -58,6 +63,11 @@ fun AreTopBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(Modifier.weight(1f))
+        // Customize (edit Home layout) -- only present on Home (onCustomize != null); accent-lit
+        // while edit mode is active, matching the old inline "Customize/Done" toggle.
+        if (onCustomize != null) {
+            AreIconButton(Icons.Filled.Edit, "Customize", onClick = onCustomize, variant = AreIconButtonVariant.Solid, active = customizeActive)
+        }
         // Multi-view action temporarily removed (feature not ready). onMultiView is kept on the
         // signature so the button can be restored here without re-plumbing the shell.
         AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
