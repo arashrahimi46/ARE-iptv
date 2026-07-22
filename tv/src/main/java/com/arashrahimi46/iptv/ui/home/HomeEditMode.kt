@@ -16,11 +16,16 @@ import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -87,6 +92,7 @@ fun HomeSectionEditRow(
 ) {
     val colors = AreIptvTheme.colors
     val handleShape = RoundedCornerShape(AreIptvTheme.radius.sm)
+    var handleFocused by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -103,15 +109,18 @@ fun HomeSectionEditRow(
             Row(
                 modifier = Modifier
                     .focusRequester(focusRequester)
+                    .onFocusChanged { handleFocused = it.isFocused }
                     .focusable()
                     .clip(handleShape)
                     .then(
-                        if (grabbed) {
-                            Modifier
+                        when {
+                            grabbed -> Modifier
                                 .background(colors.accentWash)
                                 .border(2.dp, colors.accent, handleShape)
-                        } else {
-                            Modifier
+                            handleFocused -> Modifier
+                                .background(colors.surface3)
+                                .border(2.dp, colors.borderStrong, handleShape)
+                            else -> Modifier
                         },
                     )
                     .onPreviewKeyEvent { keyEvent ->
