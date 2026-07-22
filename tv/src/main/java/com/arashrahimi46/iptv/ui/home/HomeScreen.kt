@@ -1,8 +1,14 @@
 package com.arashrahimi46.iptv.ui.home
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector2D
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -11,26 +17,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.round
+import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.ui.components.AreBadge
+import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryCard
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
-import com.arashrahimi46.iptv.ui.components.AreContinueCard
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreRail
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -86,6 +102,8 @@ fun HomeScreen(
     var workingSections by remember { mutableStateOf(state.sections) }
     var grabbedIndex by remember { mutableStateOf<Int?>(null) }
     var showAddSectionDialog by remember { mutableStateOf(false) }
+    // Long-press target for the "Remove from Continue Watching" confirm dialog (null = closed).
+    var removeTarget by remember { mutableStateOf<HomeContinueWatchingItem?>(null) }
     // editMode is hoisted (a param); when it's turned off from the top bar, drop any in-progress grab.
     LaunchedEffect(editMode) { if (!editMode) grabbedIndex = null }
     LaunchedEffect(state.sections) {
@@ -146,13 +164,19 @@ fun HomeScreen(
                     onCategorySelected = onCategorySelected,
                     onResumeVod = onResumeVod,
                     onResumeEpisode = onResumeEpisode,
+                    onRequestRemove = { removeTarget = it },
                     showSeeAll = true,
                     onSeeAll = onSeeAll,
                 )
             }
         } else {
             workingSections.forEachIndexed { index, section ->
+                // Stable per-section identity so a reorder MOVES the row's node to its new slot
+                // (rather than swapping data between fixed slots) -- that node movement is what
+                // [animatePlacement] animates. Keyless forEachIndexed gave no such movement.
+                key(homeSectionKey(section)) {
                 HomeSectionEditRow(
+                    modifier = Modifier.animatePlacement(),
                     label = homeSectionLabel(section),
                     position = index,
                     total = workingSections.size,
@@ -202,9 +226,11 @@ fun HomeScreen(
                         onCategorySelected = onCategorySelected,
                         onResumeVod = onResumeVod,
                         onResumeEpisode = onResumeEpisode,
+                        onRequestRemove = { removeTarget = it },
                         showSeeAll = false,
                         onSeeAll = {},
                     )
+                }
                 }
             }
             Box(modifier = Modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp4)) {
@@ -228,7 +254,57 @@ fun HomeScreen(
             onDismiss = { showAddSectionDialog = false },
         )
     }
+
+    removeTarget?.let { target ->
+        AreDialog(
+            onDismiss = { removeTarget = null },
+            title = "Remove from Continue Watching?",
+            actions = {
+                AreButton("Cancel", onClick = { removeTarget = null }, variant = AreButtonVariant.Ghost)
+                AreButton(
+                    "Remove",
+                    onClick = {
+                        viewModel.removeContinueWatching(target)
+                        removeTarget = null
+                    },
+                    variant = AreButtonVariant.Danger,
+                )
+            },
+        ) {
+            Text(
+                text = "“${target.title}” will stop showing here. Your place isn't kept.",
+                style = AreIptvTheme.typography.body,
+                color = AreIptvTheme.colors.textSecondary,
+            )
+        }
     }
+    }
+}
+
+/** Stable identity for an edit-mode section row, invariant across hide-toggles and reorders, so
+ * Compose keeps (and moves) the same node when the layout order changes -- required for the
+ * [animatePlacement] slide. */
+private fun homeSectionKey(section: HomeSection): String = when (section) {
+    is HomeSection.Builtin -> "b:${section.key}"
+    is HomeSection.Category -> "c:${homeCategoryRailKey(section.kind, section.name)}"
+}
+
+/** Animates a child to its new position within its parent whenever layout re-places it (e.g. an
+ * edit-mode reorder). Standard Compose recipe: track the placed position and spring the visual
+ * [offset] from the old spot to the new one. */
+private fun Modifier.animatePlacement(): Modifier = composed {
+    val scope = rememberCoroutineScope()
+    var targetOffset by remember { mutableStateOf(IntOffset.Zero) }
+    var animatable by remember { mutableStateOf<Animatable<IntOffset, AnimationVector2D>?>(null) }
+    this
+        .onPlaced { targetOffset = it.positionInParent().round() }
+        .offset {
+            val anim = animatable ?: Animatable(targetOffset, IntOffset.VectorConverter).also { animatable = it }
+            if (anim.targetValue != targetOffset) {
+                scope.launch { anim.animateTo(targetOffset, spring(stiffness = Spring.StiffnessMediumLow)) }
+            }
+            anim.value - targetOffset
+        }
 }
 
 /** Whether [section] would render anything in normal (non-edit) mode -- the same per-rail
@@ -267,6 +343,7 @@ private fun HomeSectionContent(
     onCategorySelected: (String) -> Unit,
     onResumeVod: (Long) -> Unit,
     onResumeEpisode: (Long) -> Unit,
+    onRequestRemove: (HomeContinueWatchingItem) -> Unit,
     showSeeAll: Boolean,
     onSeeAll: (String) -> Unit,
 ) {
@@ -277,14 +354,20 @@ private fun HomeSectionContent(
                 if (state.continueWatching.isNotEmpty()) {
                     AreRail(title = "Continue Watching", seeAll = false) {
                         items(state.continueWatching, key = { it.vodTitleId?.let { id -> "v$id" } ?: "e${it.seriesEpisodeId}" }) { item ->
-                            AreContinueCard(
+                            // Same portrait movie/series tile as the other rails: shows real poster art,
+                            // resume progress, and (for series) an on-poster season/episode badge. Hold OK
+                            // to remove the bookmark. Resume targets the exact movie/episode, not Detail.
+                            ArePosterTile(
                                 title = item.title,
                                 onClick = {
                                     if (item.vodTitleId != null) onResumeVod(item.vodTitleId) else item.seriesEpisodeId?.let(onResumeEpisode)
                                 },
+                                posterUrl = item.posterUrl,
                                 meta = item.meta,
                                 progress = item.progress,
-                                width = 260.dp,
+                                badges = item.badgeText?.let { badge -> { AreBadge(badge, tone = AreBadgeTone.Neutral) } },
+                                onLongClick = { onRequestRemove(item) },
+                                width = 168.dp,
                             )
                         }
                     }

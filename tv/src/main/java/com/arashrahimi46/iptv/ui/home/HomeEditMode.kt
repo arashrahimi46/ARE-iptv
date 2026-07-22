@@ -126,40 +126,28 @@ fun HomeSectionEditRow(
                         },
                     )
                     .onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type != KeyEventType.KeyUp) {
-                            false
-                        } else {
-                            when (keyEvent.key) {
-                                Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
-                                    if (grabbed) onDrop() else onGrabToggle()
-                                    true
+                        val key = keyEvent.key
+                        when {
+                            // While grabbed, OWN both phases of Up/Down: returning false on KeyDown
+                            // let the focus system steal focus off the handle before KeyUp arrived,
+                            // so onMove never fired (reorder did nothing). Consume both phases; act
+                            // on KeyUp only so a held key doesn't repeat the move.
+                            grabbed && (key == Key.DirectionUp || key == Key.DirectionDown) -> {
+                                if (keyEvent.type == KeyEventType.KeyUp) {
+                                    onMove(if (key == Key.DirectionUp) -1 else 1)
                                 }
-                                Key.Back -> {
-                                    if (grabbed) {
-                                        onDrop()
-                                        true
-                                    } else {
-                                        false
-                                    }
-                                }
-                                Key.DirectionUp -> {
-                                    if (grabbed) {
-                                        onMove(-1)
-                                        true
-                                    } else {
-                                        false
-                                    }
-                                }
-                                Key.DirectionDown -> {
-                                    if (grabbed) {
-                                        onMove(1)
-                                        true
-                                    } else {
-                                        false
-                                    }
-                                }
-                                else -> false
+                                true
                             }
+                            keyEvent.type != KeyEventType.KeyUp -> false
+                            key == Key.DirectionCenter || key == Key.Enter || key == Key.NumPadEnter -> {
+                                if (grabbed) onDrop() else onGrabToggle()
+                                true
+                            }
+                            key == Key.Back && grabbed -> {
+                                onDrop()
+                                true
+                            }
+                            else -> false
                         }
                     }
                     .padding(horizontal = 8.dp, vertical = 6.dp),
