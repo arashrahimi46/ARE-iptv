@@ -84,6 +84,9 @@ import java.time.format.DateTimeFormatter
  * degradation (no real playerError) with nothing left to fall back to. */
 private const val STUCK_ERROR_MESSAGE = "Stream unavailable"
 
+/** Idle time before the transport HUD auto-hides, whether focus is on the video or a control. */
+private const val CONTROLS_IDLE_HIDE_MS = 4000L
+
 /**
  * Real playback screen (LivePlayer.jsx chrome, real Media3/ExoPlayer video --
  * the prototype's static background image is replaced end-to-end). Drives
@@ -148,9 +151,13 @@ fun LivePlayerScreen(
     var controlsVisible by remember { mutableStateOf(true) }
     var panelFocused by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableStateOf(0) }
-    LaunchedEffect(interactionTick, controlsVisible, panelFocused) {
-        if (controlsVisible && !panelFocused) {
-            delay(3500)
+    // Auto-hide the HUD after a stretch of inactivity -- EVEN while a control is focused. Any
+    // D-pad activity bumps interactionTick (see onPreviewKeyEvent), restarting this timer; only
+    // genuine idleness hides it. (Previously it never hid once the panel was focused, so a single
+    // click left the "console" on screen indefinitely.) On hide, focus returns to the video below.
+    LaunchedEffect(interactionTick, controlsVisible) {
+        if (controlsVisible) {
+            delay(CONTROLS_IDLE_HIDE_MS)
             controlsVisible = false
         }
     }
@@ -189,18 +196,25 @@ fun LivePlayerScreen(
             // instead of switching channel.
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyUp) {
+                    // Any key press is "activity" -- reset the idle-hide timer (also captures OK on
+                    // a focused HUD button, which passes through preview before the button handles it).
+                    interactionTick++
                     when (keyEvent.key) {
-                        // Up/Down always switch channel and flash the panel's channel info.
+                        // Up/Down switch channel ONLY while the panel is closed (focus on the video).
+                        // With the panel open they must NOT change channel -- consume them as no-ops
+                        // so they neither switch nor let focus escape the single control row.
                         Key.DirectionUp -> {
-                            viewModel.switchChannel(1)
-                            controlsVisible = true
-                            interactionTick++
+                            if (!panelFocused) {
+                                viewModel.switchChannel(1)
+                                controlsVisible = true
+                            }
                             true
                         }
                         Key.DirectionDown -> {
-                            viewModel.switchChannel(-1)
-                            controlsVisible = true
-                            interactionTick++
+                            if (!panelFocused) {
+                                viewModel.switchChannel(-1)
+                                controlsVisible = true
+                            }
                             true
                         }
                         // OK/Left/Right open the panel and move focus into it. Once it's open
@@ -209,7 +223,6 @@ fun LivePlayerScreen(
                         Key.DirectionLeft, Key.DirectionRight -> {
                             if (!panelFocused) {
                                 panelFocused = true
-                                interactionTick++
                                 true
                             } else {
                                 false
@@ -512,6 +525,12 @@ fun LivePlayerScreen(
                         onOpenGuide = onOpenGuide,
                         onUpNext = { showUpNext = true },
                         onMultiView = onMultiView,
+                        isFavorite = state.isFavorite,
+                        onToggleFavorite = if (state.favoriteContentType != null) {
+                            { viewModel.toggleFavorite() }
+                        } else {
+                            null
+                        },
                         playPauseFocusRequester = hudFocusRequester,
                     )
                 }

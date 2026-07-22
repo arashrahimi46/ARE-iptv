@@ -15,10 +15,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -123,6 +128,16 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
 
             Box(Modifier.height(36.dp))
             val stepIndex = stepRoutes.indexOf(currentRoute).coerceAtLeast(0)
+            // On the Confirm step there's nothing to interact with except the buttons, so the
+            // primary "Add playlist" action should hold focus -- not "Back" (the first focusable
+            // in the Row, which the platform otherwise picks by default).
+            val primaryFocus = remember { FocusRequester() }
+            LaunchedEffect(currentRoute) {
+                if (currentRoute == "confirm") {
+                    withFrameNanos { }
+                    runCatching { primaryFocus.requestFocus() }
+                }
+            }
             // QA BLOCKER: D-pad RIGHT from "Skip for now" never reached "Continue" on a real
             // remote -- TvFocusable's focus-scale zoom (motion.focusScale, ~6%) grows the
             // focused button's rendered AND hit-tested bounds (Compose hit-tests through the
@@ -152,6 +167,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 } else {
                     AreButton(
                         text = if (uiState.result != null) "Go to Home" else "Add playlist",
+                        modifier = Modifier.focusRequester(primaryFocus),
                         onClick = {
                             if (uiState.result != null) {
                                 onFinished(null)

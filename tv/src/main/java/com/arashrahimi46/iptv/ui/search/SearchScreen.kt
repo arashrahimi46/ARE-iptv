@@ -16,7 +16,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,6 +36,7 @@ import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
  * Local search (Search.jsx): a query field driven by [AreTextField], which
@@ -166,6 +171,12 @@ private fun SearchResultsColumn(
     onTitleSelected: (VodTitle) -> Unit,
     viewModel: SearchViewModel,
 ) {
+    // Which result opened the player/detail -- restore D-pad focus onto it when Back re-enters
+    // Search, instead of letting focus fall to the sidebar. Channels and titles are separate id
+    // spaces (different tables), so they're tracked apart to avoid a cross-collision. Survives
+    // this tab being paused under the overlay via rememberSaveable.
+    var lastChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var lastTitleId by rememberSaveable { mutableStateOf<Long?>(null) }
     Column(modifier = modifier) {
         // Search.jsx's scope chips (All / Live TV / Movies / Series) -- Catch-up
         // omitted, an accepted v1 scope cut (see product-lead ruling). QA MEDIUM defect:
@@ -202,14 +213,16 @@ private fun SearchResultsColumn(
                 Box(Modifier.padding(top = 12.dp, bottom = 22.dp)) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                         state.channelResults.forEach { channel ->
+                            val focusRequester = rememberPlaybackFocusRequester(lastChannelId, channel.id) { lastChannelId = null }
                             AreChannelTile(
                                 channel = channel.name,
-                                onClick = { onChannelSelected(channel) },
+                                onClick = { lastChannelId = channel.id; onChannelSelected(channel) },
                                 number = channel.number,
                                 now = channel.categoryName,
                                 logoUrl = channel.logoUrl,
                                 isFavorite = channel.id in favoriteChannelIds,
                                 onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
+                                modifier = Modifier.focusRequester(focusRequester),
                             )
                         }
                     }
@@ -220,14 +233,16 @@ private fun SearchResultsColumn(
                 Box(Modifier.padding(top = 12.dp)) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                         state.titleResults.forEach { title ->
+                            val focusRequester = rememberPlaybackFocusRequester(lastTitleId, title.id) { lastTitleId = null }
                             ArePosterTile(
                                 title = title.name,
-                                onClick = { onTitleSelected(title) },
+                                onClick = { lastTitleId = title.id; onTitleSelected(title) },
                                 meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
                                 rating = title.rating,
                                 posterUrl = title.posterUrl,
                                 isFavorite = title.id in favoriteVodIds,
                                 onToggleFavorite = { viewModel.toggleVodFavorite(title) },
+                                focusRequester = focusRequester,
                             )
                         }
                     }

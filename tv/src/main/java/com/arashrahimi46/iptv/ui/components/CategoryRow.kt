@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -38,6 +39,8 @@ fun AreCategoryRow(
     kind: AreCategoryKind = AreCategoryKind.Default,
     smart: Boolean = false,
     active: Boolean = false,
+    pinned: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -50,6 +53,7 @@ fun AreCategoryRow(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
+        onLongClick = onLongClick,
     ) { _, _ ->
         Row(
             modifier = Modifier
@@ -59,6 +63,11 @@ fun AreCategoryRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Small pin marker for pinned categories (long-press OK to pin/unpin) -- floated
+            // to the top of the column by the ViewModel. Leading so it reads before the name.
+            if (pinned) {
+                Icon(Icons.Filled.PushPin, contentDescription = "Pinned", tint = colors.accent, modifier = Modifier.size(16.dp))
+            }
             // Icon and title count removed: the name now owns the full row width (was truncating
             // to "Arabic M..." in the 240dp column), and the selected category's total already
             // shows in the header band. `kind`/`count` stay on the API for callers that still pass them.

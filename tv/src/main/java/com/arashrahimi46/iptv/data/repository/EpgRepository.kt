@@ -6,11 +6,16 @@ import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SourceType
+import com.arashrahimi46.iptv.data.parser.M3uParser
 import com.arashrahimi46.iptv.data.parser.XmlTvParser
+import com.arashrahimi46.iptv.data.parser.XmlTvProgramme
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
@@ -22,6 +27,59 @@ import java.util.concurrent.TimeUnit
 private const val SQLITE_MAX_VARIABLES = 900
 
 /**
+ * P0.4: distinguishes "we successfully talked to the EPG source and it genuinely has no
+ * programme data" from "we couldn't reach/parse the source at all" -- [EpgRepository.refresh]
+ * updates [EpgRepository.availability] with this at the end of every run so the Guide screen
+ * can show a real message for an unreachable source instead of silently rendering blank rows.
+ */
+sealed class EpgAvailability {
+    object Idle : EpgAvailability()
+    object Available : EpgAvailability()
+    data class Unavailable(val reason: String? = null) : EpgAvailability()
+}
+
+/**
+ * Pure resolution of [EpgAvailability] from [EpgRepository.refresh]'s network-attempt
+ * bookkeeping -- extracted as a top-level function so it's unit-testable without standing up
+ * Room/OkHttp. [rowsEmpty]: no [EPGProgram] rows were produced this run. [attemptedAny]: at
+ * least one real network call (bulk XMLTV fetch or a per-channel short-EPG call) was actually
+ * issued. [succeededAny]: at least one of those calls completed without throwing.
+ */
+/** Normalizes a tvg-id / XMLTV channel id for matching. Providers routinely differ only in
+ * case or surrounding whitespace between the M3U `tvg-id` and the XMLTV `channel` id, so a raw
+ * string compare silently drops those channels' programmes. */
+private fun normalizeTvgId(raw: String): String = raw.trim().lowercase()
+
+/**
+ * Pure XMLTV-to-channel match: pairs each parsed [XmlTvProgramme] with the [Channel] whose
+ * `tvgId` matches its `channelRef` (case/whitespace-insensitive -- see [normalizeTvgId]) and
+ * returns the [EPGProgram] rows to persist. Extracted so the matching that actually populates
+ * the Guide is unit-testable without Room/OkHttp. Unmatched programmes and channels without a
+ * usable `tvgId` are simply dropped.
+ */
+internal fun matchXmlTvProgrammes(channels: List<Channel>, programmes: List<XmlTvProgramme>): List<EPGProgram> {
+    if (channels.isEmpty() || programmes.isEmpty()) return emptyList()
+    val byKey = channels.filter { !it.tvgId.isNullOrBlank() }.associateBy { normalizeTvgId(it.tvgId!!) }
+    return programmes.mapNotNull { p ->
+        val channel = byKey[normalizeTvgId(p.channelRef)] ?: return@mapNotNull null
+        EPGProgram(
+            channelId = channel.id,
+            title = p.title,
+            startMs = p.startMs,
+            endMs = p.stopMs,
+            description = p.description,
+        )
+    }
+}
+
+internal fun resolveEpgAvailability(rowsEmpty: Boolean, attemptedAny: Boolean, succeededAny: Boolean): EpgAvailability = when {
+    !rowsEmpty -> EpgAvailability.Available
+    !attemptedAny -> EpgAvailability.Unavailable("No EPG source configured for this playlist")
+    succeededAny -> EpgAvailability.Available
+    else -> EpgAvailability.Unavailable("Couldn't reach the EPG source")
+}
+
+/**
  * Populates [EPGProgram] rows for the Guide screen (Room schema existed
  * since Phase 1 but was unpopulated). Two real EPG sources, per the
  * playlist's [PlaylistSource]:
@@ -31,7 +89,9 @@ private const val SQLITE_MAX_VARIABLES = 900
  *    (`xmltv.php`) over N per-channel `get_short_epg` calls; falls back to
  *    per-channel short EPG only if the bulk export isn't reachable/parseable.
  * If neither is available, callers see an empty result and render a
- * "no programme data" placeholder rather than crashing.
+ * "no programme data" placeholder rather than crashing. [availability] surfaces WHY rows are
+ * empty (genuinely no programme data vs a real fetch failure) -- see [EpgAvailability]/
+ * [resolveEpgAvailability].
  */
 class EpgRepository(context: Context) {
     private val db = AppDatabase.get(context)
@@ -40,6 +100,9 @@ class EpgRepository(context: Context) {
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
+
+    private val _availability = MutableStateFlow<EpgAvailability>(EpgAvailability.Idle)
+    val availability: StateFlow<EpgAvailability> = _availability.asStateFlow()
 
     fun observeForChannels(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>> {
         if (channelIds.isEmpty()) return flowOf(emptyList())
@@ -54,7 +117,10 @@ class EpgRepository(context: Context) {
         }
     }
 
-    /** Fetches + persists EPG for [channels] of [source]. Best-effort: swallows network/parse failures per-channel/source. */
+    /** Fetches + persists EPG for [channels] of [source]. Best-effort per-channel/source, but
+     * unlike before, a total failure isn't silent: [availability] is updated at the end (see
+     * [resolveEpgAvailability]) so callers can tell "genuinely no programme data" apart from
+     * "the source couldn't be reached at all". */
     suspend fun refresh(source: PlaylistSource, channels: List<Channel>) = withContext(Dispatchers.IO) {
         if (channels.isEmpty()) return@withContext
 
@@ -67,10 +133,12 @@ class EpgRepository(context: Context) {
                 null
             }
         } else {
-            null
+            // Heal M3U sources imported before header parsing existed (or that failed to capture it):
+            // fetch just the `#EXTM3U` header line, read its `url-tvg`, and persist it so later
+            // refreshes short-circuit here via `source.epgUrl` above instead of re-fetching.
+            backfillM3uEpgUrl(source)
         }
 
-        val byTvgId = channels.filter { !it.tvgId.isNullOrBlank() }.associateBy { it.tvgId }
         val bulkRows = mutableListOf<EPGProgram>()
         // Channels the bulk XMLTV export actually produced a programme for -- tracked
         // per-channel (not a single source-wide flag) so channels lacking a usable tvgId
@@ -79,26 +147,27 @@ class EpgRepository(context: Context) {
         // channel in the batch happened to match.
         val coveredChannelIds = mutableSetOf<Long>()
 
+        // P0.4: tracks whether a real network call was made for the bulk XMLTV export, and
+        // whether it actually succeeded -- feeds resolveEpgAvailability below.
+        var xmlTvAttempted = false
+        var xmlTvSucceeded = false
+
         if (xmlTvUrl != null) {
+            xmlTvAttempted = true
             val body = runCatching { fetchText(xmlTvUrl) }.getOrNull()
             if (body != null) {
+                xmlTvSucceeded = true
                 val programmes = runCatching { XmlTvParser.parse(body) }.getOrDefault(emptyList())
-                programmes.forEach { p ->
-                    val channel = byTvgId[p.channelRef] ?: return@forEach
-                    bulkRows += EPGProgram(
-                        channelId = channel.id,
-                        title = p.title,
-                        startMs = p.startMs,
-                        endMs = p.stopMs,
-                        description = p.description,
-                    )
-                    coveredChannelIds += channel.id
-                }
+                val matched = matchXmlTvProgrammes(channels, programmes)
+                bulkRows += matched
+                coveredChannelIds += matched.map { it.channelId }
             }
         }
 
         // Fallback: per-channel Xtream short EPG, only for channels the bulk export didn't cover.
         val fallbackRows = mutableListOf<EPGProgram>()
+        var shortEpgAttempted = false
+        var shortEpgSucceeded = false
         val uncoveredChannels = channels.filter { it.id !in coveredChannelIds }
         if (uncoveredChannels.isNotEmpty() && source.type == SourceType.XTREAM) {
             val fallbackUsername = credentials.username(source.id)
@@ -107,7 +176,10 @@ class EpgRepository(context: Context) {
                 val xtream = XtreamClient(source.url, fallbackUsername, fallbackPassword)
                 uncoveredChannels.forEach { channel ->
                     val streamId = channel.externalId ?: return@forEach
-                    val entries = runCatching { xtream.getShortEpg(streamId) }.getOrDefault(emptyList())
+                    shortEpgAttempted = true
+                    val result = runCatching { xtream.getShortEpg(streamId) }
+                    if (result.isSuccess) shortEpgSucceeded = true
+                    val entries = result.getOrDefault(emptyList())
                     entries.forEach { entry ->
                         fallbackRows += EPGProgram(
                             channelId = channel.id,
@@ -127,6 +199,38 @@ class EpgRepository(context: Context) {
             channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES).forEach { db.epgProgramDao().deleteForChannels(it) }
             db.epgProgramDao().insertAll(rows)
         }
+
+        _availability.value = resolveEpgAvailability(
+            rowsEmpty = rows.isEmpty(),
+            attemptedAny = xmlTvAttempted || shortEpgAttempted,
+            succeededAny = xmlTvSucceeded || shortEpgSucceeded,
+        )
+    }
+
+    /** Fetches only the `#EXTM3U` header of [source]'s M3U, extracts its declared EPG feed URL,
+     * and persists it on the source. Returns the URL (or null if the header carries none / is
+     * unreachable). Best-effort -- the stream is closed as soon as the header line is read, so
+     * this never downloads the (potentially 100s of MB) playlist body. */
+    private suspend fun backfillM3uEpgUrl(source: PlaylistSource): String? {
+        val headerUrl = runCatching { fetchM3uHeaderEpgUrl(source.url) }.getOrNull() ?: return null
+        db.playlistSourceDao().setEpgUrl(source.id, headerUrl)
+        return headerUrl
+    }
+
+    private fun fetchM3uHeaderEpgUrl(url: String): String? {
+        val request = Request.Builder().url(url).build()
+        httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return null
+            val reader = response.body?.charStream()?.buffered() ?: return null
+            // The header is the first non-blank line of a valid M3U -- stop there.
+            reader.useLines { lines ->
+                for (raw in lines) {
+                    if (raw.isBlank()) continue
+                    return M3uParser.extractEpgUrl(raw)
+                }
+            }
+        }
+        return null
     }
 
     private fun fetchText(url: String): String {

@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class LiveCategorySummary(val name: String, val count: Int)
+data class LiveCategorySummary(val name: String, val count: Int, val pinned: Boolean = false)
 
 data class LiveUiState(
     val hasSource: Boolean = false,
@@ -63,9 +63,15 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
                     repository.channelCategoryCounts(sourceId),
                     repository.channelCount(sourceId),
                     selectedCategoryName,
-                ) { counts, total, selectedName ->
+                    settings.pinnedCategories(PIN_NAMESPACE),
+                ) { counts, total, selectedName, pinned ->
+                    // Pinned groups float to the top (alphabetical), then the rest in catalog order,
+                    // with "All channels" always first (not pinnable).
+                    val (pinnedCats, others) = counts
+                        .map { LiveCategorySummary(it.name, it.count, it.name in pinned) }
+                        .partition { it.pinned }
                     val categories = listOf(LiveCategorySummary("All channels", total)) +
-                        counts.map { LiveCategorySummary(it.name, it.count) }
+                        pinnedCats.sortedBy { it.name.lowercase() } + others
                     val index = if (selectedName == null) 0
                         else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }
                     LiveUiState(hasSource = true, categories = categories, selectedCategoryIndex = index)
@@ -88,11 +94,20 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
         selectedCategoryName.value = if (index == 0) null else uiState.value.categories.getOrNull(index)?.name
     }
 
+    /** Pin/unpin the category at [index] (index 0 = "All channels" is not pinnable). */
+    fun togglePin(index: Int) {
+        if (index == 0) return
+        val name = uiState.value.categories.getOrNull(index)?.name ?: return
+        viewModelScope.launch { settings.togglePinnedCategory(PIN_NAMESPACE, name) }
+    }
+
     fun toggleFavorite(channelId: Long) {
         viewModelScope.launch { favoritesRepository.toggleChannel(channelId) }
     }
 
     companion object {
+        private const val PIN_NAMESPACE = "live"
+
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

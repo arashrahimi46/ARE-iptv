@@ -15,24 +15,25 @@ class GuideViewModelTest {
 
     @Test
     fun `valid group passes through unchanged`() {
-        val groups = listOf("All", "Sports", "News")
+        val groups = listOf("News", "Sports")
         assertEquals("Sports", resolveGuideGroup("Sports", groups))
     }
 
     @Test
-    fun `unknown group falls back to All`() {
-        val groups = listOf("All", "Sports", "News")
+    fun `unknown group falls back to the first category`() {
+        val groups = listOf("News", "Sports")
         // e.g. a category persisted from a previous playlist that doesn't exist on this one.
-        assertEquals("All", resolveGuideGroup("Kids", groups))
+        assertEquals("News", resolveGuideGroup("Kids", groups))
     }
 
     @Test
-    fun `All is always valid`() {
-        assertEquals("All", resolveGuideGroup("All", listOf("All")))
+    fun `legacy All default falls back to the first category`() {
+        // "All" is no longer a real tab -- the Guide is strictly per-category now.
+        assertEquals("News", resolveGuideGroup("All", listOf("News", "Sports")))
     }
 
     @Test
-    fun `stale group falls back to All even when groups list is empty aside from All`() {
-        assertEquals("All", resolveGuideGroup("Sports", listOf("All")))
+    fun `empty groups returns the raw group unchanged`() {
+        assertEquals("Sports", resolveGuideGroup("Sports", emptyList()))
     }
 }

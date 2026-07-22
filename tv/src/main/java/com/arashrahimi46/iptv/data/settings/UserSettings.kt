@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,6 +35,8 @@ class UserSettings(private val context: Context) {
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
         val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
+        /** Pinned category names, namespaced per browse screen (see [pinnedCategoriesKey]). */
+        fun pinnedCategoriesKey(namespace: String) = stringSetPreferencesKey("pinned_categories_$namespace")
     }
 
     val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
@@ -138,5 +141,21 @@ class UserSettings(private val context: Context) {
 
     suspend fun setTermsAccepted(accepted: Boolean) {
         context.dataStore.edit { it[Keys.TERMS_ACCEPTED] = accepted }
+    }
+
+    /**
+     * Category names the user pinned to the top of a browse screen's group column.
+     * Namespaced per screen ("live"/"movies"/"series") so pinning "Sports" in Live TV
+     * doesn't also pin a same-named genre under Movies. Empty until the user pins one.
+     */
+    fun pinnedCategories(namespace: String): Flow<Set<String>> =
+        context.dataStore.data.map { it[Keys.pinnedCategoriesKey(namespace)] ?: emptySet() }
+
+    suspend fun togglePinnedCategory(namespace: String, name: String) {
+        context.dataStore.edit { prefs ->
+            val key = Keys.pinnedCategoriesKey(namespace)
+            val current = prefs[key] ?: emptySet()
+            prefs[key] = if (name in current) current - name else current + name
+        }
     }
 }

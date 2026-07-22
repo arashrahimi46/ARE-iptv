@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -17,6 +20,7 @@ import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
  * Movies browse (Browse.jsx): reuses the exact [BrowseLayout] shared with
@@ -36,6 +40,10 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
+    // Which movie tile opened Detail (-> player) -- restore D-pad focus onto it when Back
+    // re-enters this grid, instead of letting the sidebar take focus. Same mechanism as
+    // LiveScreen; survives this screen being paused under the overlay via rememberSaveable.
+    var lastSelectedId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     if (!state.hasSource) {
         Text(
@@ -47,13 +55,14 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         return
     }
 
-    val categoryOptions = state.categories.map { BrowseCategoryOption(name = it.name, count = it.count) }
+    val categoryOptions = state.categories.map { BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned) }
 
     BrowseLayout(
         title = "Movies",
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
+        onCategoryPinToggle = viewModel::togglePin,
         items = movies,
         itemKey = { it.id },
         categoryColumnHeader = "Genres",
@@ -68,15 +77,17 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         minItemWidth = 130.dp,
         modifier = modifier,
     ) { movie ->
+        val focusRequester = rememberPlaybackFocusRequester(lastSelectedId, movie.id) { lastSelectedId = null }
         ArePosterTile(
             title = movie.name,
-            onClick = { onMovieSelected(movie) },
+            onClick = { lastSelectedId = movie.id; onMovieSelected(movie) },
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,
             posterUrl = movie.posterUrl,
             fillWidth = true,
             isFavorite = movie.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
+            focusRequester = focusRequester,
         )
     }
 }

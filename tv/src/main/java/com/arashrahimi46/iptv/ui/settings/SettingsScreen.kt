@@ -94,6 +94,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
 
+    // Note: the caller wraps this in ScrollableTab (its own verticalScroll), so this Column must
+    // NOT add a second verticalScroll on the same axis -- nesting two crashes with an
+    // "infinity maximum height" measure error.
     Column(modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp6).widthIn(max = 900.dp)) {
         Text(text = "Settings", style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp8))

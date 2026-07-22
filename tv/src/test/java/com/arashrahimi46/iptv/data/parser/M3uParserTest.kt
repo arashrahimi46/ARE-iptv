@@ -7,6 +7,22 @@ import org.junit.Test
 class M3uParserTest {
 
     @Test
+    fun `extractEpgUrl reads url-tvg from the header`() {
+        assertEquals("http://x/epg.xml", M3uParser.extractEpgUrl("""#EXTM3U url-tvg="http://x/epg.xml""""))
+    }
+
+    @Test
+    fun `extractEpgUrl accepts x-tvg-url and takes the first of a comma list`() {
+        assertEquals("http://a/1.xml", M3uParser.extractEpgUrl("""#EXTM3U x-tvg-url="http://a/1.xml,http://b/2.xml""""))
+    }
+
+    @Test
+    fun `extractEpgUrl returns null for a header without an EPG attribute or a non-header line`() {
+        assertEquals(null, M3uParser.extractEpgUrl("#EXTM3U"))
+        assertEquals(null, M3uParser.extractEpgUrl("http://example.com/stream/1"))
+    }
+
+    @Test
     fun `parses a well-formed entry with all attributes`() {
         val playlist = """
             #EXTM3U

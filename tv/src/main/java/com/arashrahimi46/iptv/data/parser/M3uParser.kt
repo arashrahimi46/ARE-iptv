@@ -18,6 +18,19 @@ data class M3uEntry(
 object M3uParser {
     private val attrRegex = Regex("""([a-zA-Z0-9_-]+)="([^"]*)"""")
 
+    /**
+     * Extracts the XMLTV EPG feed URL declared on the `#EXTM3U` header line
+     * (`url-tvg` / `x-tvg-url` / `tvg-url` -- providers use all three spellings).
+     * Returns the first URL of a comma-separated list (EpgRepository fetches one),
+     * or null for a non-header line or a header without an EPG attribute.
+     */
+    fun extractEpgUrl(headerLine: String): String? {
+        if (!headerLine.trim().startsWith("#EXTM3U", ignoreCase = true)) return null
+        val attrs = attrRegex.findAll(headerLine).associate { it.groupValues[1].lowercase() to it.groupValues[2] }
+        return (attrs["url-tvg"] ?: attrs["x-tvg-url"] ?: attrs["tvg-url"])
+            ?.split(",")?.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
+    }
+
     fun parse(playlist: String): List<M3uEntry> = parse(playlist.lineSequence()).toList()
 
     /**

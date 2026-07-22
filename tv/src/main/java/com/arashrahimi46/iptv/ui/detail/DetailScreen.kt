@@ -21,22 +21,27 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -84,6 +89,15 @@ fun DetailScreen(
     val state by viewModel.uiState.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val colors = AreIptvTheme.colors
+    // Which episode row opened the player -- restore D-pad focus onto it when Back re-enters this
+    // screen, instead of letting focus fall to the top Back button. Survives this screen being
+    // paused under the player overlay via rememberSaveable. Same mechanism as the browse grids.
+    var lastPlayedEpisodeId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Land D-pad focus on Play when the page opens, instead of the top Back button (the first
+    // focusable). Skipped when returning from an episode -- there the episode row restores focus
+    // via rememberPlaybackFocusRequester, so we must not steal it back to Play.
+    val playFocusRequester = remember { FocusRequester() }
 
     BackHandler(onBack = onBack)
 
@@ -102,6 +116,12 @@ fun DetailScreen(
                 }
             }
         } else {
+            LaunchedEffect(title.id) {
+                if (lastPlayedEpisodeId == null) {
+                    withFrameNanos { }
+                    runCatching { playFocusRequester.requestFocus() }
+                }
+            }
             Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 Box(Modifier.padding(24.dp, 24.dp, 24.dp, 0.dp)) {
                     AreIconButton(Icons.Filled.ArrowBack, "Back", onClick = onBack, variant = AreIconButtonVariant.Glass)
@@ -122,6 +142,7 @@ fun DetailScreen(
                                 onClick = { resolvePlayTarget(title, state)?.let(onPlay) },
                                 variant = AreButtonVariant.Primary,
                                 icon = Icons.Filled.PlayArrow,
+                                modifier = Modifier.focusRequester(playFocusRequester),
                             )
                             AreIconButton(
                                 icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -135,7 +156,15 @@ fun DetailScreen(
 
                 if (title.isSeries) {
                     Box(Modifier.padding(horizontal = AreIptvTheme.spacing.safeX)) {
-                        SeriesEpisodesSection(state = state, onPlayEpisode = { episode -> onPlay(PlayTarget.Episode(episode.id)) })
+                        SeriesEpisodesSection(
+                            state = state,
+                            savedEpisodeId = lastPlayedEpisodeId,
+                            onEpisodeConsumed = { lastPlayedEpisodeId = null },
+                            onPlayEpisode = { episode ->
+                                lastPlayedEpisodeId = episode.id
+                                onPlay(PlayTarget.Episode(episode.id))
+                            },
+                        )
                     }
                     Box(Modifier.padding(bottom = 40.dp))
                 }
@@ -183,20 +212,20 @@ private fun HeroArt(title: VodTitle) {
             .background(colors.surface3, shape),
         contentAlignment = Alignment.Center,
     ) {
+        // Initials show only until the poster resolves (avoids bleed-through on transparent/
+        // letterboxed art). onState is a lightweight callback, not SubcomposeAsyncImage.
+        val posterLoaded = remember(title.posterUrl) { mutableStateOf(false) }
+        if (title.posterUrl == null || !posterLoaded.value) {
+            Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
+        }
         if (title.posterUrl != null) {
-            SubcomposeAsyncImage(
+            AsyncImage(
                 model = title.posterUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                onState = { posterLoaded.value = it is AsyncImagePainter.State.Success },
                 modifier = Modifier.fillMaxSize().clip(shape),
-            ) {
-                when (painter.state) {
-                    is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
-                    else -> Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
-                }
-            }
-        } else {
-            Text(text = initials, style = AreIptvTheme.typography.display, color = colors.textTertiary)
+            )
         }
     }
 }
@@ -218,12 +247,25 @@ private fun MetaRow(title: VodTitle) {
 }
 
 @Composable
-private fun SeriesEpisodesSection(state: DetailUiState, onPlayEpisode: (SeriesEpisode) -> Unit) {
+private fun SeriesEpisodesSection(
+    state: DetailUiState,
+    savedEpisodeId: Long?,
+    onEpisodeConsumed: () -> Unit,
+    onPlayEpisode: (SeriesEpisode) -> Unit,
+) {
     val colors = AreIptvTheme.colors
     val totalEpisodes = state.episodesBySeason.values.sumOf { it.size }
     val seasons = remember(state.episodesBySeason) { state.episodesBySeason.keys.sorted() }
-    // Selected season tab -- defaults to the first season, resets if the season set changes.
-    var selectedSeason by remember(seasons) { mutableStateOf(seasons.firstOrNull()) }
+    // Restore to the season that CONTAINS the episode we're returning from (Back out of the
+    // player), so the focus restore below can find it -- otherwise a multi-season show resets to
+    // season 1 and the played episode isn't even on screen. Falls back to the first season.
+    val restoredSeason = remember(seasons, savedEpisodeId) {
+        savedEpisodeId
+            ?.let { id -> state.episodesBySeason.entries.firstOrNull { (_, eps) -> eps.any { it.id == id } }?.key }
+            ?: seasons.firstOrNull()
+    }
+    // Selected season tab -- defaults to the restored season, resets if the season set changes.
+    var selectedSeason by remember(seasons) { mutableStateOf(restoredSeason) }
     Column {
         val header = if (totalEpisodes > 0) {
             val seasonLabel = if (seasons.size > 1) "${seasons.size} seasons · " else ""
@@ -258,7 +300,12 @@ private fun SeriesEpisodesSection(state: DetailUiState, onPlayEpisode: (SeriesEp
                 Box(Modifier.padding(top = 10.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     episodes.forEach { episode ->
-                        EpisodeRow(episode = episode, onClick = { onPlayEpisode(episode) })
+                        val focusRequester = rememberPlaybackFocusRequester(savedEpisodeId, episode.id, onEpisodeConsumed)
+                        EpisodeRow(
+                            episode = episode,
+                            onClick = { onPlayEpisode(episode) },
+                            modifier = Modifier.focusRequester(focusRequester),
+                        )
                     }
                 }
             }
@@ -282,11 +329,11 @@ private fun SeriesEpisodesSection(state: DetailUiState, onPlayEpisode: (SeriesEp
 }
 
 @Composable
-private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit) {
+private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = AreIptvTheme.colors
     TvFocusable(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
         backgroundColor = colors.surface1,
     ) { _, _ ->

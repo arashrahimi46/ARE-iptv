@@ -103,16 +103,33 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
         }
         Box(Modifier.height(spacing.sp5))
 
-        // Channel-group filter.
+        // Category tabs -- horizontally scrollable so every category is reachable on a real
+        // playlist with dozens of groups (the Guide is strictly per-category; no "All" tab).
         Row(
-            modifier = Modifier.padding(horizontal = spacing.safeX).fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             state.groups.forEach { group ->
-                AreChip(text = if (group == "All") "All channels" else group, onClick = { viewModel.selectGroup(group) }, selected = group == state.selectedGroup)
+                AreChip(text = group, onClick = { viewModel.selectGroup(group) }, selected = group == state.selectedGroup)
             }
         }
         Box(Modifier.height(spacing.sp5))
+
+        // P0.4: EPG source unreachable -- a small banner, not a full-screen replacement. Channel
+        // rows below still render (each with its own "No programme data" placeholder slot).
+        if (state.epgUnavailable) {
+            Box(Modifier.padding(horizontal = spacing.safeX)) {
+                Text(
+                    text = "EPG source unavailable -- showing channels without programme data.",
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.danger,
+                )
+            }
+            Box(Modifier.height(spacing.sp4))
+        }
 
         // Sticky focused-program info bar (no hover/tooltips on TV -- last focused cell stays shown).
         Box(Modifier.padding(horizontal = spacing.safeX)) {

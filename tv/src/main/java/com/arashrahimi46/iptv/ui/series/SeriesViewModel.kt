@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class SeriesCategorySummary(val name: String, val count: Int)
+data class SeriesCategorySummary(val name: String, val count: Int, val pinned: Boolean = false)
 
 data class SeriesUiState(
     val hasSource: Boolean = false,
@@ -63,9 +63,14 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
                     repository.seriesCategoryCounts(sourceId),
                     repository.seriesCount(sourceId),
                     selectedCategoryName,
-                ) { counts, total, selectedName ->
+                    settings.pinnedCategories(PIN_NAMESPACE),
+                ) { counts, total, selectedName, pinned ->
+                    // Pinned genres float to the top (alphabetical); "All series" is always first.
+                    val (pinnedCats, others) = counts
+                        .map { SeriesCategorySummary(it.name, it.count, it.name in pinned) }
+                        .partition { it.pinned }
                     val categories = listOf(SeriesCategorySummary("All series", total)) +
-                        counts.map { SeriesCategorySummary(it.name, it.count) }
+                        pinnedCats.sortedBy { it.name.lowercase() } + others
                     val index = if (selectedName == null) 0
                         else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }
                     SeriesUiState(hasSource = true, categories = categories, selectedCategoryIndex = index)
@@ -88,11 +93,20 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
         selectedCategoryName.value = if (index == 0) null else uiState.value.categories.getOrNull(index)?.name
     }
 
+    /** Pin/unpin the genre at [index] (index 0 = "All series" is not pinnable). */
+    fun togglePin(index: Int) {
+        if (index == 0) return
+        val name = uiState.value.categories.getOrNull(index)?.name ?: return
+        viewModelScope.launch { settings.togglePinnedCategory(PIN_NAMESPACE, name) }
+    }
+
     fun toggleFavorite(vodTitleId: Long) {
         viewModelScope.launch { favoritesRepository.toggleVod(vodTitleId, ContentType.SERIES) }
     }
 
     companion object {
+        private const val PIN_NAMESPACE = "series"
+
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

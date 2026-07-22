@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,7 +58,8 @@ fun AreTopBar(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(Modifier.weight(1f))
-        AreIconButton(Icons.Filled.GridView, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Solid)
+        // Multi-view action temporarily removed (feature not ready). onMultiView is kept on the
+        // signature so the button can be restored here without re-plumbing the shell.
         AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
         // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
         // management UI, so this effectively adds/replaces the active source.)

@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.repository.EpgRepository
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -47,6 +50,12 @@ data class LivePlayerUiState(
      * channel-up/down handling can compute the next/previous id without its own query. */
     val currentChannelId: Long? = null,
     val siblingChannelIds: List<Long> = emptyList(),
+    /** The favoritable item behind whatever is currently playing: a channel row id (LIVE), or a
+     * VOD title row id (MOVIE, or SERIES -- for a movie, a series, or the parent series of an
+     * episode). Null while unresolved. Drives the player HUD's favorite toggle. */
+    val favoriteTargetId: Long? = null,
+    val favoriteContentType: ContentType? = null,
+    val isFavorite: Boolean = false,
 )
 
 /**
@@ -67,6 +76,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     // EPG-fetching path -- the mini up-next panel is just a narrower view (one channel, ordered
     // list) over the same [com.arashrahimi46.iptv.data.model.EPGProgram] rows.
     private val epgRepository = EpgRepository(app)
+    private val favoritesRepository = FavoritesRepository(app)
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
@@ -77,6 +87,37 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     init {
         loadMedia(initialSource)
         observeUpNext()
+        observeFavorite()
+    }
+
+    /** Keeps [LivePlayerUiState.isFavorite] in sync with the live favorites sets as either the
+     * favorites change (toggled here or elsewhere) or the playing item changes ([switchChannel]). */
+    private fun observeFavorite() {
+        viewModelScope.launch {
+            combine(
+                _uiState.map { it.favoriteTargetId to it.favoriteContentType }.distinctUntilChanged(),
+                favoritesRepository.favoriteChannelIds,
+                favoritesRepository.favoriteVodIds,
+            ) { (id, type), channelIds, vodIds ->
+                when (type) {
+                    ContentType.LIVE -> id != null && id in channelIds
+                    ContentType.MOVIE, ContentType.SERIES -> id != null && id in vodIds
+                    null -> false
+                }
+            }.distinctUntilChanged().collectLatest { fav ->
+                _uiState.value = _uiState.value.copy(isFavorite = fav)
+            }
+        }
+    }
+
+    /** Favorite/unfavorite whatever is currently playing (channel, movie, or the episode's series). */
+    fun toggleFavorite() {
+        val id = _uiState.value.favoriteTargetId ?: return
+        val type = _uiState.value.favoriteContentType ?: return
+        viewModelScope.launch {
+            if (type == ContentType.LIVE) favoritesRepository.toggleChannel(id)
+            else favoritesRepository.toggleVod(id, type)
+        }
     }
 
     /** Re-queries the up-next list whenever the playing channel changes (initial load or [switchChannel]). */
@@ -120,6 +161,20 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                     }
                 }
             }
+            // Resolve the favoritable target for whatever resolved: a channel favorites the channel;
+            // a movie/series favorites the VOD title; an episode favorites its parent series.
+            val (favoriteId, favoriteType) = if (media == null) {
+                null to null
+            } else when (val s = source) {
+                is PlaybackSource.Channel -> s.channelId to ContentType.LIVE
+                is PlaybackSource.Vod -> db.vodTitleDao().getById(s.vodTitleId)?.let { t ->
+                    t.id to (if (t.isSeries) ContentType.SERIES else ContentType.MOVIE)
+                } ?: (null to null)
+                is PlaybackSource.Episode -> db.seriesEpisodeDao().getById(s.episodeId)?.let { e ->
+                    e.seriesTitleId to ContentType.SERIES
+                } ?: (null to null)
+            }
+
             val siblingIds = if (source is PlaybackSource.Channel && media != null) {
                 db.channelDao().getById(source.channelId)?.let { channel ->
                     // ids only (not full rows) so prev/next nav doesn't materialize a 100k+ catalog.
@@ -135,6 +190,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 phase = if (media == null) PlaybackPhase.Error else PlaybackPhase.Idle,
                 currentChannelId = (source as? PlaybackSource.Channel)?.channelId,
                 siblingChannelIds = siblingIds,
+                favoriteTargetId = favoriteId,
+                favoriteContentType = favoriteType,
             )
         }
     }

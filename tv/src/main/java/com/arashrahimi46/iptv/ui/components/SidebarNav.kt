@@ -83,12 +83,14 @@ fun AreSidebarNav(
 
     // Tracks which item currently holds D-pad focus (null = none), driving expand/collapse.
     var focusedItemId by remember { mutableStateOf<String?>(null) }
-    // QA MEDIUM defect: each nav destination recomposes a brand-new AreSidebarNav, and
-    // Compose's default initial-focus traversal lands on the first item (Home) rather than
-    // wherever the user actually is -- forcing redundant DOWN presses every navigation.
-    // Requesting focus onto the real [active] item's row on first composition fixes that.
+    // Per-row focus requesters, kept so a row can be focused programmatically if needed.
+    // NOTE: we deliberately do NOT auto-request focus onto the active row here. The sidebar is
+    // persistent across tab switches (the shell swaps only the inner content), so this composable
+    // only re-enters composition when returning from a full-bleed overlay (player/detail) -- and
+    // that is exactly when the browse screen restores D-pad focus to the tile the user launched
+    // from (see rememberPlaybackFocusRequester). An auto-focus here stole that focus back to the
+    // sidebar, which was the reported "Back always lands on the sidebar" bug.
     val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
-    LaunchedEffect(active) { focusRequesters[active]?.requestFocus() }
     val expanded = focusedItemId != null
     val width by animateDpAsState(
         targetValue = if (expanded) spacing.sidebarWidthOpen else spacing.sidebarWidth,

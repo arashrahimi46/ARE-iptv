@@ -46,6 +46,10 @@ fun HomeScreen(
     onTitleSelected: (VodTitle) -> Unit,
     modifier: Modifier = Modifier,
     onCategorySelected: (String) -> Unit = {},
+    // P1.2: resumes playback directly (bypassing Detail) for a Continue Watching tile --
+    // it's the exact bookmarked movie/episode, not "go pick from this title's episode list".
+    onResumeVod: (Long) -> Unit = {},
+    onResumeEpisode: (Long) -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = viewModel(
@@ -74,11 +78,26 @@ fun HomeScreen(
             Box(Modifier.padding(top = spacing.sp10))
         }
 
-        // Continue watching: no bookmarks recorded yet in this phase (schema-only), so the rail is hidden.
+        // P1.2: hidden when empty, same as every other rail below.
+        if (state.continueWatching.isNotEmpty()) {
+            AreRail(title = "Continue Watching", seeAll = false) {
+                items(state.continueWatching, key = { it.vodTitleId ?: it.seriesEpisodeId!! }) { item ->
+                    AreContinueCard(
+                        title = item.title,
+                        onClick = {
+                            if (item.vodTitleId != null) onResumeVod(item.vodTitleId) else item.seriesEpisodeId?.let(onResumeEpisode)
+                        },
+                        meta = item.meta,
+                        progress = item.progress,
+                        width = 260.dp,
+                    )
+                }
+            }
+        }
 
         if (state.channels.isNotEmpty()) {
             AreRail(title = "Live now") {
-                items(state.channels.take(20)) { channel ->
+                items(state.channels.take(20), key = { it.id }) { channel ->
                     val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }
                     AreChannelTile(
                         channel = channel.name,
@@ -95,7 +114,7 @@ fun HomeScreen(
 
         if (state.categories.isNotEmpty()) {
             AreRail(title = "Browse by category") {
-                items(state.categories.take(20)) { category ->
+                items(state.categories.take(20), key = { it.name }) { category ->
                     AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                 }
             }
@@ -109,7 +128,7 @@ fun HomeScreen(
         val recommended = (state.movies + state.series).take(12)
         if (recommended.isNotEmpty()) {
             AreRail(title = "Browse movies & series") {
-                items(recommended) { title ->
+                items(recommended, key = { it.id }) { title ->
                     ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
                 }
             }
@@ -117,7 +136,7 @@ fun HomeScreen(
 
         if (state.movies.isNotEmpty()) {
             AreRail(title = "Movies") {
-                items(state.movies.take(20)) { movie ->
+                items(state.movies.take(20), key = { it.id }) { movie ->
                     ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp)
                 }
             }
@@ -125,7 +144,7 @@ fun HomeScreen(
 
         if (state.series.isNotEmpty()) {
             AreRail(title = "Series") {
-                items(state.series.take(20)) { show ->
+                items(state.series.take(20), key = { it.id }) { show ->
                     ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp)
                 }
             }

@@ -65,6 +65,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             name = category.name,
             count = category.count,
             kind = if (index == 0) AreCategoryKind.Live else AreCategoryKind.Default,
+            pinned = category.pinned,
         )
     }
 
@@ -74,6 +75,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
+        onCategoryPinToggle = viewModel::togglePin,
         items = channels,
         itemKey = { it.id },
         categoryColumnHeader = "Channel groups",
@@ -82,6 +84,9 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         sectionCountLabel = { count -> "$count channels" },
         emptyLabel = "No channels in this group yet.",
         listMode = isListMode,
+        // Responsive channel grid (was one fixed 320dp tile per row): ~180dp columns that the tiles
+        // fill, so the content pane packs 2-3 readable channel cards per row instead of one big tile.
+        minItemWidth = 180.dp,
         modifier = modifier,
     ) { channel ->
         val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }
@@ -93,6 +98,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             logoUrl = channel.logoUrl,
             isFavorite = channel.id in favoriteChannelIds,
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
+            fillWidth = true,
             modifier = Modifier.focusRequester(focusRequester),
         )
     }

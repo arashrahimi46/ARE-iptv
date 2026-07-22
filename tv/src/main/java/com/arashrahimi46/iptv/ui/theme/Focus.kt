@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -16,12 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -97,19 +100,70 @@ fun Modifier.tvFocusable(
             scaleY = scale
         }
         // Design system `--focus-glow-tight` = `0 0 0 3px ring, 0 0 22px glow` -- a
-        // SYMMETRIC (zero-offset) glow + crisp ring. Compose's Modifier.shadow is a
-        // directional elevation shadow (light from the top), which on a dark
-        // background rendered a colored, offset, boxy silhouette *behind* the element
-        // -- the reported "extra box behind the focus ring". [tvGlow] draws the glow
-        // as concentric edge-hugging outlines with no offset, matching the token.
-        .then(if (ringAlpha > 0f) Modifier.tvGlow(glowColor, shape, alpha = ringAlpha) else Modifier)
-        .then(
-            if (ringAlpha > 0f) {
-                Modifier.border(width = ringWidth, color = glowColor.copy(alpha = ringAlpha), shape = shape)
-            } else {
-                Modifier
-            },
-        )
+        // SYMMETRIC (zero-offset) glow + crisp ring.
+        //
+        // PERF: both the glow and the ring are ALWAYS in the modifier chain (alpha 0 when
+        // unfocused), not conditionally added/removed. Toggling them in/out on every focus
+        // change forced a relayout each time -- the stutter felt moving the sidebar selection
+        // and travelling focus on Home. The glow ([tvGlowCached]) also builds its blur
+        // path/paint ONCE (drawWithCache) and only modulates alpha per frame, instead of the
+        // old per-frame Path/Paint/BlurMaskFilter allocation that churned the GC mid-animation.
+        .tvGlowCached(glowColor, shape) { ringAlpha }
+        .border(width = ringWidth, color = glowColor.copy(alpha = ringAlpha), shape = shape)
+}
+
+/**
+ * Perf-tuned focus glow used by [tvFocusable]: identical look to [tvGlow] but built for a
+ * value that animates every frame. [drawWithCache] builds the outward-inflated blur path and
+ * the [BlurMaskFilter] paint ONCE (rebuilt only when size/shape/color change); [onDrawBehind]
+ * then just re-modulates the paint's alpha from [alpha] and redraws -- zero per-frame
+ * allocation. [alpha] is a lambda so reading the animated value happens at DRAW time and does
+ * not invalidate the cache. Draw it BEFORE any opaque `.background()` so only the outer halo
+ * shows (the element's fill covers the inner half), same as [tvGlow].
+ */
+fun Modifier.tvGlowCached(
+    color: Color,
+    shape: Shape,
+    spread: Dp = 7.dp,
+    alpha: () -> Float,
+): Modifier = this.drawWithCache {
+    val spreadPx = spread.toPx()
+    val out = spreadPx * 0.5f
+    val strokePx = 2.dp.toPx()
+    val androidPath = Path().apply {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
+            is Outline.Rounded -> {
+                val rr = o.roundRect
+                addRoundRect(
+                    RoundRect(
+                        left = rr.left - out,
+                        top = rr.top - out,
+                        right = rr.right + out,
+                        bottom = rr.bottom + out,
+                        cornerRadius = CornerRadius(rr.topLeftCornerRadius.x + out, rr.topLeftCornerRadius.y + out),
+                    ),
+                )
+            }
+            is Outline.Rectangle -> addRect(o.rect.inflate(out))
+            is Outline.Generic -> addPath(o.path)
+        }
+    }.asAndroidPath()
+    val paint = NativePaint().apply {
+        isAntiAlias = true
+        style = NativePaint.Style.STROKE
+        strokeWidth = strokePx
+        this.color = color.toArgb()
+        maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
+    }
+    onDrawBehind {
+        val a = alpha()
+        if (a > 0f) {
+            paint.alpha = (0.55f * a * 255f).toInt().coerceIn(0, 255)
+            drawIntoCanvas { canvas ->
+                canvas.nativeCanvas.drawPath(androidPath, paint)
+            }
+        }
+    }
 }
 
 /**
@@ -187,7 +241,15 @@ fun rememberPlaybackFocusRequester(savedId: Long?, itemId: Long, onConsumed: () 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         if (savedId == itemId) {
-            focusRequester.requestFocus()
+            // Re-assert focus across ~0.5s of frames. On screen re-entry (Back from the player)
+            // the Android focus system assigns default focus to the FIRST focusable -- the
+            // sidebar -- and can keep re-winning for several frames as the player surface tears
+            // down and paging reloads. Re-requesting until then outlasts that default pass so
+            // focus ends on -- and stays on -- the tile the user launched from.
+            repeat(30) {
+                runCatching { focusRequester.requestFocus() }
+                withFrameNanos { }
+            }
             onConsumed()
         }
     }
@@ -208,6 +270,8 @@ fun TvFocusable(
     glowColor: Color = AreIptvTheme.colors.focusRing,
     backgroundColor: Color = Color.Transparent,
     enabled: Boolean = true,
+    /** Long-press (hold OK ~[LONG_PRESS_MS]) handler; when null the control has short-press only. */
+    onLongClick: (() -> Unit)? = null,
     content: @Composable BoxScope.(focused: Boolean, pressed: Boolean) -> Unit,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
@@ -216,13 +280,14 @@ fun TvFocusable(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor)
             .background(backgroundColor, shape)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
                 enabled = enabled,
                 onClick = onClick,
+                onLongClick = onLongClick,
             )
-            // clickable() above handles Enter/NumPadEnter by default but NOT
+            // combinedClickable() above handles Enter/NumPadEnter (incl. long-press) but NOT
             // Key.DirectionCenter -- the key every real Android TV / Fire TV remote's
             // physical OK/Select button actually sends. Confirmed missing via a real
             // device-emulator D-pad test (not an emulator artifact): DPAD_CENTER alone
@@ -230,16 +295,23 @@ fun TvFocusable(
             // isolated repro attempts, while KEYCODE_ENTER worked every time. Without
             // this, nothing in the app would be selectable with a real remote's OK
             // button -- fixed once, here, so every TvFocusable-based component in the
-            // library inherits it.
+            // library inherits it. We resolve short vs. long press from the native
+            // event's own down->up span so DPAD_CENTER gets long-press too.
             .onKeyEvent { keyEvent ->
                 if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
-                    onClick()
+                    val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
+                    if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
                     true
                 } else {
-                    false
+                    // Swallow DirectionCenter KeyDown so the platform doesn't also fire a
+                    // synthetic click on release -- we own the up->down timing above.
+                    enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
                 }
             },
     ) {
         content(focused, pressed)
     }
 }
+
+/** Hold threshold (ms) separating a tap from a long-press on the OK/select button. */
+private const val LONG_PRESS_MS = 400L

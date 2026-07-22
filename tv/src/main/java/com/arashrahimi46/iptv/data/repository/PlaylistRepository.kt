@@ -435,7 +435,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     isSeries = false,
                     posterUrl = it.icon,
                     categoryName = it.categoryId?.let(vodCatNames::get),
-                    streamUrl = xtream.streamUrl("movie", it.id, "mp4"),
+                    streamUrl = xtream.streamUrl("movie", it.id, it.containerExtension ?: "mp4"),
                     externalId = it.id,
                 )
             }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,9 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
@@ -61,6 +62,9 @@ fun AreChannelTile(
     codec: String? = null,
     catchup: Boolean = false,
     width: Dp = AreIptvTheme.spacing.tileLandWidth,
+    /** Grid mode: fill the cell width (set by [GridCells.Adaptive]) instead of a fixed [width], so the
+     * live grid packs a responsive number of columns rather than one fixed-width tile per cell. */
+    fillWidth: Boolean = false,
     /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
@@ -78,7 +82,7 @@ fun AreChannelTile(
 
     TvFocusable(
         onClick = onClick,
-        modifier = modifier.width(width),
+        modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width)),
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = colors.surface2,
@@ -125,24 +129,29 @@ fun AreChannelTile(
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .size(62.dp)
+                        // Scale the logo chip with the tile (was a fixed 62dp that read as a tiny icon
+                        // in the middle of the card): ~78% of the logo zone's height, kept square.
+                        .fillMaxHeight(0.78f)
+                        .aspectRatio(1f)
                         .background(colors.surfaceOverlay, RoundedCornerShape(AreIptvTheme.radius.sm)),
                     contentAlignment = Alignment.Center,
                 ) {
+                    // Initials show only until the logo resolves -- logos often have transparent
+                    // pixels, so keeping the initials permanently behind them let the text bleed
+                    // through a loaded logo. onState (a lightweight callback, NOT subcomposition
+                    // like SubcomposeAsyncImage) flips them off on success, keeping grid scroll smooth.
+                    val logoLoaded = remember(logoUrl) { mutableStateOf(false) }
+                    if (logoUrl == null || !logoLoaded.value) {
+                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    }
                     if (logoUrl != null) {
-                        SubcomposeAsyncImage(
+                        AsyncImage(
                             model = logoUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize().padding(8.dp),
-                        ) {
-                            when (painter.state) {
-                                is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
-                                else -> Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
-                            }
-                        }
-                    } else {
-                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                            onState = { logoLoaded.value = it is AsyncImagePainter.State.Success },
+                            modifier = Modifier.fillMaxSize().padding(6.dp),
+                        )
                     }
                 }
                 if (onToggleFavorite != null) {

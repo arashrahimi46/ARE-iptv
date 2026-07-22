@@ -11,21 +11,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.ui.components.AreBadge
-import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
  * Real Favorites screen (Favorites.jsx), player-independent: every tab reads
@@ -53,7 +53,10 @@ fun FavoritesScreen(
     // Land on the first tab that actually has content (so favoriting only a movie doesn't
     // drop the user on an empty Channels tab). `null` = "not yet chosen": once the user picks
     // a tab explicitly it sticks, even if that tab is empty.
-    var selectedTab by remember { mutableStateOf<String?>(null) }
+    // rememberSaveable (not remember) so the chosen tab survives this screen being paused under
+    // the player/detail overlay -- otherwise Back returns to a different tab than the one the
+    // restored tile lives on, and the focus restore below can't find it.
+    var selectedTab by rememberSaveable { mutableStateOf<String?>(null) }
     val tab = selectedTab ?: when {
         state.channels.isNotEmpty() -> "channels"
         state.movies.isNotEmpty() -> "movies"
@@ -88,11 +91,6 @@ fun FavoritesScreen(
 
         Box(Modifier.padding(top = spacing.sp8))
 
-        Box(Modifier.padding(horizontal = spacing.safeX, vertical = 0.dp)) {
-            RecentlyFavoritedNote()
-        }
-        Box(Modifier.padding(top = spacing.sp6))
-
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             when (tab) {
                 "channels" -> ChannelGrid(
@@ -118,21 +116,6 @@ fun FavoritesScreen(
     }
 }
 
-/**
- * Honest replacement for Favorites.jsx's "Smart favorites / frequently
- * watched" copy -- there's no watch-history data to back a "frequently
- * watched" claim yet (see [FavoritesViewModel] doc), so this states the real
- * sort order instead of fabricating one.
- */
-@Composable
-private fun RecentlyFavoritedNote() {
-    val colors = AreIptvTheme.colors
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        AreBadge("Recently favorited", tone = AreBadgeTone.Smart)
-        Text(text = "Sorted by when you favorited it, most recent first.", style = AreIptvTheme.typography.caption, color = colors.textTertiary)
-    }
-}
-
 @Composable
 private fun ChannelGrid(
     channels: List<Channel>,
@@ -145,16 +128,20 @@ private fun ChannelGrid(
         Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         return
     }
+    // Restore D-pad focus onto the channel that opened the player when Back re-enters this tab.
+    var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         channels.forEach { channel ->
+            val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, channel.id) { lastPlayedId = null }
             AreChannelTile(
                 channel = channel.name,
-                onClick = { onChannelSelected(channel.id) },
+                onClick = { lastPlayedId = channel.id; onChannelSelected(channel.id) },
                 logoUrl = channel.logoUrl,
                 number = channel.number,
                 now = channel.categoryName,
                 isFavorite = true,
                 onToggleFavorite = { onToggleFavorite(channel.id) },
+                modifier = Modifier.focusRequester(focusRequester),
             )
         }
     }
@@ -172,16 +159,20 @@ private fun MovieGrid(
         Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         return
     }
+    // Restore D-pad focus onto the title that opened Detail when Back re-enters this tab.
+    var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         movies.forEach { movie ->
+            val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, movie.id) { lastPlayedId = null }
             ArePosterTile(
                 title = movie.name,
-                onClick = { onTitleSelected(movie) },
+                onClick = { lastPlayedId = movie.id; onTitleSelected(movie) },
                 posterUrl = movie.posterUrl,
                 meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
                 rating = movie.rating,
                 isFavorite = true,
                 onToggleFavorite = { onToggleFavorite(movie) },
+                focusRequester = focusRequester,
             )
         }
     }

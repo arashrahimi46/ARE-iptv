@@ -13,7 +13,7 @@ import javax.net.ssl.SSLException
 
 data class XtreamCategory(val id: String, val name: String)
 data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null)
-data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?)
+data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?, val containerExtension: String?)
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
 data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
 
@@ -104,6 +104,10 @@ class XtreamClient(
                 name = obj.optString("name", "Unnamed"),
                 categoryId = obj.optStringOrNull("category_id"),
                 icon = obj.optStringOrNull("stream_icon"),
+                // Real container from the portal (mkv/avi/mp4/...). Movies were hardcoded to
+                // ".mp4", so any non-mp4 movie got a wrong stream URL and failed to play; series
+                // episodes already used their real extension, which is why they worked.
+                containerExtension = obj.optStringOrNull("container_extension"),
             )
         }
     }

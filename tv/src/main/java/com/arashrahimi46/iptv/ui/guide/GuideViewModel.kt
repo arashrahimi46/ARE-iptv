@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
+import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.repository.EpgAvailability
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
@@ -47,23 +49,29 @@ data class GuideChannelRow(val channel: Channel, val slots: List<GuideProgramSlo
 data class GuideFocusedInfo(val channel: Channel, val slot: GuideProgramSlot)
 
 /**
- * Pure resolution of the effective category filter: falls back to "All" when [rawGroup] isn't
- * (or is no longer) present in [groups] -- e.g. a persisted [UserSettings.guideSelectedCategory]
- * restored asynchronously in [GuideViewModel.init] for a category that doesn't exist on the
- * current source. Extracted as a top-level pure function so the race-condition fix in
- * [GuideViewModel.observeRows] is unit-testable without standing up Room/AndroidViewModel.
+ * Pure resolution of the effective category filter: falls back to the first available category
+ * when [rawGroup] isn't (or is no longer) present in [groups] -- e.g. a persisted
+ * [UserSettings.guideSelectedCategory] restored asynchronously in [GuideViewModel.init] for a
+ * category that doesn't exist on the current source, or the legacy "All" default now that the
+ * Guide is strictly per-category. Extracted as a top-level pure function so the race-condition
+ * fix in [GuideViewModel.observeRows] is unit-testable without standing up Room/AndroidViewModel.
  */
 internal fun resolveGuideGroup(rawGroup: String, groups: List<String>): String =
-    if (rawGroup in groups) rawGroup else "All"
+    if (rawGroup in groups) rawGroup else groups.firstOrNull() ?: rawGroup
 
 data class GuideUiState(
     val hasSource: Boolean = false,
-    val groups: List<String> = listOf("All"),
-    val selectedGroup: String = "All",
+    val groups: List<String> = emptyList(),
+    val selectedGroup: String = "",
     val day: GuideDay = GuideDay.Today,
     val windowStartMs: Long = 0L,
     val windowEndMs: Long = 0L,
     val rows: List<GuideChannelRow> = emptyList(),
+    /** P0.4: true once [EpgRepository.refresh] finishes and its source couldn't be reached/parsed
+     * at all -- distinct from "fetched fine, genuinely no programme data" (false in that case).
+     * Drives a small banner in [com.arashrahimi46.iptv.ui.guide.GuideScreen], not a full-screen
+     * replacement -- channel rows still render with their per-row "No programme data" placeholder. */
+    val epgUnavailable: Boolean = false,
 )
 
 /**
@@ -88,13 +96,24 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
     private val _focused = MutableStateFlow<GuideFocusedInfo?>(null)
     val focused: StateFlow<GuideFocusedInfo?> = _focused.asStateFlow()
 
-    private var epgRefreshedForSource: Long? = null
+    /** EPG already fetched for these "sourceId:category" pairs this session -- so switching back
+     * to a tab doesn't re-download the source's XMLTV export every time. */
+    private val refreshedCategories = mutableSetOf<String>()
 
     init {
         // Restore the last-selected category filter (persisted in [UserSettings]) so
-        // reopening the Guide keeps the user's chosen channel group instead of resetting to "All".
+        // reopening the Guide keeps the user's chosen channel group instead of resetting.
         viewModelScope.launch {
             _selectedGroup.value = settings.guideSelectedCategory.first()
+        }
+        // P0.4: mirrors epgRepository.availability into epgUnavailable, independent of the
+        // rows pipeline below -- a plain .copy() (not a full GuideUiState(...) replacement) so
+        // it doesn't race the rows collector's own state writes; observeRows carries the
+        // current value forward on every emission (see there) for the same reason.
+        viewModelScope.launch {
+            epgRepository.availability.collectLatest { availability ->
+                _uiState.value = _uiState.value.copy(epgUnavailable = availability is EpgAvailability.Unavailable)
+            }
         }
         viewModelScope.launch {
             settings.activeSourceId.collectLatest { sourceId ->
@@ -107,55 +126,71 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                     _uiState.value = GuideUiState(hasSource = false)
                     return@collectLatest
                 }
-                // Bounded channel window for the guide grid -- the full 100k+ catalog would OOM,
-                // and an EPG grid that tall isn't navigable anyway.
-                repository.topChannels(sourceId, GUIDE_CHANNEL_LIMIT).collectLatest { channels ->
-                    if (channels.isEmpty()) {
+                // Tabs are the source's FULL live-category list (a GROUP BY, no catalog rows
+                // loaded) -- not the categories that happen to appear in a bounded channel
+                // window, which showed only whichever category dominated the first N channels
+                // by name.
+                repository.channelCategoryCounts(sourceId).collectLatest { counts ->
+                    val groups = counts.map { it.name }
+                    if (groups.isEmpty()) {
                         _uiState.value = GuideUiState(hasSource = true)
                         return@collectLatest
                     }
-                    if (epgRefreshedForSource != sourceId) {
-                        epgRefreshedForSource = sourceId
-                        launch { epgRepository.refresh(source, channels) }
-                    }
-                    observeRows(channels)
+                    observeRows(source, groups)
                 }
             }
         }
     }
 
-    private suspend fun observeRows(channels: List<Channel>) {
-        val groups = listOf("All") + channels.mapNotNull { it.categoryName }.distinct().sorted()
-
+    private suspend fun observeRows(source: PlaylistSource, groups: List<String>) {
         combine(_day, _selectedGroup) { day, group -> day to group }
             .flatMapLatest { (day, rawGroup) ->
                 // A restored/previously-picked group that doesn't exist on this source (e.g. the
                 // user switched playlists, or the persisted category from UserSettings finishes
                 // loading -- asynchronously, in `init` -- only after this pipeline has already
-                // started with "All") would otherwise filter every channel out silently, leaving
-                // the guide looking empty/unscrollable. Re-validating on every emission (instead
-                // of once before this pipeline starts) closes that race and always falls back to
-                // "All" rather than rendering zero rows.
+                // started) falls back to the first category rather than rendering zero rows.
                 val group = resolveGuideGroup(rawGroup, groups)
                 val window = windowFor(day)
-                val visible = if (group == "All") channels else channels.filter { it.categoryName == group }
-                val ids = visible.map { it.id }
+                // Only the selected category's channels are loaded (bounded) -- the guide is
+                // strictly per-category now, so we never materialize the 100k+ catalog.
+                val channels = repository.channelsByCategory(source.id, group, GUIDE_CHANNEL_LIMIT)
+                maybeRefreshEpg(source, group, channels)
+                val ids = channels.map { it.id }
                 val programsFlow = if (ids.isEmpty()) flowOf(emptyList()) else epgRepository.observeForChannels(ids, window.first, window.second)
-                programsFlow.map { programs -> Triple(day, group, buildRows(visible, programs, window)) }
+                programsFlow.map { programs -> GuideEmission(day, group, groups, window, buildRows(channels, programs, window)) }
             }
-            .collectLatest { (day, group, rows) ->
-                val window = windowFor(day)
+            .collectLatest { e ->
                 _uiState.value = GuideUiState(
                     hasSource = true,
-                    groups = groups,
-                    selectedGroup = group,
-                    day = day,
-                    windowStartMs = window.first,
-                    windowEndMs = window.second,
-                    rows = rows,
+                    groups = e.groups,
+                    selectedGroup = e.group,
+                    day = e.day,
+                    windowStartMs = e.window.first,
+                    windowEndMs = e.window.second,
+                    rows = e.rows,
+                    // Carried forward rather than reset -- this pipeline (day/group/rows) is
+                    // independent of the availability collector above.
+                    epgUnavailable = _uiState.value.epgUnavailable,
                 )
             }
     }
+
+    /** Fetches EPG for [category]'s [channels] once per session. monolean: re-downloads the
+     * source's XMLTV export per distinct category visited -- upgrade path is caching the parsed
+     * programmes by tvgId in [EpgRepository] so later categories reuse one fetch. */
+    private fun maybeRefreshEpg(source: PlaylistSource, category: String, channels: List<Channel>) {
+        if (channels.isEmpty()) return
+        if (!refreshedCategories.add("${source.id}:$category")) return
+        viewModelScope.launch { epgRepository.refresh(source, channels) }
+    }
+
+    private data class GuideEmission(
+        val day: GuideDay,
+        val group: String,
+        val groups: List<String>,
+        val window: Pair<Long, Long>,
+        val rows: List<GuideChannelRow>,
+    )
 
     private fun buildRows(channels: List<Channel>, programs: List<EPGProgram>, window: Pair<Long, Long>): List<GuideChannelRow> {
         val nowMs = System.currentTimeMillis()

@@ -13,21 +13,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreCategoryRow
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /** A single entry in [BrowseLayout]'s left-hand filter column. */
@@ -36,6 +44,7 @@ data class BrowseCategoryOption(
     val count: Int? = null,
     val kind: AreCategoryKind = AreCategoryKind.Default,
     val smart: Boolean = false,
+    val pinned: Boolean = false,
 )
 
 /**
@@ -69,6 +78,9 @@ fun <T : Any> BrowseLayout(
     items: LazyPagingItems<T>,
     itemKey: (T) -> Any,
     modifier: Modifier = Modifier,
+    /** Long-press OK on a category row invokes this to pin/unpin it (index into [categories]).
+     * Null on screens without pinning; index 0 (the "All" pseudo-category) is never pinnable. */
+    onCategoryPinToggle: ((Int) -> Unit)? = null,
     categoryColumnHeader: String = "Categories",
     titleAccessory: @Composable (() -> Unit)? = null,
     sectionTitle: String? = null,
@@ -89,6 +101,9 @@ fun <T : Any> BrowseLayout(
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+
+    // Which category row's pin/unpin dialog is open (index into [categories]); null = closed.
+    var pinDialogIndex by remember { mutableStateOf<Int?>(null) }
 
     // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner
     // categories+content Row alone did not fix the on-device repro -- this outer
@@ -144,24 +159,24 @@ fun <T : Any> BrowseLayout(
             modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
         ) {
-            // Category filter column -- scrolls independently of the content grid now that
-            // it has a real bounded height, rather than just clipping once there are enough
-            // categories to exceed the screen (previously masked by the whole screen scrolling
-            // together as one unbounded column).
-            Column(
-                // 280dp: wide enough to show full genre names ("Arabic Movies") without truncating,
-                // now that the row dropped its icon + count. Still leaves the ~960dp TV enough room
-                // for a multi-column poster grid (300dp was too wide and collapsed it to one column).
-                modifier = Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()),
+            // Category filter column -- a LazyColumn (not a verticalScroll Column) so only the
+            // on-screen rows are composed. With a large catalog this column holds hundreds of
+            // country/genre entries; eagerly composing every one (each a focusable + glow) was
+            // what made a fast flick through the list stutter. 280dp: wide enough to show full
+            // genre names without truncating, while leaving room for the poster/channel grid.
+            LazyColumn(
+                modifier = Modifier.width(280.dp).fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(
-                    text = categoryColumnHeader.uppercase(),
-                    style = AreIptvTheme.typography.caption,
-                    color = colors.textTertiary,
-                    modifier = Modifier.padding(bottom = 8.dp, start = 16.dp),
-                )
-                categories.forEachIndexed { index, category ->
+                item {
+                    Text(
+                        text = categoryColumnHeader.uppercase(),
+                        style = AreIptvTheme.typography.caption,
+                        color = colors.textTertiary,
+                        modifier = Modifier.padding(bottom = 8.dp, start = 16.dp),
+                    )
+                }
+                itemsIndexed(categories) { index, category ->
                     AreCategoryRow(
                         name = category.name,
                         onClick = { onCategorySelected(index) },
@@ -169,6 +184,13 @@ fun <T : Any> BrowseLayout(
                         kind = category.kind,
                         smart = category.smart,
                         active = index == selectedIndex,
+                        pinned = category.pinned,
+                        // Only real categories are pinnable -- index 0 is the "All" pseudo-row.
+                        onLongClick = if (onCategoryPinToggle != null && index != 0) {
+                            { pinDialogIndex = index }
+                        } else {
+                            null
+                        },
                     )
                 }
             }
@@ -209,6 +231,42 @@ fun <T : Any> BrowseLayout(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // Pin/unpin overlay for the long-pressed category. Rendered in its own platform Dialog
+    // window so it traps D-pad focus (arrow keys stay inside the dialog, never move the
+    // category column behind it) -- same reasoning as ParentalPinDialog's doc comment.
+    val dialogIndex = pinDialogIndex
+    val dialogCategory = dialogIndex?.let { categories.getOrNull(it) }
+    if (dialogIndex != null && dialogCategory != null && onCategoryPinToggle != null) {
+        Dialog(
+            onDismissRequest = { pinDialogIndex = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            AreDialog(
+                onDismiss = { pinDialogIndex = null },
+                title = dialogCategory.name,
+                width = 420.dp,
+                actions = {
+                    AreButton("Cancel", onClick = { pinDialogIndex = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(
+                        text = if (dialogCategory.pinned) "Unpin" else "Pin",
+                        onClick = { onCategoryPinToggle(dialogIndex); pinDialogIndex = null },
+                        variant = AreButtonVariant.Primary,
+                    )
+                },
+            ) {
+                Text(
+                    text = if (dialogCategory.pinned) {
+                        "Remove this category from the top of the list."
+                    } else {
+                        "Pin this category to the top of the list."
+                    },
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
             }
         }
     }

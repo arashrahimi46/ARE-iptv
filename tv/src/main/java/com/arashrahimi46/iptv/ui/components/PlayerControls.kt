@@ -17,13 +17,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.ViewColumn
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -62,7 +63,12 @@ fun ArePlayerControls(
     onJumpToLive: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
     onUpNext: () -> Unit = {},
+    // Multi-view is temporarily disabled (feature not ready) -- the param stays so the button
+    // can be re-enabled later without re-plumbing; it is simply not rendered for now.
     onMultiView: () -> Unit = {},
+    /** Favorite state of whatever is playing; null hides the favorite affordance entirely. */
+    isFavorite: Boolean? = null,
+    onToggleFavorite: (() -> Unit)? = null,
     // When set, the play/pause button carries this requester so the screen can move
     // focus straight onto it when the panel is opened.
     playPauseFocusRequester: FocusRequester? = null,
@@ -154,7 +160,16 @@ fun ArePlayerControls(
             // non-focusable glyphs until built for real, same treatment as Add Playlist.
             StaticGlyph(Icons.Filled.VolumeUp, "Audio track")
             StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
-            AreIconButton(Icons.Filled.ViewColumn, "Multi-view", onClick = onMultiView, variant = AreIconButtonVariant.Glass)
+            // Multi-view button intentionally removed for now -- feature isn't ready. Re-add here
+            // (wired to onMultiView) once it ships.
+            if (onToggleFavorite != null) {
+                AreIconButton(
+                    icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                    onClick = onToggleFavorite,
+                    variant = AreIconButtonVariant.Glass,
+                )
+            }
             StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
             // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
             // guide" below (which leaves the player for the full multi-channel TV Guide).
