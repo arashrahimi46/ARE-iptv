@@ -30,6 +30,7 @@ class ContinueWatchingRepository(context: Context) {
                     updatedAtMs = System.currentTimeMillis(),
                 ),
             )
+            dao.trimToMostRecent(MAX_ENTRIES)
         }
 
     /** Clears the bookmark -- called once playback reaches "near the end" so a finished
@@ -47,4 +48,9 @@ class ContinueWatchingRepository(context: Context) {
 
     /** Most-recently-updated in-progress entries, bounded for the Home rail. */
     fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>> = dao.observeRecent(limit)
+
+    companion object {
+        /** Retention cap -- keep only the most-recent bookmarks so the rail stays bounded. */
+        private const val MAX_ENTRIES = 15
+    }
 }

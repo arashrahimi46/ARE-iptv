@@ -280,6 +280,11 @@ interface SeriesEpisodeDao {
     @Query("SELECT COUNT(*) FROM series_episodes WHERE seriesTitleId = :seriesTitleId")
     suspend fun countForSeries(seriesTitleId: Long): Int
 
+    // ids only (ordered S/E) so the player's prev/next-episode nav can compute neighbours without
+    // materializing full episode rows -- mirrors ChannelDao.idsForSource for channel switching.
+    @Query("SELECT id FROM series_episodes WHERE seriesTitleId = :seriesTitleId ORDER BY season, episode")
+    suspend fun episodeIdsForSeries(seriesTitleId: Long): List<Long>
+
     @Query("SELECT * FROM series_episodes WHERE id = :episodeId LIMIT 1")
     suspend fun getById(episodeId: Long): SeriesEpisode?
 }
@@ -353,4 +358,8 @@ interface ContinueWatchingDao {
     /** Recent in-progress entries, most-recent first -- bounded for the Home "Continue Watching" rail. */
     @Query("SELECT * FROM continue_watching ORDER BY updatedAtMs DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>>
+
+    /** Retention cap: drop everything past the [keep] most-recent bookmarks so the list stays bounded. */
+    @Query("DELETE FROM continue_watching WHERE id NOT IN (SELECT id FROM continue_watching ORDER BY updatedAtMs DESC LIMIT :keep)")
+    suspend fun trimToMostRecent(keep: Int)
 }

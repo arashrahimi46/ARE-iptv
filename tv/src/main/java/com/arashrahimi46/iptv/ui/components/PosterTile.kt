@@ -68,6 +68,8 @@ fun ArePosterTile(
     /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
+    /** Hold-OK handler -- e.g. Continue Watching uses it to open a "Remove from Continue Watching" dialog. */
+    onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     /** Attached to the focusable poster (not the outer Column) so a caller can restore D-pad
      * focus onto the exact tile -- e.g. Back out of Detail/player (see rememberPlaybackFocusRequester). */
@@ -100,6 +102,7 @@ fun ArePosterTile(
             interactionSource = interactionSource,
             shape = shape,
             backgroundColor = colors.surface3,
+            onLongClick = onLongClick,
         ) { _, _ ->
             Box(Modifier.fillMaxSize()) {
                 // Initials show only until the poster resolves (posters can be letterboxed or

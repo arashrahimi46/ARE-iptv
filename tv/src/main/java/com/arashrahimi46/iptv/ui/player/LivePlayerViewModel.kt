@@ -64,6 +64,11 @@ data class LivePlayerUiState(
      * channel-up/down handling can compute the next/previous id without its own query. */
     val currentChannelId: Long? = null,
     val siblingChannelIds: List<Long> = emptyList(),
+    /** Only set for [PlaybackSource.Episode] -- the playing episode id and its parent series'
+     * episodes (Room-ordered by season, episode), so the player's prev/next-episode buttons can
+     * step through them (and hide at the first/last). Empty for live/movie playback. */
+    val currentEpisodeId: Long? = null,
+    val siblingEpisodeIds: List<Long> = emptyList(),
     /** The favoritable item behind whatever is currently playing: a channel row id (LIVE), or a
      * VOD title row id (MOVIE, or SERIES -- for a movie, a series, or the parent series of an
      * episode). Null while unresolved. Drives the player HUD's favorite toggle. */
@@ -215,6 +220,15 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             } else {
                 emptyList()
             }
+            // Sibling episodes for prev/next-episode nav (ids only, S/E-ordered) -- empty unless an
+            // episode is playing.
+            val siblingEpisodeIds = if (source is PlaybackSource.Episode && media != null) {
+                db.seriesEpisodeDao().getById(source.episodeId)?.let { episode ->
+                    db.seriesEpisodeDao().episodeIdsForSeries(episode.seriesTitleId)
+                } ?: emptyList()
+            } else {
+                emptyList()
+            }
             // Continue-watching keys: VOD title / episode resume against exactly the id that
             // played (movie/series title -> vodTitleId, episode -> its own episode id); live
             // channels resume nothing.
@@ -227,6 +241,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 phase = if (media == null) PlaybackPhase.Error else PlaybackPhase.Idle,
                 currentChannelId = (source as? PlaybackSource.Channel)?.channelId,
                 siblingChannelIds = siblingIds,
+                currentEpisodeId = (source as? PlaybackSource.Episode)?.episodeId,
+                siblingEpisodeIds = siblingEpisodeIds,
                 favoriteTargetId = favoriteId,
                 favoriteContentType = favoriteType,
                 resumeVodTitleId = if (media == null) null else resumeVodId,
@@ -248,6 +264,19 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
         loadMedia(PlaybackSource.Channel(ids[nextIndex]))
     }
 
+    /** [direction] +1 = next episode, -1 = previous. No wrap (unlike channels): the buttons are
+     * hidden at the first/last episode, and this no-ops if called out of range anyway. */
+    fun switchEpisode(direction: Int) {
+        val state = _uiState.value
+        val ids = state.siblingEpisodeIds
+        val current = state.currentEpisodeId ?: return
+        val index = ids.indexOf(current)
+        if (index == -1) return
+        val target = index + direction
+        if (target < 0 || target >= ids.size) return
+        loadMedia(PlaybackSource.Episode(ids[target]))
+    }
+
     fun setPhase(phase: PlaybackPhase, errorMessage: String? = null) {
         _uiState.value = _uiState.value.copy(phase = phase, errorMessage = errorMessage)
     }
@@ -261,13 +290,21 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     }
 
     /** P1.2: persists the VOD watch bookmark. No-op for live channels (no resume keys) and for
-     * a not-yet-advanced position, so a still-buffering title never overwrites a real bookmark. */
+     * a not-yet-advanced position, so a still-buffering title never overwrites a real bookmark.
+     * Once playback passes [COMPLETION_THRESHOLD] the title counts as finished: the bookmark is
+     * cleared instead of saved, so a watched movie/episode drops off Continue Watching rather
+     * than lingering with a full progress bar (and resuming from its very end). */
     fun saveProgress(positionMs: Long, durationMs: Long) {
         val state = _uiState.value
         if (state.resumeVodTitleId == null && state.resumeEpisodeId == null) return
         if (positionMs <= 0) return
+        val finished = durationMs > 0 && positionMs.toFloat() / durationMs >= COMPLETION_THRESHOLD
         viewModelScope.launch {
-            continueWatchingRepository.updateProgress(state.resumeVodTitleId, state.resumeEpisodeId, positionMs, durationMs)
+            if (finished) {
+                continueWatchingRepository.clear(state.resumeVodTitleId, state.resumeEpisodeId)
+            } else {
+                continueWatchingRepository.updateProgress(state.resumeVodTitleId, state.resumeEpisodeId, positionMs, durationMs)
+            }
         }
     }
 
@@ -286,6 +323,9 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     }
 
     companion object {
+        /** Fraction of a title watched past which it counts as finished (drops off Continue Watching). */
+        private const val COMPLETION_THRESHOLD = 0.95f
+
         fun factory(app: Application, source: PlaybackSource): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

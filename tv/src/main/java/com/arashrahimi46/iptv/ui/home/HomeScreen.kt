@@ -31,12 +31,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.round
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreBadge
@@ -235,7 +237,7 @@ fun HomeScreen(
             }
             Box(modifier = Modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp4)) {
                 AreButton(
-                    text = "+ Add section",
+                    text = stringResource(R.string.home_add_section),
                     onClick = { showAddSectionDialog = true },
                     variant = AreButtonVariant.Secondary,
                     icon = Icons.Filled.Add,
@@ -258,11 +260,11 @@ fun HomeScreen(
     removeTarget?.let { target ->
         AreDialog(
             onDismiss = { removeTarget = null },
-            title = "Remove from Continue Watching?",
+            title = stringResource(R.string.home_remove_continue_watching_title),
             actions = {
-                AreButton("Cancel", onClick = { removeTarget = null }, variant = AreButtonVariant.Ghost)
+                AreButton(stringResource(R.string.action_cancel), onClick = { removeTarget = null }, variant = AreButtonVariant.Ghost)
                 AreButton(
-                    "Remove",
+                    stringResource(R.string.action_remove),
                     onClick = {
                         viewModel.removeContinueWatching(target)
                         removeTarget = null
@@ -272,7 +274,7 @@ fun HomeScreen(
             },
         ) {
             Text(
-                text = "“${target.title}” will stop showing here. Your place isn't kept.",
+                text = stringResource(R.string.home_remove_continue_watching_body, target.title),
                 style = AreIptvTheme.typography.body,
                 color = AreIptvTheme.colors.textSecondary,
             )
@@ -347,12 +349,18 @@ private fun HomeSectionContent(
     showSeeAll: Boolean,
     onSeeAll: (String) -> Unit,
 ) {
+    val continueWatchingTitle = stringResource(R.string.home_section_continue_watching)
+    val liveNowTitle = stringResource(R.string.home_section_live_now)
+    val categoriesTitle = stringResource(R.string.home_section_categories)
+    val recommendedTitle = stringResource(R.string.home_section_recommended)
+    val moviesTitle = stringResource(R.string.home_section_movies)
+    val seriesTitle = stringResource(R.string.home_section_series)
     when (section) {
         is HomeSection.Builtin -> when (section.key) {
             BuiltinSection.CONTINUE_WATCHING -> {
                 // P1.2: hidden when empty, same as every other rail below.
                 if (state.continueWatching.isNotEmpty()) {
-                    AreRail(title = "Continue Watching", seeAll = false) {
+                    AreRail(title = continueWatchingTitle, seeAll = false) {
                         items(state.continueWatching, key = { it.vodTitleId?.let { id -> "v$id" } ?: "e${it.seriesEpisodeId}" }) { item ->
                             // Same portrait movie/series tile as the other rails: shows real poster art,
                             // resume progress, and (for series) an on-poster season/episode badge. Hold OK
@@ -375,7 +383,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.LIVE_NOW -> {
                 if (state.channels.isNotEmpty()) {
-                    AreRail(title = "Live now", seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                    AreRail(title = liveNowTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
                         items(state.channels.take(20), key = { it.id }) { channel ->
                             val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                             AreChannelTile(
@@ -393,7 +401,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.CATEGORIES -> {
                 if (state.categories.isNotEmpty()) {
-                    AreRail(title = "Browse by category", seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                    AreRail(title = categoriesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
                         items(state.categories.take(20), key = { it.name }) { category ->
                             AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                         }
@@ -402,7 +410,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.RECOMMENDED -> {
                 if (recommended.isNotEmpty()) {
-                    AreRail(title = "Browse movies & series", seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
+                    AreRail(title = recommendedTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(recommended, key = { it.id }) { title ->
                             ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
                         }
@@ -411,7 +419,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.MOVIES -> {
                 if (state.movies.isNotEmpty()) {
-                    AreRail(title = "Movies", seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
+                    AreRail(title = moviesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(state.movies.take(20), key = { it.id }) { movie ->
                             ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp)
                         }
@@ -420,7 +428,7 @@ private fun HomeSectionContent(
             }
             BuiltinSection.SERIES -> {
                 if (state.series.isNotEmpty()) {
-                    AreRail(title = "Series", seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
+                    AreRail(title = seriesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
                         items(state.series.take(20), key = { it.id }) { show ->
                             ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp)
                         }
@@ -469,7 +477,7 @@ private fun HomeSectionContent(
 private fun LoadingHero() {
     val colors = AreIptvTheme.colors
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 64.dp)) {
-        Text(text = "Loading your catalog…", style = AreIptvTheme.typography.h1, color = colors.textPrimary)
+        Text(text = stringResource(R.string.home_loading_catalog), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
     }
 }
 
@@ -481,10 +489,10 @@ private fun EmptyHero() {
             .fillMaxWidth()
             .padding(vertical = 64.dp),
     ) {
-        Text(text = "No playlist yet", style = AreIptvTheme.typography.h1, color = colors.textPrimary)
+        Text(text = stringResource(R.string.home_no_playlist_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
         Box(Modifier.padding(top = 8.dp))
         Text(
-            text = "Add a playlist from the sidebar to see your channels, movies and series here.",
+            text = stringResource(R.string.home_no_playlist_body),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
         )

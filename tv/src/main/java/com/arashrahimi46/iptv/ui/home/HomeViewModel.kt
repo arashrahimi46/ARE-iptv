@@ -65,6 +65,8 @@ data class HomeContinueWatchingItem(
     val title: String,
     val posterUrl: String?,
     val meta: String?,
+    /** On-poster season/episode chip (e.g. "S2·E5") for series entries; null for movies. */
+    val badgeText: String?,
     val progress: Float,
 )
 
@@ -233,6 +235,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             .launchIn(viewModelScope)
     }
 
+    /** Long-press action on a Continue Watching tile: drop the bookmark. The observeRecent flow
+     * re-emits, so the rail updates itself -- no manual state edit here. */
+    fun removeContinueWatching(item: HomeContinueWatchingItem) {
+        viewModelScope.launch {
+            continueWatchingRepository.clear(item.vodTitleId, item.seriesEpisodeId)
+        }
+    }
+
     /** Joins raw [ContinueWatchingEntry] rows against their real [VodTitle] (direct for a movie,
      * via the episode's [com.arashrahimi46.iptv.data.model.SeriesEpisode.seriesTitleId] for a
      * series) -- an entry whose title/episode has since been removed from the catalog is
@@ -255,6 +265,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         title = title.name,
                         posterUrl = title.posterUrl,
                         meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
+                        badgeText = null,
                         progress = progress,
                     )
                 }
@@ -266,7 +277,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         seriesEpisodeId = episode.id,
                         title = series?.name ?: episode.name,
                         posterUrl = series?.posterUrl,
-                        meta = "S${episode.season} · E${episode.episode}",
+                        // Season/episode moves onto the poster as a badge; footer meta stays the series category.
+                        meta = series?.categoryName,
+                        badgeText = "S${episode.season}·E${episode.episode}",
                         progress = progress,
                     )
                 }
