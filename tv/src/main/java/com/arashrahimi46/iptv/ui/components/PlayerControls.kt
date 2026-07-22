@@ -185,17 +185,21 @@ fun ArePlayerControls(
                     variant = AreIconButtonVariant.Glass,
                 )
             }
-            // Live: a real button that minimizes to the in-app corner mini-player. VOD: unchanged
-            // dimmed placeholder (minimize-and-browse only makes sense for live channels).
-            if (onPictureInPicture != null) {
-                AreIconButton(Icons.Filled.PictureInPicture, "Minimize to corner", onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
-            } else {
-                StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+            // PiP + up-next + guide are live-only affordances -- movies/series have no EPG and
+            // can't minimize to the corner mini, so drop all three entirely for VOD.
+            if (live) {
+                // Live: a real button that minimizes to the in-app corner mini-player. Dimmed
+                // placeholder only when the controller isn't ready (onPictureInPicture == null).
+                if (onPictureInPicture != null) {
+                    AreIconButton(Icons.Filled.PictureInPicture, "Minimize to corner", onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
+                } else {
+                    StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+                }
+                // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
+                // guide" (which leaves the player for the full multi-channel TV Guide).
+                AreIconButton(Icons.Filled.Schedule, "Up next", onClick = onUpNext, variant = AreIconButtonVariant.Glass)
+                AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
             }
-            // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
-            // guide" below (which leaves the player for the full multi-channel TV Guide).
-            AreIconButton(Icons.Filled.Schedule, "Up next", onClick = onUpNext, variant = AreIconButtonVariant.Glass)
-            AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
         }
     }
 }

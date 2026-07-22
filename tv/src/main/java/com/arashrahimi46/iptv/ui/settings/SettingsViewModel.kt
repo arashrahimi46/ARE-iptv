@@ -5,16 +5,36 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.data.parser.OmdbClient
+import com.arashrahimi46.iptv.data.parser.OpenSubtitlesClient
 import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** Transient result of validating an OpenSubtitles credential (not persisted -- only the key is). */
+sealed interface SubsValidation {
+    data object Idle : SubsValidation
+    data object Validating : SubsValidation
+    data class Connected(val languageCount: Int) : SubsValidation
+    data class Error(val message: String) : SubsValidation
+}
+
+/** Transient result of validating the OMDb metadata key (not persisted -- only the key is). */
+sealed interface OmdbValidation {
+    data object Idle : OmdbValidation
+    data object Validating : OmdbValidation
+    data object Connected : OmdbValidation
+    data class Error(val message: String) : OmdbValidation
+}
 
 /**
  * Backs the real Settings screen (Phase 4): every flow here is a live read
@@ -46,6 +66,30 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
      * during the initial async DataStore read can't route to a no-verify PIN-set flow. */
     val hasPinSet: StateFlow<Boolean?> = flowState(settings.parentalPinHash.map { it != null }, null)
 
+    /** Preferred subtitle language (ISO code) used first in online search; defaults to English. */
+    val subtitleLanguage: StateFlow<String> = flowState(settings.subtitleLanguage, "en")
+
+    /** The stored OpenSubtitles credential, or null when not connected. */
+    val openSubsCredential: StateFlow<String?> = flowState(settings.openSubsCredential, null)
+
+    private val _subsValidation = MutableStateFlow<SubsValidation>(SubsValidation.Idle)
+    /** Live feedback for the connect action; resets to [SubsValidation.Idle] on disconnect. */
+    val subsValidation: StateFlow<SubsValidation> = _subsValidation.asStateFlow()
+
+    /** The stored OpenSubtitles account username, or null when not signed in (needed for downloads). */
+    val openSubsUsername: StateFlow<String?> = flowState(settings.openSubsUsername, null)
+
+    private val _subsLogin = MutableStateFlow<SubsValidation>(SubsValidation.Idle)
+    /** Live feedback for the account sign-in action ([SubsValidation.Connected.languageCount] = remaining downloads). */
+    val subsLogin: StateFlow<SubsValidation> = _subsLogin.asStateFlow()
+
+    /** The stored OMDb metadata key, or null when not connected. */
+    val omdbKey: StateFlow<String?> = flowState(settings.omdbKey, null)
+
+    private val _omdbValidation = MutableStateFlow<OmdbValidation>(OmdbValidation.Idle)
+    /** Live feedback for the OMDb connect action; resets to [OmdbValidation.Idle] on disconnect. */
+    val omdbValidation: StateFlow<OmdbValidation> = _omdbValidation.asStateFlow()
+
     // Async, off the main thread -- these are DataStore file writes and must not block the UI
     // thread's switch callback (jank/ANR on low-end boxes). Matches every other setter below.
     fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { settings.setDarkTheme(enabled) }
@@ -61,6 +105,77 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) = viewModelScope.launch { settings.setMiniPlayerBehavior(choice) }
 
     fun setBrowseListMode(enabled: Boolean) = viewModelScope.launch { settings.setBrowseListMode(enabled) }
+
+    fun setSubtitleLanguage(code: String) = viewModelScope.launch { settings.setSubtitleLanguage(code) }
+
+    /** Validates [credential] against OpenSubtitles and only persists it once a real request succeeds. */
+    fun connectOpenSubs(credential: String) {
+        val trimmed = credential.trim()
+        if (trimmed.isEmpty()) return
+        viewModelScope.launch {
+            _subsValidation.value = SubsValidation.Validating
+            _subsValidation.value = when (val result = OpenSubtitlesClient.validateKey(trimmed)) {
+                is OpenSubtitlesClient.KeyResult.Valid -> {
+                    settings.setOpenSubsCredential(trimmed)
+                    SubsValidation.Connected(result.languageCount)
+                }
+                is OpenSubtitlesClient.KeyResult.Invalid -> SubsValidation.Error(result.message)
+            }
+        }
+    }
+
+    fun disconnectOpenSubs() = viewModelScope.launch {
+        settings.setOpenSubsCredential(null)
+        settings.setOpenSubsAccount(null, null)
+        _subsValidation.value = SubsValidation.Idle
+        _subsLogin.value = SubsValidation.Idle
+    }
+
+    /** Validates [key] against OMDb and only persists it once a real request succeeds. */
+    fun connectOmdb(key: String) {
+        val trimmed = key.trim()
+        if (trimmed.isEmpty()) return
+        viewModelScope.launch {
+            _omdbValidation.value = OmdbValidation.Validating
+            _omdbValidation.value = when (val result = OmdbClient.validateKey(trimmed)) {
+                is OmdbClient.KeyResult.Valid -> {
+                    settings.setOmdbKey(trimmed)
+                    OmdbValidation.Connected
+                }
+                is OmdbClient.KeyResult.Invalid -> OmdbValidation.Error(result.message)
+            }
+        }
+    }
+
+    fun disconnectOmdb() = viewModelScope.launch {
+        settings.setOmdbKey(null)
+        _omdbValidation.value = OmdbValidation.Idle
+    }
+
+    /** Logs in to the OpenSubtitles account (for downloads) and persists the credentials on success. */
+    fun signInOpenSubs(username: String, phrase: String) {
+        if (username.isBlank() || phrase.isBlank()) return
+        viewModelScope.launch {
+            _subsLogin.value = SubsValidation.Validating
+            val cred = settings.openSubsCredential.first()
+            if (cred == null) {
+                _subsLogin.value = SubsValidation.Error("Connect your API key first.")
+                return@launch
+            }
+            _subsLogin.value = when (val r = OpenSubtitlesClient.login(cred, username, phrase)) {
+                is OpenSubtitlesClient.LoginResult.Success -> {
+                    settings.setOpenSubsAccount(username, phrase)
+                    SubsValidation.Connected(r.remaining)
+                }
+                is OpenSubtitlesClient.LoginResult.Failure -> SubsValidation.Error(r.message)
+            }
+        }
+    }
+
+    fun signOutOpenSubs() = viewModelScope.launch {
+        settings.setOpenSubsAccount(null, null)
+        _subsLogin.value = SubsValidation.Idle
+    }
 
     /** Turning the lock ON never needs a PIN check; the caller (SettingsScreen) only calls this after a PIN exists. */
     fun setParentalLockEnabled(enabled: Boolean) = viewModelScope.launch { settings.setParentalLockEnabled(enabled) }

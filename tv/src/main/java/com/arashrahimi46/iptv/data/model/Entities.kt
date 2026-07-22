@@ -94,6 +94,23 @@ data class VodTitle(
     /** For a series, the number of [SeriesEpisode] rows grouped under it -- shown on the tile/detail.
      * 0 for movies and for series whose episodes haven't been loaded/grouped yet. */
     val episodeCount: Int = 0,
+    // --- Rich metadata, populated lazily on first Detail view (Xtream's own info block first,
+    // then the user's OMDb key as a fallback for ratings/plot/cast). All nullable: a title with no
+    // metadata source (plain M3U, no OMDb key) simply keeps these null and the Detail sections
+    // collapse. See [com.arashrahimi46.iptv.data.repository.PlaylistRepository.ensureMetadataLoaded]. ---
+    val plot: String? = null,
+    /** Named `castList` (not `cast`) because `cast` is a SQLite keyword. Comma-separated actor names. */
+    val castList: String? = null,
+    val director: String? = null,
+    val genre: String? = null,
+    /** IMDb score as returned by OMDb, e.g. "8.4" (0-10 scale). */
+    val imdbRating: String? = null,
+    /** Rotten Tomatoes score as returned by OMDb, e.g. "94%". */
+    val rtRating: String? = null,
+    /** True once a metadata fetch has been attempted against a real source, so Detail doesn't
+     * re-hit the network every open. Stays false when no source was available (e.g. M3U with no
+     * OMDb key yet), so connecting a key later still enriches the title on next open. */
+    val metadataFetched: Boolean = false,
 )
 
 /**

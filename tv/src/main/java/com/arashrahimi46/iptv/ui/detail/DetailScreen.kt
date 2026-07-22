@@ -35,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -154,6 +155,11 @@ fun DetailScreen(
                     }
                 }
 
+                StoryAndCredits(
+                    title = title,
+                    modifier = Modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = 8.dp),
+                )
+
                 if (title.isSeries) {
                     Box(Modifier.padding(horizontal = AreIptvTheme.spacing.safeX)) {
                         SeriesEpisodesSection(
@@ -230,19 +236,80 @@ private fun HeroArt(title: VodTitle) {
     }
 }
 
+// Official-ish brand tints for the rating pills -- kept as literals (not theme colors) so IMDb amber
+// and the Rotten Tomatoes red read the same in light and dark, the way viewers recognize them.
+private val ImdbTint = Color(0xFFF5C518)
+private val RottenTint = Color(0xFFFA320A)
+
 @Composable
 private fun MetaRow(title: VodTitle) {
     val colors = AreIptvTheme.colors
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-        if (title.rating != null) {
-            Text(text = "★ ${title.rating}", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+    // Prefer OMDb's genre string over the raw provider category; fall back to the category otherwise.
+    val genre = title.genre?.takeIf { it.isNotBlank() } ?: title.categoryName
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        title.imdbRating?.takeIf { it.isNotBlank() }?.let { RatingPill("IMDb ${it}", ImdbTint) }
+        title.rtRating?.takeIf { it.isNotBlank() }?.let { RatingPill("🍅 $it", RottenTint) }
+        title.rating?.takeIf { it.isNotBlank() && title.imdbRating.isNullOrBlank() }?.let {
+            Text(text = "★ $it", style = AreIptvTheme.typography.label, color = colors.textPrimary)
         }
-        if (title.year != null) {
-            Text(text = title.year, style = AreIptvTheme.typography.body, color = colors.textSecondary)
+        title.year?.takeIf { it.isNotBlank() }?.let {
+            Text(text = it, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         }
-        if (title.categoryName != null) {
-            Text(text = title.categoryName, style = AreIptvTheme.typography.body, color = colors.textSecondary)
+        genre?.takeIf { it.isNotBlank() }?.let {
+            Text(text = it, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         }
+    }
+}
+
+/** A small, non-interactive tinted pill for a rating source (IMDb / Rotten Tomatoes). */
+@Composable
+private fun RatingPill(text: String, tint: Color) {
+    Box(
+        modifier = Modifier
+            .background(tint.copy(alpha = 0.16f), RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
+        Text(text = text, style = AreIptvTheme.typography.label, color = tint)
+    }
+}
+
+/**
+ * Synopsis + cast/director block, full-width under the hero. Renders nothing when no metadata source
+ * backed this title (plain M3U, no OMDb key) -- the section simply collapses rather than showing empty
+ * headers. Metadata arrives asynchronously after the screen opens (see [DetailViewModel]), so this
+ * pops in a moment after the poster/title/buttons.
+ */
+@Composable
+private fun StoryAndCredits(title: VodTitle, modifier: Modifier = Modifier) {
+    val colors = AreIptvTheme.colors
+    val hasPlot = !title.plot.isNullOrBlank()
+    val hasCredits = !title.castList.isNullOrBlank() || !title.director.isNullOrBlank()
+    if (!hasPlot && !hasCredits) return
+    Column(modifier = modifier) {
+        if (hasPlot) {
+            Text(text = "Storyline", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+            Box(Modifier.padding(top = 10.dp))
+            Text(text = title.plot!!, style = AreIptvTheme.typography.body, color = colors.textSecondary)
+        }
+        if (hasCredits) {
+            Box(Modifier.padding(top = if (hasPlot) 20.dp else 0.dp))
+            title.castList?.takeIf { it.isNotBlank() }?.let {
+                CreditLine(label = "Cast", value = it)
+            }
+            title.director?.takeIf { it.isNotBlank() }?.let {
+                Box(Modifier.padding(top = 6.dp))
+                CreditLine(label = "Director", value = it)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CreditLine(label: String, value: String) {
+    val colors = AreIptvTheme.colors
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = "$label:", style = AreIptvTheme.typography.label, color = colors.textTertiary)
+        Text(text = value, style = AreIptvTheme.typography.label, color = colors.textPrimary, modifier = Modifier.weight(1f))
     }
 }
 

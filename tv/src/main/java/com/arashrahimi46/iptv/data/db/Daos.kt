@@ -146,6 +146,25 @@ interface VodTitleDao {
     @Query("UPDATE vod_titles SET episodeCount = :count WHERE id = :id")
     suspend fun setEpisodeCount(id: Long, count: Int)
 
+    /** Persist rich metadata fetched lazily on first Detail view (Xtream info + OMDb). [fetched]
+     * marks whether a real source was actually queried, so a later-added OMDb key can still enrich. */
+    @Query(
+        "UPDATE vod_titles SET plot = :plot, castList = :castList, director = :director, genre = :genre, " +
+            "year = :year, rating = :rating, imdbRating = :imdbRating, rtRating = :rtRating, metadataFetched = :fetched WHERE id = :id",
+    )
+    suspend fun setMetadata(
+        id: Long,
+        plot: String?,
+        castList: String?,
+        director: String?,
+        genre: String?,
+        year: String?,
+        rating: String?,
+        imdbRating: String?,
+        rtRating: String?,
+        fetched: Boolean,
+    )
+
     // --- Large-catalog browse (Paging 3): only the visible window is ever in memory. ---
 
     @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries ORDER BY name, id")

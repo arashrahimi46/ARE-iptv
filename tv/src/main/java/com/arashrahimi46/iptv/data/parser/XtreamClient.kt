@@ -21,6 +21,21 @@ data class XtreamShortEpgEntry(val title: String, val description: String?, val 
 data class XtreamSeriesEpisode(val id: String, val season: Int, val episode: Int, val title: String, val containerExtension: String?)
 
 /**
+ * Rich metadata Xtream already returns for a VOD/series in its `info` block (get_vod_info /
+ * get_series_info) but which the catalog listing endpoints omit. All fields best-effort/nullable --
+ * portals populate them inconsistently. Feeds [com.arashrahimi46.iptv.data.model.VodTitle]'s
+ * metadata columns as the free first source before the OMDb fallback.
+ */
+data class XtreamVodInfo(
+    val plot: String?,
+    val cast: String?,
+    val director: String?,
+    val genre: String?,
+    val rating: String?,
+    val year: String?,
+)
+
+/**
  * Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns.
  * [isAuthError] is set when the portal was reached but rejected the credentials (auth==0, or a
  * 401/403-shaped HTTP response) -- an authoritative failure the caller must surface rather than
@@ -195,6 +210,40 @@ class XtreamClient(
             }
         }
         return out
+    }
+
+    /** `action=get_vod_info` -- the per-movie rich metadata block. Null when the portal returns
+     * nothing usable (many do for some titles); the caller then falls back to OMDb. */
+    suspend fun getVodInfo(vodId: String): XtreamVodInfo? {
+        val body = fetch("get_vod_info", "&vod_id=$vodId")
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return null
+        return parseInfoBlock(json.optJSONObject("info"))
+    }
+
+    /** Series-level `info` block from `action=get_series_info` (separate from the per-episode list
+     * in [getSeriesInfo]). Null when the portal returns nothing usable. */
+    suspend fun getSeriesInfoMeta(seriesId: String): XtreamVodInfo? {
+        val body = fetch("get_series_info", "&series_id=$seriesId")
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return null
+        return parseInfoBlock(json.optJSONObject("info"))
+    }
+
+    /** Maps an Xtream `info` object to [XtreamVodInfo], tolerating the key-name variants portals use.
+     * Returns null when every field is absent, so the caller can cleanly fall through to OMDb. */
+    private fun parseInfoBlock(info: JSONObject?): XtreamVodInfo? {
+        if (info == null) return null
+        val plot = info.optStringOrNull("plot") ?: info.optStringOrNull("description")
+        val cast = info.optStringOrNull("cast") ?: info.optStringOrNull("actors")
+        val director = info.optStringOrNull("director")
+        val genre = info.optStringOrNull("genre")
+        // Portals commonly send "0"/"0.0" for "no rating" -- treat those as absent.
+        val rating = info.optStringOrNull("rating")?.takeUnless { it == "0" || it == "0.0" }
+        val release = info.optStringOrNull("releasedate")
+            ?: info.optStringOrNull("releaseDate")
+            ?: info.optStringOrNull("year")
+        val year = release?.let { Regex("(19|20)\\d{2}").find(it)?.value }
+        if (plot == null && cast == null && director == null && genre == null && rating == null && year == null) return null
+        return XtreamVodInfo(plot, cast, director, genre, rating, year)
     }
 
     private fun parseCategories(body: String): List<XtreamCategory> =

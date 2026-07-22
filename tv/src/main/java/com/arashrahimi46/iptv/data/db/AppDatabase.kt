@@ -55,7 +55,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Favorite::class,
         ContinueWatchingEntry::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -172,13 +172,32 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v5 -> v6: rich VOD metadata for the Detail screen. Adds nullable `plot`/`castList`/
+         * `director`/`genre`/`imdbRating`/`rtRating` and a `metadataFetched` flag to `vod_titles`,
+         * populated lazily on first Detail view (Xtream info block + user's OMDb key). Non-destructive
+         * plain ADD COLUMNs -- an existing catalog is preserved and simply enriches as titles are opened.
+         * (`cast` is a SQLite keyword, hence `castList`.)
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `plot` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `castList` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `director` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `genre` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `imdbRating` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `rtRating` TEXT")
+                db.execSQL("ALTER TABLE `vod_titles` ADD COLUMN `metadataFetched` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build().also { instance = it }
             }
     }

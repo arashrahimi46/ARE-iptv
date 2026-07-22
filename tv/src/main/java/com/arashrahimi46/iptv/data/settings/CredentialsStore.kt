@@ -46,6 +46,10 @@ class CredentialsStore(context: Context) {
 
     fun password(sourceId: Long): String? = prefs.getString(passwordKey(sourceId), null)
 
+    /** Both stored credentials for [sourceId] as `(username, secret)` -- either half is null when absent. */
+    fun forSource(sourceId: Long): Pair<String?, String?> =
+        prefs.getString(usernameKey(sourceId), null) to prefs.getString(passwordKey(sourceId), null)
+
     fun clear(sourceId: Long) {
         prefs.edit()
             .remove(usernameKey(sourceId))

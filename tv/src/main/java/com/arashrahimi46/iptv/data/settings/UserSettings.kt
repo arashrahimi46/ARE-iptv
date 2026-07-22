@@ -41,6 +41,11 @@ class UserSettings(private val context: Context) {
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
         val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
+        val OPENSUBS_CRED = stringPreferencesKey("opensubs_cred")
+        val SUBTITLE_LANGUAGE = stringPreferencesKey("subtitle_language")
+        val OPENSUBS_U = stringPreferencesKey("opensubs_u")
+        val OPENSUBS_P = stringPreferencesKey("opensubs_p")
+        val OMDB_KEY = stringPreferencesKey("omdb_key")
         /** Pinned category names, namespaced per browse screen (see [pinnedCategoriesKey]). */
         fun pinnedCategoriesKey(namespace: String) = stringSetPreferencesKey("pinned_categories_$namespace")
     }
@@ -94,6 +99,22 @@ class UserSettings(private val context: Context) {
 
     /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
     val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
+
+    /** Preferred subtitle language (ISO code) pre-selected when searching subtitles online; defaults to English. */
+    val subtitleLanguage: Flow<String> = context.dataStore.data.map { it[Keys.SUBTITLE_LANGUAGE] ?: "en" }
+
+    /** User's personal OpenSubtitles API key for online subtitle search; null until they connect one in Settings. */
+    val openSubsCredential: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_CRED]?.takeIf { k -> k.isNotBlank() } }
+
+    /** User's personal OMDb API key for movie/series metadata (IMDb & Rotten Tomatoes ranks, plot,
+     * cast); null until they connect one in Settings. See [com.arashrahimi46.iptv.data.parser.OmdbClient]. */
+    val omdbKey: Flow<String?> = context.dataStore.data.map { it[Keys.OMDB_KEY]?.takeIf { k -> k.isNotBlank() } }
+
+    /** OpenSubtitles account username -- needed (with [openSubsPhrase]) to log in for downloads. */
+    val openSubsUsername: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_U]?.takeIf { k -> k.isNotBlank() } }
+
+    /** OpenSubtitles account password, stored to re-authenticate when the login token expires (~24h). */
+    val openSubsPhrase: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_P]?.takeIf { k -> k.isNotBlank() } }
 
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
@@ -152,6 +173,37 @@ class UserSettings(private val context: Context) {
 
     suspend fun setBrowseListMode(enabled: Boolean) {
         context.dataStore.edit { it[Keys.BROWSE_LIST_MODE] = enabled }
+    }
+
+    suspend fun setSubtitleLanguage(code: String) {
+        context.dataStore.edit { it[Keys.SUBTITLE_LANGUAGE] = code }
+    }
+
+    /** Persists a validated OpenSubtitles API key, or clears it when [key] is null/blank. */
+    suspend fun setOpenSubsCredential(key: String?) {
+        context.dataStore.edit {
+            if (key.isNullOrBlank()) it.remove(Keys.OPENSUBS_CRED) else it[Keys.OPENSUBS_CRED] = key.trim()
+        }
+    }
+
+    /** Persists a validated OMDb API key, or clears it when [key] is null/blank. */
+    suspend fun setOmdbKey(key: String?) {
+        context.dataStore.edit {
+            if (key.isNullOrBlank()) it.remove(Keys.OMDB_KEY) else it[Keys.OMDB_KEY] = key.trim()
+        }
+    }
+
+    /** Persists (or clears) the OpenSubtitles account login used for downloads. */
+    suspend fun setOpenSubsAccount(username: String?, phrase: String?) {
+        context.dataStore.edit {
+            if (username.isNullOrBlank() || phrase.isNullOrBlank()) {
+                it.remove(Keys.OPENSUBS_U)
+                it.remove(Keys.OPENSUBS_P)
+            } else {
+                it[Keys.OPENSUBS_U] = username.trim()
+                it[Keys.OPENSUBS_P] = phrase
+            }
+        }
     }
 
     suspend fun setTermsAccepted(accepted: Boolean) {

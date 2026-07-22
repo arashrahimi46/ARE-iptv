@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.Composable
@@ -44,6 +46,7 @@ fun AreTextField(
     label: String? = null,
     placeholder: String? = null,
     mono: Boolean = false,
+    masked: Boolean = false,
     icon: ImageVector? = null,
     prefix: String? = null,
     helper: String? = null,
@@ -108,6 +111,7 @@ fun AreTextField(
                     textStyle = (if (mono) AreIptvTheme.typography.mono else AreIptvTheme.typography.body)
                         .copy(color = colors.textPrimary),
                     singleLine = true,
+                    visualTransformation = if (masked) PasswordVisualTransformation() else VisualTransformation.None,
                     cursorBrush = SolidColor(colors.accent),
                 )
             }

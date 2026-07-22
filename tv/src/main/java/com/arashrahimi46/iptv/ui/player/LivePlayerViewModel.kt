@@ -35,8 +35,21 @@ sealed class PlaybackSource {
     data class Episode(val episodeId: Long) : PlaybackSource()
 }
 
-/** Normalized playable content -- whichever [PlaybackSource] resolved it, the screen only sees this. */
-data class PlayableMedia(val title: String, val subtitle: String?, val streamUrl: String, val isLive: Boolean)
+/**
+ * Normalized playable content -- whichever [PlaybackSource] resolved it, the screen only sees this.
+ * [searchName]/[year]/[season]/[episode] feed the online subtitle search (null for live channels,
+ * which aren't searchable): a movie carries name+year; an episode carries its series name + S/E.
+ */
+data class PlayableMedia(
+    val title: String,
+    val subtitle: String?,
+    val streamUrl: String,
+    val isLive: Boolean,
+    val searchName: String? = null,
+    val year: String? = null,
+    val season: Int? = null,
+    val episode: Int? = null,
+)
 
 /** One upcoming/now-playing programme for the currently-playing channel's mini up-next panel. */
 data class UpNextProgram(val title: String, val startMs: Long, val endMs: Long, val isNow: Boolean)
@@ -154,16 +167,28 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 }
                 is PlaybackSource.Vod -> db.vodTitleDao().getById(s.vodTitleId)?.let { title ->
                     title.streamUrl?.let { url ->
-                        PlayableMedia(title = title.name, subtitle = title.categoryName, streamUrl = url, isLive = false)
+                        PlayableMedia(
+                            title = title.name,
+                            subtitle = title.categoryName,
+                            streamUrl = url,
+                            isLive = false,
+                            searchName = title.name,
+                            year = title.year,
+                        )
                     }
                 }
                 is PlaybackSource.Episode -> db.seriesEpisodeDao().getById(s.episodeId)?.let { episode ->
                     episode.streamUrl?.let { url ->
+                        // Episodes match on the parent series name + S/E, not the (often per-episode) title.
+                        val seriesName = db.vodTitleDao().getById(episode.seriesTitleId)?.name
                         PlayableMedia(
                             title = episode.name,
                             subtitle = "S${episode.season} · E${episode.episode}",
                             streamUrl = url,
                             isLive = false,
+                            searchName = seriesName,
+                            season = episode.season,
+                            episode = episode.episode,
                         )
                     }
                 }

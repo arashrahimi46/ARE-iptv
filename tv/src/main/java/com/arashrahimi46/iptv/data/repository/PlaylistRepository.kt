@@ -12,6 +12,7 @@ import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
+import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.parser.parseSeriesEpisode
 import com.arashrahimi46.iptv.data.parser.XtreamException
@@ -27,6 +28,11 @@ import java.util.concurrent.TimeUnit
 
 /** Derived counts shown on the onboarding Confirm step, from a *real* parse -- never hardcoded. */
 data class ImportSummary(val channels: Int, val movies: Int, val series: Int)
+
+/** Keep the existing value if it's already present (non-blank), else take [fallback] -- so a lower-
+ * priority metadata source (OMDb) only fills fields a higher-priority one (Xtream) left empty. */
+private fun String?.orTake(fallback: String?): String? =
+    this?.takeIf { it.isNotBlank() } ?: fallback?.takeIf { it.isNotBlank() }
 
 /** Xtream `get.php` keys are lowercase by spec, and the server is case-sensitive on them. */
 private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
@@ -154,6 +160,15 @@ interface PlaylistRepository {
      * network failure so the caller can surface it.
      */
     suspend fun ensureSeriesEpisodesLoaded(vodTitle: VodTitle)
+
+    /**
+     * Enriches [vodTitle] with plot/cast/ratings on first Detail view (Room-cached after that):
+     * Xtream's own `info` block first (free, no key), then the user's OMDb key as a fallback for
+     * anything still missing -- especially the IMDb/Rotten Tomatoes ranks Xtream doesn't carry.
+     * Returns the (possibly enriched) row so the caller can render it without a re-query; a no-op
+     * returns [vodTitle] unchanged. Never throws -- a metadata miss must not break the screen.
+     */
+    suspend fun ensureMetadataLoaded(vodTitle: VodTitle): VodTitle
 }
 
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
@@ -228,6 +243,70 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             db.seriesEpisodeDao().insertAll(entities)
             db.vodTitleDao().setEpisodeCount(vodTitle.id, entities.size)
         }
+    }
+
+    override suspend fun ensureMetadataLoaded(vodTitle: VodTitle): VodTitle = withContext(Dispatchers.IO) {
+        if (vodTitle.metadataFetched) return@withContext vodTitle
+
+        var plot = vodTitle.plot
+        var castList = vodTitle.castList
+        var director = vodTitle.director
+        var genre = vodTitle.genre
+        var year = vodTitle.year
+        var rating = vodTitle.rating
+        var imdbRating = vodTitle.imdbRating
+        var rtRating = vodTitle.rtRating
+        var attempted = false
+
+        // 1. Xtream's own info block -- free, no key. Best-effort: any failure just falls through to OMDb.
+        val source = db.playlistSourceDao().getById(vodTitle.sourceId)
+        if (source?.type == SourceType.XTREAM && vodTitle.externalId != null) {
+            val (user, secret) = credentials.forSource(source.id)
+            if (user != null && secret != null) {
+                val xtream = XtreamClient(source.url, user, secret)
+                val info = runCatching {
+                    if (vodTitle.isSeries) xtream.getSeriesInfoMeta(vodTitle.externalId)
+                    else xtream.getVodInfo(vodTitle.externalId)
+                }.getOrNull()
+                if (info != null) {
+                    attempted = true
+                    plot = plot.orTake(info.plot)
+                    castList = castList.orTake(info.cast)
+                    director = director.orTake(info.director)
+                    genre = genre.orTake(info.genre)
+                    year = year ?: info.year
+                    rating = rating ?: info.rating
+                }
+            }
+        }
+
+        // 2. OMDb fallback for whatever's still missing (the IMDb/RT ranks especially), if the user
+        // connected a key. Cleaned title + year matching lives in OmdbClient.
+        val omdbKey = settings.omdbKey.first()
+        if (!omdbKey.isNullOrBlank()) {
+            attempted = true
+            val needsMore = imdbRating == null || rtRating == null || plot.isNullOrBlank() || castList.isNullOrBlank()
+            if (needsMore) {
+                val meta = OmdbClient.lookup(omdbKey, vodTitle.name, year, vodTitle.isSeries)
+                if (meta != null) {
+                    plot = plot.orTake(meta.plot)
+                    castList = castList.orTake(meta.cast)
+                    director = director.orTake(meta.director)
+                    genre = genre.orTake(meta.genre)
+                    year = year ?: meta.year
+                    imdbRating = imdbRating ?: meta.imdbRating
+                    rtRating = rtRating ?: meta.rtRating
+                }
+            }
+        }
+
+        // Only mark fetched when a real source was queried, so connecting an OMDb key later still
+        // enriches a plain-M3U title that had nothing to fetch on its first open.
+        db.vodTitleDao().setMetadata(vodTitle.id, plot, castList, director, genre, year, rating, imdbRating, rtRating, attempted)
+        vodTitle.copy(
+            plot = plot, castList = castList, director = director, genre = genre,
+            year = year, rating = rating, imdbRating = imdbRating, rtRating = rtRating, metadataFetched = attempted,
+        )
     }
 
     override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =

@@ -1,17 +1,29 @@
 package com.arashrahimi46.iptv.ui.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,9 +38,16 @@ import androidx.media3.common.Tracks
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.parser.OnlineSubtitle
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreChipSize
 import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
@@ -138,6 +157,8 @@ fun SubtitleMenuDialog(
     /** Languages sniffed from rendered subtitle text, keyed by [SubtitleTrack.Embedded.rowKey].
      * Overrides an uninformative metadata label (e.g. a site name) when present. */
     detectedLangs: Map<String, String> = emptyMap(),
+    /** Opens online subtitle search; null (e.g. live channels) hides the "Search online" row. */
+    onSearchOnline: (() -> Unit)? = null,
 ) {
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         AreDialog(onDismiss = onDismiss, title = "Subtitles", width = 420.dp) {
@@ -168,6 +189,16 @@ fun SubtitleMenuDialog(
                         SubtitleRow(label = shown, selected = selectedKey == key) { onSelectTrack(track) }
                     }
                 }
+                if (onSearchOnline != null) {
+                    Box(
+                        Modifier
+                            .padding(vertical = 6.dp)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(AreIptvTheme.colors.borderDefault),
+                    )
+                    SubtitleRow(label = "Search online…", selected = false, onClick = onSearchOnline)
+                }
             }
         }
     }
@@ -175,6 +206,122 @@ fun SubtitleMenuDialog(
 
 /** Row key for an embedded track, stable within a single stream's Tracks snapshot. */
 fun SubtitleTrack.Embedded.rowKey(): String = "${System.identityHashCode(group)}:$trackIndex"
+
+/** Languages offered in the online-search picker, code -> name. Persian/Arabic first for this catalog. */
+val SUBTITLE_LANGUAGES: List<Pair<String, String>> = listOf(
+    "en" to "English", "fa" to "Persian", "ar" to "Arabic", "fr" to "French",
+    "es" to "Spanish", "de" to "German", "it" to "Italian", "tr" to "Turkish",
+    "ru" to "Russian", "pt" to "Portuguese", "nl" to "Dutch", "hi" to "Hindi",
+)
+
+/**
+ * Online subtitle search over OpenSubtitles, opened from the CC menu's "Search online" row. Runs an
+ * initial search on open from the title's own metadata, lets the user change the language (re-searches)
+ * or edit the query, and downloads the picked result via [onPick] -- which sideloads it and dismisses
+ * this dialog. Both callbacks are suspend-friendly: they're launched on this dialog's scope.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun OnlineSubtitleSearchDialog(
+    initialQuery: String,
+    defaultLang: String,
+    onSearch: suspend (query: String, langCode: String) -> Result<List<OnlineSubtitle>>,
+    onPick: suspend (OnlineSubtitle) -> Result<Unit>,
+    onDismiss: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    val scope = rememberCoroutineScope()
+    var query by remember { mutableStateOf(initialQuery) }
+    var langCode by remember { mutableStateOf(defaultLang) }
+    var loading by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var results by remember { mutableStateOf<List<OnlineSubtitle>>(emptyList()) }
+    var searched by remember { mutableStateOf(false) }
+    var downloadingId by remember { mutableStateOf<Long?>(null) }
+
+    fun runSearch() {
+        if (query.isBlank() || loading) return
+        scope.launch {
+            loading = true; error = null
+            onSearch(query.trim(), langCode)
+                .onSuccess { results = it; searched = true }
+                .onFailure { error = it.message ?: "Search failed." }
+            loading = false
+        }
+    }
+
+    LaunchedEffect(Unit) { if (query.isNotBlank()) runSearch() }
+
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(onDismiss = onDismiss, title = "Search subtitles online", width = 560.dp) {
+            Column {
+                AreTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = "Title",
+                    icon = Icons.Filled.Search,
+                )
+                Box(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    SUBTITLE_LANGUAGES.forEach { (code, name) ->
+                        AreChip(
+                            text = name,
+                            selected = code == langCode,
+                            onClick = { if (code != langCode) { langCode = code; runSearch() } },
+                            size = AreChipSize.Small,
+                        )
+                    }
+                }
+                Box(Modifier.height(12.dp))
+                AreButton(
+                    text = if (loading) "Searching…" else "Search",
+                    onClick = { runSearch() },
+                    disabled = loading || query.isBlank(),
+                    size = AreButtonSize.Small,
+                )
+                Box(Modifier.height(12.dp))
+                when {
+                    loading -> StatusLine("Searching OpenSubtitles…")
+                    error != null -> StatusLine(error!!, danger = true)
+                    searched && results.isEmpty() -> StatusLine("No matches -- try a different title or language.")
+                    else -> Column(
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp).verticalScroll(rememberScrollState()),
+                    ) {
+                        results.take(30).forEach { sub ->
+                            val busy = downloadingId == sub.fileId
+                            val label = if (busy) "Downloading…" else
+                                "${sub.release}  ·  ${displayLanguage(sub.language)} · ${sub.downloads}↓"
+                            SubtitleRow(label = label, selected = false) {
+                                if (downloadingId != null) return@SubtitleRow
+                                scope.launch {
+                                    downloadingId = sub.fileId; error = null
+                                    onPick(sub)
+                                        .onSuccess { onDismiss() }
+                                        .onFailure { error = it.message ?: "Download failed." }
+                                    downloadingId = null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun StatusLine(text: String, danger: Boolean = false) {
+    Text(
+        text = text,
+        style = AreIptvTheme.typography.caption,
+        color = if (danger) AreIptvTheme.colors.danger else AreIptvTheme.colors.textTertiary,
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+    )
+}
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable

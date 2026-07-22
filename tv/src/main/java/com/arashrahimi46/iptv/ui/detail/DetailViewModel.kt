@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class DetailUiState(
@@ -55,23 +56,33 @@ class DetailViewModel(app: Application, private val contentId: Long) : AndroidVi
     init {
         viewModelScope.launch {
             val title = db.vodTitleDao().getById(contentId)
-            _uiState.value = _uiState.value.copy(loading = false, title = title)
+            _uiState.update { it.copy(loading = false, title = title) }
+            if (title == null) return@launch
 
-            if (title != null && title.isSeries) {
+            // Enrich plot/cast/IMDb+RT ranks on first view (Room-cached after). Runs concurrently with
+            // the episode load below; both use atomic update {} so neither clobbers the other's field.
+            launch {
+                val enriched = runCatching { repository.ensureMetadataLoaded(title) }.getOrNull()
+                if (enriched != null) _uiState.update { it.copy(title = enriched) }
+            }
+
+            if (title.isSeries) {
                 // Xtream loads episodes lazily from get_series_info; M3U series were already grouped
                 // into series_episodes at import time. Either way, observe the same table.
                 if (title.externalId != null) {
                     runCatching { repository.ensureSeriesEpisodesLoaded(title) }
-                        .onFailure { e -> _uiState.value = _uiState.value.copy(episodesLoadError = e.message) }
+                        .onFailure { e -> _uiState.update { it.copy(episodesLoadError = e.message) } }
                 }
                 repository.observeSeriesEpisodes(title.id)
                     .onEach { episodes ->
-                        _uiState.value = _uiState.value.copy(
-                            episodesBySeason = episodes.groupBy { it.season },
-                            // A series with no grouped episodes and no Xtream backing (e.g. a lone
-                            // M3U entry with no SxxExx marker) plays as a single item.
-                            isM3uSeriesWithoutEpisodes = title.externalId == null && episodes.isEmpty(),
-                        )
+                        _uiState.update {
+                            it.copy(
+                                episodesBySeason = episodes.groupBy { ep -> ep.season },
+                                // A series with no grouped episodes and no Xtream backing (e.g. a lone
+                                // M3U entry with no SxxExx marker) plays as a single item.
+                                isM3uSeriesWithoutEpisodes = title.externalId == null && episodes.isEmpty(),
+                            )
+                        }
                     }
                     .launchIn(viewModelScope)
             }

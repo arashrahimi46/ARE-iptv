@@ -71,6 +71,7 @@ import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.data.repository.SubtitleRepository
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
@@ -120,6 +121,7 @@ fun LivePlayerScreen(
     var showUpNext by remember { mutableStateOf(false) }
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
+    val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
 
     // In-app mini-player: while a live channel is docked in the corner (LivePlaybackController owns
     // its ExoPlayer), this screen hands its player off on minimize and adopts it back on expand so
@@ -304,6 +306,16 @@ fun LivePlayerScreen(
             // tracks the container left untagged. Reset per stream. Read live in the cue listener.
             val detectedLangs = remember(media.streamUrl) { mutableStateMapOf<String, String>() }
             val currentSubtitleChoice by rememberUpdatedState(subtitleChoice)
+
+            // Online subtitle search (OpenSubtitles). Only VOD (a searchable title name) offers it.
+            val searchName = media.searchName
+            val subtitleRepo = remember { SubtitleRepository(context) }
+            var showSubtitleSearch by remember { mutableStateOf(false) }
+            // Subtitles downloaded this session are sideloaded by rebuilding the MediaItem with these
+            // configs; a pending flag then auto-selects the newly-added track once it's parsed. Both
+            // reset per stream so a channel/title switch starts clean.
+            var externalSubs by remember(media.streamUrl) { mutableStateOf<List<MediaItem.SubtitleConfiguration>>(emptyList()) }
+            var pendingSelectExternal by remember(media.streamUrl) { mutableStateOf(false) }
 
             val exoPlayer = remember(media.streamUrl, retryCount, hardwareDecoding) {
                 // Seamless EXPAND: if this exact live stream is the one currently docked in the
@@ -497,6 +509,32 @@ fun LivePlayerScreen(
             // that matches the current pick gets (re)applied once it's actually available.
             LaunchedEffect(exoPlayer, subtitleChoice, textTracks) {
                 exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters.withSubtitle(subtitleChoice)
+            }
+
+            // Sideload downloaded subtitles by re-setting the MediaItem with them attached, seeking
+            // back so playback continues in place. Re-runs on a player rebuild (retry/channel switch)
+            // so the sideloaded track survives -- externalSubs is keyed per stream.
+            LaunchedEffect(exoPlayer, externalSubs) {
+                if (externalSubs.isEmpty()) return@LaunchedEffect
+                val pos = exoPlayer.currentPosition
+                val wasPlaying = exoPlayer.playWhenReady
+                exoPlayer.setMediaItem(
+                    MediaItem.Builder().setUri(media.streamUrl).setSubtitleConfigurations(externalSubs).build(),
+                    pos,
+                )
+                exoPlayer.prepare()
+                exoPlayer.playWhenReady = wasPlaying
+            }
+
+            // Auto-select a just-downloaded subtitle once it shows up as a text track (the user asked
+            // for it, so turn it on immediately). Matched by our sentinel "OpenSubtitles" label.
+            LaunchedEffect(textTracks, pendingSelectExternal) {
+                if (!pendingSelectExternal) return@LaunchedEffect
+                val ext = textTracks.firstOrNull { it.label.contains("OpenSubtitles", ignoreCase = true) }
+                if (ext != null) {
+                    subtitleChoice = ext
+                    pendingSelectExternal = false
+                }
             }
 
             // Live streams' HLS timeline usually reports no fixed duration (C.TIME_UNSET) --
@@ -696,6 +734,33 @@ fun LivePlayerScreen(
                     onSelectTrack = { subtitleChoice = it; showSubtitles = false },
                     onDismiss = { showSubtitles = false },
                     detectedLangs = detectedLangs,
+                    onSearchOnline = if (searchName != null) {
+                        { showSubtitles = false; showSubtitleSearch = true }
+                    } else {
+                        null
+                    },
+                )
+            }
+
+            if (showSubtitleSearch && searchName != null) {
+                OnlineSubtitleSearchDialog(
+                    initialQuery = searchName,
+                    defaultLang = preferredSubLang,
+                    onSearch = { q, lang ->
+                        subtitleRepo.search(q, lang, year = media.year, season = media.season, episode = media.episode)
+                    },
+                    onPick = { sub ->
+                        subtitleRepo.download(sub).map { sideloaded ->
+                            val config = MediaItem.SubtitleConfiguration.Builder(sideloaded.uri)
+                                .setMimeType(sideloaded.mimeType)
+                                .setLanguage(sideloaded.languageCode)
+                                .setLabel("OpenSubtitles")
+                                .build()
+                            externalSubs = externalSubs + config
+                            pendingSelectExternal = true
+                        }
+                    },
+                    onDismiss = { showSubtitleSearch = false },
                 )
             }
         }

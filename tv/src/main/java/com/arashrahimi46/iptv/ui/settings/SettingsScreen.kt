@@ -1,6 +1,8 @@
 package com.arashrahimi46.iptv.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,15 +15,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,6 +53,8 @@ import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreSwitch
+import com.arashrahimi46.iptv.ui.components.AreTextField
+import com.arashrahimi46.iptv.ui.player.SUBTITLE_LANGUAGES
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -99,6 +106,19 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val hasPinSet by viewModel.hasPinSet.collectAsState()
     val pinLoaded = hasPinSet != null
     val hasPin = hasPinSet == true
+
+    val subtitleLanguage by viewModel.subtitleLanguage.collectAsState()
+    val openSubsCredential by viewModel.openSubsCredential.collectAsState()
+    val subsValidation by viewModel.subsValidation.collectAsState()
+    val openSubsUsername by viewModel.openSubsUsername.collectAsState()
+    val subsLogin by viewModel.subsLogin.collectAsState()
+    var subsKeyInput by remember { mutableStateOf("") }
+    var subsUserInput by remember { mutableStateOf("") }
+    var subsPassInput by remember { mutableStateOf("") }
+
+    val omdbKey by viewModel.omdbKey.collectAsState()
+    val omdbValidation by viewModel.omdbValidation.collectAsState()
+    var omdbKeyInput by remember { mutableStateOf("") }
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
 
@@ -220,6 +240,179 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Small,
                 )
+            }
+        }
+
+        SettingsSection(title = "Subtitles") {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
+                Text(text = "Preferred language", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                Box(Modifier.padding(top = 4.dp))
+                Text(
+                    text = "Pre-selected when you search subtitles online. You can still change it per video.",
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textTertiary,
+                )
+                Box(Modifier.padding(top = 12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    SUBTITLE_LANGUAGES.forEach { (code, name) ->
+                        AreChip(
+                            text = name,
+                            selected = code == subtitleLanguage,
+                            onClick = { viewModel.setSubtitleLanguage(code) },
+                            size = com.arashrahimi46.iptv.ui.components.AreChipSize.Small,
+                        )
+                    }
+                }
+            }
+            if (openSubsCredential != null) {
+                SettingsRow(
+                    icon = Icons.Filled.ClosedCaption,
+                    title = "OpenSubtitles",
+                    desc = "Connected -- online subtitle search is enabled.",
+                ) {
+                    AreButton(
+                        text = "Disconnect",
+                        onClick = {
+                            viewModel.disconnectOpenSubs()
+                            subsKeyInput = ""
+                            subsUserInput = ""
+                            subsPassInput = ""
+                        },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                }
+                if (openSubsUsername != null) {
+                    SettingsRow(
+                        icon = Icons.Filled.Person,
+                        title = "Account",
+                        desc = "Signed in as $openSubsUsername -- subtitle downloads are enabled.",
+                    ) {
+                        AreButton(
+                            text = "Sign out",
+                            onClick = { viewModel.signOutOpenSubs() },
+                            variant = AreButtonVariant.Secondary,
+                            size = AreButtonSize.Small,
+                        )
+                    }
+                } else {
+                    val signingIn = subsLogin is SubsValidation.Validating
+                    val loginError = (subsLogin as? SubsValidation.Error)?.message
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
+                        Text(text = "Sign in to download subtitles", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                        Box(Modifier.padding(top = 4.dp))
+                        Text(
+                            text = "Your OpenSubtitles account. Search works without it; downloading a subtitle uses your account's daily quota.",
+                            style = AreIptvTheme.typography.caption,
+                            color = colors.textTertiary,
+                        )
+                        Box(Modifier.padding(top = 12.dp))
+                        AreTextField(
+                            value = subsUserInput,
+                            onValueChange = { subsUserInput = it },
+                            placeholder = "Username",
+                            icon = Icons.Filled.Person,
+                        )
+                        Box(Modifier.padding(top = 10.dp))
+                        AreTextField(
+                            value = subsPassInput,
+                            onValueChange = { subsPassInput = it },
+                            placeholder = "Password",
+                            masked = true,
+                            icon = Icons.Filled.Lock,
+                            error = loginError,
+                        )
+                        Box(Modifier.padding(top = 12.dp))
+                        AreButton(
+                            text = if (signingIn) "Signing in…" else "Sign in",
+                            onClick = { viewModel.signInOpenSubs(subsUserInput, subsPassInput) },
+                            disabled = signingIn || subsUserInput.isBlank() || subsPassInput.isBlank(),
+                            variant = AreButtonVariant.Primary,
+                            size = AreButtonSize.Small,
+                        )
+                    }
+                }
+            } else {
+                val validating = subsValidation is SubsValidation.Validating
+                val errorMsg = (subsValidation as? SubsValidation.Error)?.message
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
+                    Text(text = "OpenSubtitles API key", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                    Box(Modifier.padding(top = 4.dp))
+                    Text(
+                        text = "Paste the personal API key from your opensubtitles.com account to search subtitles online. We validate it before saving.",
+                        style = AreIptvTheme.typography.caption,
+                        color = colors.textTertiary,
+                    )
+                    Box(Modifier.padding(top = 12.dp))
+                    AreTextField(
+                        value = subsKeyInput,
+                        onValueChange = { subsKeyInput = it },
+                        placeholder = "API key",
+                        mono = true,
+                        icon = Icons.Filled.VpnKey,
+                        error = errorMsg,
+                    )
+                    Box(Modifier.padding(top = 12.dp))
+                    AreButton(
+                        text = if (validating) "Checking…" else "Connect",
+                        onClick = { viewModel.connectOpenSubs(subsKeyInput) },
+                        disabled = validating || subsKeyInput.isBlank(),
+                        variant = AreButtonVariant.Primary,
+                        size = AreButtonSize.Small,
+                    )
+                }
+            }
+        }
+
+        SettingsSection(title = "Movie & series info") {
+            if (omdbKey != null) {
+                SettingsRow(
+                    icon = Icons.Filled.Star,
+                    title = "OMDb",
+                    desc = "Connected -- IMDb & Rotten Tomatoes ranks, plot and cast show on Detail.",
+                ) {
+                    AreButton(
+                        text = "Disconnect",
+                        onClick = {
+                            viewModel.disconnectOmdb()
+                            omdbKeyInput = ""
+                        },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                }
+            } else {
+                val validatingOmdb = omdbValidation is OmdbValidation.Validating
+                val omdbError = (omdbValidation as? OmdbValidation.Error)?.message
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
+                    Text(text = "OMDb API key", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                    Box(Modifier.padding(top = 4.dp))
+                    Text(
+                        text = "Paste a free key from omdbapi.com to enrich movies and series with IMDb & Rotten Tomatoes ranks, a synopsis and the cast. We validate it before saving.",
+                        style = AreIptvTheme.typography.caption,
+                        color = colors.textTertiary,
+                    )
+                    Box(Modifier.padding(top = 12.dp))
+                    AreTextField(
+                        value = omdbKeyInput,
+                        onValueChange = { omdbKeyInput = it },
+                        placeholder = "API key",
+                        mono = true,
+                        icon = Icons.Filled.VpnKey,
+                        error = omdbError,
+                    )
+                    Box(Modifier.padding(top = 12.dp))
+                    AreButton(
+                        text = if (validatingOmdb) "Checking…" else "Connect",
+                        onClick = { viewModel.connectOmdb(omdbKeyInput) },
+                        disabled = validatingOmdb || omdbKeyInput.isBlank(),
+                        variant = AreButtonVariant.Primary,
+                        size = AreButtonSize.Small,
+                    )
+                }
             }
         }
 
