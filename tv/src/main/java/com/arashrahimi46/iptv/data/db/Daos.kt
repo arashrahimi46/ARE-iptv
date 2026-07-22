@@ -26,6 +26,15 @@ import kotlinx.coroutines.flow.Flow
  */
 data class CategoryCount(val name: String, val count: Int)
 
+/**
+ * A catalog row's stable identity for id-preserving refresh sync: its Room row [id] plus the
+ * [matchKey] = `COALESCE(externalId, name, streamUrl)` (the same expression favorites key on). The
+ * refresh diff matches incoming provider items to existing rows by [matchKey] so an unchanged item
+ * keeps its row [id] -- continue-watching and lazily-loaded metadata reference that id and must
+ * survive a refresh. See [com.arashrahimi46.iptv.data.repository.PlaylistRepository.refreshSource].
+ */
+data class RowKey(val id: Long, val matchKey: String?)
+
 @Dao
 interface PlaylistSourceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -33,6 +42,14 @@ interface PlaylistSourceDao {
 
     @Query("SELECT * FROM playlist_sources ORDER BY createdAtMs DESC")
     fun observeAll(): Flow<List<PlaylistSource>>
+
+    /** Live single-source read -- drives the Settings "Last updated" label + refresh-overdue badge. */
+    @Query("SELECT * FROM playlist_sources WHERE id = :id")
+    fun observeById(id: Long): Flow<PlaylistSource?>
+
+    /** Stamp a successful sync (initial import or manual refresh) so staleness can be computed. */
+    @Query("UPDATE playlist_sources SET lastRefreshedAtMs = :ts WHERE id = :id")
+    suspend fun setLastRefreshed(id: Long, ts: Long)
 
     @Query("SELECT * FROM playlist_sources WHERE id = :id")
     suspend fun getById(id: Long): PlaylistSource?
@@ -66,6 +83,14 @@ interface ChannelDao {
 
     @Query("DELETE FROM channels WHERE sourceId = :sourceId")
     suspend fun deleteForSource(sourceId: Long)
+
+    /** Refresh sync: id + stable key of every existing channel, to diff against the incoming set. */
+    @Query("SELECT id, COALESCE(externalId, name, streamUrl) AS matchKey FROM channels WHERE sourceId = :sourceId")
+    suspend fun matchKeys(sourceId: Long): List<RowKey>
+
+    /** Refresh sync: drop the rows the provider no longer lists (matched out by id). */
+    @Query("DELETE FROM channels WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
 
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name")
     fun observeForSource(sourceId: Long): Flow<List<Channel>>
@@ -136,6 +161,20 @@ interface VodTitleDao {
 
     @Query("DELETE FROM vod_titles WHERE sourceId = :sourceId")
     suspend fun deleteForSource(sourceId: Long)
+
+    /** Refresh sync: id + stable key of every existing movie/series (kept per isSeries so a movie
+     * and a series that share an externalId never collide), to diff against the incoming set. */
+    @Query("SELECT id, COALESCE(externalId, name, streamUrl) AS matchKey FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries")
+    suspend fun matchKeys(sourceId: Long, isSeries: Boolean): List<RowKey>
+
+    /** Refresh sync: the enriched titles (lazily-loaded plot/cast/ratings/episodeCount) whose data
+     * must be carried over onto the refreshed row instead of being wiped by a plain re-insert. */
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND metadataFetched = 1")
+    suspend fun enrichedTitles(sourceId: Long): List<VodTitle>
+
+    /** Refresh sync: drop the titles the provider no longer lists (matched out by id). */
+    @Query("DELETE FROM vod_titles WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
 
     /** Recompute [VodTitle.episodeCount] from the grouped `series_episodes` rows for a source's
      * series (one correlated UPDATE, index-backed on seriesTitleId) -- run once after M3U import. */

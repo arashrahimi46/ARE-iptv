@@ -66,6 +66,8 @@ import com.arashrahimi46.iptv.ui.player.PlaybackSource
 import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.settings.SettingsScreen
+import com.arashrahimi46.iptv.ui.settings.isStale
+import kotlinx.coroutines.flow.flowOf
 import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
 import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
@@ -296,6 +298,14 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     var focusedContentBounds by remember { mutableStateOf<Rect?>(null) }
 
+    // Settings "!" badge: the active playlist's catalog is overdue for a refresh (>2 weeks, or never).
+    val playlistRepository = remember { PlaylistRepositoryImpl(context) }
+    val activeSourceId by settings.activeSourceId.collectAsState(initial = null)
+    val activeSource by remember(activeSourceId) {
+        activeSourceId?.let { playlistRepository.observeSource(it) } ?: flowOf(null)
+    }.collectAsState(initial = null)
+    val badgedNavIds = if (activeSource?.lastRefreshedAtMs.isStale()) setOf("settings") else emptySet()
+
     // Honor a tab requested by a full-bleed caller (player -> open guide) once.
     LaunchedEffect(initialTab) {
         if (initialTab != null && initialTab in KnownRoutes && initialTab != activeNav) {
@@ -331,6 +341,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     Box(modifier = Modifier.fillMaxSize().onFocusedBoundsChanged { focusedContentBounds = it?.boundsInRoot() }) {
     AreIptvAppShell(
         activeNav = activeNav,
+        badgedNavIds = badgedNavIds,
         onNavSelect = { id ->
             if (id != activeNav && id in KnownRoutes) innerNav.selectTab(id)
         },

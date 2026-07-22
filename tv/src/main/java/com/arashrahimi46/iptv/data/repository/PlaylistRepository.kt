@@ -16,6 +16,7 @@ import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.parser.parseSeriesEpisode
 import com.arashrahimi46.iptv.data.parser.XtreamException
+import androidx.room.withTransaction
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,10 @@ private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
 
 /** Rows flushed to Room per batch during a streaming M3U import (bounds peak memory). */
 private const val IMPORT_BATCH_SIZE = 1500
+
+/** Ids per `DELETE ... WHERE id IN (...)` batch during a refresh -- keeps the bound-variable count
+ * well under SQLite's ~999 limit when a provider drops a large chunk of a catalog. */
+private const val DELETE_CHUNK = 500
 
 /**
  * Fallback category for Xtream items whose `category_id` is absent or not present in the
@@ -169,6 +174,21 @@ interface PlaylistRepository {
      * returns [vodTitle] unchanged. Never throws -- a metadata miss must not break the screen.
      */
     suspend fun ensureMetadataLoaded(vodTitle: VodTitle): VodTitle
+
+    /** Live read of one source -- backs the Settings "Last updated" label and refresh-overdue badge. */
+    fun observeSource(sourceId: Long): Flow<PlaylistSource?>
+
+    /**
+     * Re-syncs an already-added source's catalog with the provider so items the provider added/
+     * removed show up/disappear -- WITHOUT wiping the catalog. Xtream sources sync via an
+     * id-preserving upsert (unchanged items keep their Room row id, so continue-watching and
+     * lazily-loaded metadata/episodes survive; only genuinely new items are inserted and removed
+     * ones deleted). Safe under a one-connection line: the whole provider catalog is fetched FIRST
+     * and, if that fails or comes back empty (e.g. an ip-limit response), nothing is deleted -- the
+     * existing catalog is left intact and the error is rethrown. Stamps `lastRefreshedAtMs` on
+     * success. Throws on network/auth failure. (M3U sources fall back to a full URL-keyed re-import.)
+     */
+    suspend fun refreshSource(sourceId: Long): ImportSummary
 }
 
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
@@ -181,6 +201,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         .build()
 
     override fun observeSources(): Flow<List<PlaylistSource>> = db.playlistSourceDao().observeAll()
+
+    override fun observeSource(sourceId: Long): Flow<PlaylistSource?> = db.playlistSourceDao().observeById(sourceId)
 
     override suspend fun hasAnySource(): Boolean = db.playlistSourceDao().count() > 0
 
@@ -332,7 +354,10 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             // persist the normalized form so later refreshes hit the same working URL.
             val normalizedUrl = normalizeSourceUrl(url)
 
-            val source = PlaylistSource(name = name, type = SourceType.M3U, url = normalizedUrl, epgUrl = epgUrl)
+            val source = PlaylistSource(
+                name = name, type = SourceType.M3U, url = normalizedUrl, epgUrl = epgUrl,
+                lastRefreshedAtMs = System.currentTimeMillis(),
+            )
             val sourceId = db.playlistSourceDao().insert(source)
 
             // Classification heuristic lives in M3uGroupClassifier.kt (unit-tested) -- see its
@@ -500,6 +525,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             type = SourceType.XTREAM,
             url = host,
             epgUrl = epgUrl,
+            lastRefreshedAtMs = System.currentTimeMillis(),
         )
         val sourceId = db.playlistSourceDao().insert(source)
         // Credentials never touch the Room row -- encrypted-at-rest, keyed by the id Room
@@ -568,6 +594,179 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             credentials.clear(sourceId)
             db.playlistSourceDao().delete(source.copy(id = sourceId))
             throw e
+        }
+    }
+
+    override suspend fun refreshSource(sourceId: Long): ImportSummary = withContext(Dispatchers.IO) {
+        val source = db.playlistSourceDao().getById(sourceId)
+            ?: throw IllegalStateException("Playlist not found")
+
+        // M3U has no stable per-item id namespace and a streaming/batched importer -- an
+        // id-preserving diff isn't worth building for it. Re-import by URL instead: it de-dups on
+        // the normalized URL (favorites survive via streamKey; continue-watching is the known M3U
+        // tradeoff). Xtream (the id-preserving path) is below.
+        if (source.type != SourceType.XTREAM) {
+            return@withContext addM3uSource(source.name, source.url, source.epgUrl)
+        }
+
+        val (username, password) = credentials.forSource(sourceId)
+        if (username == null || password == null) {
+            throw IllegalStateException("Saved login for this playlist is missing -- re-add it to refresh.")
+        }
+
+        // 1. Fetch the ENTIRE provider catalog first, OUTSIDE any DB write. If the line is limited
+        // (ip-limit / connection cap) any of these throws, and we abort before touching a single
+        // existing row -- a failed refresh must never degrade a working catalog.
+        val xtream = XtreamClient(source.url, username, password)
+        xtream.authenticate()
+        val liveCategories = xtream.getLiveCategories()
+        val vodCategories = xtream.getVodCategories()
+        val seriesCategories = xtream.getSeriesCategories()
+        val liveStreams = xtream.getLiveStreams()
+        val vodStreams = xtream.getVodStreams()
+        val seriesList = xtream.getSeries()
+
+        // 2. Empty-guard: a provider that answers 200 with empty arrays (a common ip-limit / glitch
+        // shape) must NOT be read as "the user's whole catalog was removed". Abort, keep everything.
+        if (liveStreams.isEmpty() && vodStreams.isEmpty() && seriesList.isEmpty()) {
+            throw IllegalStateException("The provider returned an empty catalog -- your line may be limited. Nothing was changed.")
+        }
+
+        val liveCatNames = liveCategories.associate { it.id to it.name }
+        val vodCatNames = vodCategories.associate { it.id to it.name }
+        val seriesCatNames = seriesCategories.associate { it.id to it.name }
+
+        val categories = liveCategories.map { Category(sourceId, ContentType.LIVE, it.name, it.id) } +
+            vodCategories.map { Category(sourceId, ContentType.MOVIE, it.name, it.id) } +
+            seriesCategories.map { Category(sourceId, ContentType.SERIES, it.name, it.id) }
+        val channels = liveStreams.map {
+            Channel(
+                sourceId = sourceId,
+                name = it.name,
+                streamUrl = xtream.streamUrl("live", it.id, "m3u8"),
+                logoUrl = it.logo,
+                categoryName = it.categoryId?.let(liveCatNames::get) ?: UNCATEGORIZED_CATEGORY,
+                externalId = it.id,
+                tvgId = it.epgChannelId,
+            )
+        }
+        val movies = vodStreams.map {
+            VodTitle(
+                sourceId = sourceId,
+                name = it.name,
+                isSeries = false,
+                posterUrl = it.icon,
+                categoryName = it.categoryId?.let(vodCatNames::get) ?: UNCATEGORIZED_CATEGORY,
+                streamUrl = xtream.streamUrl("movie", it.id, it.containerExtension ?: "mp4"),
+                externalId = it.id,
+            )
+        }
+        val series = seriesList.map {
+            VodTitle(
+                sourceId = sourceId,
+                name = it.name,
+                isSeries = true,
+                posterUrl = it.cover,
+                categoryName = it.categoryId?.let(seriesCatNames::get) ?: UNCATEGORIZED_CATEGORY,
+                externalId = it.id,
+            )
+        }
+
+        // 3. Apply the whole diff atomically: readers never see a half-synced catalog, and a crash
+        // mid-write rolls back to the pre-refresh state.
+        db.withTransaction {
+            upsertChannels(sourceId, channels)
+            upsertTitles(sourceId, isSeries = false, incoming = movies)
+            upsertTitles(sourceId, isSeries = true, incoming = series)
+            // Categories aren't referenced by row id anywhere (favorites/continue-watching key on
+            // items, not categories), so a plain rebuild is safe and simplest.
+            db.categoryDao().deleteForSource(sourceId)
+            db.categoryDao().upsertAll(categories)
+            db.playlistSourceDao().setLastRefreshed(sourceId, System.currentTimeMillis())
+        }
+
+        ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
+    }
+
+    /**
+     * Id-preserving channel sync: match incoming provider channels to existing rows by
+     * [RowKey.matchKey] (`externalId ?: name ?: streamUrl`). Matched rows are re-inserted under
+     * their EXISTING id (REPLACE updates in place -- the id, which nothing here changes, is what
+     * continue-watching/favorites resolve against), new items insert fresh (id 0 -> autogenerate),
+     * and existing rows the provider no longer lists are deleted.
+     */
+    private suspend fun upsertChannels(sourceId: Long, incoming: List<Channel>) {
+        val existing = db.channelDao().matchKeys(sourceId)
+        val existingIdByKey = HashMap<String, Long>(existing.size)
+        for (r in existing) r.matchKey?.let { existingIdByKey.putIfAbsent(it, r.id) }
+
+        val usedIds = HashSet<Long>()
+        val seenKeys = HashSet<String>()
+        val toInsert = ArrayList<Channel>(incoming.size)
+        for (c in incoming) {
+            val key = c.externalId ?: c.name ?: c.streamUrl
+            if (key != null && !seenKeys.add(key)) continue // one row per provider item
+            val existingId = key?.let { existingIdByKey[it] }
+            if (existingId != null) {
+                toInsert += c.copy(id = existingId)
+                usedIds += existingId
+            } else {
+                toInsert += c.copy(id = 0)
+            }
+        }
+        db.channelDao().insertAll(toInsert)
+
+        val staleIds = existing.mapNotNull { it.id.takeUnless(usedIds::contains) }
+        staleIds.chunked(DELETE_CHUNK).forEach { db.channelDao().deleteByIds(it) }
+    }
+
+    /**
+     * Id-preserving movie/series sync (see [upsertChannels]). Additionally carries over the lazily-
+     * loaded enrichment (plot/cast/ratings/episodeCount/metadataFetched) of any matched title, so a
+     * refresh doesn't wipe metadata the user already fetched by opening the Detail screen. Episodes
+     * themselves stay valid because the series' row id is preserved (they reference it).
+     */
+    private suspend fun upsertTitles(sourceId: Long, isSeries: Boolean, incoming: List<VodTitle>) {
+        val existing = db.vodTitleDao().matchKeys(sourceId, isSeries)
+        val existingIdByKey = HashMap<String, Long>(existing.size)
+        for (r in existing) r.matchKey?.let { existingIdByKey.putIfAbsent(it, r.id) }
+        val enrichedByKey = db.vodTitleDao().enrichedTitles(sourceId)
+            .filter { it.isSeries == isSeries }
+            .associateBy { it.externalId ?: it.name ?: it.streamUrl.orEmpty() }
+
+        val usedIds = HashSet<Long>()
+        val seenKeys = HashSet<String>()
+        val toInsert = ArrayList<VodTitle>(incoming.size)
+        for (v in incoming) {
+            val key = v.externalId ?: v.name ?: v.streamUrl
+            if (key != null && !seenKeys.add(key)) continue
+            val existingId = key?.let { existingIdByKey[it] }
+            if (existingId != null) {
+                val enriched = key?.let { enrichedByKey[it] }
+                toInsert += if (enriched != null) {
+                    v.copy(
+                        id = existingId,
+                        plot = enriched.plot, castList = enriched.castList, director = enriched.director,
+                        genre = enriched.genre, year = v.year ?: enriched.year, rating = v.rating ?: enriched.rating,
+                        imdbRating = enriched.imdbRating, rtRating = enriched.rtRating,
+                        episodeCount = enriched.episodeCount, metadataFetched = enriched.metadataFetched,
+                    )
+                } else {
+                    v.copy(id = existingId)
+                }
+                usedIds += existingId
+            } else {
+                toInsert += v.copy(id = 0)
+            }
+        }
+        db.vodTitleDao().insertAll(toInsert)
+
+        // Removed titles: their grouped episodes go first (no FK cascade), then the titles. Only the
+        // ids actually being deleted, so a preserved series keeps its lazily-loaded episodes.
+        val staleIds = existing.mapNotNull { it.id.takeUnless(usedIds::contains) }
+        if (staleIds.isNotEmpty()) {
+            staleIds.chunked(DELETE_CHUNK).forEach { db.seriesEpisodeDao().deleteForSeries(it) }
+            staleIds.chunked(DELETE_CHUNK).forEach { db.vodTitleDao().deleteByIds(it) }
         }
     }
 

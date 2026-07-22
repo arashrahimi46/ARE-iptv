@@ -16,9 +16,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -76,6 +78,9 @@ fun AreSidebarNav(
     modifier: Modifier = Modifier,
     items: List<SidebarNavItem> = DefaultSidebarNavItems,
     brand: String = "ARE",
+    /** Nav ids that show a small "!" attention badge on their icon (e.g. "settings" when the
+     * active playlist hasn't been refreshed in over two weeks). */
+    badgedIds: Set<String> = emptySet(),
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
@@ -144,6 +149,7 @@ fun AreSidebarNav(
                     item = item,
                     active = item.id == active,
                     expanded = expanded,
+                    badged = item.id in badgedIds,
                     interactionSource = itemInteractionSource,
                     focusRequester = focusRequesters.getValue(item.id),
                     onClick = { onSelect(item.id) },
@@ -175,6 +181,7 @@ private fun SidebarNavRow(
     item: SidebarNavItem,
     active: Boolean,
     expanded: Boolean,
+    badged: Boolean,
     interactionSource: MutableInteractionSource,
     focusRequester: FocusRequester,
     onClick: () -> Unit,
@@ -206,12 +213,27 @@ private fun SidebarNavRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Icon(
-                item.icon,
-                contentDescription = item.label,
-                tint = if (active) colors.accentHover else colors.textTertiary,
-                modifier = Modifier.size(26.dp),
-            )
+            Box(contentAlignment = Alignment.TopEnd) {
+                Icon(
+                    item.icon,
+                    contentDescription = item.label,
+                    tint = if (active) colors.accentHover else colors.textTertiary,
+                    modifier = Modifier.size(26.dp),
+                )
+                // "!" attention badge -- e.g. the active playlist is overdue for a refresh. Amber,
+                // nudge-not-alarm; sits on the icon corner so it's visible in the collapsed rail too.
+                if (badged) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = 5.dp, y = (-4).dp)
+                            .size(15.dp)
+                            .background(colors.warning, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(text = "!", style = AreIptvTheme.typography.caption, color = colors.accentFg)
+                    }
+                }
+            }
             AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
                 Text(
                     text = item.label,

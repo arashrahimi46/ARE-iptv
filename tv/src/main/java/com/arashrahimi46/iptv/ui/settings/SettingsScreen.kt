@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PictureInPictureAlt
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VpnKey
@@ -120,6 +121,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val omdbValidation by viewModel.omdbValidation.collectAsState()
     var omdbKeyInput by remember { mutableStateOf("") }
 
+    val activeSource by viewModel.activeSource.collectAsState()
+    val refreshState by viewModel.refreshState.collectAsState()
+
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
 
     // Note: the caller wraps this in ScrollableTab (its own verticalScroll), so this Column must
@@ -128,6 +132,32 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp6).widthIn(max = 900.dp)) {
         Text(text = "Settings", style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp8))
+
+        SettingsSection(title = "Playlists & sync") {
+            val refreshing = refreshState is RefreshState.Refreshing
+            val stale = activeSource?.lastRefreshedAtMs.isStale()
+            SettingsRow(
+                icon = Icons.Filled.Refresh,
+                title = "Refresh catalog",
+                desc = buildString {
+                    append(lastUpdatedLabel(activeSource?.lastRefreshedAtMs))
+                    when (val r = refreshState) {
+                        is RefreshState.Refreshing -> append(" · Syncing with the provider…")
+                        is RefreshState.Success -> append(" · Updated: ${r.channels} channels, ${r.movies} movies, ${r.series} series")
+                        is RefreshState.Error -> append(" · ${r.message}")
+                        RefreshState.Idle -> if (stale) append(" · Over 2 weeks old — refresh to get new channels & titles")
+                    }
+                },
+            ) {
+                AreButton(
+                    text = if (refreshing) "Refreshing…" else "Refresh now",
+                    onClick = { viewModel.refresh() },
+                    disabled = refreshing || activeSource == null,
+                    variant = if (stale) AreButtonVariant.Primary else AreButtonVariant.Secondary,
+                    size = AreButtonSize.Small,
+                )
+            }
+        }
 
         SettingsSection(title = "Appearance") {
             SettingsRow(
@@ -470,6 +500,27 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             onVerified = { pinDialog = PinFlow.SetOnly },
         )
         null -> Unit
+    }
+}
+
+/** A catalog is "stale" (nudge a refresh) once its last sync is older than this -- also the window
+ * the sidebar Settings badge uses. Null (never refreshed / legacy row) counts as stale. */
+const val REFRESH_STALE_MS = 14L * 24 * 60 * 60 * 1000
+
+/** True when [this] last-refresh timestamp is missing or older than [REFRESH_STALE_MS]. */
+fun Long?.isStale(): Boolean = this == null || System.currentTimeMillis() - this > REFRESH_STALE_MS
+
+private fun lastUpdatedLabel(ts: Long?): String {
+    if (ts == null) return "Never refreshed"
+    val ago = System.currentTimeMillis() - ts
+    val days = ago / (24 * 60 * 60 * 1000)
+    val hours = ago / (60 * 60 * 1000)
+    val mins = ago / (60 * 1000)
+    return when {
+        days >= 1 -> "Last updated $days day${if (days == 1L) "" else "s"} ago"
+        hours >= 1 -> "Last updated $hours hour${if (hours == 1L) "" else "s"} ago"
+        mins >= 1 -> "Last updated $mins min ago"
+        else -> "Last updated just now"
     }
 }
 

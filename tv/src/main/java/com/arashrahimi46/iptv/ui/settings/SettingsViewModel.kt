@@ -5,8 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.data.parser.OpenSubtitlesClient
+import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
@@ -16,6 +18,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -36,6 +40,14 @@ sealed interface OmdbValidation {
     data class Error(val message: String) : OmdbValidation
 }
 
+/** Transient state of a manual catalog refresh (not persisted -- the timestamp/counts live in Room). */
+sealed interface RefreshState {
+    data object Idle : RefreshState
+    data object Refreshing : RefreshState
+    data class Success(val channels: Int, val movies: Int, val series: Int) : RefreshState
+    data class Error(val message: String) : RefreshState
+}
+
 /**
  * Backs the real Settings screen (Phase 4): every flow here is a live read
  * off [UserSettings]' DataStore, and every setter writes straight back to it
@@ -48,6 +60,7 @@ sealed interface OmdbValidation {
  */
 class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     private val settings = UserSettings(app)
+    private val playlists = PlaylistRepositoryImpl(app)
 
     private fun <T> flowState(flow: kotlinx.coroutines.flow.Flow<T>, initial: T): StateFlow<T> =
         flow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)
@@ -175,6 +188,44 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun signOutOpenSubs() = viewModelScope.launch {
         settings.setOpenSubsAccount(null, null)
         _subsLogin.value = SubsValidation.Idle
+    }
+
+    // --- Playlist refresh (manual catalog sync) ---
+
+    /** The active playlist source, live -- drives the "Last updated" label and the Refresh row. */
+    val activeSource: StateFlow<PlaylistSource?> =
+        flowState(
+            settings.activeSourceId.flatMapLatest { id ->
+                if (id == null) flowOf(null) else playlists.observeSource(id)
+            },
+            null,
+        )
+
+    private val _refreshState = MutableStateFlow<RefreshState>(RefreshState.Idle)
+    /** Live feedback for the manual refresh action. */
+    val refreshState: StateFlow<RefreshState> = _refreshState.asStateFlow()
+
+    /**
+     * Manually re-sync the active playlist with the provider (id-preserving upsert for Xtream --
+     * favorites, continue-watching, and lazily-loaded metadata survive). A failed/empty fetch leaves
+     * the existing catalog untouched (see [PlaylistRepository.refreshSource]) and surfaces the error.
+     */
+    fun refresh() {
+        if (_refreshState.value is RefreshState.Refreshing) return
+        viewModelScope.launch {
+            val sourceId = settings.activeSourceId.first()
+            if (sourceId == null) {
+                _refreshState.value = RefreshState.Error("No active playlist to refresh.")
+                return@launch
+            }
+            _refreshState.value = RefreshState.Refreshing
+            _refreshState.value = try {
+                val summary = playlists.refreshSource(sourceId)
+                RefreshState.Success(summary.channels, summary.movies, summary.series)
+            } catch (e: Exception) {
+                RefreshState.Error(e.message ?: "Refresh failed -- check your connection and try again.")
+            }
+        }
     }
 
     /** Turning the lock ON never needs a PIN check; the caller (SettingsScreen) only calls this after a PIN exists. */

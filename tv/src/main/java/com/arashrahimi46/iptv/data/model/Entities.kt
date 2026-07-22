@@ -26,6 +26,10 @@ data class PlaylistSource(
     /** Optional custom XMLTV EPG URL; null when using Xtream auto-derived EPG. */
     val epgUrl: String? = null,
     val createdAtMs: Long = System.currentTimeMillis(),
+    /** Epoch-ms of the last successful catalog sync (initial import or a manual refresh). Null for
+     * rows imported before this column existed (they read as "never refreshed" -> stale badge until
+     * the first refresh). Drives the Settings "refresh overdue" badge and the "Last updated" label. */
+    val lastRefreshedAtMs: Long? = null,
 )
 
 /** A genre/group, tagged by which catalog it filters (mirrors CategoryRow/CategoryCard `kind`). */

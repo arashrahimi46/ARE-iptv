@@ -55,7 +55,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Favorite::class,
         ContinueWatchingEntry::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -191,13 +191,26 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v6 -> v7: manual catalog refresh (id-preserving upsert sync). Adds nullable
+         * `playlist_sources.lastRefreshedAtMs` -- the epoch-ms of the last successful sync, set on
+         * initial import and every manual refresh, read by the Settings "refresh overdue" badge and
+         * "Last updated" label. Plain non-destructive ADD COLUMN; existing sources keep their whole
+         * catalog and simply read as "never refreshed" (null) until the first refresh.
+         */
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `playlist_sources` ADD COLUMN `lastRefreshedAtMs` INTEGER")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .build().also { instance = it }
             }
     }

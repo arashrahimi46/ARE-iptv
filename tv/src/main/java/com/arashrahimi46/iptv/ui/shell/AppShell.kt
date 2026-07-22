@@ -37,6 +37,8 @@ fun AreIptvAppShell(
     onNavSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = { AreTopBar() },
+    /** Nav ids that show a "!" attention badge (e.g. "settings" when a catalog refresh is overdue). */
+    badgedNavIds: Set<String> = emptySet(),
     content: @Composable () -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -45,7 +47,7 @@ fun AreIptvAppShell(
             .fillMaxSize()
             .background(colors.bgBase),
     ) {
-        AreSidebarNav(active = activeNav, onSelect = onNavSelect)
+        AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds)
         Column(modifier = Modifier.weight(1f)) {
             topBar()
             // Bounded content area (no scroll here). The shell used to own a single
