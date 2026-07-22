@@ -16,12 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
@@ -66,7 +68,7 @@ fun AreCategoryRow(
             // Small pin marker for pinned categories (long-press OK to pin/unpin) -- floated
             // to the top of the column by the ViewModel. Leading so it reads before the name.
             if (pinned) {
-                Icon(Icons.Filled.PushPin, contentDescription = "Pinned", tint = colors.accent, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.PushPin, contentDescription = stringResource(R.string.browse_category_pinned_desc), tint = colors.accent, modifier = Modifier.size(16.dp))
             }
             // Icon and title count removed: the name now owns the full row width (was truncating
             // to "Arabic M..." in the 240dp column), and the selected category's total already
@@ -80,7 +82,7 @@ fun AreCategoryRow(
                 modifier = Modifier.weight(1f),
             )
             if (smart) {
-                AreBadge("Smart", tone = AreBadgeTone.Smart)
+                AreBadge(stringResource(R.string.badge_smart), tone = AreBadgeTone.Smart)
             }
             Icon(Icons.Filled.KeyboardArrowRight, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(18.dp))
         }

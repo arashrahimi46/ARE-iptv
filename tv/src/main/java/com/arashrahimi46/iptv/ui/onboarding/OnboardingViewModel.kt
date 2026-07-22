@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.repository.ImportSummary
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
@@ -87,7 +88,7 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
         _uiState.value = state.copy(isSubmitting = true, error = null)
         viewModelScope.launch {
             try {
-                val name = state.portalName.ifBlank { "My playlist" }
+                val name = state.portalName.ifBlank { getApplication<Application>().getString(R.string.onboarding_confirm_default_portal_name) }
                 val epgUrl = state.epgUrl.takeIf { !state.epgAuto && it.isNotBlank() }
                 val summary = when (state.sourceType) {
                     OnboardingSourceType.XTREAM -> repository.addXtreamSource(
@@ -112,7 +113,7 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
                     completedSourceId = sourceId,
                 )
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isSubmitting = false, error = e.message ?: "Something went wrong")
+                _uiState.value = _uiState.value.copy(isSubmitting = false, error = e.message ?: getApplication<Application>().getString(R.string.onboarding_error_generic))
             }
         }
     }

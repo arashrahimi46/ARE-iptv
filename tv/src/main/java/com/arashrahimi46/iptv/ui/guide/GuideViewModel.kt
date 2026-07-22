@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.ui.guide
 
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -13,6 +14,7 @@ import com.arashrahimi46.iptv.data.repository.EpgAvailability
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,10 +32,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 /** Day chip selection (Guide.jsx: Yesterday / Today / Tomorrow), each a 6-hour rolling window from the current hour on that date. */
-enum class GuideDay(val label: String, val dayOffset: Long) {
-    Yesterday("Yesterday", -1),
-    Today("Today", 0),
-    Tomorrow("Tomorrow", 1),
+enum class GuideDay(@StringRes val labelRes: Int, val dayOffset: Long) {
+    Yesterday(R.string.guide_day_yesterday, -1),
+    Today(R.string.guide_day_today, 0),
+    Tomorrow(R.string.guide_day_tomorrow, 1),
 }
 
 data class GuideProgramSlot(
@@ -213,7 +215,7 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
             GuideChannelRow(
                 channel = channel,
                 slots = slots.ifEmpty {
-                    listOf(GuideProgramSlot(title = "No programme data", description = null, startMs = window.first, endMs = window.second, isNow = false))
+                    listOf(GuideProgramSlot(title = getApplication<Application>().getString(R.string.player_no_programme_data), description = null, startMs = window.first, endMs = window.second, isNow = false))
                 },
             )
         }

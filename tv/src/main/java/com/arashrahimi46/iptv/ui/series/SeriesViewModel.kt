@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
@@ -76,7 +77,7 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
                     val (pinnedCats, others) = visibleCounts
                         .map { SeriesCategorySummary(it.name, it.count, it.name in pinned) }
                         .partition { it.pinned }
-                    val categories = listOf(SeriesCategorySummary("All series", allTotal)) +
+                    val categories = listOf(SeriesCategorySummary(getApplication<Application>().getString(R.string.browse_all_series), allTotal)) +
                         pinnedCats.sortedBy { it.name.lowercase() } + others
                     val index = if (selectedName == null) 0
                         else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }

@@ -13,10 +13,12 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
@@ -43,6 +45,8 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
+    val movieCountTitlesTemplate = stringResource(R.string.movies_count_titles)
+    val seriesEpisodeCountTemplate = stringResource(R.string.series_episode_count)
     // Which series tile opened Detail (-> player) -- restore D-pad focus onto it when Back
     // re-enters this grid, instead of letting the sidebar take focus. Same mechanism as
     // LiveScreen; survives this screen being paused under the overlay via rememberSaveable.
@@ -63,7 +67,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
 
     if (!state.hasSource) {
         Text(
-            text = "Add a playlist from the sidebar to see series here.",
+            text = stringResource(R.string.series_no_source),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
             modifier = modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = AreIptvTheme.spacing.sp10),
@@ -74,18 +78,18 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
     val categoryOptions = state.categories.map { BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned) }
 
     BrowseLayout(
-        title = "Series",
+        title = stringResource(R.string.series_title),
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
         onCategoryPinToggle = viewModel::togglePin,
         items = series,
         itemKey = { it.id },
-        categoryColumnHeader = "Genres",
+        categoryColumnHeader = stringResource(R.string.movies_genres),
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
         sectionCount = state.selectedCount,
-        sectionCountLabel = { count -> "$count titles" },
-        emptyLabel = "No series in this genre yet.",
+        sectionCountLabel = { count -> String.format(movieCountTitlesTemplate, count) },
+        emptyLabel = stringResource(R.string.series_empty_genre),
         listMode = isListMode,
         // Dense responsive poster grid: ~130dp columns that the tiles fill. Adaptive reflows the
         // column count to the available width, so covers stay small enough to show fully (with
@@ -94,7 +98,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         contentFocusRequester = contentFocusRequester,
         modifier = modifier,
     ) { show ->
-        val episodeMeta = if (show.episodeCount > 0) "${show.episodeCount} episodes" else null
+        val episodeMeta = if (show.episodeCount > 0) String.format(seriesEpisodeCountTemplate, show.episodeCount) else null
         val focusRequester = rememberPlaybackFocusRequester(lastSelectedId, show.id) { lastSelectedId = null }
         ArePosterTile(
             title = show.name,

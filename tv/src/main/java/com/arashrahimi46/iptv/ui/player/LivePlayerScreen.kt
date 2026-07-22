@@ -52,6 +52,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -68,10 +69,12 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.video.VideoFrameMetadataListener
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.repository.SubtitleRepository
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.components.AreDialog
@@ -86,10 +89,7 @@ import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
-/** P0.1: synthetic error surfaced when auto-retry/fallback gives up on a pure-buffering
- * degradation (no real playerError) with nothing left to fall back to. */
-private const val STUCK_ERROR_MESSAGE = "Stream unavailable"
+import kotlin.math.roundToInt
 
 /** Idle time before the transport HUD auto-hides, whether focus is on the video or a control. */
 private const val CONTROLS_IDLE_HIDE_MS = 4000L
@@ -241,6 +241,18 @@ fun LivePlayerScreen(
         }
     }
 
+    val previousChannelLabel = stringResource(R.string.player_previous_channel)
+    val nextChannelLabel = stringResource(R.string.player_next_channel)
+    val previousEpisodeLabel = stringResource(R.string.player_previous_episode)
+    val nextEpisodeLabel = stringResource(R.string.player_next_episode)
+    val back10MinLabel = stringResource(R.string.player_back_10_min)
+    val forward10MinLabel = stringResource(R.string.player_forward_10_min)
+    // Synthetic error surfaced (P0.1) when auto-retry/fallback gives up on a pure-buffering
+    // degradation (no real playerError) with nothing left to fall back to; also doubles as the
+    // "already gave up" sentinel compared against below, same role as the old English-only literal.
+    val playbackFailedText = stringResource(R.string.player_playback_failed)
+    val contentNotFoundText = stringResource(R.string.player_content_not_found)
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -342,7 +354,7 @@ fun LivePlayerScreen(
             }
         } else if (media == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = handleBack, focusRequester = errorFocusRequester)
+                PlayerErrorState(message = state.errorMessage ?: contentNotFoundText, onBack = handleBack, focusRequester = errorFocusRequester)
             }
         } else {
             var playing by remember { mutableStateOf(true) }
@@ -443,6 +455,11 @@ fun LivePlayerScreen(
                 onDispose { view.keepScreenOn = false }
             }
 
+            // Counts frames actually rendered, incremented on the playback thread by the frame
+            // metadata listener below. The poll derives a measured fps from its delta -- most
+            // HLS/TS streams never declare frameRate in their Format, so we can't read it directly.
+            val renderedFrames = remember { java.util.concurrent.atomic.AtomicLong(0L) }
+
             DisposableEffect(exoPlayer) {
                 val listener = object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -483,22 +500,28 @@ fun LivePlayerScreen(
                         // actionable than ExoPlayer's generic "bad http status" code name.
                         playerError = when (val cause = error.cause) {
                             is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException ->
-                                "Server refused the stream (HTTP ${cause.responseCode}). The line may be expired, connection-limited, or locked to another IP."
+                                "$playbackFailedText: HTTP ${cause.responseCode}"
                             is androidx.media3.datasource.HttpDataSource.HttpDataSourceException ->
-                                "Couldn't reach the stream -- check your connection."
+                                playbackFailedText
                             else -> error.errorCodeName.replace('_', ' ').lowercase()
                                 .replaceFirstChar { it.uppercase() }
-                                .ifBlank { "Playback error" }
+                                .ifBlank { playbackFailedText }
                         }
                     }
                 }
                 exoPlayer.addListener(listener)
+                // Measure the real rendered frame rate (see renderedFrames): fires once per output
+                // frame on the playback thread, so a simple atomic increment is all that's needed.
+                renderedFrames.set(0L)
+                val frameListener = VideoFrameMetadataListener { _, _, _, _ -> renderedFrames.incrementAndGet() }
+                exoPlayer.setVideoFrameMetadataListener(frameListener)
                 onDispose {
                     // Save the VOD bookmark before this instance is torn down -- covers leaving the
                     // screen AND a retry/fallback rebuild (P2): the rebuilt player's resume-seek
                     // above then restores this position instead of restarting at 0:00.
                     viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                     exoPlayer.removeListener(listener)
+                    exoPlayer.clearVideoFrameMetadataListener(frameListener)
                     // Minimizing hands this exact instance to LivePlaybackController (which keeps it
                     // playing in the corner and owns its release), so skip the release here -- else
                     // we'd tear down the very player the mini-player is about to show.
@@ -523,15 +546,15 @@ fun LivePlayerScreen(
             LaunchedEffect(playerError, isBuffering, autoRetryAttempt) {
                 val degraded = playerError != null || isBuffering
                 if (!degraded) return@LaunchedEffect
-                // QA nit: once we've already given up (set the synthetic "Stream unavailable"
-                // error below), don't re-query for an alternate every time this effect re-runs
-                // on an unrelated key change -- the answer won't change until autoRetryAttempt
-                // resets (new source/manual retry), which already re-triggers this branch fresh.
-                if (playerError == STUCK_ERROR_MESSAGE) return@LaunchedEffect
+                // QA nit: once we've already given up (set the synthetic "playback failed" error
+                // below), don't re-query for an alternate every time this effect re-runs on an
+                // unrelated key change -- the answer won't change until autoRetryAttempt resets
+                // (new source/manual retry), which already re-triggers this branch fresh.
+                if (playerError == playbackFailedText) return@LaunchedEffect
                 if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
                     val fellBack = viewModel.fallbackToAlternateSource()
                     if (!fellBack && playerError == null) {
-                        playerError = STUCK_ERROR_MESSAGE
+                        playerError = playbackFailedText
                     }
                     return@LaunchedEffect
                 }
@@ -551,6 +574,9 @@ fun LivePlayerScreen(
             var positionMs by remember { mutableStateOf(0L) }
             var durationMs by remember { mutableStateOf(C.TIME_UNSET) }
             var bufferedPositionMs by remember { mutableStateOf(0L) }
+            // Live only: the real decoded resolution + frame rate ("1080p · 50fps"), read from the
+            // player's current video Format in the poll below. Null until the format is known.
+            var streamInfo by remember(media.streamUrl) { mutableStateOf<String?>(null) }
             LaunchedEffect(exoPlayer) {
                 // Expose the current player to the outer D-pad handler for VOD scrubbing; it's
                 // rebuilt on retry/fallback, so keep the holder pointed at the live instance.
@@ -561,10 +587,28 @@ fun LivePlayerScreen(
                 val resume = viewModel.resumePositionMs()
                 if (resume > 0) exoPlayer.seekTo(resume)
                 var saveTick = 0
+                // Measured-fps window: recompute every ~2s (4 polls) for a stable reading -- a 500ms
+                // window jitters between e.g. 24/26 for a 25fps feed, while 2s settles on 25.
+                var fpsTick = 0
+                var lastFrames = 0L
+                var lastFpsAt = SystemClock.elapsedRealtime()
+                var measuredFps = 0
                 while (true) {
                     positionMs = exoPlayer.currentPosition
                     durationMs = exoPlayer.duration
                     bufferedPositionMs = exoPlayer.bufferedPosition
+                    if (media.isLive) {
+                        if (++fpsTick >= 4) {
+                            val now = SystemClock.elapsedRealtime()
+                            val frames = renderedFrames.get()
+                            val dt = now - lastFpsAt
+                            if (dt > 0) measuredFps = ((frames - lastFrames) * 1000.0 / dt).roundToInt()
+                            lastFrames = frames
+                            lastFpsAt = now
+                            fpsTick = 0
+                        }
+                        streamInfo = formatStreamInfo(exoPlayer.videoFormat, measuredFps)
+                    }
                     // Throttle the bookmark write to ~5s (every 10th 500ms poll); VM gates it to VOD.
                     if (++saveTick >= 10) {
                         saveTick = 0
@@ -616,6 +660,40 @@ fun LivePlayerScreen(
             val seekBuffered = if (hasKnownDuration) (bufferedPositionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
             val elapsedLabel = formatPlaybackTime(positionMs)
             val totalLabel = if (hasKnownDuration) formatPlaybackTime(durationMs) else elapsedLabel
+
+            // ⏮/⏭ transport-skip pair, resolved per content type:
+            //  - live: previous/next channel (switchChannel wraps the sibling list).
+            //  - series episode: previous/next episode -- hidden (null) at the first/last, no wrap.
+            //  - movie: −10min/+10min seeks (coerced within the movie's duration).
+            val episodeIndex = state.siblingEpisodeIds.indexOf(state.currentEpisodeId)
+            val isEpisode = state.currentEpisodeId != null
+            val skipPrevious: (() -> Unit)?
+            val skipNext: (() -> Unit)?
+            val skipPreviousLabel: String
+            val skipNextLabel: String
+            when {
+                media.isLive -> {
+                    skipPrevious = { viewModel.switchChannel(-1) }
+                    skipNext = { viewModel.switchChannel(1) }
+                    skipPreviousLabel = previousChannelLabel
+                    skipNextLabel = nextChannelLabel
+                }
+                isEpisode -> {
+                    skipPrevious = if (episodeIndex > 0) ({ viewModel.switchEpisode(-1) }) else null
+                    skipNext = if (episodeIndex in 0 until state.siblingEpisodeIds.lastIndex) ({ viewModel.switchEpisode(1) }) else null
+                    skipPreviousLabel = previousEpisodeLabel
+                    skipNextLabel = nextEpisodeLabel
+                }
+                else -> {
+                    skipPrevious = { exoPlayer.seekTo((exoPlayer.currentPosition - 600_000).coerceAtLeast(0)) }
+                    skipNext = {
+                        val target = exoPlayer.currentPosition + 600_000
+                        exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(durationMs) else target)
+                    }
+                    skipPreviousLabel = back10MinLabel
+                    skipNextLabel = forward10MinLabel
+                }
+            }
 
             // Fully backgrounding (ON_STOP) exits the player rather than just pause()-ing in place,
             // so the ExoPlayer instance releases through the SAME DisposableEffect(exoPlayer)
@@ -685,7 +763,7 @@ fun LivePlayerScreen(
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     AreIconButton(
                         icon = Icons.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.action_back),
                         onClick = handleBack,
                         variant = AreIconButtonVariant.Glass,
                     )
@@ -733,6 +811,7 @@ fun LivePlayerScreen(
                     ArePlayerControls(
                         title = media.title,
                         subtitle = media.subtitle,
+                        streamInfo = streamInfo,
                         live = media.isLive,
                         playing = playing,
                         position = seekPosition,
@@ -757,10 +836,13 @@ fun LivePlayerScreen(
                             val target = exoPlayer.currentPosition + 10_000
                             exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(durationMs) else target)
                         },
-                        // ExoPlayer resolves "default position" to the live edge for a live window,
-                        // and to the start for VOD -- exactly "jump to live" for the live case this
-                        // button is meant for.
-                        onJumpToLive = { exoPlayer.seekToDefaultPosition() },
+                        // ⏮/⏭ are context-dependent: live -> prev/next channel; series episode ->
+                        // prev/next episode (hidden at the first/last); movie -> −10min/+10min. See
+                        // the resolved values built just above the HUD.
+                        onSkipPrevious = skipPrevious,
+                        onSkipNext = skipNext,
+                        skipPreviousLabel = skipPreviousLabel,
+                        skipNextLabel = skipNextLabel,
                         onOpenGuide = onOpenGuide,
                         onUpNext = { showUpNext = true },
                         onMultiView = onMultiView,
@@ -864,9 +946,10 @@ private fun UpNextDialog(channelTitle: String?, programs: List<UpNextProgram>, o
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        AreDialog(onDismiss = onDismiss, title = channelTitle?.let { "Up next -- $it" } ?: "Up next") {
+        val title = channelTitle?.let { stringResource(R.string.player_up_next_channel, it) } ?: stringResource(R.string.player_up_next)
+        AreDialog(onDismiss = onDismiss, title = title) {
             if (programs.isEmpty()) {
-                Text(text = "No programme data", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                Text(text = stringResource(R.string.player_no_programme_data), style = AreIptvTheme.typography.body, color = colors.textSecondary)
             } else {
                 Column {
                     programs.forEach { program ->
@@ -892,6 +975,18 @@ private fun UpNextDialog(channelTitle: String?, programs: List<UpNextProgram>, o
             }
         }
     }
+}
+
+/**
+ * "1080p · 50fps" from the live stream's actual decoded video [androidx.media3.common.Format] --
+ * resolution from the frame height. Frame rate prefers the container-declared rate when present,
+ * else falls back to [measuredFps] (counted rendered frames). Null until the format is known; omits
+ * the fps segment when neither source has a value yet.
+ */
+private fun formatStreamInfo(format: androidx.media3.common.Format?, measuredFps: Int): String? {
+    val height = format?.height?.takeIf { it > 0 } ?: return null
+    val fps = format.frameRate.takeIf { it > 0f }?.roundToInt() ?: measuredFps.takeIf { it > 0 }
+    return if (fps != null) "${height}p · ${fps}fps" else "${height}p"
 }
 
 /** Formats a millisecond duration as `m:ss` (or `h:mm:ss` past an hour) for the transport HUD's elapsed/total labels. */
@@ -922,7 +1017,7 @@ private fun BufferingIndicator() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Filled.Autorenew, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.rotate(angle))
         Box(Modifier.padding(top = 8.dp))
-        Text(text = "Buffering…", style = AreIptvTheme.typography.caption, color = colors.textSecondary)
+        Text(text = stringResource(R.string.player_buffering), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
     }
 }
 
@@ -945,14 +1040,14 @@ private fun PlayerErrorState(
             tint = colors.danger,
             modifier = Modifier.padding(bottom = 12.dp),
         )
-        Text(text = "Playback failed", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+        Text(text = stringResource(R.string.player_playback_failed), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
         Box(Modifier.padding(top = 6.dp))
         Text(text = message, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         Box(Modifier.padding(top = 20.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AreIconButton(
                 icon = Icons.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.action_back),
                 onClick = onBack,
                 variant = AreIconButtonVariant.Solid,
                 modifier = if (onRetry == null && focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
@@ -963,7 +1058,7 @@ private fun PlayerErrorState(
             if (onRetry != null) {
                 AreIconButton(
                     icon = Icons.Filled.Autorenew,
-                    contentDescription = "Retry",
+                    contentDescription = stringResource(R.string.action_retry),
                     onClick = onRetry,
                     variant = AreIconButtonVariant.Solid,
                     modifier = if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,

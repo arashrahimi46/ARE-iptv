@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreSwitch
@@ -56,16 +58,16 @@ fun SourceStep(
 ) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
         SourceCard(
-            title = "Xtream Codes",
-            desc = "Enter your portal host, username and password. Best for live TV + VOD with automatic EPG.",
+            title = stringResource(R.string.onboarding_xtream_title),
+            desc = stringResource(R.string.onboarding_xtream_desc),
             icon = Icons.Filled.Dns,
             selected = selected == OnboardingSourceType.XTREAM,
             onClick = { onSelect(OnboardingSourceType.XTREAM) },
             modifier = Modifier.weight(1f),
         )
         SourceCard(
-            title = "M3U / URL playlist",
-            desc = "Paste a single M3U or M3U-plus link. Add an XMLTV EPG URL separately if you have one.",
+            title = stringResource(R.string.onboarding_m3u_title),
+            desc = stringResource(R.string.onboarding_m3u_desc),
             icon = Icons.Filled.Link,
             selected = selected == OnboardingSourceType.M3U,
             onClick = { onSelect(OnboardingSourceType.M3U) },
@@ -136,17 +138,17 @@ fun CredentialsStep(
         AreTextField(
             value = state.portalName,
             onValueChange = { onChange(it, state.serverUrl, state.username, state.password, state.m3uUrl) },
-            label = "Portal name",
-            placeholder = "Living room",
+            label = stringResource(R.string.onboarding_portal_name_label),
+            placeholder = stringResource(R.string.onboarding_portal_name_placeholder),
         )
         Box(Modifier.height(20.dp))
         if (state.sourceType == OnboardingSourceType.XTREAM) {
             AreTextField(
                 value = state.serverUrl,
                 onValueChange = { onChange(state.portalName, it, state.username, state.password, state.m3uUrl) },
-                label = "Server URL",
+                label = stringResource(R.string.onboarding_server_url_label),
                 mono = true,
-                placeholder = "portal.example.tv:8080",
+                placeholder = stringResource(R.string.onboarding_server_url_placeholder),
                 icon = Icons.Filled.Dns,
             )
             Box(Modifier.height(20.dp))
@@ -154,14 +156,14 @@ fun CredentialsStep(
                 AreTextField(
                     value = state.username,
                     onValueChange = { onChange(state.portalName, state.serverUrl, it, state.password, state.m3uUrl) },
-                    label = "Username",
+                    label = stringResource(R.string.onboarding_username_label),
                     mono = true,
                     modifier = Modifier.weight(1f),
                 )
                 AreTextField(
                     value = state.password,
                     onValueChange = { onChange(state.portalName, state.serverUrl, state.username, it, state.m3uUrl) },
-                    label = "Password",
+                    label = stringResource(R.string.onboarding_password_label),
                     mono = true,
                     modifier = Modifier.weight(1f),
                 )
@@ -170,9 +172,9 @@ fun CredentialsStep(
             AreTextField(
                 value = state.m3uUrl,
                 onValueChange = { onChange(state.portalName, state.serverUrl, state.username, state.password, it) },
-                label = "M3U playlist URL",
+                label = stringResource(R.string.onboarding_m3u_url_label),
                 mono = true,
-                placeholder = "host:8080/get.php?type=m3u_plus&output=ts",
+                placeholder = stringResource(R.string.onboarding_m3u_url_placeholder),
                 icon = Icons.Filled.Link,
             )
         }
@@ -203,10 +205,10 @@ fun EpgStep(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Auto-match EPG & logos", style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                Text(text = stringResource(R.string.onboarding_epg_auto_title), style = AreIptvTheme.typography.label, color = colors.textPrimary)
                 Box(Modifier.height(4.dp))
                 Text(
-                    text = "Fetch guide data, channel logos and posters automatically.",
+                    text = stringResource(R.string.onboarding_epg_auto_desc),
                     style = AreIptvTheme.typography.caption,
                     color = colors.textTertiary,
                 )
@@ -217,10 +219,10 @@ fun EpgStep(
         AreTextField(
             value = epgUrl,
             onValueChange = onEpgUrlChange,
-            label = "XMLTV EPG URL (optional)",
+            label = stringResource(R.string.onboarding_epg_url_label),
             mono = true,
-            placeholder = "portal.example.tv/xmltv.php?username=...",
-            helper = if (epgAuto) "Disabled while auto-match is on." else "Provide your own guide source.",
+            placeholder = stringResource(R.string.onboarding_epg_url_placeholder),
+            helper = if (epgAuto) stringResource(R.string.onboarding_epg_disabled_helper) else stringResource(R.string.onboarding_epg_custom_helper),
         )
     }
 }
@@ -253,35 +255,38 @@ fun ConfirmStep(
                 }
                 Text(
                     text = when {
-                        state.isSubmitting -> "Adding playlist..."
-                        state.error != null -> "Couldn't add playlist"
-                        state.result != null -> "Added"
-                        else -> "Ready to add"
+                        state.isSubmitting -> stringResource(R.string.onboarding_confirm_adding)
+                        state.error != null -> stringResource(R.string.onboarding_confirm_error_title)
+                        state.result != null -> stringResource(R.string.onboarding_confirm_added)
+                        else -> stringResource(R.string.onboarding_confirm_ready)
                     },
                     style = AreIptvTheme.typography.h3,
                     color = colors.textPrimary,
                 )
                 Box(Modifier.weight(1f))
-                state.result?.let { AreBadge("${it.channels} channels", tone = AreBadgeTone.Catchup) }
+                state.result?.let { AreBadge(stringResource(R.string.onboarding_confirm_channels_badge, it.channels), tone = AreBadgeTone.Catchup) }
             }
             Box(Modifier.height(20.dp))
             if (state.isSubmitting) {
                 Text(
-                    text = "Downloading and importing your channels. Large playlists can take a little while — please keep the app open.",
+                    text = stringResource(R.string.onboarding_confirm_downloading),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
             } else if (state.error != null) {
                 Text(text = state.error, style = AreIptvTheme.typography.body, color = colors.danger)
             } else {
+                val xtream = stringResource(R.string.onboarding_xtream_title)
+                val m3u = stringResource(R.string.onboarding_m3u_title)
+                val dash = stringResource(R.string.onboarding_confirm_dash)
                 val rows = buildList {
-                    add("Portal" to state.portalName.ifBlank { "My playlist" })
-                    add("Source" to if (state.sourceType == OnboardingSourceType.XTREAM) "Xtream Codes" else "M3U playlist")
+                    add(stringResource(R.string.onboarding_confirm_row_portal) to state.portalName.ifBlank { stringResource(R.string.onboarding_confirm_default_portal_name) })
+                    add(stringResource(R.string.onboarding_confirm_row_source) to if (state.sourceType == OnboardingSourceType.XTREAM) xtream else m3u)
                     add(
-                        "Server" to if (state.sourceType == OnboardingSourceType.XTREAM) state.serverUrl.ifBlank { "-" } else state.m3uUrl.ifBlank { "-" },
+                        stringResource(R.string.onboarding_confirm_row_server) to if (state.sourceType == OnboardingSourceType.XTREAM) state.serverUrl.ifBlank { dash } else state.m3uUrl.ifBlank { dash },
                     )
-                    add("EPG" to if (state.epgAuto) "Auto-matched" else "Custom XMLTV")
-                    state.result?.let { add("Catalog" to "${it.channels} channels · ${it.movies} movies · ${it.series} series") }
+                    add(stringResource(R.string.onboarding_confirm_row_epg) to if (state.epgAuto) stringResource(R.string.onboarding_confirm_auto_matched) else stringResource(R.string.onboarding_confirm_custom_xmltv))
+                    state.result?.let { add(stringResource(R.string.onboarding_confirm_row_catalog) to stringResource(R.string.onboarding_confirm_catalog_summary, it.channels, it.movies, it.series)) }
                 }
                 rows.forEach { (key, value) ->
                     Row(

@@ -10,10 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
@@ -42,9 +44,9 @@ fun AreStreamHealth(
 ) {
     val colors = AreIptvTheme.colors
     val (color, label) = when (level) {
-        AreStreamHealthLevel.Stable -> colors.healthStable to "Stable"
-        AreStreamHealthLevel.Moderate -> colors.healthModerate to "Moderate"
-        AreStreamHealthLevel.Poor -> colors.healthPoor to "Poor"
+        AreStreamHealthLevel.Stable -> colors.healthStable to stringResource(R.string.health_stable)
+        AreStreamHealthLevel.Moderate -> colors.healthModerate to stringResource(R.string.health_moderate)
+        AreStreamHealthLevel.Poor -> colors.healthPoor to stringResource(R.string.health_poor)
     }
     val d = dotSize(size)
 

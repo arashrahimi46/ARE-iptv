@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Terug</string>
+    <string name="action_cancel">Annuleren</string>
+    <string name="action_continue">Doorgaan</string>
+    <string name="action_retry">Opnieuw</string>
+    <string name="action_close">Sluiten</string>
+    <string name="action_remove">Verwijderen</string>
+    <string name="action_clear">Wissen</string>
+    <string name="action_connect">Verbinden</string>
+    <string name="action_disconnect">Verbinding verbreken</string>
+    <string name="action_sign_in">Aanmelden</string>
+    <string name="action_sign_out">Afmelden</string>
+    <string name="action_search">Zoeken</string>
+    <string name="action_donate">Doneren</string>
+    <string name="content_desc_account">Account</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">ARE iptv verlaten?</string>
+    <string name="shell_stay">Blijven</string>
+    <string name="shell_leave">Verlaten</string>
+    <string name="shell_leave_app_body">Wil je ARE iptv afsluiten?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Bron</string>
+    <string name="onboarding_step_credentials">Gegevens</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Bevestigen</string>
+    <string name="onboarding_title">Een afspeellijst toevoegen</string>
+    <string name="onboarding_subtitle">Gebruik je eigen IPTV-abonnement. ARE iptv slaat je gegevens nooit buiten het apparaat op.</string>
+    <string name="onboarding_skip_for_now">Voorlopig overslaan</string>
+    <string name="onboarding_go_to_home">Naar Start</string>
+    <string name="onboarding_add_playlist">Afspeellijst toevoegen</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Voer je portalhost, gebruikersnaam en wachtwoord in. Ideaal voor live-tv + VOD met automatische EPG.</string>
+    <string name="onboarding_m3u_title">M3U / URL-afspeellijst</string>
+    <string name="onboarding_m3u_desc">Plak één M3U- of M3U-plus-link. Voeg desgewenst apart een XMLTV EPG-URL toe.</string>
+    <string name="onboarding_portal_name_label">Portalnaam</string>
+    <string name="onboarding_portal_name_placeholder">Woonkamer</string>
+    <string name="onboarding_server_url_label">Server-URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Gebruikersnaam</string>
+    <string name="onboarding_password_label">Wachtwoord</string>
+    <string name="onboarding_m3u_url_label">M3U-afspeellijst-URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">EPG &amp; logo\'s automatisch koppelen</string>
+    <string name="onboarding_epg_auto_desc">Haal gidsgegevens, kanaallogo\'s en posters automatisch op.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG-URL (optioneel)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Uitgeschakeld terwijl automatisch koppelen aanstaat.</string>
+    <string name="onboarding_epg_custom_helper">Geef je eigen gidsbron op.</string>
+    <string name="onboarding_confirm_adding">Afspeellijst toevoegen…</string>
+    <string name="onboarding_confirm_error_title">Afspeellijst toevoegen mislukt</string>
+    <string name="onboarding_confirm_added">Toegevoegd</string>
+    <string name="onboarding_confirm_ready">Klaar om toe te voegen</string>
+    <string name="onboarding_confirm_channels_badge">%1$d kanalen</string>
+    <string name="onboarding_confirm_downloading">Je kanalen worden gedownload en geïmporteerd. Grote afspeellijsten kunnen even duren — houd de app open.</string>
+    <string name="onboarding_confirm_row_portal">Portal</string>
+    <string name="onboarding_confirm_default_portal_name">Mijn afspeellijst</string>
+    <string name="onboarding_confirm_row_source">Bron</string>
+    <string name="onboarding_confirm_row_server">Server</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Automatisch gekoppeld</string>
+    <string name="onboarding_confirm_custom_xmltv">Aangepaste XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Catalogus</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d kanalen · %2$d films · %3$d series</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Privacy &amp; Voorwaarden</string>
+    <string name="privacy_subtitle">Lees en accepteer dit voordat je doorgaat.</string>
+    <string name="privacy_body">ARE iptv Privacybeleid &amp; Servicevoorwaarden\n\nARE iptv verzamelt of verzendt je afspeellijstgegevens niet buiten het apparaat. Door door te gaan ga je ermee akkoord deze app alleen te gebruiken met inhoudsbronnen waartoe je gemachtigd bent, en accepteer je onze Servicevoorwaarden en ons Privacybeleid volledig.</string>
+    <string name="privacy_accept_label">Ik heb het Privacybeleid en de Servicevoorwaarden gelezen en accepteer deze.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Kies een afspeellijst</string>
+    <string name="sources_choose_subtitle">Kies welke van je toegevoegde afspeellijsten je wilt openen.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Nieuwe afspeellijst toevoegen</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Kies je taal</string>
+    <string name="language_select_subtitle">Kies de taal die je in de hele app wilt gebruiken.</string>
+    <string name="language_picker_label">Taal</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Weet je zeker dat je de taal wilt wijzigen?</string>
+    <string name="language_confirm_action">Bevestigen</string>
+    <string name="language_confirm_cancel">Annuleren</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Instellingen</string>
+    <string name="settings_section_playlists">Afspeellijsten &amp; synchronisatie</string>
+    <string name="settings_refresh_catalog">Catalogus vernieuwen</string>
+    <string name="settings_refresh_now">Nu vernieuwen</string>
+    <string name="settings_refreshing">Vernieuwen…</string>
+    <string name="settings_refresh_syncing">Synchroniseren met de provider…</string>
+    <string name="settings_refresh_success">Bijgewerkt: %1$d kanalen, %2$d films, %3$d series</string>
+    <string name="settings_refresh_stale">Ouder dan 2 weken — vernieuw voor nieuwe kanalen &amp; titels</string>
+    <string name="settings_never_refreshed">Nooit vernieuwd</string>
+    <string name="settings_last_updated_days">%1$d dag geleden bijgewerkt</string>
+    <string name="settings_last_updated_days_plural">%1$d dagen geleden bijgewerkt</string>
+    <string name="settings_last_updated_hours">%1$d uur geleden bijgewerkt</string>
+    <string name="settings_last_updated_hours_plural">%1$d uur geleden bijgewerkt</string>
+    <string name="settings_last_updated_mins">%1$d min geleden bijgewerkt</string>
+    <string name="settings_last_updated_now">Zojuist bijgewerkt</string>
+    <string name="settings_section_appearance">Weergave</string>
+    <string name="settings_dark_theme">Donker thema</string>
+    <string name="settings_dark_theme_desc">Aanbevolen voor ontspannen kijken.</string>
+    <string name="settings_reduce_motion">Beweging beperken</string>
+    <string name="settings_reduce_motion_desc">Zachtere focusanimaties.</string>
+    <string name="settings_list_view">Lijstweergave</string>
+    <string name="settings_list_view_desc">Toon kanalen, films en series als lijst in plaats van een tegelraster.</string>
+    <string name="settings_section_language">Taal</string>
+    <string name="settings_language_row_title">App-taal</string>
+    <string name="settings_language_row_desc">Kies de taal die in de hele app wordt gebruikt.</string>
+    <string name="settings_section_playback">Afspelen</string>
+    <string name="settings_hardware_decoding">Hardwarematig decoderen</string>
+    <string name="settings_hardware_decoding_desc">Gebruik bij voorkeur hardwaredecoders; valt terug op software als een stream dat nodig heeft.</string>
+    <string name="settings_autoplay_next">Volgende aflevering automatisch afspelen</string>
+    <string name="settings_autoplay_next_desc">Voorlopig alleen een voorkeur -- automatisch doorgaan werkt nog niet; kies de volgende aflevering in Detail.</string>
+    <string name="settings_mini_player_behavior">Gedrag mini-speler</string>
+    <string name="settings_mini_player_behavior_desc">Wanneer je in de buurt van de gedokte mini-speler bladert: schuif hem naar de vrije hoek, of laat hem vervagen en krimpen.</string>
+    <string name="settings_mini_player_dodge">Automatisch ontwijken</string>
+    <string name="settings_mini_player_fade">Vervagen &amp; krimpen</string>
+    <string name="settings_section_parental">Ouderlijk toezicht</string>
+    <string name="settings_lock_adult">Volwassenencategorieën vergrendelen</string>
+    <string name="settings_lock_adult_desc">Als dit aanstaat, is je PIN nodig om het uit te zetten.</string>
+    <string name="settings_change_pin">PIN wijzigen</string>
+    <string name="settings_pin_loading">Laden…</string>
+    <string name="settings_pin_is_set">Er is een PIN ingesteld.</string>
+    <string name="settings_pin_not_set">Nog geen PIN ingesteld.</string>
+    <string name="settings_change">Wijzigen</string>
+    <string name="settings_set_pin">PIN instellen</string>
+    <string name="settings_section_subtitles">Ondertiteling</string>
+    <string name="settings_subtitle_lang_title">Voorkeurstaal</string>
+    <string name="settings_subtitle_lang_desc">Vooraf geselecteerd wanneer je online naar ondertiteling zoekt. Je kunt dit per video nog wijzigen.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Klaar -- online zoeken en downloaden zijn ingeschakeld.</string>
+    <string name="settings_opensubs_key_connected">API-sleutel verbonden. Meld je hieronder ook aan -- beide zijn nodig voor online ondertiteling.</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_account_signed_in">Aangemeld als %1$s -- ondertiteling downloaden is ingeschakeld.</string>
+    <string name="settings_signin_title">Meld je aan om ondertiteling te downloaden</string>
+    <string name="settings_signin_desc">Laatste stap -- zowel de API-sleutel als je accountaanmelding zijn nodig voor online ondertiteling. Meld je aan met je opensubtitles.com-gebruikersnaam en -wachtwoord; downloads gebruiken het dagelijkse quotum van je account. We blijven voor je aangemeld.</string>
+    <string name="settings_placeholder_username">Gebruikersnaam</string>
+    <string name="settings_placeholder_password">Wachtwoord</string>
+    <string name="settings_signing_in">Aanmelden…</string>
+    <string name="settings_opensubs_key_title">OpenSubtitles API-sleutel</string>
+    <string name="settings_opensubs_key_desc">Online ondertiteling vereist een gratis opensubtitles.com-account met twee dingen: deze API-sleutel (voor zoeken) en je accountaanmelding (voor downloaden). Stap 1 -- plak de API-sleutel; je meldt je hierna aan. We valideren hem voordat we opslaan.</string>
+    <string name="settings_placeholder_api_key">API-sleutel</string>
+    <string name="settings_checking">Controleren…</string>
+    <string name="settings_section_metadata">Film- &amp; serie-info</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Verbonden -- IMDb- &amp; Rotten Tomatoes-scores, plot en cast verschijnen in Detail.</string>
+    <string name="settings_omdb_key_title">OMDb API-sleutel</string>
+    <string name="settings_omdb_key_desc">Plak een gratis sleutel van omdbapi.com om films en series te verrijken met IMDb- &amp; Rotten Tomatoes-scores, een synopsis en de cast. We valideren hem voordat we opslaan.</string>
+    <string name="settings_section_about">Over</string>
+    <string name="settings_version_title">Versie</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Steun deze app</string>
+    <string name="settings_support_desc">Trakteer me op een koffie als ARE iptv nuttig voor je is.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Stel een pincode van 4 cijfers in</string>
+    <string name="pin_confirm_title">Bevestig je PIN</string>
+    <string name="pin_enter_title">PIN invoeren</string>
+    <string name="pin_lockout_message">Te veel foute pogingen -- probeer het over %1$ds opnieuw</string>
+    <string name="pin_mismatch_error">PIN\'s kwamen niet overeen -- probeer het opnieuw</string>
+    <string name="pin_incorrect_error">Onjuiste PIN</string>
+    <string name="pin_checking">Controleren…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Sectie toevoegen</string>
+    <string name="home_remove_continue_watching_title">Uit Verder kijken verwijderen?</string>
+    <string name="home_remove_continue_watching_body">“%1$s” wordt hier niet meer getoond. Je positie wordt niet bewaard.</string>
+    <string name="home_loading_catalog">Je catalogus laden…</string>
+    <string name="home_no_playlist_title">Nog geen afspeellijst</string>
+    <string name="home_no_playlist_body">Voeg een afspeellijst toe via de zijbalk om hier je kanalen, films en series te zien.</string>
+    <string name="home_section_continue_watching">Verder kijken</string>
+    <string name="home_section_live_now">Nu live</string>
+    <string name="home_section_categories">Bladeren op categorie</string>
+    <string name="home_section_recommended">Voor jou</string>
+    <string name="home_section_for_you">Voor jou</string>
+    <string name="home_section_popular">Populair</string>
+    <string name="home_section_because_you_like">Omdat je %1$s leuk vindt</string>
+    <string name="home_section_movies">Films</string>
+    <string name="home_section_series">Series</string>
+    <string name="home_add_section_dialog_title">Een sectie toevoegen</string>
+    <string name="home_add_section_empty">Elke categorie uit je afspeellijst is al vastgezet op Start.</string>
+    <string name="home_category_live">Live</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Serie</string>
+    <string name="home_edit_grabbed_desc">Vastgepakt -- omhoog/omlaag om te verplaatsen, OK om neer te zetten</string>
+    <string name="home_edit_grab_desc">Pak vast om te herschikken</string>
+    <string name="home_edit_show_section">Sectie tonen</string>
+    <string name="home_edit_hide_section">Sectie verbergen</string>
+    <string name="home_edit_remove_section">Sectie verwijderen</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Voeg een afspeellijst toe via de zijbalk om hier de tv-gids te zien.</string>
+    <string name="guide_title">TV-gids</string>
+    <string name="guide_epg_unavailable">EPG-bron niet beschikbaar -- kanalen worden zonder programmagegevens getoond.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Focus op een programma om details te zien</string>
+    <string name="guide_live_badge">LIVE</string>
+    <string name="guide_catchup_available_desc">Terugkijken beschikbaar</string>
+    <string name="guide_day_yesterday">Gisteren</string>
+    <string name="guide_day_today">Vandaag</string>
+    <string name="guide_day_tomorrow">Morgen</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Voeg een afspeellijst toe via de zijbalk om hier live-kanalen te zien.</string>
+    <string name="live_title">Live-tv</string>
+    <string name="live_channel_groups">Kanaalgroepen</string>
+    <string name="live_count_channels">%1$d kanalen</string>
+    <string name="live_empty_group">Nog geen kanalen in deze groep.</string>
+    <string name="live_on_air_now">NU OP TV</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Voeg een afspeellijst toe via de zijbalk om hier films te zien.</string>
+    <string name="movies_title">Films</string>
+    <string name="movies_genres">Genres</string>
+    <string name="movies_count_titles">%1$d titels</string>
+    <string name="movies_empty_genre">Nog geen films in dit genre.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Voeg een afspeellijst toe via de zijbalk om hier series te zien.</string>
+    <string name="series_title">Series</string>
+    <string name="series_empty_genre">Nog geen series in dit genre.</string>
+    <string name="series_episode_count">%1$d afleveringen</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Voeg een afspeellijst toe via de zijbalk en markeer kanalen of titels als favoriet om ze hier te zien.</string>
+    <string name="favorites_title">Favorieten</string>
+    <string name="favorites_tab_channels">Kanalen</string>
+    <string name="favorites_tab_movies">Films</string>
+    <string name="favorites_tab_series">Series</string>
+    <string name="favorites_empty_channels">Nog geen favoriete kanalen -- tik op het hartje op een kanaaltegel om er een toe te voegen.</string>
+    <string name="favorites_empty_movies">Nog geen favoriete films -- tik op het hartje op een filmtegel om er een toe te voegen.</string>
+    <string name="favorites_empty_series">Nog geen favoriete series -- tik op het hartje op een serietegel om er een toe te voegen.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Voeg een afspeellijst toe via de zijbalk om je catalogus te doorzoeken.</string>
+    <string name="search_title">Zoeken</string>
+    <string name="search_placeholder">Zoek kanalen, films, series…</string>
+    <string name="search_scope_all">Alles</string>
+    <string name="search_scope_live">Live-tv</string>
+    <string name="search_scope_movies">Films</string>
+    <string name="search_scope_series">Series</string>
+    <string name="search_category_label">Categorie: %1$s</string>
+    <string name="search_type_to_search">Typ om je catalogus te doorzoeken.</string>
+    <string name="search_min_chars">Typ minstens %1$d tekens om te zoeken.</string>
+    <string name="search_no_results">Geen resultaten voor \"%1$s\".</string>
+    <string name="search_section_live">Live-tv</string>
+    <string name="search_section_titles">Films &amp; series</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Laden…</string>
+    <string name="detail_not_found">Titel niet gevonden</string>
+    <string name="detail_play">Afspelen</string>
+    <string name="detail_play_episode">S%1$d · A%2$d afspelen</string>
+    <string name="detail_add_to_favorites">Aan favorieten toevoegen</string>
+    <string name="detail_remove_from_favorites">Uit favorieten verwijderen</string>
+    <string name="detail_storyline">Verhaal</string>
+    <string name="detail_cast_label">Cast:</string>
+    <string name="detail_director_label">Regisseur:</string>
+    <string name="detail_episodes_header">Afleveringen</string>
+    <string name="detail_episodes_header_seasons">Afleveringen · %1$d seizoenen · %2$d totaal</string>
+    <string name="detail_episodes_header_total">Afleveringen · %1$d totaal</string>
+    <string name="detail_season_label">Seizoen %1$d</string>
+    <string name="detail_season_episode_count">Seizoen %1$s · %2$d afleveringen</string>
+    <string name="detail_m3u_no_episodes">Dit afspeellijstitem heeft geen seizoen-/afleveringgegevens -- gebruik Afspelen hierboven om het als één item te bekijken.</string>
+    <string name="detail_episodes_load_error">Afleveringen laden mislukt: %1$s</string>
+    <string name="detail_episodes_loading">Afleveringen laden…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Inhoud niet gevonden</string>
+    <string name="player_playback_failed">Afspelen mislukt</string>
+    <string name="player_buffering">Bufferen…</string>
+    <string name="player_up_next">Hierna</string>
+    <string name="player_up_next_channel">Hierna -- %1$s</string>
+    <string name="player_no_programme_data">Geen programmagegevens</string>
+    <string name="player_previous_channel">Vorig kanaal</string>
+    <string name="player_next_channel">Volgend kanaal</string>
+    <string name="player_previous_episode">Vorige aflevering</string>
+    <string name="player_next_episode">Volgende aflevering</string>
+    <string name="player_back_10_min">10 minuten terug</string>
+    <string name="player_forward_10_min">10 minuten vooruit</string>
+    <string name="player_rewind">Terugspoelen</string>
+    <string name="player_pause">Pauzeren</string>
+    <string name="player_play">Afspelen</string>
+    <string name="player_fast_forward">Vooruitspoelen</string>
+    <string name="player_audio_track">Audiospoor</string>
+    <string name="player_subtitles">Ondertiteling</string>
+    <string name="player_minimize_to_corner">Minimaliseren naar hoek</string>
+    <string name="player_picture_in_picture">Beeld-in-beeld</string>
+    <string name="player_up_next_action">Hierna</string>
+    <string name="player_open_guide">Gids openen</string>
+    <string name="player_live_badge">Live</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Uit</string>
+    <string name="subtitle_none_in_stream">Geen ondertiteling in deze stream.</string>
+    <string name="subtitle_search_online">Online zoeken…</string>
+    <string name="subtitle_selected">Geselecteerd</string>
+    <string name="subtitle_picker_title">Ondertiteling</string>
+    <string name="subtitle_search_title">Online naar ondertiteling zoeken</string>
+    <string name="subtitle_search_placeholder">Titel</string>
+    <string name="subtitle_searching">Zoeken…</string>
+    <string name="subtitle_search_action">Zoeken</string>
+    <string name="subtitle_status_searching">OpenSubtitles doorzoeken…</string>
+    <string name="subtitle_status_downloading">Ondertiteling downloaden…</string>
+    <string name="subtitle_status_no_matches">Geen resultaten -- probeer een andere titel of taal.</string>
+    <string name="subtitle_default_label">Ondertiteling %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Mini-speler stoppen?</string>
+    <string name="mini_player_stop_body">“%1$s” stoppen en de mini-speler sluiten?</string>
+    <string name="mini_player_stop">Stoppen</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Multiweergave</string>
+    <string name="multiview_4up">4 tegelijk</string>
+    <string name="multiview_2up">2 tegelijk</string>
+    <string name="multiview_no_source">Geen actieve afspeellijst</string>
+    <string name="multiview_no_channels">Geen live-kanalen beschikbaar voor multiweergave</string>
+    <string name="multiview_audio_badge">Audio</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Aanpassen</string>
+    <string name="shell_add_playlist_desc">Afspeellijst toevoegen</string>
+    <string name="nav_home">Start</string>
+    <string name="nav_live_tv">Live-tv</string>
+    <string name="nav_tv_guide">TV-gids</string>
+    <string name="nav_movies">Films</string>
+    <string name="nav_series">Series</string>
+    <string name="nav_search">Zoeken</string>
+    <string name="nav_favorites">Favorieten</string>
+    <string name="nav_settings">Instellingen</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Categorieën</string>
+    <string name="browse_empty_default">Nog geen items in deze categorie.</string>
+    <string name="browse_load_error">Laden mislukt — probeer opnieuw</string>
+    <string name="browse_pin_dialog_pinned_body">Verwijder deze categorie van de bovenkant van de lijst.</string>
+    <string name="browse_pin_dialog_unpinned_body">Zet deze categorie bovenaan de lijst vast.</string>
+    <string name="browse_unpin">Losmaken</string>
+    <string name="browse_pin">Vastzetten</string>
+    <string name="browse_category_pinned_desc">Vastgezet</string>
+    <string name="browse_see_all">Alles bekijken  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Live</string>
+    <string name="badge_catchup">Terugkijken</string>
+    <string name="badge_smart">Smart</string>
+    <string name="health_stable">Stabiel</string>
+    <string name="health_moderate">Matig</string>
+    <string name="health_poor">Slecht</string>
+    <string name="continue_card_resume_desc">Hervatten</string>
+    <string name="channel_tile_now">Nu · %1$s</string>
+    <string name="channel_tile_next">Straks · %1$s</string>
+    <string name="browse_all_channels">Alle kanalen</string>
+    <string name="browse_all_movies">Alle films</string>
+    <string name="browse_all_series">Alle series</string>
+    <string name="settings_refresh_no_playlist">Geen actieve afspeellijst om te vernieuwen.</string>
+    <string name="settings_refresh_failed">Vernieuwen mislukt — controleer je verbinding en probeer het opnieuw.</string>
+    <string name="settings_subs_connect_key_first">Verbind eerst je API-sleutel.</string>
+    <string name="onboarding_error_generic">Er is iets misgegaan</string>
+</resources>

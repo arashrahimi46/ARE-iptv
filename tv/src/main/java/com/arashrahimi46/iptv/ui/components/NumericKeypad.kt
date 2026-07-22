@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -33,7 +35,7 @@ fun AreNumericKeypad(
             "789".forEach { digit -> AreKeyboardKey(label = digit.toString(), onClick = { onDigit(digit) }) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AreKeyboardKey(label = "Clear", onClick = onClear, wide = true)
+            AreKeyboardKey(label = stringResource(R.string.action_clear), onClick = onClear, wide = true)
             AreKeyboardKey(label = "0", onClick = { onDigit('0') })
             AreKeyboardKey(label = "⌫", onClick = onBackspace)
         }

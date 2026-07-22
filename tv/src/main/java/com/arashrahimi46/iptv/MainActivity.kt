@@ -3,7 +3,8 @@ package com.arashrahimi46.iptv
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
@@ -35,6 +36,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
@@ -57,6 +59,7 @@ import com.arashrahimi46.iptv.ui.detail.PlayTarget
 import com.arashrahimi46.iptv.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
+import com.arashrahimi46.iptv.ui.language.LanguageSelectScreen
 import com.arashrahimi46.iptv.ui.live.LiveScreen
 import com.arashrahimi46.iptv.ui.multiview.MultiViewScreen
 import com.arashrahimi46.iptv.ui.movies.MoviesScreen
@@ -68,6 +71,7 @@ import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.settings.SettingsScreen
 import com.arashrahimi46.iptv.ui.settings.isStale
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
@@ -77,8 +81,26 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Round 1 multi-language support: AppCompatDelegate.setApplicationLocales() only takes
+        // effect for an Activity that wraps its base context via AppCompatDelegate -- plain
+        // ComponentActivity never applied the selected locale to its Resources at all, which is
+        // why the whole feature was silently a no-op (persisted correctly, never rendered). The
+        // AppLocalesMetadataHolderService (see manifest) auto-restores AppCompatDelegate's own
+        // locale store on cold start on API < 33, but as a belt-and-suspenders safeguard we also
+        // resync from the UserSettings/DataStore mirror here in case that store is ever empty
+        // (e.g. first process start after this fix ships, before the service has anything saved).
+        if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+            val tag = kotlinx.coroutines.runBlocking {
+                UserSettings(applicationContext).languageTag.first()
+            }
+            if (tag.isNotBlank() && tag != "en") {
+                AppCompatDelegate.setApplicationLocales(
+                    androidx.core.os.LocaleListCompat.forLanguageTags(tag)
+                )
+            }
+        }
         super.onCreate(savedInstanceState)
         setContent {
             // One Activity-scoped controller owns the in-app "minimized to a corner" live player's
@@ -101,8 +123,9 @@ class MainActivity : ComponentActivity() {
  * "the content changed" instead of "the whole page reloaded": the sidebar and
  * top bar are never torn down and rebuilt on a tab switch.
  *
- * "onboarding" shows while there's no active
- * [com.arashrahimi46.iptv.data.model.PlaylistSource]; the full-bleed overlays
+ * "language" (Round 1 multi-language support) shows once, right after Splash and before
+ * Onboarding, gated by [UserSettings.hasSelectedLanguage]. "onboarding" shows while there's no
+ * active [com.arashrahimi46.iptv.data.model.PlaylistSource]; the full-bleed overlays
  * "player/...", "detail/..." and "multiview" live OUTSIDE the shell (no
  * sidebar), same as before.
  */
@@ -128,6 +151,9 @@ fun AreIptvApp() {
     // Issue #11: first-run Privacy & Terms acceptance gate. `null` distinguishes "DataStore
     // hasn't emitted yet" from a real false, same reasoning as UNKNOWN below for activeSourceId.
     val hasAcceptedTerms: Boolean? by settings.hasAcceptedTerms.collectAsState(initial = null)
+    // Round 1 multi-language support: first-run language selector gate, same "null = not loaded
+    // yet" reasoning as hasAcceptedTerms above.
+    val hasSelectedLanguage: Boolean? by settings.hasSelectedLanguage.collectAsState(initial = null)
     val navController = rememberNavController()
 
     // Issue #13: cold-start splash, shown unconditionally for a couple of seconds before any
@@ -144,7 +170,7 @@ fun AreIptvApp() {
 
     // Wait for the first real read from DataStore/Room before deciding the start
     // destination, so a source that already exists on launch doesn't flash Onboarding.
-    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null || sources == null) return
+    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null || hasSelectedLanguage == null || sources == null) return
     val hasMultipleSources = (sources?.size ?: 0) > 1
 
     // A non-null activeSourceId means at least one playlist has been added. With more than
@@ -152,6 +178,7 @@ fun AreIptvApp() {
     // (their existing sources were never listed before); with exactly one, there's nothing
     // to pick between, so go straight to the shell as before.
     val startDestination = when {
+        hasSelectedLanguage == false -> "language"
         hasAcceptedTerms == false -> "privacy"
         activeSourceId == null -> "onboarding"
         hasMultipleSources -> "sources"
@@ -160,6 +187,19 @@ fun AreIptvApp() {
 
     AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("language") {
+            LanguageSelectScreen(onDone = {
+                val destination = when {
+                    hasAcceptedTerms == false -> "privacy"
+                    activeSourceId == null -> "onboarding"
+                    hasMultipleSources -> "sources"
+                    else -> "shell"
+                }
+                navController.navigate(destination) {
+                    popUpTo("language") { inclusive = true }
+                }
+            })
+        }
         composable("privacy") {
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             PrivacyTermsStep(onAccepted = {
@@ -305,7 +345,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     val activeSource by remember(activeSourceId) {
         activeSourceId?.let { playlistRepository.observeSource(it) } ?: flowOf(null)
     }.collectAsState(initial = null)
-    val badgedNavIds = if (activeSource?.lastRefreshedAtMs.isStale()) setOf("settings") else emptySet()
+    // Only nudge a refresh when a playlist actually exists -- with no source there's nothing to
+    // refresh, and isStale() treats a null timestamp as stale, which wrongly badged a fresh install.
+    val currentSource = activeSource
+    val badgedNavIds = if (currentSource != null && currentSource.lastRefreshedAtMs.isStale()) setOf("settings") else emptySet()
 
     // Honor a tab requested by a full-bleed caller (player -> open guide) once.
     LaunchedEffect(initialTab) {
@@ -427,7 +470,9 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 }
             }
             composable("settings") {
-                ScrollableTab { SettingsScreen() }
+                // Settings owns its own LazyColumn now (smoother scroll than an eager Column), so it
+                // needs a bounded height like the other lazy screens -- FullSizeTab, not ScrollableTab.
+                FullSizeTab { SettingsScreen() }
             }
         }
     }
@@ -461,11 +506,11 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             LaunchedEffect(Unit) { leaveFocus.requestFocus() }
             AreDialog(
                 onDismiss = { showExitDialog = false },
-                title = "Leave ARE iptv?",
+                title = stringResource(R.string.shell_leave_app_title),
                 actions = {
-                    AreButton("Stay", onClick = { showExitDialog = false }, variant = AreButtonVariant.Ghost)
+                    AreButton(stringResource(R.string.shell_stay), onClick = { showExitDialog = false }, variant = AreButtonVariant.Ghost)
                     AreButton(
-                        "Leave",
+                        stringResource(R.string.shell_leave),
                         onClick = { showExitDialog = false; activity?.finish() },
                         variant = AreButtonVariant.Primary,
                         modifier = Modifier.focusRequester(leaveFocus),
@@ -473,7 +518,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 },
             ) {
                 Text(
-                    text = "Do you want to exit ARE iptv?",
+                    text = stringResource(R.string.shell_leave_app_body),
                     style = AreIptvTheme.typography.body,
                     color = AreIptvTheme.colors.textSecondary,
                 )

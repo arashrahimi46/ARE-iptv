@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.tvGlow
@@ -48,9 +49,12 @@ fun AreBadge(
         AreBadgeTone.Neutral -> ToneStyle(colors.surface2, colors.textSecondary, colors.borderDefault, null)
     }
 
+    // LIVE reads as a compact status flag, not a chip — smaller than the other tones.
+    val compact = tone == AreBadgeTone.Live
+
     Row(
         modifier = modifier
-            .height(22.dp)
+            .height(if (compact) 18.dp else 22.dp)
             // Glow BEFORE the background so the symmetric halo sits behind the pill,
             // not painted over its fill (design system `--glow-live`/`--glow-smart`).
             .then(
@@ -62,14 +66,18 @@ fun AreBadge(
             )
             .background(style.bg, shape)
             .then(if (style.border != null) Modifier.border(1.dp, style.border, shape) else Modifier)
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = if (compact) 6.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 5.dp),
     ) {
         if (tone == AreBadgeTone.Live) {
-            Box(Modifier.size(6.dp).background(Color.White, CircleShape))
+            Box(Modifier.size(5.dp).background(Color.White, CircleShape))
         }
-        Text(text = text.uppercase(), style = AreIptvTheme.typography.caption, color = style.fg)
+        Text(
+            text = text.uppercase(),
+            style = if (compact) AreIptvTheme.typography.caption.copy(fontSize = 11.sp) else AreIptvTheme.typography.caption,
+            color = style.fg,
+        )
     }
 }
 

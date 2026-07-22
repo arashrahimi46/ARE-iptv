@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
@@ -95,14 +96,14 @@ fun AreSplashScreen() {
                 )
                 Image(
                     painter = painterResource(R.drawable.ic_logo_mark),
-                    contentDescription = "ARE iptv",
+                    contentDescription = stringResource(R.string.splash_logo_content_description),
                     modifier = Modifier
                         .size(96.dp)
                         .scale(0.94f + 0.06f * glowPulse),
                 )
             }
             Box(Modifier.padding(top = 24.dp))
-            Text(text = "ARE iptv", style = AreIptvTheme.typography.h2, color = AreIptvTheme.colors.textPrimary)
+            Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = AreIptvTheme.colors.textPrimary)
         }
     }
 }

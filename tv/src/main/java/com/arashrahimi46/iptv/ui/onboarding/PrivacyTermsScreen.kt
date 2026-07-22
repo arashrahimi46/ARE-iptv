@@ -19,8 +19,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreSwitch
@@ -52,10 +54,10 @@ fun PrivacyTermsStep(onAccepted: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 40.dp, vertical = 56.dp),
         ) {
-            Text(text = "Privacy & Terms", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.privacy_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(
-                text = "Please review and accept before continuing.",
+                text = stringResource(R.string.privacy_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
@@ -71,11 +73,7 @@ fun PrivacyTermsStep(onAccepted: () -> Unit) {
                 // product/legal. This stand-in text exists only so the acceptance gate has
                 // something to display.
                 Text(
-                    text = "ARE iptv Privacy Policy & Terms of Service\n\n" +
-                        "ARE iptv does not collect or transmit your playlist credentials off-device. " +
-                        "By continuing, you agree to use this app only with content sources you are " +
-                        "authorized to access, and you accept our Terms of Service and Privacy Policy " +
-                        "in full.",
+                    text = stringResource(R.string.privacy_body),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
@@ -86,7 +84,7 @@ fun PrivacyTermsStep(onAccepted: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 AreSwitch(checked = accepted, onCheckedChange = { accepted = it })
                 Text(
-                    text = "I have read and accept the Privacy Policy and Terms of Service.",
+                    text = stringResource(R.string.privacy_accept_label),
                     style = AreIptvTheme.typography.label,
                     color = colors.textPrimary,
                 )
@@ -97,7 +95,7 @@ fun PrivacyTermsStep(onAccepted: () -> Unit) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Box(Modifier.weight(1f))
                 AreButton(
-                    "Continue",
+                    stringResource(R.string.action_continue),
                     onClick = onAccepted,
                     size = AreButtonSize.Large,
                     disabled = !accepted,

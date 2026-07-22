@@ -26,8 +26,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
@@ -56,7 +57,6 @@ fun AreChannelTile(
     number: String? = null,
     now: String? = null,
     next: String? = null,
-    progress: Float = 0.45f,
     health: AreStreamHealthLevel = AreStreamHealthLevel.Stable,
     quality: String? = null,
     codec: String? = null,
@@ -98,8 +98,8 @@ fun AreChannelTile(
                     modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    AreBadge("Live", tone = AreBadgeTone.Live)
-                    if (catchup) AreBadge("Catch-up", tone = AreBadgeTone.Catchup)
+                    AreBadge(stringResource(R.string.badge_live), tone = AreBadgeTone.Live)
+                    if (catchup) AreBadge(stringResource(R.string.badge_catchup), tone = AreBadgeTone.Catchup)
                 }
                 Row(
                     modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
@@ -119,11 +119,16 @@ fun AreChannelTile(
                     // P0.3 (WCAG 1.4.1): stream health was color-only (dot color alone) --
                     // contentDescription exposes the same "Stable/Moderate/Poor" status
                     // AreStreamHealth's own label uses, so it's not color-only for TalkBack.
+                    val healthLabel = when (health) {
+                        AreStreamHealthLevel.Stable -> stringResource(R.string.health_stable)
+                        AreStreamHealthLevel.Moderate -> stringResource(R.string.health_moderate)
+                        AreStreamHealthLevel.Poor -> stringResource(R.string.health_poor)
+                    }
                     Box(
                         Modifier
                             .size(9.dp)
                             .background(healthColor, CircleShape)
-                            .semantics { contentDescription = "Stream health: ${health.name}" },
+                            .semantics { contentDescription = healthLabel },
                     )
                 }
                 Box(
@@ -157,7 +162,7 @@ fun AreChannelTile(
                 if (onToggleFavorite != null) {
                     AreIconButton(
                         icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                        contentDescription = if (isFavorite == true) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
                         onClick = onToggleFavorite,
                         variant = AreIconButtonVariant.Glass,
                         size = AreIconButtonSize.Small,
@@ -172,10 +177,6 @@ fun AreChannelTile(
                     .background(colors.surface1)
                     .padding(top = 12.dp, start = 12.dp, end = 12.dp, bottom = 11.dp),
             ) {
-                Box(Modifier.fillMaxWidth().height(3.dp).background(Color.Black.copy(alpha = 0.5f))) {
-                    Box(Modifier.fillMaxWidth(progress.coerceIn(0f, 1f)).fillMaxSize().background(colors.accent))
-                }
-                Box(Modifier.height(9.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (number != null) {
                         Text(text = number, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
@@ -191,7 +192,7 @@ fun AreChannelTile(
                 }
                 if (now != null) {
                     Text(
-                        text = "Now · $now",
+                        text = stringResource(R.string.channel_tile_now, now),
                         style = AreIptvTheme.typography.caption,
                         color = colors.textSecondary,
                         maxLines = 1,
@@ -201,7 +202,7 @@ fun AreChannelTile(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = if (next != null) "Next · $next" else "",
+                        text = if (next != null) stringResource(R.string.channel_tile_next, next) else "",
                         style = AreIptvTheme.typography.caption,
                         color = colors.textTertiary,
                         maxLines = 1,

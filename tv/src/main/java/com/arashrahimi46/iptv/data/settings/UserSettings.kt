@@ -16,9 +16,6 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "are_iptv_settings")
 
-/** Which player handles playback -- persisted only, see [UserSettings.externalPlayer] doc. */
-enum class ExternalPlayerChoice { BUILT_IN, VLC, MX }
-
 /** How the docked mini-player avoids covering the tab content behind it: [DODGE] slides it to the
  * free corner when focus reaches its slot (returning home when focus leaves); [FADE] keeps it put
  * but fades+shrinks it while the user browses. See [com.arashrahimi46.iptv.ui.player.LiveMiniPlayerOverlay]. */
@@ -36,8 +33,6 @@ class UserSettings(private val context: Context) {
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val HARDWARE_DECODING = booleanPreferencesKey("hardware_decoding")
         val AUTOPLAY_NEXT_EPISODE = booleanPreferencesKey("autoplay_next_episode")
-        val PICTURE_IN_PICTURE = booleanPreferencesKey("picture_in_picture")
-        val EXTERNAL_PLAYER = stringPreferencesKey("external_player")
         val MINI_PLAYER_BEHAVIOR = stringPreferencesKey("mini_player_behavior")
         val PARENTAL_LOCK_ENABLED = booleanPreferencesKey("parental_lock_enabled")
         val PARENTAL_PIN_HASH = stringPreferencesKey("parental_pin_hash")
@@ -51,6 +46,10 @@ class UserSettings(private val context: Context) {
         val OPENSUBS_P = stringPreferencesKey("opensubs_p")
         val OMDB_KEY = stringPreferencesKey("omdb_key")
         val HOME_LAYOUT = stringPreferencesKey("home_layout")
+        /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); see [languageTag]. */
+        val LANGUAGE_TAG = stringPreferencesKey("language_tag")
+        /** Whether the first-run language selector has been completed; see [hasSelectedLanguage]. */
+        val LANGUAGE_CHOSEN = booleanPreferencesKey("language_chosen")
         /** Pinned category names, namespaced per browse screen (see [pinnedCategoriesKey]). */
         fun pinnedCategoriesKey(namespace: String) = stringSetPreferencesKey("pinned_categories_$namespace")
     }
@@ -72,18 +71,6 @@ class UserSettings(private val context: Context) {
      * episode list already lets a user manually pick the next episode.
      */
     val isAutoplayNextEpisode: Flow<Boolean> = context.dataStore.data.map { it[Keys.AUTOPLAY_NEXT_EPISODE] ?: true }
-
-    /**
-     * Storage-only per explicit product-lead scoping -- no enter-PiP-mode implementation is
-     * wired to this flag. See [com.arashrahimi46.iptv.ui.player.LivePlayerScreen]'s doc comment
-     * on why PiP needs Phase 2's device verification to land first.
-     */
-    val isPictureInPicture: Flow<Boolean> = context.dataStore.data.map { it[Keys.PICTURE_IN_PICTURE] ?: false }
-
-    /** Persisted choice only -- doesn't launch an external player intent yet. */
-    val externalPlayer: Flow<ExternalPlayerChoice> = context.dataStore.data.map { prefs ->
-        prefs[Keys.EXTERNAL_PLAYER]?.let { runCatching { ExternalPlayerChoice.valueOf(it) }.getOrNull() } ?: ExternalPlayerChoice.BUILT_IN
-    }
 
     /** Docked mini-player anti-occlusion behavior; defaults to [MiniPlayerBehavior.DODGE]. */
     val miniPlayerBehavior: Flow<MiniPlayerBehavior> = context.dataStore.data.map { prefs ->
@@ -127,6 +114,15 @@ class UserSettings(private val context: Context) {
         prefs[Keys.HOME_LAYOUT]?.let(::decodeHomeLayout)?.takeIf { it.isNotEmpty() } ?: DEFAULT_HOME_LAYOUT
     }
 
+    /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); mirrors whatever was last
+     * applied via `AppCompatDelegate.setApplicationLocales` so app logic can read "current
+     * language" without touching AppCompatDelegate internals directly. Defaults to "en". */
+    val languageTag: Flow<String> = context.dataStore.data.map { it[Keys.LANGUAGE_TAG] ?: "en" }
+
+    /** Whether the first-run language selector has already been completed once; gates that screen
+     * so it is shown exactly once, on first app open. Defaults to false. */
+    val hasSelectedLanguage: Flow<Boolean> = context.dataStore.data.map { it[Keys.LANGUAGE_CHOSEN] ?: false }
+
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
     }
@@ -145,14 +141,6 @@ class UserSettings(private val context: Context) {
 
     suspend fun setAutoplayNextEpisode(enabled: Boolean) {
         context.dataStore.edit { it[Keys.AUTOPLAY_NEXT_EPISODE] = enabled }
-    }
-
-    suspend fun setPictureInPicture(enabled: Boolean) {
-        context.dataStore.edit { it[Keys.PICTURE_IN_PICTURE] = enabled }
-    }
-
-    suspend fun setExternalPlayer(choice: ExternalPlayerChoice) {
-        context.dataStore.edit { it[Keys.EXTERNAL_PLAYER] = choice.name }
     }
 
     suspend fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) {
@@ -223,6 +211,16 @@ class UserSettings(private val context: Context) {
 
     suspend fun setHomeLayout(sections: List<HomeSection>) {
         context.dataStore.edit { it[Keys.HOME_LAYOUT] = encodeHomeLayout(sections) }
+    }
+
+    /** Persists the chosen app language tag and marks the first-run selector as completed. Callers
+     * are also expected to apply the locale via `AppCompatDelegate.setApplicationLocales` -- this
+     * only mirrors the choice into DataStore (see [languageTag] doc). */
+    suspend fun setLanguageTag(tag: String) {
+        context.dataStore.edit {
+            it[Keys.LANGUAGE_TAG] = tag
+            it[Keys.LANGUAGE_CHOSEN] = true
+        }
     }
 
     /**

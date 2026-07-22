@@ -22,9 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -75,7 +77,7 @@ fun SearchScreen(
 
     if (!state.hasSource) {
         Text(
-            text = "Add a playlist from the sidebar to search your catalog.",
+            text = stringResource(R.string.search_no_source),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
             modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp10),
@@ -87,7 +89,7 @@ fun SearchScreen(
     // results Row alone (round 1) and on this outer root Column (round 2) were real fixes
     // but didn't touch the actual root cause -- see the BoxWithConstraints comment below.
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = spacing.safeX, vertical = spacing.sp6)) {
-        Text(text = "Search", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+        Text(text = stringResource(R.string.search_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp6))
 
         // Same class as the QA MEDIUM text-wrap defect elsewhere in this screen: neither
@@ -154,7 +156,7 @@ private fun SearchFieldColumn(
         AreTextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = "Search channels, movies, series…",
+            placeholder = stringResource(R.string.search_placeholder),
             icon = Icons.Filled.Search,
         )
     }
@@ -185,38 +187,38 @@ private fun SearchResultsColumn(
         // physical screen edge and clip almost entirely out of view -- FlowRow (already
         // used for the results below) wraps them to a second line instead.
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScopeChip("All", SearchScope.All, state.scope, viewModel::setScope)
-            ScopeChip("Live TV", SearchScope.LiveTv, state.scope, viewModel::setScope)
-            ScopeChip("Movies", SearchScope.Movies, state.scope, viewModel::setScope)
-            ScopeChip("Series", SearchScope.Series, state.scope, viewModel::setScope)
+            ScopeChip(stringResource(R.string.search_scope_all), SearchScope.All, state.scope, viewModel::setScope)
+            ScopeChip(stringResource(R.string.search_scope_live), SearchScope.LiveTv, state.scope, viewModel::setScope)
+            ScopeChip(stringResource(R.string.search_scope_movies), SearchScope.Movies, state.scope, viewModel::setScope)
+            ScopeChip(stringResource(R.string.search_scope_series), SearchScope.Series, state.scope, viewModel::setScope)
         }
         Box(Modifier.padding(top = 18.dp))
         if (state.categoryFilter != null) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(text = "Category: ${state.categoryFilter}", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
-                AreButton(text = "Clear", onClick = { viewModel.setCategoryFilter(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Small)
+                Text(text = stringResource(R.string.search_category_label, state.categoryFilter), style = AreIptvTheme.typography.h3, color = colors.textPrimary)
+                AreButton(text = stringResource(R.string.action_clear), onClick = { viewModel.setCategoryFilter(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Small)
             }
             Box(Modifier.padding(top = 16.dp))
         }
         if (state.categoryFilter == null && state.query.isBlank()) {
             Text(
-                text = "Type to search your catalog.",
+                text = stringResource(R.string.search_type_to_search),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
         } else if (state.categoryFilter == null && state.query.trim().length < SearchViewModel.MIN_QUERY_LENGTH) {
             // Non-blank but too short to search yet -- a "keep typing" hint, not a "no results" dead end.
             Text(
-                text = "Type at least ${SearchViewModel.MIN_QUERY_LENGTH} characters to search.",
+                text = stringResource(R.string.search_min_chars, SearchViewModel.MIN_QUERY_LENGTH),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
         } else if (state.channelResults.isEmpty() && state.titleResults.isEmpty()) {
             val label = state.categoryFilter ?: state.query
-            Text(text = "No results for \"$label\".", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+            Text(text = stringResource(R.string.search_no_results, label), style = AreIptvTheme.typography.body, color = colors.textSecondary)
         } else {
             if (state.channelResults.isNotEmpty()) {
-                Text(text = "Live TV", style = AreIptvTheme.typography.h3, color = colors.textSecondary)
+                Text(text = stringResource(R.string.search_section_live), style = AreIptvTheme.typography.h3, color = colors.textSecondary)
                 Box(Modifier.padding(top = 12.dp, bottom = 22.dp)) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                         state.channelResults.forEach { channel ->
@@ -236,7 +238,7 @@ private fun SearchResultsColumn(
                 }
             }
             if (state.titleResults.isNotEmpty()) {
-                Text(text = "Movies & series", style = AreIptvTheme.typography.h3, color = colors.textSecondary)
+                Text(text = stringResource(R.string.search_section_titles), style = AreIptvTheme.typography.h3, color = colors.textSecondary)
                 Box(Modifier.padding(top = 12.dp)) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
                         state.titleResults.forEach { title ->

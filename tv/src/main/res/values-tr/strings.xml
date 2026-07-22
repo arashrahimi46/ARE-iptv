@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Geri</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_continue">Devam et</string>
+    <string name="action_retry">Yeniden dene</string>
+    <string name="action_close">Kapat</string>
+    <string name="action_remove">Kaldır</string>
+    <string name="action_clear">Temizle</string>
+    <string name="action_connect">Bağlan</string>
+    <string name="action_disconnect">Bağlantıyı kes</string>
+    <string name="action_sign_in">Oturum aç</string>
+    <string name="action_sign_out">Oturumu kapat</string>
+    <string name="action_search">Ara</string>
+    <string name="action_donate">Bağış yap</string>
+    <string name="content_desc_account">Hesap</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">ARE iptv\'den çıkılsın mı?</string>
+    <string name="shell_stay">Kal</string>
+    <string name="shell_leave">Çık</string>
+    <string name="shell_leave_app_body">ARE iptv\'den çıkmak istiyor musunuz?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Kaynak</string>
+    <string name="onboarding_step_credentials">Kimlik bilgileri</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Onayla</string>
+    <string name="onboarding_title">Oynatma listesi ekle</string>
+    <string name="onboarding_subtitle">Kendi IPTV aboneliğinizi kullanın. ARE iptv kimlik bilgilerinizi asla cihaz dışında saklamaz.</string>
+    <string name="onboarding_skip_for_now">Şimdilik atla</string>
+    <string name="onboarding_go_to_home">Ana ekrana git</string>
+    <string name="onboarding_add_playlist">Oynatma listesi ekle</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Portal sunucunuzu, kullanıcı adınızı ve şifrenizi girin. Otomatik EPG ile canlı TV + VOD için en iyisi.</string>
+    <string name="onboarding_m3u_title">M3U / URL oynatma listesi</string>
+    <string name="onboarding_m3u_desc">Tek bir M3U veya M3U-plus bağlantısı yapıştırın. Varsa bir XMLTV EPG URL\'sini ayrıca ekleyin.</string>
+    <string name="onboarding_portal_name_label">Portal adı</string>
+    <string name="onboarding_portal_name_placeholder">Oturma odası</string>
+    <string name="onboarding_server_url_label">Sunucu URL\'si</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Kullanıcı adı</string>
+    <string name="onboarding_password_label">Şifre</string>
+    <string name="onboarding_m3u_url_label">M3U oynatma listesi URL\'si</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">EPG ve logoları otomatik eşleştir</string>
+    <string name="onboarding_epg_auto_desc">Rehber verilerini, kanal logolarını ve posterleri otomatik olarak getir.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL\'si (isteğe bağlı)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Otomatik eşleştirme açıkken devre dışıdır.</string>
+    <string name="onboarding_epg_custom_helper">Kendi rehber kaynağınızı sağlayın.</string>
+    <string name="onboarding_confirm_adding">Oynatma listesi ekleniyor…</string>
+    <string name="onboarding_confirm_error_title">Oynatma listesi eklenemedi</string>
+    <string name="onboarding_confirm_added">Eklendi</string>
+    <string name="onboarding_confirm_ready">Eklenmeye hazır</string>
+    <string name="onboarding_confirm_channels_badge">%1$d kanal</string>
+    <string name="onboarding_confirm_downloading">Kanallarınız indiriliyor ve içe aktarılıyor. Büyük oynatma listeleri biraz zaman alabilir — lütfen uygulamayı açık tutun.</string>
+    <string name="onboarding_confirm_row_portal">Portal</string>
+    <string name="onboarding_confirm_default_portal_name">Oynatma listem</string>
+    <string name="onboarding_confirm_row_source">Kaynak</string>
+    <string name="onboarding_confirm_row_server">Sunucu</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Otomatik eşleştirildi</string>
+    <string name="onboarding_confirm_custom_xmltv">Özel XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Katalog</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d kanal · %2$d film · %3$d dizi</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Gizlilik ve Şartlar</string>
+    <string name="privacy_subtitle">Devam etmeden önce lütfen inceleyip kabul edin.</string>
+    <string name="privacy_body">ARE iptv Gizlilik Politikası ve Hizmet Şartları\n\nARE iptv, oynatma listesi kimlik bilgilerinizi cihaz dışında toplamaz veya iletmez. Devam ederek, bu uygulamayı yalnızca erişim yetkiniz olan içerik kaynaklarıyla kullanmayı kabul eder ve Hizmet Şartlarımızı ile Gizlilik Politikamızı tam olarak kabul edersiniz.</string>
+    <string name="privacy_accept_label">Gizlilik Politikası\'nı ve Hizmet Şartları\'nı okudum ve kabul ediyorum.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Bir oynatma listesi seçin</string>
+    <string name="sources_choose_subtitle">Eklediğiniz oynatma listelerinden hangisini açacağınızı seçin.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Yeni oynatma listesi ekle</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Dilinizi seçin</string>
+    <string name="language_select_subtitle">Uygulama genelinde kullanmak istediğiniz dili seçin.</string>
+    <string name="language_picker_label">Dil</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Dili değiştirmek istediğinizden emin misiniz?</string>
+    <string name="language_confirm_action">Onayla</string>
+    <string name="language_confirm_cancel">İptal</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_section_playlists">Oynatma listeleri ve senkronizasyon</string>
+    <string name="settings_refresh_catalog">Kataloğu yenile</string>
+    <string name="settings_refresh_now">Şimdi yenile</string>
+    <string name="settings_refreshing">Yenileniyor…</string>
+    <string name="settings_refresh_syncing">Sağlayıcıyla senkronize ediliyor…</string>
+    <string name="settings_refresh_success">Güncellendi: %1$d kanal, %2$d film, %3$d dizi</string>
+    <string name="settings_refresh_stale">2 haftadan eski — yeni kanalları ve içerikleri almak için yenileyin</string>
+    <string name="settings_never_refreshed">Hiç yenilenmedi</string>
+    <string name="settings_last_updated_days">Son güncelleme %1$d gün önce</string>
+    <string name="settings_last_updated_days_plural">Son güncelleme %1$d gün önce</string>
+    <string name="settings_last_updated_hours">Son güncelleme %1$d saat önce</string>
+    <string name="settings_last_updated_hours_plural">Son güncelleme %1$d saat önce</string>
+    <string name="settings_last_updated_mins">Son güncelleme %1$d dk önce</string>
+    <string name="settings_last_updated_now">Son güncelleme az önce</string>
+    <string name="settings_section_appearance">Görünüm</string>
+    <string name="settings_dark_theme">Koyu tema</string>
+    <string name="settings_dark_theme_desc">Rahat izleme için önerilir.</string>
+    <string name="settings_reduce_motion">Hareketi azalt</string>
+    <string name="settings_reduce_motion_desc">Daha yumuşak odak animasyonları.</string>
+    <string name="settings_list_view">Liste görünümü</string>
+    <string name="settings_list_view_desc">Kanalları, filmleri ve dizileri kutucuk ızgarası yerine liste olarak göster.</string>
+    <string name="settings_section_language">Dil</string>
+    <string name="settings_language_row_title">Uygulama dili</string>
+    <string name="settings_language_row_desc">Uygulama genelinde kullanılan dili seçin.</string>
+    <string name="settings_section_playback">Oynatma</string>
+    <string name="settings_hardware_decoding">Donanım çözümleme</string>
+    <string name="settings_hardware_decoding_desc">Donanım çözücüleri tercih eder; bir akış gerektirirse yazılıma geri döner.</string>
+    <string name="settings_autoplay_next">Sonraki bölümü otomatik oynat</string>
+    <string name="settings_autoplay_next_desc">Şimdilik yalnızca bir tercih -- otomatik ilerleme henüz bağlanmadı; sonraki bölümü Ayrıntı ekranından seçin.</string>
+    <string name="settings_mini_player_behavior">Mini oynatıcı davranışı</string>
+    <string name="settings_mini_player_behavior_desc">Sabitlenmiş mini oynatıcının yakınında gezinirken: onu boş köşeye kaydırın veya soldurup küçültün.</string>
+    <string name="settings_mini_player_dodge">Otomatik kaçın</string>
+    <string name="settings_mini_player_fade">Soldur ve küçült</string>
+    <string name="settings_section_parental">Ebeveyn kontrolleri</string>
+    <string name="settings_lock_adult">Yetişkin kategorilerini kilitle</string>
+    <string name="settings_lock_adult_desc">Bir kez açıldığında kapatmak için PIN\'iniz gerekir.</string>
+    <string name="settings_change_pin">PIN\'i değiştir</string>
+    <string name="settings_pin_loading">Yükleniyor…</string>
+    <string name="settings_pin_is_set">Bir PIN ayarlandı.</string>
+    <string name="settings_pin_not_set">Henüz PIN ayarlanmadı.</string>
+    <string name="settings_change">Değiştir</string>
+    <string name="settings_set_pin">PIN ayarla</string>
+    <string name="settings_section_subtitles">Altyazılar</string>
+    <string name="settings_subtitle_lang_title">Tercih edilen dil</string>
+    <string name="settings_subtitle_lang_desc">Altyazıları çevrimiçi ararken önceden seçilir. Her video için yine de değiştirebilirsiniz.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Hazır -- çevrimiçi arama ve indirme etkinleştirildi.</string>
+    <string name="settings_opensubs_key_connected">API anahtarı bağlandı. Ayrıca aşağıdan oturum açın -- çevrimiçi altyazılar için her ikisi de gereklidir.</string>
+    <string name="settings_account">Hesap</string>
+    <string name="settings_account_signed_in">%1$s olarak oturum açıldı -- altyazı indirmeleri etkinleştirildi.</string>
+    <string name="settings_signin_title">Altyazı indirmek için oturum açın</string>
+    <string name="settings_signin_desc">Son adım -- çevrimiçi altyazılar için hem API anahtarı hem de hesap oturumunuz gereklidir. opensubtitles.com kullanıcı adınız ve şifrenizle oturum açın; indirmeler hesabınızın günlük kotasını kullanır. Sizin için oturumunuzu açık tutarız.</string>
+    <string name="settings_placeholder_username">Kullanıcı adı</string>
+    <string name="settings_placeholder_password">Şifre</string>
+    <string name="settings_signing_in">Oturum açılıyor…</string>
+    <string name="settings_opensubs_key_title">OpenSubtitles API anahtarı</string>
+    <string name="settings_opensubs_key_desc">Çevrimiçi altyazılar iki şeyle birlikte ücretsiz bir opensubtitles.com hesabı gerektirir: bu API anahtarı (arama için) ve hesap oturumunuz (indirme için). Adım 1 -- API anahtarını yapıştırın; sonra oturum açacaksınız. Kaydetmeden önce doğrularız.</string>
+    <string name="settings_placeholder_api_key">API anahtarı</string>
+    <string name="settings_checking">Kontrol ediliyor…</string>
+    <string name="settings_section_metadata">Film ve dizi bilgileri</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Bağlandı -- IMDb ve Rotten Tomatoes puanları, konu ve oyuncular Ayrıntı ekranında gösterilir.</string>
+    <string name="settings_omdb_key_title">OMDb API anahtarı</string>
+    <string name="settings_omdb_key_desc">Filmleri ve dizileri IMDb ve Rotten Tomatoes puanları, bir özet ve oyuncularla zenginleştirmek için omdbapi.com\'dan ücretsiz bir anahtar yapıştırın. Kaydetmeden önce doğrularız.</string>
+    <string name="settings_section_about">Hakkında</string>
+    <string name="settings_version_title">Sürüm</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Bu uygulamaya destek olun</string>
+    <string name="settings_support_desc">ARE iptv sizin için faydalıysa bana bir kahve ısmarlayın.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">4 haneli bir PIN ayarlayın</string>
+    <string name="pin_confirm_title">PIN\'inizi onaylayın</string>
+    <string name="pin_enter_title">PIN girin</string>
+    <string name="pin_lockout_message">Çok fazla hatalı deneme -- %1$ds içinde yeniden deneyin</string>
+    <string name="pin_mismatch_error">PIN\'ler eşleşmedi -- yeniden deneyin</string>
+    <string name="pin_incorrect_error">Yanlış PIN</string>
+    <string name="pin_checking">Kontrol ediliyor…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Bölüm ekle</string>
+    <string name="home_remove_continue_watching_title">İzlemeye Devam Et\'ten kaldırılsın mı?</string>
+    <string name="home_remove_continue_watching_body">“%1$s” burada artık gösterilmeyecek. Kaldığınız yer saklanmaz.</string>
+    <string name="home_loading_catalog">Kataloğunuz yükleniyor…</string>
+    <string name="home_no_playlist_title">Henüz oynatma listesi yok</string>
+    <string name="home_no_playlist_body">Kanallarınızı, filmlerinizi ve dizilerinizi burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="home_section_continue_watching">İzlemeye Devam Et</string>
+    <string name="home_section_live_now">Şimdi canlı</string>
+    <string name="home_section_categories">Kategoriye göre gözat</string>
+    <string name="home_section_recommended">Sizin İçin</string>
+    <string name="home_section_for_you">Sizin İçin</string>
+    <string name="home_section_popular">Popüler</string>
+    <string name="home_section_because_you_like">%1$s beğendiğiniz için</string>
+    <string name="home_section_movies">Filmler</string>
+    <string name="home_section_series">Diziler</string>
+    <string name="home_add_section_dialog_title">Bölüm ekle</string>
+    <string name="home_add_section_empty">Oynatma listenizdeki her kategori zaten Ana ekrana sabitlendi.</string>
+    <string name="home_category_live">Canlı</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Dizi</string>
+    <string name="home_edit_grabbed_desc">Tutuldu -- taşımak için Yukarı/Aşağı, bırakmak için OK</string>
+    <string name="home_edit_grab_desc">Yeniden sıralamak için tutun</string>
+    <string name="home_edit_show_section">Bölümü göster</string>
+    <string name="home_edit_hide_section">Bölümü gizle</string>
+    <string name="home_edit_remove_section">Bölümü kaldır</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">TV rehberini burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="guide_title">TV Rehberi</string>
+    <string name="guide_epg_unavailable">EPG kaynağı kullanılamıyor -- kanallar program verisi olmadan gösteriliyor.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Ayrıntıları görmek için bir programa odaklanın</string>
+    <string name="guide_live_badge">CANLI</string>
+    <string name="guide_catchup_available_desc">Geri sarma mevcut</string>
+    <string name="guide_day_yesterday">Dün</string>
+    <string name="guide_day_today">Bugün</string>
+    <string name="guide_day_tomorrow">Yarın</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Canlı kanalları burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="live_title">Canlı TV</string>
+    <string name="live_channel_groups">Kanal grupları</string>
+    <string name="live_count_channels">%1$d kanal</string>
+    <string name="live_empty_group">Bu grupta henüz kanal yok.</string>
+    <string name="live_on_air_now">ŞİMDİ YAYINDA</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Filmleri burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="movies_title">Filmler</string>
+    <string name="movies_genres">Türler</string>
+    <string name="movies_count_titles">%1$d başlık</string>
+    <string name="movies_empty_genre">Bu türde henüz film yok.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Dizileri burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="series_title">Diziler</string>
+    <string name="series_empty_genre">Bu türde henüz dizi yok.</string>
+    <string name="series_episode_count">%1$d bölüm</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Kenar çubuğundan bir oynatma listesi ekleyin, ardından kanalları veya başlıkları favorilere ekleyerek burada görün.</string>
+    <string name="favorites_title">Favoriler</string>
+    <string name="favorites_tab_channels">Kanallar</string>
+    <string name="favorites_tab_movies">Filmler</string>
+    <string name="favorites_tab_series">Diziler</string>
+    <string name="favorites_empty_channels">Henüz favori kanal yok -- eklemek için bir kanal kutucuğundaki kalbe dokunun.</string>
+    <string name="favorites_empty_movies">Henüz favori film yok -- eklemek için bir film kutucuğundaki kalbe dokunun.</string>
+    <string name="favorites_empty_series">Henüz favori dizi yok -- eklemek için bir dizi kutucuğundaki kalbe dokunun.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Kataloğunuzu aramak için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="search_title">Ara</string>
+    <string name="search_placeholder">Kanal, film, dizi ara…</string>
+    <string name="search_scope_all">Tümü</string>
+    <string name="search_scope_live">Canlı TV</string>
+    <string name="search_scope_movies">Filmler</string>
+    <string name="search_scope_series">Diziler</string>
+    <string name="search_category_label">Kategori: %1$s</string>
+    <string name="search_type_to_search">Kataloğunuzda aramak için yazın.</string>
+    <string name="search_min_chars">Aramak için en az %1$d karakter yazın.</string>
+    <string name="search_no_results">\"%1$s\" için sonuç bulunamadı.</string>
+    <string name="search_section_live">Canlı TV</string>
+    <string name="search_section_titles">Filmler ve diziler</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Yükleniyor…</string>
+    <string name="detail_not_found">Başlık bulunamadı</string>
+    <string name="detail_play">Oynat</string>
+    <string name="detail_play_episode">Oynat S%1$d · B%2$d</string>
+    <string name="detail_add_to_favorites">Favorilere ekle</string>
+    <string name="detail_remove_from_favorites">Favorilerden kaldır</string>
+    <string name="detail_storyline">Konu</string>
+    <string name="detail_cast_label">Oyuncular:</string>
+    <string name="detail_director_label">Yönetmen:</string>
+    <string name="detail_episodes_header">Bölümler</string>
+    <string name="detail_episodes_header_seasons">Bölümler · %1$d sezon · toplam %2$d</string>
+    <string name="detail_episodes_header_total">Bölümler · toplam %1$d</string>
+    <string name="detail_season_label">%1$d. Sezon</string>
+    <string name="detail_season_episode_count">%1$s. Sezon · %2$d bölüm</string>
+    <string name="detail_m3u_no_episodes">Bu oynatma listesi öğesinin sezon/bölüm verisi yok -- tek bir öğe olarak izlemek için yukarıdaki Oynat\'ı kullanın.</string>
+    <string name="detail_episodes_load_error">Bölümler yüklenemedi: %1$s</string>
+    <string name="detail_episodes_loading">Bölümler yükleniyor…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">İçerik bulunamadı</string>
+    <string name="player_playback_failed">Oynatma başarısız</string>
+    <string name="player_buffering">Ara belleğe alınıyor…</string>
+    <string name="player_up_next">Sıradaki</string>
+    <string name="player_up_next_channel">Sıradaki -- %1$s</string>
+    <string name="player_no_programme_data">Program verisi yok</string>
+    <string name="player_previous_channel">Önceki kanal</string>
+    <string name="player_next_channel">Sonraki kanal</string>
+    <string name="player_previous_episode">Önceki bölüm</string>
+    <string name="player_next_episode">Sonraki bölüm</string>
+    <string name="player_back_10_min">10 dakika geri</string>
+    <string name="player_forward_10_min">10 dakika ileri</string>
+    <string name="player_rewind">Geri sar</string>
+    <string name="player_pause">Duraklat</string>
+    <string name="player_play">Oynat</string>
+    <string name="player_fast_forward">İleri sar</string>
+    <string name="player_audio_track">Ses parçası</string>
+    <string name="player_subtitles">Altyazılar</string>
+    <string name="player_minimize_to_corner">Köşeye küçült</string>
+    <string name="player_picture_in_picture">Resim içinde resim</string>
+    <string name="player_up_next_action">Sıradaki</string>
+    <string name="player_open_guide">Rehberi aç</string>
+    <string name="player_live_badge">Canlı</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Kapalı</string>
+    <string name="subtitle_none_in_stream">Bu akışta altyazı yok.</string>
+    <string name="subtitle_search_online">Çevrimiçi ara…</string>
+    <string name="subtitle_selected">Seçildi</string>
+    <string name="subtitle_picker_title">Altyazılar</string>
+    <string name="subtitle_search_title">Altyazıları çevrimiçi ara</string>
+    <string name="subtitle_search_placeholder">Başlık</string>
+    <string name="subtitle_searching">Aranıyor…</string>
+    <string name="subtitle_search_action">Ara</string>
+    <string name="subtitle_status_searching">OpenSubtitles aranıyor…</string>
+    <string name="subtitle_status_downloading">Altyazı indiriliyor…</string>
+    <string name="subtitle_status_no_matches">Eşleşme yok -- farklı bir başlık veya dil deneyin.</string>
+    <string name="subtitle_default_label">Altyazı %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Mini oynatıcı durdurulsun mu?</string>
+    <string name="mini_player_stop_body">“%1$s” oynatması durdurulup mini oynatıcı kapatılsın mı?</string>
+    <string name="mini_player_stop">Durdur</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Çoklu görünüm</string>
+    <string name="multiview_4up">4\'lü</string>
+    <string name="multiview_2up">2\'li</string>
+    <string name="multiview_no_source">Etkin oynatma listesi yok</string>
+    <string name="multiview_no_channels">Çoklu görünüm için kullanılabilir canlı kanal yok</string>
+    <string name="multiview_audio_badge">Ses</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Özelleştir</string>
+    <string name="shell_add_playlist_desc">Oynatma listesi ekle</string>
+    <string name="nav_home">Ana ekran</string>
+    <string name="nav_live_tv">Canlı TV</string>
+    <string name="nav_tv_guide">TV Rehberi</string>
+    <string name="nav_movies">Filmler</string>
+    <string name="nav_series">Diziler</string>
+    <string name="nav_search">Ara</string>
+    <string name="nav_favorites">Favoriler</string>
+    <string name="nav_settings">Ayarlar</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Kategoriler</string>
+    <string name="browse_empty_default">Bu kategoride henüz öğe yok.</string>
+    <string name="browse_load_error">Yüklenemedi — yeniden deneyin</string>
+    <string name="browse_pin_dialog_pinned_body">Bu kategoriyi listenin üstünden kaldırın.</string>
+    <string name="browse_pin_dialog_unpinned_body">Bu kategoriyi listenin üstüne sabitleyin.</string>
+    <string name="browse_unpin">Sabitlemeyi kaldır</string>
+    <string name="browse_pin">Sabitle</string>
+    <string name="browse_category_pinned_desc">Sabitlendi</string>
+    <string name="browse_see_all">Tümünü gör  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Canlı</string>
+    <string name="badge_catchup">Geri sarma</string>
+    <string name="badge_smart">Akıllı</string>
+    <string name="health_stable">Kararlı</string>
+    <string name="health_moderate">Orta</string>
+    <string name="health_poor">Zayıf</string>
+    <string name="continue_card_resume_desc">Devam et</string>
+    <string name="channel_tile_now">Şimdi · %1$s</string>
+    <string name="channel_tile_next">Sonraki · %1$s</string>
+    <string name="browse_all_channels">Tüm kanallar</string>
+    <string name="browse_all_movies">Tüm filmler</string>
+    <string name="browse_all_series">Tüm diziler</string>
+    <string name="settings_refresh_no_playlist">Yenilenecek etkin oynatma listesi yok.</string>
+    <string name="settings_refresh_failed">Yenileme başarısız — bağlantınızı kontrol edip tekrar deneyin.</string>
+    <string name="settings_subs_connect_key_first">Önce API anahtarınızı bağlayın.</string>
+    <string name="onboarding_error_generic">Bir şeyler ters gitti</string>
+</resources>

@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Πίσω</string>
+    <string name="action_cancel">Άκυρο</string>
+    <string name="action_continue">Συνέχεια</string>
+    <string name="action_retry">Επανάληψη</string>
+    <string name="action_close">Κλείσιμο</string>
+    <string name="action_remove">Αφαίρεση</string>
+    <string name="action_clear">Εκκαθάριση</string>
+    <string name="action_connect">Σύνδεση</string>
+    <string name="action_disconnect">Αποσύνδεση</string>
+    <string name="action_sign_in">Σύνδεση</string>
+    <string name="action_sign_out">Αποσύνδεση</string>
+    <string name="action_search">Αναζήτηση</string>
+    <string name="action_donate">Δωρεά</string>
+    <string name="content_desc_account">Λογαριασμός</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Έξοδος από το ARE iptv;</string>
+    <string name="shell_stay">Παραμονή</string>
+    <string name="shell_leave">Έξοδος</string>
+    <string name="shell_leave_app_body">Θέλετε να κλείσετε το ARE iptv;</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Πηγή</string>
+    <string name="onboarding_step_credentials">Διαπιστευτήρια</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Επιβεβαίωση</string>
+    <string name="onboarding_title">Προσθήκη λίστας αναπαραγωγής</string>
+    <string name="onboarding_subtitle">Χρησιμοποιήστε τη δική σας συνδρομή IPTV. Το ARE iptv δεν αποθηκεύει ποτέ τα διαπιστευτήριά σας εκτός συσκευής.</string>
+    <string name="onboarding_skip_for_now">Παράλειψη προς το παρόν</string>
+    <string name="onboarding_go_to_home">Μετάβαση στην Αρχική</string>
+    <string name="onboarding_add_playlist">Προσθήκη λίστας</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Εισαγάγετε τον κεντρικό υπολογιστή (host) της πύλης σας, το όνομα χρήστη και τον κωδικό. Ιδανικό για ζωντανή TV + VOD με αυτόματο EPG.</string>
+    <string name="onboarding_m3u_title">Λίστα M3U / URL</string>
+    <string name="onboarding_m3u_desc">Επικολλήστε έναν σύνδεσμο M3U ή M3U-plus. Προσθέστε ξεχωριστά ένα XMLTV EPG URL, αν έχετε.</string>
+    <string name="onboarding_portal_name_label">Όνομα πύλης</string>
+    <string name="onboarding_portal_name_placeholder">Σαλόνι</string>
+    <string name="onboarding_server_url_label">URL διακομιστή</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Όνομα χρήστη</string>
+    <string name="onboarding_password_label">Κωδικός πρόσβασης</string>
+    <string name="onboarding_m3u_url_label">URL λίστας M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Αυτόματη αντιστοίχιση EPG &amp; λογοτύπων</string>
+    <string name="onboarding_epg_auto_desc">Αυτόματη λήψη δεδομένων οδηγού, λογοτύπων καναλιών και αφισών.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (προαιρετικό)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Απενεργοποιημένο όσο είναι ενεργή η αυτόματη αντιστοίχιση.</string>
+    <string name="onboarding_epg_custom_helper">Δώστε τη δική σας πηγή οδηγού.</string>
+    <string name="onboarding_confirm_adding">Προσθήκη λίστας…</string>
+    <string name="onboarding_confirm_error_title">Δεν ήταν δυνατή η προσθήκη της λίστας</string>
+    <string name="onboarding_confirm_added">Προστέθηκε</string>
+    <string name="onboarding_confirm_ready">Έτοιμη για προσθήκη</string>
+    <string name="onboarding_confirm_channels_badge">%1$d κανάλια</string>
+    <string name="onboarding_confirm_downloading">Γίνεται λήψη και εισαγωγή των καναλιών σας. Οι μεγάλες λίστες μπορεί να χρειαστούν λίγη ώρα — διατηρήστε την εφαρμογή ανοιχτή.</string>
+    <string name="onboarding_confirm_row_portal">Πύλη</string>
+    <string name="onboarding_confirm_default_portal_name">Η λίστα μου</string>
+    <string name="onboarding_confirm_row_source">Πηγή</string>
+    <string name="onboarding_confirm_row_server">Διακομιστής</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Αυτόματη αντιστοίχιση</string>
+    <string name="onboarding_confirm_custom_xmltv">Προσαρμοσμένο XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Κατάλογος</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d κανάλια · %2$d ταινίες · %3$d σειρές</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Απόρρητο &amp; Όροι</string>
+    <string name="privacy_subtitle">Παρακαλούμε ελέγξτε και αποδεχτείτε πριν συνεχίσετε.</string>
+    <string name="privacy_body">Πολιτική Απορρήτου &amp; Όροι Χρήσης του ARE iptv\n\nΤο ARE iptv δεν συλλέγει ούτε μεταδίδει τα διαπιστευτήρια της λίστας σας εκτός συσκευής. Συνεχίζοντας, συμφωνείτε να χρησιμοποιείτε αυτήν την εφαρμογή μόνο με πηγές περιεχομένου στις οποίες έχετε εξουσιοδοτημένη πρόσβαση, και αποδέχεστε πλήρως τους Όρους Χρήσης και την Πολιτική Απορρήτου μας.</string>
+    <string name="privacy_accept_label">Έχω διαβάσει και αποδέχομαι την Πολιτική Απορρήτου και τους Όρους Χρήσης.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Επιλέξτε λίστα αναπαραγωγής</string>
+    <string name="sources_choose_subtitle">Επιλέξτε ποια από τις λίστες σας θα ανοίξετε.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Προσθήκη νέας λίστας</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Επιλέξτε τη γλώσσα σας</string>
+    <string name="language_select_subtitle">Επιλέξτε τη γλώσσα που θέλετε να χρησιμοποιείτε σε όλη την εφαρμογή.</string>
+    <string name="language_picker_label">Γλώσσα</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Είστε βέβαιοι ότι θέλετε να αλλάξετε τη γλώσσα;</string>
+    <string name="language_confirm_action">Επιβεβαίωση</string>
+    <string name="language_confirm_cancel">Άκυρο</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ρυθμίσεις</string>
+    <string name="settings_section_playlists">Λίστες &amp; συγχρονισμός</string>
+    <string name="settings_refresh_catalog">Ανανέωση καταλόγου</string>
+    <string name="settings_refresh_now">Ανανέωση τώρα</string>
+    <string name="settings_refreshing">Ανανέωση…</string>
+    <string name="settings_refresh_syncing">Συγχρονισμός με τον πάροχο…</string>
+    <string name="settings_refresh_success">Ενημερώθηκαν: %1$d κανάλια, %2$d ταινίες, %3$d σειρές</string>
+    <string name="settings_refresh_stale">Παλαιότερο από 2 εβδομάδες — ανανεώστε για νέα κανάλια &amp; τίτλους</string>
+    <string name="settings_never_refreshed">Δεν έχει ανανεωθεί ποτέ</string>
+    <string name="settings_last_updated_days">Τελευταία ενημέρωση πριν από %1$d ημέρα</string>
+    <string name="settings_last_updated_days_plural">Τελευταία ενημέρωση πριν από %1$d ημέρες</string>
+    <string name="settings_last_updated_hours">Τελευταία ενημέρωση πριν από %1$d ώρα</string>
+    <string name="settings_last_updated_hours_plural">Τελευταία ενημέρωση πριν από %1$d ώρες</string>
+    <string name="settings_last_updated_mins">Τελευταία ενημέρωση πριν από %1$d λεπτά</string>
+    <string name="settings_last_updated_now">Μόλις ενημερώθηκε</string>
+    <string name="settings_section_appearance">Εμφάνιση</string>
+    <string name="settings_dark_theme">Σκούρο θέμα</string>
+    <string name="settings_dark_theme_desc">Συνιστάται για χαλαρή θέαση.</string>
+    <string name="settings_reduce_motion">Μείωση κίνησης</string>
+    <string name="settings_reduce_motion_desc">Πιο απαλά εφέ εστίασης.</string>
+    <string name="settings_list_view">Προβολή λίστας</string>
+    <string name="settings_list_view_desc">Εμφάνιση καναλιών, ταινιών και σειρών ως λίστα αντί για πλέγμα πλακιδίων.</string>
+    <string name="settings_section_language">Γλώσσα</string>
+    <string name="settings_language_row_title">Γλώσσα εφαρμογής</string>
+    <string name="settings_language_row_desc">Επιλέξτε τη γλώσσα που χρησιμοποιείται σε όλη την εφαρμογή.</string>
+    <string name="settings_section_playback">Αναπαραγωγή</string>
+    <string name="settings_hardware_decoding">Αποκωδικοποίηση υλικού</string>
+    <string name="settings_hardware_decoding_desc">Προτίμηση αποκωδικοποιητών υλικού· γίνεται εναλλαγή σε λογισμικό αν το απαιτεί μια ροή.</string>
+    <string name="settings_autoplay_next">Αυτόματη αναπαραγωγή επόμενου επεισοδίου</string>
+    <string name="settings_autoplay_next_desc">Προτίμηση μόνο προς το παρόν -- η αυτόματη μετάβαση δεν έχει ενεργοποιηθεί ακόμη· επιλέξτε το επόμενο επεισόδιο από τις Λεπτομέρειες.</string>
+    <string name="settings_mini_player_behavior">Συμπεριφορά mini-player</string>
+    <string name="settings_mini_player_behavior_desc">Όταν περιηγείστε κοντά στο αγκυρωμένο mini-player: μετακινήστε το στην ελεύθερη γωνία, ή κάντε το να ξεθωριάζει και να συρρικνώνεται.</string>
+    <string name="settings_mini_player_dodge">Αυτόματη αποφυγή</string>
+    <string name="settings_mini_player_fade">Ξεθώριασμα &amp; συρρίκνωση</string>
+    <string name="settings_section_parental">Γονικός έλεγχος</string>
+    <string name="settings_lock_adult">Κλείδωμα κατηγοριών ενηλίκων</string>
+    <string name="settings_lock_adult_desc">Μόλις ενεργοποιηθεί, η απενεργοποίηση απαιτεί το PIN σας.</string>
+    <string name="settings_change_pin">Αλλαγή PIN</string>
+    <string name="settings_pin_loading">Φόρτωση…</string>
+    <string name="settings_pin_is_set">Έχει οριστεί PIN.</string>
+    <string name="settings_pin_not_set">Δεν έχει οριστεί PIN ακόμη.</string>
+    <string name="settings_change">Αλλαγή</string>
+    <string name="settings_set_pin">Ορισμός PIN</string>
+    <string name="settings_section_subtitles">Υπότιτλοι</string>
+    <string name="settings_subtitle_lang_title">Προτιμώμενη γλώσσα</string>
+    <string name="settings_subtitle_lang_desc">Προεπιλεγμένη όταν αναζητάτε υπότιτλους online. Μπορείτε να την αλλάξετε ανά βίντεο.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Έτοιμο -- η online αναζήτηση και λήψη είναι ενεργοποιημένες.</string>
+    <string name="settings_opensubs_key_connected">Το κλειδί API συνδέθηκε. Συνδεθείτε επίσης παρακάτω -- και τα δύο απαιτούνται για online υπότιτλους.</string>
+    <string name="settings_account">Λογαριασμός</string>
+    <string name="settings_account_signed_in">Συνδεδεμένος ως %1$s -- οι λήψεις υπότιτλων είναι ενεργοποιημένες.</string>
+    <string name="settings_signin_title">Συνδεθείτε για λήψη υπότιτλων</string>
+    <string name="settings_signin_desc">Τελευταίο βήμα -- και το κλειδί API και η σύνδεση στον λογαριασμό σας απαιτούνται για online υπότιτλους. Συνδεθείτε με το όνομα χρήστη και τον κωδικό σας στο opensubtitles.com· οι λήψεις χρησιμοποιούν το ημερήσιο όριο του λογαριασμού σας. Παραμένετε συνδεδεμένοι.</string>
+    <string name="settings_placeholder_username">Όνομα χρήστη</string>
+    <string name="settings_placeholder_password">Κωδικός πρόσβασης</string>
+    <string name="settings_signing_in">Σύνδεση…</string>
+    <string name="settings_opensubs_key_title">Κλειδί API OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">Οι online υπότιτλοι χρειάζονται έναν δωρεάν λογαριασμό opensubtitles.com με δύο πράγματα: αυτό το κλειδί API (για αναζήτηση) και τη σύνδεση στον λογαριασμό σας (για λήψη). Βήμα 1 -- επικολλήστε το κλειδί API· θα συνδεθείτε στη συνέχεια. Το επαληθεύουμε πριν την αποθήκευση.</string>
+    <string name="settings_placeholder_api_key">Κλειδί API</string>
+    <string name="settings_checking">Έλεγχος…</string>
+    <string name="settings_section_metadata">Πληροφορίες ταινιών &amp; σειρών</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Συνδεδεμένο -- βαθμολογίες IMDb &amp; Rotten Tomatoes, πλοκή και ηθοποιοί εμφανίζονται στις Λεπτομέρειες.</string>
+    <string name="settings_omdb_key_title">Κλειδί API OMDb</string>
+    <string name="settings_omdb_key_desc">Επικολλήστε ένα δωρεάν κλειδί από το omdbapi.com για να εμπλουτίσετε ταινίες και σειρές με βαθμολογίες IMDb &amp; Rotten Tomatoes, μια σύνοψη και τους ηθοποιούς. Το επαληθεύουμε πριν την αποθήκευση.</string>
+    <string name="settings_section_about">Σχετικά</string>
+    <string name="settings_version_title">Έκδοση</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Υποστηρίξτε αυτήν την εφαρμογή</string>
+    <string name="settings_support_desc">Κεράστε με έναν καφέ αν το ARE iptv σας φαίνεται χρήσιμο.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Ορίστε PIN 4 ψηφίων</string>
+    <string name="pin_confirm_title">Επιβεβαιώστε το PIN σας</string>
+    <string name="pin_enter_title">Εισαγάγετε PIN</string>
+    <string name="pin_lockout_message">Πάρα πολλές λανθασμένες προσπάθειες -- δοκιμάστε ξανά σε %1$ds</string>
+    <string name="pin_mismatch_error">Τα PIN δεν ταιριάζουν -- δοκιμάστε ξανά</string>
+    <string name="pin_incorrect_error">Λανθασμένο PIN</string>
+    <string name="pin_checking">Έλεγχος…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Προσθήκη ενότητας</string>
+    <string name="home_remove_continue_watching_title">Αφαίρεση από τη Συνέχιση προβολής;</string>
+    <string name="home_remove_continue_watching_body">Το «%1$s» δεν θα εμφανίζεται πλέον εδώ. Η θέση σας δεν διατηρείται.</string>
+    <string name="home_loading_catalog">Φόρτωση του καταλόγου σας…</string>
+    <string name="home_no_playlist_title">Καμία λίστα ακόμη</string>
+    <string name="home_no_playlist_body">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ τα κανάλια, τις ταινίες και τις σειρές σας.</string>
+    <string name="home_section_continue_watching">Συνέχιση προβολής</string>
+    <string name="home_section_live_now">Ζωντανά τώρα</string>
+    <string name="home_section_categories">Περιήγηση ανά κατηγορία</string>
+    <string name="home_section_recommended">Για εσάς</string>
+    <string name="home_section_for_you">Για εσάς</string>
+    <string name="home_section_popular">Δημοφιλή</string>
+    <string name="home_section_because_you_like">Επειδή σας αρέσει το %1$s</string>
+    <string name="home_section_movies">Ταινίες</string>
+    <string name="home_section_series">Σειρές</string>
+    <string name="home_add_section_dialog_title">Προσθήκη ενότητας</string>
+    <string name="home_add_section_empty">Κάθε κατηγορία από τη λίστα σας είναι ήδη καρφιτσωμένη στην Αρχική.</string>
+    <string name="home_category_live">Ζωντανά</string>
+    <string name="home_category_movie">Ταινία</string>
+    <string name="home_category_series">Σειρά</string>
+    <string name="home_edit_grabbed_desc">Πιάστηκε -- Πάνω/Κάτω για μετακίνηση, OK για απόθεση</string>
+    <string name="home_edit_grab_desc">Πιάστε για αναδιάταξη</string>
+    <string name="home_edit_show_section">Εμφάνιση ενότητας</string>
+    <string name="home_edit_hide_section">Απόκρυψη ενότητας</string>
+    <string name="home_edit_remove_section">Αφαίρεση ενότητας</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ τον οδηγό TV.</string>
+    <string name="guide_title">Οδηγός TV</string>
+    <string name="guide_epg_unavailable">Η πηγή EPG δεν είναι διαθέσιμη -- εμφάνιση καναλιών χωρίς δεδομένα προγράμματος.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Εστιάστε σε ένα πρόγραμμα για λεπτομέρειες</string>
+    <string name="guide_live_badge">ΖΩΝΤΑΝΑ</string>
+    <string name="guide_catchup_available_desc">Διαθέσιμη επανάληψη</string>
+    <string name="guide_day_yesterday">Χθες</string>
+    <string name="guide_day_today">Σήμερα</string>
+    <string name="guide_day_tomorrow">Αύριο</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ ζωντανά κανάλια.</string>
+    <string name="live_title">Ζωντανή TV</string>
+    <string name="live_channel_groups">Ομάδες καναλιών</string>
+    <string name="live_count_channels">%1$d κανάλια</string>
+    <string name="live_empty_group">Δεν υπάρχουν κανάλια σε αυτήν την ομάδα ακόμη.</string>
+    <string name="live_on_air_now">ΣΕ ΜΕΤΑΔΟΣΗ ΤΩΡΑ</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ ταινίες.</string>
+    <string name="movies_title">Ταινίες</string>
+    <string name="movies_genres">Είδη</string>
+    <string name="movies_count_titles">%1$d τίτλοι</string>
+    <string name="movies_empty_genre">Δεν υπάρχουν ταινίες σε αυτό το είδος ακόμη.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ σειρές.</string>
+    <string name="series_title">Σειρές</string>
+    <string name="series_empty_genre">Δεν υπάρχουν σειρές σε αυτό το είδος ακόμη.</string>
+    <string name="series_episode_count">%1$d επεισόδια</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα και μετά προσθέστε κανάλια ή τίτλους στα αγαπημένα για να τα δείτε εδώ.</string>
+    <string name="favorites_title">Αγαπημένα</string>
+    <string name="favorites_tab_channels">Κανάλια</string>
+    <string name="favorites_tab_movies">Ταινίες</string>
+    <string name="favorites_tab_series">Σειρές</string>
+    <string name="favorites_empty_channels">Δεν υπάρχουν αγαπημένα κανάλια ακόμη -- πατήστε την καρδιά σε ένα πλακίδιο καναλιού για να προσθέσετε ένα.</string>
+    <string name="favorites_empty_movies">Δεν υπάρχουν αγαπημένες ταινίες ακόμη -- πατήστε την καρδιά σε ένα πλακίδιο ταινίας για να προσθέσετε μία.</string>
+    <string name="favorites_empty_series">Δεν υπάρχουν αγαπημένες σειρές ακόμη -- πατήστε την καρδιά σε ένα πλακίδιο σειράς για να προσθέσετε μία.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να αναζητήσετε στον κατάλογό σας.</string>
+    <string name="search_title">Αναζήτηση</string>
+    <string name="search_placeholder">Αναζήτηση καναλιών, ταινιών, σειρών…</string>
+    <string name="search_scope_all">Όλα</string>
+    <string name="search_scope_live">Ζωντανή TV</string>
+    <string name="search_scope_movies">Ταινίες</string>
+    <string name="search_scope_series">Σειρές</string>
+    <string name="search_category_label">Κατηγορία: %1$s</string>
+    <string name="search_type_to_search">Πληκτρολογήστε για αναζήτηση στον κατάλογό σας.</string>
+    <string name="search_min_chars">Πληκτρολογήστε τουλάχιστον %1$d χαρακτήρες για αναζήτηση.</string>
+    <string name="search_no_results">Κανένα αποτέλεσμα για \"%1$s\".</string>
+    <string name="search_section_live">Ζωντανή TV</string>
+    <string name="search_section_titles">Ταινίες &amp; σειρές</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Φόρτωση…</string>
+    <string name="detail_not_found">Ο τίτλος δεν βρέθηκε</string>
+    <string name="detail_play">Αναπαραγωγή</string>
+    <string name="detail_play_episode">Αναπαραγωγή S%1$d · E%2$d</string>
+    <string name="detail_add_to_favorites">Προσθήκη στα αγαπημένα</string>
+    <string name="detail_remove_from_favorites">Αφαίρεση από τα αγαπημένα</string>
+    <string name="detail_storyline">Υπόθεση</string>
+    <string name="detail_cast_label">Ηθοποιοί:</string>
+    <string name="detail_director_label">Σκηνοθέτης:</string>
+    <string name="detail_episodes_header">Επεισόδια</string>
+    <string name="detail_episodes_header_seasons">Επεισόδια · %1$d σεζόν · %2$d συνολικά</string>
+    <string name="detail_episodes_header_total">Επεισόδια · %1$d συνολικά</string>
+    <string name="detail_season_label">Σεζόν %1$d</string>
+    <string name="detail_season_episode_count">Σεζόν %1$s · %2$d επεισόδια</string>
+    <string name="detail_m3u_no_episodes">Αυτή η καταχώριση λίστας δεν έχει δεδομένα σεζόν/επεισοδίου -- χρησιμοποιήστε την Αναπαραγωγή παραπάνω για να την παρακολουθήσετε ως μεμονωμένο στοιχείο.</string>
+    <string name="detail_episodes_load_error">Δεν ήταν δυνατή η φόρτωση επεισοδίων: %1$s</string>
+    <string name="detail_episodes_loading">Φόρτωση επεισοδίων…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Το περιεχόμενο δεν βρέθηκε</string>
+    <string name="player_playback_failed">Η αναπαραγωγή απέτυχε</string>
+    <string name="player_buffering">Προσωρινή αποθήκευση…</string>
+    <string name="player_up_next">Ακολουθεί</string>
+    <string name="player_up_next_channel">Ακολουθεί -- %1$s</string>
+    <string name="player_no_programme_data">Χωρίς δεδομένα προγράμματος</string>
+    <string name="player_previous_channel">Προηγούμενο κανάλι</string>
+    <string name="player_next_channel">Επόμενο κανάλι</string>
+    <string name="player_previous_episode">Προηγούμενο επεισόδιο</string>
+    <string name="player_next_episode">Επόμενο επεισόδιο</string>
+    <string name="player_back_10_min">Πίσω 10 λεπτά</string>
+    <string name="player_forward_10_min">Μπροστά 10 λεπτά</string>
+    <string name="player_rewind">Επαναφορά</string>
+    <string name="player_pause">Παύση</string>
+    <string name="player_play">Αναπαραγωγή</string>
+    <string name="player_fast_forward">Γρήγορη προώθηση</string>
+    <string name="player_audio_track">Κομμάτι ήχου</string>
+    <string name="player_subtitles">Υπότιτλοι</string>
+    <string name="player_minimize_to_corner">Ελαχιστοποίηση στη γωνία</string>
+    <string name="player_picture_in_picture">Εικόνα σε εικόνα</string>
+    <string name="player_up_next_action">Ακολουθεί</string>
+    <string name="player_open_guide">Άνοιγμα οδηγού</string>
+    <string name="player_live_badge">Ζωντανά</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Ανενεργοί</string>
+    <string name="subtitle_none_in_stream">Δεν υπάρχουν υπότιτλοι σε αυτήν τη ροή.</string>
+    <string name="subtitle_search_online">Αναζήτηση online…</string>
+    <string name="subtitle_selected">Επιλεγμένο</string>
+    <string name="subtitle_picker_title">Υπότιτλοι</string>
+    <string name="subtitle_search_title">Αναζήτηση υπότιτλων online</string>
+    <string name="subtitle_search_placeholder">Τίτλος</string>
+    <string name="subtitle_searching">Αναζήτηση…</string>
+    <string name="subtitle_search_action">Αναζήτηση</string>
+    <string name="subtitle_status_searching">Αναζήτηση στο OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Λήψη υπότιτλου…</string>
+    <string name="subtitle_status_no_matches">Καμία αντιστοίχιση -- δοκιμάστε άλλον τίτλο ή γλώσσα.</string>
+    <string name="subtitle_default_label">Υπότιτλος %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Διακοπή mini-player;</string>
+    <string name="mini_player_stop_body">Διακοπή αναπαραγωγής του «%1$s» και κλείσιμο του mini-player;</string>
+    <string name="mini_player_stop">Διακοπή</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Πολλαπλή προβολή</string>
+    <string name="multiview_4up">4 μαζί</string>
+    <string name="multiview_2up">2 μαζί</string>
+    <string name="multiview_no_source">Καμία ενεργή λίστα</string>
+    <string name="multiview_no_channels">Δεν υπάρχουν διαθέσιμα ζωντανά κανάλια για πολλαπλή προβολή</string>
+    <string name="multiview_audio_badge">Ήχος</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Προσαρμογή</string>
+    <string name="shell_add_playlist_desc">Προσθήκη λίστας</string>
+    <string name="nav_home">Αρχική</string>
+    <string name="nav_live_tv">Ζωντανή TV</string>
+    <string name="nav_tv_guide">Οδηγός TV</string>
+    <string name="nav_movies">Ταινίες</string>
+    <string name="nav_series">Σειρές</string>
+    <string name="nav_search">Αναζήτηση</string>
+    <string name="nav_favorites">Αγαπημένα</string>
+    <string name="nav_settings">Ρυθμίσεις</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Κατηγορίες</string>
+    <string name="browse_empty_default">Δεν υπάρχουν στοιχεία σε αυτήν την κατηγορία ακόμη.</string>
+    <string name="browse_load_error">Δεν ήταν δυνατή η φόρτωση — δοκιμάστε ξανά</string>
+    <string name="browse_pin_dialog_pinned_body">Αφαιρέστε αυτήν την κατηγορία από την κορυφή της λίστας.</string>
+    <string name="browse_pin_dialog_unpinned_body">Καρφιτσώστε αυτήν την κατηγορία στην κορυφή της λίστας.</string>
+    <string name="browse_unpin">Ξεκαρφίτσωμα</string>
+    <string name="browse_pin">Καρφίτσωμα</string>
+    <string name="browse_category_pinned_desc">Καρφιτσωμένο</string>
+    <string name="browse_see_all">Προβολή όλων  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Ζωντανά</string>
+    <string name="badge_catchup">Επανάληψη</string>
+    <string name="badge_smart">Έξυπνο</string>
+    <string name="health_stable">Σταθερή</string>
+    <string name="health_moderate">Μέτρια</string>
+    <string name="health_poor">Χαμηλή</string>
+    <string name="continue_card_resume_desc">Συνέχιση</string>
+    <string name="channel_tile_now">Τώρα · %1$s</string>
+    <string name="channel_tile_next">Μετά · %1$s</string>
+    <string name="browse_all_channels">Όλα τα κανάλια</string>
+    <string name="browse_all_movies">Όλες οι ταινίες</string>
+    <string name="browse_all_series">Όλες οι σειρές</string>
+    <string name="settings_refresh_no_playlist">Δεν υπάρχει ενεργή λίστα αναπαραγωγής για ανανέωση.</string>
+    <string name="settings_refresh_failed">Η ανανέωση απέτυχε — ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.</string>
+    <string name="settings_subs_connect_key_first">Συνδέστε πρώτα το κλειδί API.</string>
+    <string name="onboarding_error_generic">Κάτι πήγε στραβά</string>
+</resources>

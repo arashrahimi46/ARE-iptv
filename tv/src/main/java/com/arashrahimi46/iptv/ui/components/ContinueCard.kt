@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.tvGlow
@@ -71,7 +73,7 @@ fun AreContinueCard(
                             .background(colors.accent, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(Icons.Filled.PlayArrow, contentDescription = "Resume", tint = Color.White)
+                        Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(R.string.continue_card_resume_desc), tint = Color.White)
                     }
                 }
                 if (remaining != null) {

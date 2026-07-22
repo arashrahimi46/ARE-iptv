@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.ui.shell
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,10 +54,18 @@ fun AreIptvAppShell(
             // Bounded content area (no scroll here). The shell used to own a single
             // verticalScroll, but that can't host the tab NavHost -- each tab now
             // provides its own scroll (see MainActivity.ScrollableTab).
+            //
+            // focusGroup only -- deliberately NO focusRestorer here. A shell-level restorer intercepts
+            // right-arrow entry with a directional/nearest search and resolves it to whatever focusable
+            // sits at the sidebar icon's height (the reported "Settings lands on Dark theme, mid-page").
+            // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
+            // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
+            // so the group boundary is all the shell needs to provide.
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .focusGroup(),
             ) {
                 content()
             }

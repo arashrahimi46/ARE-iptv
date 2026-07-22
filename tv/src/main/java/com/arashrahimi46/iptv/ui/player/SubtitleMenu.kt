@@ -26,6 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -38,6 +39,7 @@ import androidx.media3.common.Tracks
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.parser.OnlineSubtitle
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
@@ -161,13 +163,13 @@ fun SubtitleMenuDialog(
     onSearchOnline: (() -> Unit)? = null,
 ) {
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        AreDialog(onDismiss = onDismiss, title = "Subtitles", width = 420.dp) {
+        AreDialog(onDismiss = onDismiss, title = stringResource(R.string.subtitle_picker_title), width = 420.dp) {
             Column {
-                SubtitleRow(label = "Off", selected = selectedKey == null, onClick = onSelectOff)
+                SubtitleRow(label = stringResource(R.string.subtitle_off), selected = selectedKey == null, onClick = onSelectOff)
                 if (tracks.isEmpty()) {
                     Box(Modifier.height(8.dp))
                     Text(
-                        text = "No subtitles in this stream.",
+                        text = stringResource(R.string.subtitle_none_in_stream),
                         style = AreIptvTheme.typography.caption,
                         color = AreIptvTheme.colors.textTertiary,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp),
@@ -197,7 +199,7 @@ fun SubtitleMenuDialog(
                             .height(1.dp)
                             .background(AreIptvTheme.colors.borderDefault),
                     )
-                    SubtitleRow(label = "Search online…", selected = false, onClick = onSearchOnline)
+                    SubtitleRow(label = stringResource(R.string.subtitle_search_online), selected = false, onClick = onSearchOnline)
                 }
             }
         }
@@ -238,6 +240,8 @@ fun OnlineSubtitleSearchDialog(
     var results by remember { mutableStateOf<List<OnlineSubtitle>>(emptyList()) }
     var searched by remember { mutableStateOf(false) }
     var downloadingId by remember { mutableStateOf<Long?>(null) }
+    val searchFailedText = stringResource(R.string.subtitle_status_no_matches)
+    val downloadFailedText = stringResource(R.string.player_playback_failed)
 
     fun runSearch() {
         if (query.isBlank() || loading) return
@@ -245,7 +249,7 @@ fun OnlineSubtitleSearchDialog(
             loading = true; error = null
             onSearch(query.trim(), langCode)
                 .onSuccess { results = it; searched = true }
-                .onFailure { error = it.message ?: "Search failed." }
+                .onFailure { error = it.message ?: searchFailedText }
             loading = false
         }
     }
@@ -253,12 +257,12 @@ fun OnlineSubtitleSearchDialog(
     LaunchedEffect(Unit) { if (query.isNotBlank()) runSearch() }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        AreDialog(onDismiss = onDismiss, title = "Search subtitles online", width = 560.dp) {
+        AreDialog(onDismiss = onDismiss, title = stringResource(R.string.subtitle_search_title), width = 560.dp) {
             Column {
                 AreTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = "Title",
+                    placeholder = stringResource(R.string.subtitle_search_placeholder),
                     icon = Icons.Filled.Search,
                 )
                 Box(Modifier.height(10.dp))
@@ -277,7 +281,7 @@ fun OnlineSubtitleSearchDialog(
                 }
                 Box(Modifier.height(12.dp))
                 AreButton(
-                    text = if (loading) "Searching…" else "Search",
+                    text = if (loading) stringResource(R.string.subtitle_searching) else stringResource(R.string.subtitle_search_action),
                     onClick = { runSearch() },
                     disabled = loading || query.isBlank(),
                     size = AreButtonSize.Small,
@@ -287,10 +291,10 @@ fun OnlineSubtitleSearchDialog(
                 // not signed in) or "Downloading…" must never be pushed below the dialog fold by a long
                 // list. Results stay put so the user can fix the issue and retry the same row.
                 when {
-                    loading -> StatusLine("Searching OpenSubtitles…")
-                    downloadingId != null -> StatusLine("Downloading subtitle…")
+                    loading -> StatusLine(stringResource(R.string.subtitle_status_searching))
+                    downloadingId != null -> StatusLine(stringResource(R.string.subtitle_status_downloading))
                     error != null -> StatusLine(error!!, danger = true)
-                    searched && results.isEmpty() -> StatusLine("No matches -- try a different title or language.")
+                    searched && results.isEmpty() -> StatusLine(stringResource(R.string.subtitle_status_no_matches))
                     else -> {}
                 }
                 if (results.isNotEmpty()) {
@@ -306,7 +310,7 @@ fun OnlineSubtitleSearchDialog(
                                     downloadingId = sub.fileId; error = null
                                     onPick(sub)
                                         .onSuccess { onDismiss() }
-                                        .onFailure { error = it.message ?: "Download failed." }
+                                        .onFailure { error = it.message ?: downloadFailedText }
                                     downloadingId = null
                                 }
                             }
@@ -349,7 +353,7 @@ private fun SubtitleRow(label: String, selected: Boolean, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                if (selected) Icon(Icons.Filled.Check, contentDescription = "Selected", tint = colors.accent, modifier = Modifier.size(18.dp))
+                if (selected) Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.subtitle_selected), tint = colors.accent, modifier = Modifier.size(18.dp))
             }
             Box(Modifier.size(10.dp))
             Text(

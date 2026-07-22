@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Zpět</string>
+    <string name="action_cancel">Zrušit</string>
+    <string name="action_continue">Pokračovat</string>
+    <string name="action_retry">Zkusit znovu</string>
+    <string name="action_close">Zavřít</string>
+    <string name="action_remove">Odebrat</string>
+    <string name="action_clear">Vymazat</string>
+    <string name="action_connect">Připojit</string>
+    <string name="action_disconnect">Odpojit</string>
+    <string name="action_sign_in">Přihlásit se</string>
+    <string name="action_sign_out">Odhlásit se</string>
+    <string name="action_search">Hledat</string>
+    <string name="action_donate">Přispět</string>
+    <string name="content_desc_account">Účet</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Opustit ARE iptv?</string>
+    <string name="shell_stay">Zůstat</string>
+    <string name="shell_leave">Odejít</string>
+    <string name="shell_leave_app_body">Chcete ukončit ARE iptv?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Zdroj</string>
+    <string name="onboarding_step_credentials">Přihlašovací údaje</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Potvrdit</string>
+    <string name="onboarding_title">Přidat playlist</string>
+    <string name="onboarding_subtitle">Použijte vlastní IPTV předplatné. ARE iptv nikdy neukládá vaše přihlašovací údaje mimo zařízení.</string>
+    <string name="onboarding_skip_for_now">Prozatím přeskočit</string>
+    <string name="onboarding_go_to_home">Přejít na Domů</string>
+    <string name="onboarding_add_playlist">Přidat playlist</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Zadejte hostitele portálu, uživatelské jméno a heslo. Nejlepší pro živou TV + VOD s automatickým EPG.</string>
+    <string name="onboarding_m3u_title">M3U / URL playlist</string>
+    <string name="onboarding_m3u_desc">Vložte jeden odkaz M3U nebo M3U-plus. Pokud máte XMLTV EPG URL, přidejte ji zvlášť.</string>
+    <string name="onboarding_portal_name_label">Název portálu</string>
+    <string name="onboarding_portal_name_placeholder">Obývák</string>
+    <string name="onboarding_server_url_label">URL serveru</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Uživatelské jméno</string>
+    <string name="onboarding_password_label">Heslo</string>
+    <string name="onboarding_m3u_url_label">URL M3U playlistu</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Automaticky spárovat EPG a loga</string>
+    <string name="onboarding_epg_auto_desc">Automaticky načíst data programu, loga kanálů a plakáty.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (volitelné)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Zakázáno, když je zapnuté automatické párování.</string>
+    <string name="onboarding_epg_custom_helper">Zadejte vlastní zdroj programu.</string>
+    <string name="onboarding_confirm_adding">Přidávání playlistu…</string>
+    <string name="onboarding_confirm_error_title">Playlist se nepodařilo přidat</string>
+    <string name="onboarding_confirm_added">Přidáno</string>
+    <string name="onboarding_confirm_ready">Připraveno k přidání</string>
+    <string name="onboarding_confirm_channels_badge">%1$d kanálů</string>
+    <string name="onboarding_confirm_downloading">Stahování a import vašich kanálů. Velké playlisty mohou chvíli trvat — ponechte prosím aplikaci otevřenou.</string>
+    <string name="onboarding_confirm_row_portal">Portál</string>
+    <string name="onboarding_confirm_default_portal_name">Můj playlist</string>
+    <string name="onboarding_confirm_row_source">Zdroj</string>
+    <string name="onboarding_confirm_row_server">Server</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Automaticky spárováno</string>
+    <string name="onboarding_confirm_custom_xmltv">Vlastní XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Katalog</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d kanálů · %2$d filmů · %3$d seriálů</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Soukromí a podmínky</string>
+    <string name="privacy_subtitle">Před pokračováním si prosím přečtěte a přijměte.</string>
+    <string name="privacy_body">Zásady ochrany soukromí a podmínky služby ARE iptv\n\nARE iptv neshromažďuje ani nepřenáší vaše přihlašovací údaje k playlistu mimo zařízení. Pokračováním souhlasíte s používáním této aplikace pouze se zdroji obsahu, k nimž máte oprávněný přístup, a plně přijímáte naše Podmínky služby a Zásady ochrany soukromí.</string>
+    <string name="privacy_accept_label">Přečetl(a) jsem si a přijímám Zásady ochrany soukromí a Podmínky služby.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Zvolte playlist</string>
+    <string name="sources_choose_subtitle">Vyberte, který z přidaných playlistů otevřít.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Přidat nový playlist</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Zvolte svůj jazyk</string>
+    <string name="language_select_subtitle">Vyberte jazyk, který chcete v aplikaci používat.</string>
+    <string name="language_picker_label">Jazyk</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Opravdu chcete změnit jazyk?</string>
+    <string name="language_confirm_action">Potvrdit</string>
+    <string name="language_confirm_cancel">Zrušit</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Nastavení</string>
+    <string name="settings_section_playlists">Playlisty a synchronizace</string>
+    <string name="settings_refresh_catalog">Obnovit katalog</string>
+    <string name="settings_refresh_now">Obnovit nyní</string>
+    <string name="settings_refreshing">Obnovování…</string>
+    <string name="settings_refresh_syncing">Synchronizace s poskytovatelem…</string>
+    <string name="settings_refresh_success">Aktualizováno: %1$d kanálů, %2$d filmů, %3$d seriálů</string>
+    <string name="settings_refresh_stale">Starší než 2 týdny — obnovte, abyste získali nové kanály a tituly</string>
+    <string name="settings_never_refreshed">Nikdy neobnoveno</string>
+    <string name="settings_last_updated_days">Naposledy aktualizováno před %1$d dnem</string>
+    <string name="settings_last_updated_days_plural">Naposledy aktualizováno před %1$d dny</string>
+    <string name="settings_last_updated_hours">Naposledy aktualizováno před %1$d hodinou</string>
+    <string name="settings_last_updated_hours_plural">Naposledy aktualizováno před %1$d hodinami</string>
+    <string name="settings_last_updated_mins">Naposledy aktualizováno před %1$d min</string>
+    <string name="settings_last_updated_now">Naposledy aktualizováno právě teď</string>
+    <string name="settings_section_appearance">Vzhled</string>
+    <string name="settings_dark_theme">Tmavý motiv</string>
+    <string name="settings_dark_theme_desc">Doporučeno pro pohodlné sledování.</string>
+    <string name="settings_reduce_motion">Omezit animace</string>
+    <string name="settings_reduce_motion_desc">Jemnější animace zaostření.</string>
+    <string name="settings_list_view">Zobrazení seznamu</string>
+    <string name="settings_list_view_desc">Zobrazit kanály, filmy a seriály jako seznam místo mřížky dlaždic.</string>
+    <string name="settings_section_language">Jazyk</string>
+    <string name="settings_language_row_title">Jazyk aplikace</string>
+    <string name="settings_language_row_desc">Zvolte jazyk používaný v celé aplikaci.</string>
+    <string name="settings_section_playback">Přehrávání</string>
+    <string name="settings_hardware_decoding">Hardwarové dekódování</string>
+    <string name="settings_hardware_decoding_desc">Upřednostní hardwarové dekodéry; přejde na softwarové, pokud to stream vyžaduje.</string>
+    <string name="settings_autoplay_next">Automaticky přehrát další díl</string>
+    <string name="settings_autoplay_next_desc">Zatím pouze předvolba -- automatické přehrání dalšího dílu ještě není zapojeno; další díl vyberte v Detailu.</string>
+    <string name="settings_mini_player_behavior">Chování mini-přehrávače</string>
+    <string name="settings_mini_player_behavior_desc">Když procházíte poblíž ukotveného mini-přehrávače: přesuňte jej do volného rohu, nebo jej zeslabte a zmenšete.</string>
+    <string name="settings_mini_player_dodge">Automaticky uhnout</string>
+    <string name="settings_mini_player_fade">Zeslabit a zmenšit</string>
+    <string name="settings_section_parental">Rodičovská kontrola</string>
+    <string name="settings_lock_adult">Uzamknout kategorie pro dospělé</string>
+    <string name="settings_lock_adult_desc">Jakmile je zapnuto, vypnutí vyžaduje váš PIN.</string>
+    <string name="settings_change_pin">Změnit PIN</string>
+    <string name="settings_pin_loading">Načítání…</string>
+    <string name="settings_pin_is_set">PIN je nastaven.</string>
+    <string name="settings_pin_not_set">PIN dosud není nastaven.</string>
+    <string name="settings_change">Změnit</string>
+    <string name="settings_set_pin">Nastavit PIN</string>
+    <string name="settings_section_subtitles">Titulky</string>
+    <string name="settings_subtitle_lang_title">Preferovaný jazyk</string>
+    <string name="settings_subtitle_lang_desc">Předvybráno při vyhledávání titulků online. U každého videa jej stále můžete změnit.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Připraveno -- online vyhledávání a stahování jsou povoleny.</string>
+    <string name="settings_opensubs_key_connected">API klíč připojen. Přihlaste se také níže -- pro online titulky je vyžadováno obojí.</string>
+    <string name="settings_account">Účet</string>
+    <string name="settings_account_signed_in">Přihlášen jako %1$s -- stahování titulků je povoleno.</string>
+    <string name="settings_signin_title">Přihlaste se ke stahování titulků</string>
+    <string name="settings_signin_desc">Poslední krok -- pro online titulky je vyžadován API klíč i přihlášení k účtu. Přihlaste se pomocí uživatelského jména a hesla opensubtitles.com; stahování využívá denní kvótu vašeho účtu. Zůstaneme za vás přihlášeni.</string>
+    <string name="settings_placeholder_username">Uživatelské jméno</string>
+    <string name="settings_placeholder_password">Heslo</string>
+    <string name="settings_signing_in">Přihlašování…</string>
+    <string name="settings_opensubs_key_title">API klíč OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">Online titulky vyžadují bezplatný účet opensubtitles.com se dvěma věcmi: tímto API klíčem (pro vyhledávání) a přihlášením k účtu (pro stahování). Krok 1 -- vložte API klíč; přihlásíte se poté. Před uložením jej ověříme.</string>
+    <string name="settings_placeholder_api_key">API klíč</string>
+    <string name="settings_checking">Kontrola…</string>
+    <string name="settings_section_metadata">Informace o filmech a seriálech</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Připojeno -- hodnocení IMDb a Rotten Tomatoes, děj a obsazení se zobrazují v Detailu.</string>
+    <string name="settings_omdb_key_title">API klíč OMDb</string>
+    <string name="settings_omdb_key_desc">Vložte bezplatný klíč z omdbapi.com pro obohacení filmů a seriálů o hodnocení IMDb a Rotten Tomatoes, synopsi a obsazení. Před uložením jej ověříme.</string>
+    <string name="settings_section_about">O aplikaci</string>
+    <string name="settings_version_title">Verze</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Podpořte tuto aplikaci</string>
+    <string name="settings_support_desc">Kupte mi kávu, pokud je pro vás ARE iptv užitečná.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Nastavte 4místný PIN</string>
+    <string name="pin_confirm_title">Potvrďte svůj PIN</string>
+    <string name="pin_enter_title">Zadejte PIN</string>
+    <string name="pin_lockout_message">Příliš mnoho nesprávných pokusů -- zkuste to znovu za %1$ds</string>
+    <string name="pin_mismatch_error">PINy se neshodují -- zkuste to znovu</string>
+    <string name="pin_incorrect_error">Nesprávný PIN</string>
+    <string name="pin_checking">Kontrola…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Přidat sekci</string>
+    <string name="home_remove_continue_watching_title">Odebrat z Pokračovat ve sledování?</string>
+    <string name="home_remove_continue_watching_body">„%1$s“ se zde přestane zobrazovat. Vaše pozice se neuloží.</string>
+    <string name="home_loading_catalog">Načítání vašeho katalogu…</string>
+    <string name="home_no_playlist_title">Zatím žádný playlist</string>
+    <string name="home_no_playlist_body">Přidejte playlist z bočního panelu, abyste zde viděli své kanály, filmy a seriály.</string>
+    <string name="home_section_continue_watching">Pokračovat ve sledování</string>
+    <string name="home_section_live_now">Živě právě teď</string>
+    <string name="home_section_categories">Procházet podle kategorie</string>
+    <string name="home_section_recommended">Pro vás</string>
+    <string name="home_section_for_you">Pro vás</string>
+    <string name="home_section_popular">Populární</string>
+    <string name="home_section_because_you_like">Protože máte rádi %1$s</string>
+    <string name="home_section_movies">Filmy</string>
+    <string name="home_section_series">Seriály</string>
+    <string name="home_add_section_dialog_title">Přidat sekci</string>
+    <string name="home_add_section_empty">Každá kategorie z vašeho playlistu je již připnuta na Domů.</string>
+    <string name="home_category_live">Živě</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Seriál</string>
+    <string name="home_edit_grabbed_desc">Uchopeno -- Nahoru/Dolů pro přesun, OK pro položení</string>
+    <string name="home_edit_grab_desc">Uchopte pro změnu pořadí</string>
+    <string name="home_edit_show_section">Zobrazit sekci</string>
+    <string name="home_edit_hide_section">Skrýt sekci</string>
+    <string name="home_edit_remove_section">Odebrat sekci</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Přidejte playlist z bočního panelu, abyste zde viděli TV program.</string>
+    <string name="guide_title">TV program</string>
+    <string name="guide_epg_unavailable">Zdroj EPG není dostupný -- kanály se zobrazují bez dat o programu.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Zaostřete pořad pro zobrazení podrobností</string>
+    <string name="guide_live_badge">ŽIVĚ</string>
+    <string name="guide_catchup_available_desc">Zpětné přehrání dostupné</string>
+    <string name="guide_day_yesterday">Včera</string>
+    <string name="guide_day_today">Dnes</string>
+    <string name="guide_day_tomorrow">Zítra</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Přidejte playlist z bočního panelu, abyste zde viděli živé kanály.</string>
+    <string name="live_title">Živá TV</string>
+    <string name="live_channel_groups">Skupiny kanálů</string>
+    <string name="live_count_channels">%1$d kanálů</string>
+    <string name="live_empty_group">V této skupině zatím nejsou žádné kanály.</string>
+    <string name="live_on_air_now">PRÁVĚ VYSÍLÁME</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Přidejte playlist z bočního panelu, abyste zde viděli filmy.</string>
+    <string name="movies_title">Filmy</string>
+    <string name="movies_genres">Žánry</string>
+    <string name="movies_count_titles">%1$d titulů</string>
+    <string name="movies_empty_genre">V tomto žánru zatím nejsou žádné filmy.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Přidejte playlist z bočního panelu, abyste zde viděli seriály.</string>
+    <string name="series_title">Seriály</string>
+    <string name="series_empty_genre">V tomto žánru zatím nejsou žádné seriály.</string>
+    <string name="series_episode_count">%1$d dílů</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Přidejte playlist z bočního panelu a poté si přidejte kanály nebo tituly do oblíbených, abyste je zde viděli.</string>
+    <string name="favorites_title">Oblíbené</string>
+    <string name="favorites_tab_channels">Kanály</string>
+    <string name="favorites_tab_movies">Filmy</string>
+    <string name="favorites_tab_series">Seriály</string>
+    <string name="favorites_empty_channels">Zatím žádné oblíbené kanály -- klepnutím na srdíčko na dlaždici kanálu jej přidáte.</string>
+    <string name="favorites_empty_movies">Zatím žádné oblíbené filmy -- klepnutím na srdíčko na dlaždici filmu jej přidáte.</string>
+    <string name="favorites_empty_series">Zatím žádné oblíbené seriály -- klepnutím na srdíčko na dlaždici seriálu jej přidáte.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Přidejte playlist z bočního panelu, abyste mohli prohledávat svůj katalog.</string>
+    <string name="search_title">Hledat</string>
+    <string name="search_placeholder">Hledat kanály, filmy, seriály…</string>
+    <string name="search_scope_all">Vše</string>
+    <string name="search_scope_live">Živá TV</string>
+    <string name="search_scope_movies">Filmy</string>
+    <string name="search_scope_series">Seriály</string>
+    <string name="search_category_label">Kategorie: %1$s</string>
+    <string name="search_type_to_search">Pište pro vyhledání ve svém katalogu.</string>
+    <string name="search_min_chars">Pro vyhledávání napište alespoň %1$d znaky.</string>
+    <string name="search_no_results">Žádné výsledky pro \"%1$s\".</string>
+    <string name="search_section_live">Živá TV</string>
+    <string name="search_section_titles">Filmy a seriály</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Načítání…</string>
+    <string name="detail_not_found">Titul nenalezen</string>
+    <string name="detail_play">Přehrát</string>
+    <string name="detail_play_episode">Přehrát S%1$d · E%2$d</string>
+    <string name="detail_add_to_favorites">Přidat do oblíbených</string>
+    <string name="detail_remove_from_favorites">Odebrat z oblíbených</string>
+    <string name="detail_storyline">Děj</string>
+    <string name="detail_cast_label">Obsazení:</string>
+    <string name="detail_director_label">Režie:</string>
+    <string name="detail_episodes_header">Díly</string>
+    <string name="detail_episodes_header_seasons">Díly · %1$d sérií · %2$d celkem</string>
+    <string name="detail_episodes_header_total">Díly · %1$d celkem</string>
+    <string name="detail_season_label">Série %1$d</string>
+    <string name="detail_season_episode_count">Série %1$s · %2$d dílů</string>
+    <string name="detail_m3u_no_episodes">Tato položka playlistu nemá data o sériích/dílech -- použijte Přehrát výše a sledujte ji jako jednu položku.</string>
+    <string name="detail_episodes_load_error">Nepodařilo se načíst díly: %1$s</string>
+    <string name="detail_episodes_loading">Načítání dílů…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Obsah nenalezen</string>
+    <string name="player_playback_failed">Přehrávání selhalo</string>
+    <string name="player_buffering">Ukládání do vyrovnávací paměti…</string>
+    <string name="player_up_next">Následuje</string>
+    <string name="player_up_next_channel">Následuje -- %1$s</string>
+    <string name="player_no_programme_data">Žádná data o programu</string>
+    <string name="player_previous_channel">Předchozí kanál</string>
+    <string name="player_next_channel">Další kanál</string>
+    <string name="player_previous_episode">Předchozí díl</string>
+    <string name="player_next_episode">Další díl</string>
+    <string name="player_back_10_min">Zpět o 10 minut</string>
+    <string name="player_forward_10_min">Vpřed o 10 minut</string>
+    <string name="player_rewind">Přetočit zpět</string>
+    <string name="player_pause">Pozastavit</string>
+    <string name="player_play">Přehrát</string>
+    <string name="player_fast_forward">Přetočit vpřed</string>
+    <string name="player_audio_track">Zvuková stopa</string>
+    <string name="player_subtitles">Titulky</string>
+    <string name="player_minimize_to_corner">Minimalizovat do rohu</string>
+    <string name="player_picture_in_picture">Obraz v obraze</string>
+    <string name="player_up_next_action">Následuje</string>
+    <string name="player_open_guide">Otevřít program</string>
+    <string name="player_live_badge">Živě</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Vypnuto</string>
+    <string name="subtitle_none_in_stream">V tomto streamu nejsou žádné titulky.</string>
+    <string name="subtitle_search_online">Hledat online…</string>
+    <string name="subtitle_selected">Vybráno</string>
+    <string name="subtitle_picker_title">Titulky</string>
+    <string name="subtitle_search_title">Hledat titulky online</string>
+    <string name="subtitle_search_placeholder">Název</string>
+    <string name="subtitle_searching">Hledání…</string>
+    <string name="subtitle_search_action">Hledat</string>
+    <string name="subtitle_status_searching">Hledání na OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Stahování titulků…</string>
+    <string name="subtitle_status_no_matches">Žádné shody -- zkuste jiný název nebo jazyk.</string>
+    <string name="subtitle_default_label">Titulky %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Zastavit mini-přehrávač?</string>
+    <string name="mini_player_stop_body">Zastavit přehrávání „%1$s“ a zavřít mini-přehrávač?</string>
+    <string name="mini_player_stop">Zastavit</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Více oken</string>
+    <string name="multiview_4up">4 okna</string>
+    <string name="multiview_2up">2 okna</string>
+    <string name="multiview_no_source">Žádný aktivní playlist</string>
+    <string name="multiview_no_channels">Pro zobrazení více oken nejsou dostupné žádné živé kanály</string>
+    <string name="multiview_audio_badge">Zvuk</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Přizpůsobit</string>
+    <string name="shell_add_playlist_desc">Přidat playlist</string>
+    <string name="nav_home">Domů</string>
+    <string name="nav_live_tv">Živá TV</string>
+    <string name="nav_tv_guide">TV program</string>
+    <string name="nav_movies">Filmy</string>
+    <string name="nav_series">Seriály</string>
+    <string name="nav_search">Hledat</string>
+    <string name="nav_favorites">Oblíbené</string>
+    <string name="nav_settings">Nastavení</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Kategorie</string>
+    <string name="browse_empty_default">V této kategorii zatím nejsou žádné položky.</string>
+    <string name="browse_load_error">Nepodařilo se načíst — zkuste to znovu</string>
+    <string name="browse_pin_dialog_pinned_body">Odebrat tuto kategorii z horní části seznamu.</string>
+    <string name="browse_pin_dialog_unpinned_body">Připnout tuto kategorii na horní část seznamu.</string>
+    <string name="browse_unpin">Odepnout</string>
+    <string name="browse_pin">Připnout</string>
+    <string name="browse_category_pinned_desc">Připnuto</string>
+    <string name="browse_see_all">Zobrazit vše  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Živě</string>
+    <string name="badge_catchup">Zpětné přehrání</string>
+    <string name="badge_smart">Smart</string>
+    <string name="health_stable">Stabilní</string>
+    <string name="health_moderate">Střední</string>
+    <string name="health_poor">Slabé</string>
+    <string name="continue_card_resume_desc">Pokračovat</string>
+    <string name="channel_tile_now">Nyní · %1$s</string>
+    <string name="channel_tile_next">Další · %1$s</string>
+    <string name="browse_all_channels">Všechny kanály</string>
+    <string name="browse_all_movies">Všechny filmy</string>
+    <string name="browse_all_series">Všechny seriály</string>
+    <string name="settings_refresh_no_playlist">Žádný aktivní playlist k obnovení.</string>
+    <string name="settings_refresh_failed">Obnovení se nezdařilo — zkontrolujte připojení a zkuste to znovu.</string>
+    <string name="settings_subs_connect_key_first">Nejprve připojte svůj API klíč.</string>
+    <string name="onboarding_error_generic">Něco se pokazilo</string>
+</resources>

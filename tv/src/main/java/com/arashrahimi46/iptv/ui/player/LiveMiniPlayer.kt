@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -48,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
@@ -235,7 +237,7 @@ fun LiveMiniPlayerOverlay(
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AreBadge("Live", tone = AreBadgeTone.Live)
+                AreBadge(stringResource(R.string.player_live_badge), tone = AreBadgeTone.Live)
                 Text(
                     text = session.title,
                     style = AreIptvTheme.typography.caption,
@@ -257,16 +259,16 @@ fun LiveMiniPlayerOverlay(
             LaunchedEffect(Unit) { runCatching { cancelFocus.requestFocus() } }
             AreDialog(
                 onDismiss = { showStopDialog = false },
-                title = "Stop mini-player?",
+                title = stringResource(R.string.mini_player_stop_title),
                 actions = {
                     AreButton(
-                        "Cancel",
+                        stringResource(R.string.action_cancel),
                         onClick = { showStopDialog = false },
                         variant = AreButtonVariant.Ghost,
                         modifier = Modifier.focusRequester(cancelFocus),
                     )
                     AreButton(
-                        "Stop",
+                        stringResource(R.string.mini_player_stop),
                         onClick = {
                             showStopDialog = false
                             controller.closeMini()
@@ -276,7 +278,7 @@ fun LiveMiniPlayerOverlay(
                 },
             ) {
                 Text(
-                    text = "Stop playing “${session.title}” and close the mini-player?",
+                    text = stringResource(R.string.mini_player_stop_body, session.title),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )

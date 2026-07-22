@@ -16,9 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
@@ -66,7 +68,7 @@ fun FavoritesScreen(
 
     if (!state.hasSource) {
         Text(
-            text = "Add a playlist from the sidebar, then favorite channels or titles to see them here.",
+            text = stringResource(R.string.favorites_no_source),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
             modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp10),
@@ -76,13 +78,13 @@ fun FavoritesScreen(
 
     Column(modifier = modifier.padding(top = spacing.sp6, bottom = spacing.sp10)) {
         Column(Modifier.padding(horizontal = spacing.safeX)) {
-            Text(text = "Favorites", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.favorites_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp6))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 listOf(
-                    "channels" to "Channels",
-                    "movies" to "Movies",
-                    "series" to "Series",
+                    "channels" to stringResource(R.string.favorites_tab_channels),
+                    "movies" to stringResource(R.string.favorites_tab_movies),
+                    "series" to stringResource(R.string.favorites_tab_series),
                 ).forEach { (id, label) ->
                     AreChip(text = label, selected = id == tab, onClick = { selectedTab = id })
                 }
@@ -95,19 +97,19 @@ fun FavoritesScreen(
             when (tab) {
                 "channels" -> ChannelGrid(
                     channels = state.channels,
-                    emptyLabel = "No favorited channels yet -- tap the heart on a channel tile to add one.",
+                    emptyLabel = stringResource(R.string.favorites_empty_channels),
                     onChannelSelected = onChannelSelected,
                     onToggleFavorite = viewModel::toggleChannelFavorite,
                 )
                 "movies" -> MovieGrid(
                     movies = state.movies,
-                    emptyLabel = "No favorited movies yet -- tap the heart on a movie tile to add one.",
+                    emptyLabel = stringResource(R.string.favorites_empty_movies),
                     onTitleSelected = onTitleSelected,
                     onToggleFavorite = viewModel::toggleVodFavorite,
                 )
                 "series" -> MovieGrid(
                     movies = state.series,
-                    emptyLabel = "No favorited series yet -- tap the heart on a series tile to add one.",
+                    emptyLabel = stringResource(R.string.favorites_empty_series),
                     onTitleSelected = onTitleSelected,
                     onToggleFavorite = viewModel::toggleVodFavorite,
                 )

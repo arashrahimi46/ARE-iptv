@@ -39,11 +39,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -103,18 +105,20 @@ fun DetailScreen(
 
     BackHandler(onBack = onBack)
 
+    val backDesc = stringResource(R.string.action_back)
+
     Box(modifier = modifier.fillMaxSize().background(colors.bgBase)) {
         val title = state.title
         if (state.loading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = "Loading…", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                Text(text = stringResource(R.string.detail_loading), style = AreIptvTheme.typography.body, color = colors.textSecondary)
             }
         } else if (title == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Title not found", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    Text(text = stringResource(R.string.detail_not_found), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                     Box(Modifier.padding(top = 16.dp))
-                    AreIconButton(Icons.Filled.ArrowBack, "Back", onClick = onBack, variant = AreIconButtonVariant.Solid)
+                    AreIconButton(Icons.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Solid)
                 }
             }
         } else {
@@ -126,7 +130,7 @@ fun DetailScreen(
             }
             Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 Box(Modifier.padding(24.dp, 24.dp, 24.dp, 0.dp)) {
-                    AreIconButton(Icons.Filled.ArrowBack, "Back", onClick = onBack, variant = AreIconButtonVariant.Glass)
+                    AreIconButton(Icons.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Glass)
                 }
                 Row(
                     modifier = Modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = 40.dp),
@@ -148,7 +152,7 @@ fun DetailScreen(
                             )
                             AreIconButton(
                                 icon = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                                contentDescription = if (isFavorite) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
                                 onClick = viewModel::toggleFavorite,
                                 variant = AreIconButtonVariant.Solid,
                             )
@@ -185,14 +189,15 @@ sealed class PlayTarget {
     data class Episode(val episodeId: Long) : PlayTarget()
 }
 
+@Composable
 private fun playLabel(title: VodTitle, state: DetailUiState): String = when {
-    !title.isSeries -> "Play"
+    !title.isSeries -> stringResource(R.string.detail_play)
     state.episodesBySeason.isNotEmpty() -> {
         val firstSeason = state.episodesBySeason.keys.min()
         val firstEpisode = state.episodesBySeason.getValue(firstSeason).minByOrNull { it.episode }
-        "Play S$firstSeason · E${firstEpisode?.episode ?: 1}"
+        stringResource(R.string.detail_play_episode, firstSeason, firstEpisode?.episode ?: 1)
     }
-    else -> "Play"
+    else -> stringResource(R.string.detail_play)
 }
 
 private fun resolvePlayTarget(title: VodTitle, state: DetailUiState): PlayTarget? = when {
@@ -287,18 +292,18 @@ private fun StoryAndCredits(title: VodTitle, modifier: Modifier = Modifier) {
     if (!hasPlot && !hasCredits) return
     Column(modifier = modifier) {
         if (hasPlot) {
-            Text(text = "Storyline", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+            Text(text = stringResource(R.string.detail_storyline), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             Box(Modifier.padding(top = 10.dp))
             Text(text = title.plot!!, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         }
         if (hasCredits) {
             Box(Modifier.padding(top = if (hasPlot) 20.dp else 0.dp))
             title.castList?.takeIf { it.isNotBlank() }?.let {
-                CreditLine(label = "Cast", value = it)
+                CreditLine(label = stringResource(R.string.detail_cast_label), value = it)
             }
             title.director?.takeIf { it.isNotBlank() }?.let {
                 Box(Modifier.padding(top = 6.dp))
-                CreditLine(label = "Director", value = it)
+                CreditLine(label = stringResource(R.string.detail_director_label), value = it)
             }
         }
     }
@@ -308,7 +313,7 @@ private fun StoryAndCredits(title: VodTitle, modifier: Modifier = Modifier) {
 private fun CreditLine(label: String, value: String) {
     val colors = AreIptvTheme.colors
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = "$label:", style = AreIptvTheme.typography.label, color = colors.textTertiary)
+        Text(text = label, style = AreIptvTheme.typography.label, color = colors.textTertiary)
         Text(text = value, style = AreIptvTheme.typography.label, color = colors.textPrimary, modifier = Modifier.weight(1f))
     }
 }
@@ -335,10 +340,13 @@ private fun SeriesEpisodesSection(
     var selectedSeason by remember(seasons) { mutableStateOf(restoredSeason) }
     Column {
         val header = if (totalEpisodes > 0) {
-            val seasonLabel = if (seasons.size > 1) "${seasons.size} seasons · " else ""
-            "Episodes · $seasonLabel$totalEpisodes total"
+            if (seasons.size > 1) {
+                stringResource(R.string.detail_episodes_header_seasons, seasons.size, totalEpisodes)
+            } else {
+                stringResource(R.string.detail_episodes_header_total, totalEpisodes)
+            }
         } else {
-            "Episodes"
+            stringResource(R.string.detail_episodes_header)
         }
         Text(text = header, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
         Box(Modifier.padding(top = 18.dp))
@@ -350,7 +358,7 @@ private fun SeriesEpisodesSection(
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         seasons.forEach { season ->
                             AreChip(
-                                text = "Season $season",
+                                text = stringResource(R.string.detail_season_label, season),
                                 onClick = { selectedSeason = season },
                                 selected = season == selectedSeason,
                             )
@@ -360,7 +368,7 @@ private fun SeriesEpisodesSection(
                 }
                 val episodes = state.episodesBySeason[selectedSeason].orEmpty().sortedBy { it.episode }
                 Text(
-                    text = "Season ${selectedSeason ?: ""} · ${episodes.size} episodes",
+                    text = stringResource(R.string.detail_season_episode_count, (selectedSeason ?: "").toString(), episodes.size),
                     style = AreIptvTheme.typography.h3,
                     color = colors.textSecondary,
                 )
@@ -380,16 +388,16 @@ private fun SeriesEpisodesSection(
                 // Documented M3U limitation (not a bug): playlists provide no authoritative
                 // season/episode structure, so a series-typed M3U entry plays as one item.
                 Text(
-                    text = "This playlist entry has no season/episode data -- use Play above to watch it as a single item.",
+                    text = stringResource(R.string.detail_m3u_no_episodes),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
             }
             state.episodesLoadError != null -> {
-                Text(text = "Couldn't load episodes: ${state.episodesLoadError}", style = AreIptvTheme.typography.body, color = colors.danger)
+                Text(text = stringResource(R.string.detail_episodes_load_error, state.episodesLoadError ?: ""), style = AreIptvTheme.typography.body, color = colors.danger)
             }
             else -> {
-                Text(text = "Loading episodes…", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                Text(text = stringResource(R.string.detail_episodes_loading), style = AreIptvTheme.typography.body, color = colors.textSecondary)
             }
         }
     }

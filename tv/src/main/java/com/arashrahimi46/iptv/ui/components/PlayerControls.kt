@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,12 +40,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -57,6 +60,9 @@ fun ArePlayerControls(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    /** Live only: the playing stream's real resolution + frame rate (e.g. "1080p · 50fps"), read
+     * from Media3's decoded video Format. Null hides the tag (VOD, or before the format is known). */
+    streamInfo: String? = null,
     live: Boolean = true,
     playing: Boolean = true,
     position: Float = 0.62f,
@@ -67,7 +73,13 @@ fun ArePlayerControls(
     onPlayPause: () -> Unit = {},
     onRewind: () -> Unit = {},
     onFastForward: () -> Unit = {},
-    onJumpToLive: () -> Unit = {},
+    // Transport skip pair (⏮/⏭), context-dependent: previous/next channel (live), previous/next
+    // episode (series), or −10min/+10min (movie). Null hides that side -- e.g. a series' first/last
+    // episode. Labels carry the a11y meaning since the icon is the same across contexts.
+    onSkipPrevious: (() -> Unit)? = null,
+    onSkipNext: (() -> Unit)? = null,
+    skipPreviousLabel: String? = null,
+    skipNextLabel: String? = null,
     onOpenGuide: () -> Unit = {},
     onUpNext: () -> Unit = {},
     // Multi-view is temporarily disabled (feature not ready) -- the param stays so the button
@@ -116,7 +128,7 @@ fun ArePlayerControls(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (live) {
-                        AreBadge("Live", tone = AreBadgeTone.Live)
+                        AreBadge(stringResource(R.string.badge_live), tone = AreBadgeTone.Live)
                     }
                     Text(
                         text = title,
@@ -128,6 +140,17 @@ fun ArePlayerControls(
                 }
                 if (subtitle != null) {
                     Text(text = subtitle, style = AreIptvTheme.typography.caption, color = colors.textSecondary)
+                }
+                if (streamInfo != null) {
+                    Text(
+                        text = streamInfo,
+                        style = AreIptvTheme.typography.mono,
+                        color = colors.accentHover,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .background(colors.accentWash, RoundedCornerShape(AreIptvTheme.radius.xs))
+                            .padding(horizontal = 7.dp, vertical = 2.dp),
+                    )
                 }
             }
             Text(
@@ -196,42 +219,49 @@ fun ArePlayerControls(
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AreIconButton(Icons.Filled.FastRewind, "Rewind", onClick = onRewind, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.FastRewind, stringResource(R.string.player_rewind), onClick = onRewind, variant = AreIconButtonVariant.Glass)
             AreIconButton(
                 if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                if (playing) "Pause" else "Play",
+                if (playing) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
                 onClick = onPlayPause,
                 variant = AreIconButtonVariant.Glass,
                 size = AreIconButtonSize.Large,
                 active = true,
                 modifier = if (playPauseFocusRequester != null) Modifier.focusRequester(playPauseFocusRequester) else Modifier,
             )
-            AreIconButton(Icons.Filled.FastForward, "Fast forward", onClick = onFastForward, variant = AreIconButtonVariant.Glass)
-            Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
-            AreIconButton(Icons.Filled.SkipNext, "Jump to live", onClick = onJumpToLive, variant = AreIconButtonVariant.Glass)
+            AreIconButton(Icons.Filled.FastForward, stringResource(R.string.player_fast_forward), onClick = onFastForward, variant = AreIconButtonVariant.Glass)
+            if (onSkipPrevious != null || onSkipNext != null) {
+                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
+                if (onSkipPrevious != null) {
+                    AreIconButton(Icons.Filled.SkipPrevious, skipPreviousLabel ?: "", onClick = onSkipPrevious, variant = AreIconButtonVariant.Glass)
+                }
+                if (onSkipNext != null) {
+                    AreIconButton(Icons.Filled.SkipNext, skipNextLabel ?: "", onClick = onSkipNext, variant = AreIconButtonVariant.Glass)
+                }
+            }
             Box(Modifier.weight(1f))
             // Audio track selection still needs a real track-selector UI -- stays a dimmed,
             // non-focusable placeholder (same treatment as Add Playlist) until built.
-            StaticGlyph(Icons.Filled.VolumeUp, "Audio track")
+            StaticGlyph(Icons.Filled.VolumeUp, stringResource(R.string.player_audio_track))
             // Subtitles: real picker (Off / embedded tracks / online search) once tracks are known;
             // a dimmed placeholder before then (onSubtitles == null). Lit when a track is active.
             if (onSubtitles != null) {
                 AreIconButton(
                     Icons.Filled.ClosedCaption,
-                    "Subtitles",
+                    stringResource(R.string.player_subtitles),
                     onClick = onSubtitles,
                     variant = AreIconButtonVariant.Glass,
                     active = subtitlesActive,
                 )
             } else {
-                StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
+                StaticGlyph(Icons.Filled.ClosedCaption, stringResource(R.string.player_subtitles))
             }
             // Multi-view button intentionally removed for now -- feature isn't ready. Re-add here
             // (wired to onMultiView) once it ships.
             if (onToggleFavorite != null) {
                 AreIconButton(
                     icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = if (isFavorite == true) "Remove from favorites" else "Add to favorites",
+                    contentDescription = if (isFavorite == true) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
                     onClick = onToggleFavorite,
                     variant = AreIconButtonVariant.Glass,
                 )
@@ -242,14 +272,14 @@ fun ArePlayerControls(
                 // Live: a real button that minimizes to the in-app corner mini-player. Dimmed
                 // placeholder only when the controller isn't ready (onPictureInPicture == null).
                 if (onPictureInPicture != null) {
-                    AreIconButton(Icons.Filled.PictureInPicture, "Minimize to corner", onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
+                    AreIconButton(Icons.Filled.PictureInPicture, stringResource(R.string.player_minimize_to_corner), onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
                 } else {
-                    StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+                    StaticGlyph(Icons.Filled.PictureInPicture, stringResource(R.string.player_picture_in_picture))
                 }
                 // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
                 // guide" (which leaves the player for the full multi-channel TV Guide).
-                AreIconButton(Icons.Filled.Schedule, "Up next", onClick = onUpNext, variant = AreIconButtonVariant.Glass)
-                AreIconButton(Icons.Filled.GridView, "Open guide", onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
+                AreIconButton(Icons.Filled.Schedule, stringResource(R.string.player_up_next_action), onClick = onUpNext, variant = AreIconButtonVariant.Glass)
+                AreIconButton(Icons.Filled.GridView, stringResource(R.string.player_open_guide), onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
             }
         }
     }

@@ -43,28 +43,31 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
-data class SidebarNavItem(val id: String, val label: String, val icon: ImageVector)
+data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
 
 /** Default nav items per the app shell spec (app.jsx `navItems`), with placeholder Material icons. */
 val DefaultSidebarNavItems = listOf(
-    SidebarNavItem("home", "Home", Icons.Filled.Home),
-    SidebarNavItem("live", "Live TV", Icons.Filled.LiveTv),
-    SidebarNavItem("guide", "TV Guide", Icons.Filled.TableChart),
-    SidebarNavItem("movies", "Movies", Icons.Filled.Movie),
-    SidebarNavItem("series", "Series", Icons.Filled.Theaters),
-    SidebarNavItem("search", "Search", Icons.Filled.Search),
-    SidebarNavItem("favorites", "Favorites", Icons.Filled.Favorite),
-    SidebarNavItem("settings", "Settings", Icons.Filled.Settings),
+    SidebarNavItem("home", R.string.nav_home, Icons.Filled.Home),
+    SidebarNavItem("live", R.string.nav_live_tv, Icons.Filled.LiveTv),
+    SidebarNavItem("guide", R.string.nav_tv_guide, Icons.Filled.TableChart),
+    SidebarNavItem("movies", R.string.nav_movies, Icons.Filled.Movie),
+    SidebarNavItem("series", R.string.nav_series, Icons.Filled.Theaters),
+    SidebarNavItem("search", R.string.nav_search, Icons.Filled.Search),
+    SidebarNavItem("favorites", R.string.nav_favorites, Icons.Filled.Favorite),
+    SidebarNavItem("settings", R.string.nav_settings, Icons.Filled.Settings),
 )
 
 /**
@@ -188,6 +191,7 @@ private fun SidebarNavRow(
     onFocusedChanged: (Boolean) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
+    val label = stringResource(item.labelRes)
 
     TvFocusable(
         onClick = onClick,
@@ -216,27 +220,29 @@ private fun SidebarNavRow(
             Box(contentAlignment = Alignment.TopEnd) {
                 Icon(
                     item.icon,
-                    contentDescription = item.label,
+                    contentDescription = label,
                     tint = if (active) colors.accentHover else colors.textTertiary,
                     modifier = Modifier.size(26.dp),
                 )
                 // "!" attention badge -- e.g. the active playlist is overdue for a refresh. Amber,
-                // nudge-not-alarm; sits on the icon corner so it's visible in the collapsed rail too.
+                // nudge-not-alarm; sits ON the icon's top-right corner (a small inward offset) so it
+                // stays inside the tile instead of spilling past the tile's rounded corner and getting
+                // clipped, and so it's still visible in the collapsed rail.
                 if (badged) {
                     Box(
                         modifier = Modifier
-                            .offset(x = 5.dp, y = (-4).dp)
-                            .size(15.dp)
+                            .offset(x = (-2).dp, y = (-2).dp)
+                            .size(14.dp)
                             .background(colors.warning, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(text = "!", style = AreIptvTheme.typography.caption, color = colors.accentFg)
+                        Text(text = "!", style = AreIptvTheme.typography.caption.copy(fontSize = 10.sp), color = colors.accentFg)
                     }
                 }
             }
             AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
                 Text(
-                    text = item.label,
+                    text = label,
                     style = AreIptvTheme.typography.label,
                     color = if (active) colors.textPrimary else colors.textSecondary,
                 )

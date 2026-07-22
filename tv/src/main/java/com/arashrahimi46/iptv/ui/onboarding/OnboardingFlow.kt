@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -33,13 +34,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreStepIndicator
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
-private val stepLabels = listOf("Source", "Credentials", "EPG", "Confirm")
 private val stepRoutes = listOf("source", "credentials", "epg", "confirm")
 
 /**
@@ -62,6 +63,13 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
     val colors = AreIptvTheme.colors
 
+    val stepLabels = listOf(
+        stringResource(R.string.onboarding_step_source),
+        stringResource(R.string.onboarding_step_credentials),
+        stringResource(R.string.onboarding_step_epg),
+        stringResource(R.string.onboarding_step_confirm),
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -82,13 +90,13 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 ) {
                     Text(text = "A", style = AreIptvTheme.typography.h2, color = colors.accentFg)
                 }
-                Text(text = "ARE iptv", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
             Box(Modifier.height(18.dp))
-            Text(text = "Add a playlist", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.onboarding_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(
-                text = "Bring your own IPTV subscription. ARE iptv never stores your credentials off-device.",
+                text = stringResource(R.string.onboarding_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
@@ -145,10 +153,10 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
             // growth before it started covering Continue's tap area. 40dp gives real clearance.
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
                 if (stepIndex > 0) {
-                    AreButton("Back", onClick = { viewModel.clearError(); navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
+                    AreButton(stringResource(R.string.action_back), onClick = { viewModel.clearError(); navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 }
                 Box(Modifier.weight(1f))
-                AreButton("Skip for now", onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
+                AreButton(stringResource(R.string.onboarding_skip_for_now), onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 if (stepIndex < stepRoutes.lastIndex) {
                     val canContinue = when (currentRoute) {
                         "credentials" -> if (uiState.sourceType == OnboardingSourceType.XTREAM) {
@@ -159,14 +167,14 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                         else -> true
                     }
                     AreButton(
-                        "Continue",
+                        stringResource(R.string.action_continue),
                         onClick = { viewModel.clearError(); navController.navigate(stepRoutes[stepIndex + 1]) },
                         size = AreButtonSize.Large,
                         disabled = !canContinue,
                     )
                 } else {
                     AreButton(
-                        text = if (uiState.result != null) "Go to Home" else "Add playlist",
+                        text = if (uiState.result != null) stringResource(R.string.onboarding_go_to_home) else stringResource(R.string.onboarding_add_playlist),
                         modifier = Modifier.focusRequester(primaryFocus),
                         onClick = {
                             if (uiState.result != null) {

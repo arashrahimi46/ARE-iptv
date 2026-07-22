@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -33,6 +34,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
@@ -83,14 +85,14 @@ fun <T : Any> BrowseLayout(
     /** Long-press OK on a category row invokes this to pin/unpin it (index into [categories]).
      * Null on screens without pinning; index 0 (the "All" pseudo-category) is never pinnable. */
     onCategoryPinToggle: ((Int) -> Unit)? = null,
-    categoryColumnHeader: String = "Categories",
+    categoryColumnHeader: String = stringResource(R.string.browse_categories_header),
     titleAccessory: @Composable (() -> Unit)? = null,
     sectionTitle: String? = null,
     /** Authoritative total for the section label (from the catalog's COUNT/GROUP BY), since
      * [items] is now a paged window and its `itemCount` only reflects loaded pages. */
     sectionCount: Int? = null,
     sectionCountLabel: ((Int) -> String)? = null,
-    emptyLabel: String = "No items in this category yet.",
+    emptyLabel: String = stringResource(R.string.browse_empty_default),
     /** Table/list rendering (Settings' "List view" toggle, Issue #9): items stack in a single
      * column instead of wrapping across the grid. Switching this resets scroll to
      * the top by design (product decision) -- no scroll-position preservation across modes. */
@@ -219,8 +221,8 @@ fun <T : Any> BrowseLayout(
                 val refresh = items.loadState.refresh
                 if (refresh is LoadState.Error) {
                     Column(verticalArrangement = Arrangement.spacedBy(spacing.sp3)) {
-                        Text(text = "Couldn't load — try again", style = AreIptvTheme.typography.body, color = colors.textSecondary)
-                        AreButton("Retry", onClick = { items.retry() }, variant = AreButtonVariant.Primary)
+                        Text(text = stringResource(R.string.browse_load_error), style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                        AreButton(stringResource(R.string.action_retry), onClick = { items.retry() }, variant = AreButtonVariant.Primary)
                     }
                 } else if (items.itemCount == 0 && refresh !is LoadState.Loading) {
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
@@ -271,9 +273,9 @@ fun <T : Any> BrowseLayout(
                 title = dialogCategory.name,
                 width = 420.dp,
                 actions = {
-                    AreButton("Cancel", onClick = { pinDialogIndex = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(stringResource(R.string.action_cancel), onClick = { pinDialogIndex = null }, variant = AreButtonVariant.Ghost)
                     AreButton(
-                        text = if (dialogCategory.pinned) "Unpin" else "Pin",
+                        text = if (dialogCategory.pinned) stringResource(R.string.browse_unpin) else stringResource(R.string.browse_pin),
                         onClick = { onCategoryPinToggle(dialogIndex); pinDialogIndex = null },
                         variant = AreButtonVariant.Primary,
                     )
@@ -281,9 +283,9 @@ fun <T : Any> BrowseLayout(
             ) {
                 Text(
                     text = if (dialogCategory.pinned) {
-                        "Remove this category from the top of the list."
+                        stringResource(R.string.browse_pin_dialog_pinned_body)
                     } else {
-                        "Pin this category to the top of the list."
+                        stringResource(R.string.browse_pin_dialog_unpinned_body)
                     },
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,

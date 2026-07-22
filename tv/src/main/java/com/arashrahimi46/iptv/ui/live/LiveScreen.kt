@@ -19,10 +19,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
@@ -49,6 +51,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     val settings = remember { UserSettings(context) }
     val isListMode by settings.isBrowseListMode.collectAsState(initial = false)
     val colors = AreIptvTheme.colors
+    val liveCountChannelsTemplate = stringResource(R.string.live_count_channels)
     // Issue #5: which channel tile started playback -- see HomeScreen's identical use of
     // rememberPlaybackFocusRequester for the full explanation.
     var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -70,7 +73,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
 
     if (!state.hasSource) {
         Text(
-            text = "Add a playlist from the sidebar to see live channels here.",
+            text = stringResource(R.string.live_no_source),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
             modifier = modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = AreIptvTheme.spacing.sp10),
@@ -88,7 +91,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     }
 
     BrowseLayout(
-        title = "Live TV",
+        title = stringResource(R.string.live_title),
         titleAccessory = { OnAirNowBadge() },
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
@@ -96,11 +99,11 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         onCategoryPinToggle = viewModel::togglePin,
         items = channels,
         itemKey = { it.id },
-        categoryColumnHeader = "Channel groups",
+        categoryColumnHeader = stringResource(R.string.live_channel_groups),
         sectionTitle = categoryOptions.getOrNull(state.selectedCategoryIndex)?.name,
         sectionCount = state.selectedCount,
-        sectionCountLabel = { count -> "$count channels" },
-        emptyLabel = "No channels in this group yet.",
+        sectionCountLabel = { count -> String.format(liveCountChannelsTemplate, count) },
+        emptyLabel = stringResource(R.string.live_empty_group),
         listMode = isListMode,
         // Responsive channel grid (was one fixed 320dp tile per row): ~180dp columns that the tiles
         // fill, so the content pane packs 2-3 readable channel cards per row instead of one big tile.
@@ -134,6 +137,6 @@ private fun OnAirNowBadge() {
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         androidx.compose.foundation.layout.Box(Modifier.size(8.dp).background(colors.live, CircleShape))
-        Text(text = "ON AIR NOW", style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.onAirText)
+        Text(text = stringResource(R.string.live_on_air_now), style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.onAirText)
     }
 }

@@ -141,9 +141,11 @@ fun HomeScreen(
         }
 
         // "Recommended" is now a real personalized best-of across movies+series, ranked by the
-        // categories the user watches/favorites (see [HomeRailCurator]); falls back to top-rated/
-        // newest when there's no history yet. Empty only when the catalog itself has no VOD.
-        val recommended = state.recommended
+        // categories the user pins/favorites/watches (see [HomeRailCurator]); falls back to top-rated
+        // "Popular" before any signal exists. Drop titles already on the Continue Watching rail above
+        // so this stays discovery, not a repeat of what you're mid-watching.
+        val continuingIds = state.continueWatching.mapNotNull { it.vodTitleId }.toSet()
+        val recommended = state.recommended.filterNot { it.id in continuingIds }
 
         if (!editMode) {
             // Home layout customization (step 1-3): rails are driven by state.sections instead of
@@ -350,7 +352,11 @@ private fun HomeSectionContent(
     val continueWatchingTitle = stringResource(R.string.home_section_continue_watching)
     val liveNowTitle = stringResource(R.string.home_section_live_now)
     val categoriesTitle = stringResource(R.string.home_section_categories)
-    val recommendedTitle = stringResource(R.string.home_section_recommended)
+    val recommendedTitle = when (val l = state.recommendedLabel) {
+        is RecommendedLabel.BecauseYouLike -> stringResource(R.string.home_section_because_you_like, l.category)
+        RecommendedLabel.ForYou -> stringResource(R.string.home_section_for_you)
+        RecommendedLabel.Popular -> stringResource(R.string.home_section_popular)
+    }
     val moviesTitle = stringResource(R.string.home_section_movies)
     val seriesTitle = stringResource(R.string.home_section_series)
     when (section) {

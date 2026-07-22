@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
@@ -237,7 +238,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
-                errorMessage = if (media == null) "Content not found" else null,
+                errorMessage = if (media == null) getApplication<Application>().getString(R.string.player_content_not_found) else null,
                 phase = if (media == null) PlaybackPhase.Error else PlaybackPhase.Idle,
                 currentChannelId = (source as? PlaybackSource.Channel)?.channelId,
                 siblingChannelIds = siblingIds,

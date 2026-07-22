@@ -27,10 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -70,7 +72,7 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
 
     if (!state.hasSource) {
         Text(
-            text = "Add a playlist from the sidebar to see the TV guide here.",
+            text = stringResource(R.string.guide_no_source),
             style = AreIptvTheme.typography.body,
             color = colors.textSecondary,
             modifier = modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp10),
@@ -95,10 +97,10 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(text = "TV Guide", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.guide_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.weight(1f))
             GuideDay.entries.forEach { day ->
-                AreChip(text = day.label, onClick = { viewModel.selectDay(day) }, selected = day == state.day)
+                AreChip(text = stringResource(day.labelRes), onClick = { viewModel.selectDay(day) }, selected = day == state.day)
             }
         }
         Box(Modifier.height(spacing.sp5))
@@ -123,7 +125,7 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
         if (state.epgUnavailable) {
             Box(Modifier.padding(horizontal = spacing.safeX)) {
                 Text(
-                    text = "EPG source unavailable -- showing channels without programme data.",
+                    text = stringResource(R.string.guide_epg_unavailable),
                     style = AreIptvTheme.typography.caption,
                     color = colors.danger,
                 )
@@ -253,12 +255,12 @@ private fun FocusedInfoBar(info: GuideFocusedInfo?) {
             modifier = Modifier.size(44.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.xs)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = (info?.channel?.name ?: "--").take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.textPrimary)
+            Text(text = (info?.channel?.name ?: stringResource(R.string.guide_no_channel_placeholder)).take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.textPrimary)
         }
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = info?.slot?.title ?: "Focus a programme to see details",
+                    text = info?.slot?.title ?: stringResource(R.string.guide_focus_hint),
                     style = AreIptvTheme.typography.h3,
                     color = colors.textPrimary,
                     maxLines = 1,
@@ -266,7 +268,7 @@ private fun FocusedInfoBar(info: GuideFocusedInfo?) {
                 )
                 if (info?.slot?.isNow == true) {
                     Box(Modifier.size(6.dp).background(colors.live, CircleShape))
-                    Text(text = "LIVE", style = AreIptvTheme.typography.caption, color = colors.live)
+                    Text(text = stringResource(R.string.guide_live_badge), style = AreIptvTheme.typography.caption, color = colors.live)
                 }
             }
             if (info != null) {

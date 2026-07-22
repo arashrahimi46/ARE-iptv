@@ -19,10 +19,12 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
@@ -66,14 +68,14 @@ fun AreTopBar(
         // Customize (edit Home layout) -- only present on Home (onCustomize != null); accent-lit
         // while edit mode is active, matching the old inline "Customize/Done" toggle.
         if (onCustomize != null) {
-            AreIconButton(Icons.Filled.Edit, "Customize", onClick = onCustomize, variant = AreIconButtonVariant.Solid, active = customizeActive)
+            AreIconButton(Icons.Filled.Edit, stringResource(R.string.shell_customize), onClick = onCustomize, variant = AreIconButtonVariant.Solid, active = customizeActive)
         }
         // Multi-view action temporarily removed (feature not ready). onMultiView is kept on the
         // signature so the button can be restored here without re-plumbing the shell.
-        AreIconButton(Icons.Filled.Search, "Search", onClick = onSearch, variant = AreIconButtonVariant.Solid)
+        AreIconButton(Icons.Filled.Search, stringResource(R.string.action_search), onClick = onSearch, variant = AreIconButtonVariant.Solid)
         // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
         // management UI, so this effectively adds/replaces the active source.)
-        AreIconButton(Icons.Filled.Add, "Add playlist", onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
+        AreIconButton(Icons.Filled.Add, stringResource(R.string.shell_add_playlist_desc), onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
         // QA MEDIUM defect: this was a plain Box -- not focusable at all, D-pad couldn't
         // land on it and onAvatar was declared but never attached to anything.
         TvFocusable(
@@ -86,7 +88,7 @@ fun AreTopBar(
                 modifier = Modifier.fillMaxSize().border(2.dp, colors.borderStrong, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Filled.AccountCircle, contentDescription = "Account", tint = colors.textSecondary, modifier = Modifier.size(28.dp))
+                Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.content_desc_account), tint = colors.textSecondary, modifier = Modifier.size(28.dp))
             }
         }
     }

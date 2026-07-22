@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Vissza</string>
+    <string name="action_cancel">Mégse</string>
+    <string name="action_continue">Folytatás</string>
+    <string name="action_retry">Újra</string>
+    <string name="action_close">Bezárás</string>
+    <string name="action_remove">Eltávolítás</string>
+    <string name="action_clear">Törlés</string>
+    <string name="action_connect">Csatlakozás</string>
+    <string name="action_disconnect">Leválasztás</string>
+    <string name="action_sign_in">Bejelentkezés</string>
+    <string name="action_sign_out">Kijelentkezés</string>
+    <string name="action_search">Keresés</string>
+    <string name="action_donate">Támogatás</string>
+    <string name="content_desc_account">Fiók</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Kilép az ARE iptv-ből?</string>
+    <string name="shell_stay">Maradok</string>
+    <string name="shell_leave">Kilépés</string>
+    <string name="shell_leave_app_body">Ki szeretne lépni az ARE iptv-ből?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Forrás</string>
+    <string name="onboarding_step_credentials">Hitelesítő adatok</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Megerősítés</string>
+    <string name="onboarding_title">Lejátszási lista hozzáadása</string>
+    <string name="onboarding_subtitle">Hozza a saját IPTV-előfizetését. Az ARE iptv sosem tárolja a hitelesítő adatait a készüléken kívül.</string>
+    <string name="onboarding_skip_for_now">Kihagyás egyelőre</string>
+    <string name="onboarding_go_to_home">Ugrás a kezdőlapra</string>
+    <string name="onboarding_add_playlist">Lejátszási lista hozzáadása</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Adja meg a portál gazdagépét, felhasználónevét és jelszavát. Élő TV + VOD esetén a legjobb, automatikus EPG-vel.</string>
+    <string name="onboarding_m3u_title">M3U / URL lejátszási lista</string>
+    <string name="onboarding_m3u_desc">Illesszen be egy M3U vagy M3U-plus linket. Ha van, adjon hozzá külön egy XMLTV EPG URL-t.</string>
+    <string name="onboarding_portal_name_label">Portál neve</string>
+    <string name="onboarding_portal_name_placeholder">Nappali</string>
+    <string name="onboarding_server_url_label">Szerver URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Felhasználónév</string>
+    <string name="onboarding_password_label">Jelszó</string>
+    <string name="onboarding_m3u_url_label">M3U lejátszási lista URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">EPG és logók automatikus párosítása</string>
+    <string name="onboarding_epg_auto_desc">Műsorújság-adatok, csatornalogók és poszterek automatikus letöltése.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (nem kötelező)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Letiltva, amíg az automatikus párosítás be van kapcsolva.</string>
+    <string name="onboarding_epg_custom_helper">Adja meg saját műsorújság-forrását.</string>
+    <string name="onboarding_confirm_adding">Lejátszási lista hozzáadása…</string>
+    <string name="onboarding_confirm_error_title">Nem sikerült hozzáadni a lejátszási listát</string>
+    <string name="onboarding_confirm_added">Hozzáadva</string>
+    <string name="onboarding_confirm_ready">Hozzáadásra kész</string>
+    <string name="onboarding_confirm_channels_badge">%1$d csatorna</string>
+    <string name="onboarding_confirm_downloading">A csatornái letöltése és importálása folyamatban. A nagy lejátszási listák eltarthatnak egy ideig — kérjük, tartsa nyitva az alkalmazást.</string>
+    <string name="onboarding_confirm_row_portal">Portál</string>
+    <string name="onboarding_confirm_default_portal_name">A lejátszási listám</string>
+    <string name="onboarding_confirm_row_source">Forrás</string>
+    <string name="onboarding_confirm_row_server">Szerver</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Automatikusan párosítva</string>
+    <string name="onboarding_confirm_custom_xmltv">Egyéni XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Katalógus</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d csatorna · %2$d film · %3$d sorozat</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Adatvédelem és feltételek</string>
+    <string name="privacy_subtitle">A folytatás előtt tekintse át és fogadja el.</string>
+    <string name="privacy_body">ARE iptv adatvédelmi szabályzat és felhasználási feltételek\n\nAz ARE iptv nem gyűjti és nem továbbítja a lejátszási lista hitelesítő adatait a készüléken kívülre. A folytatással elfogadja, hogy ezt az alkalmazást csak olyan tartalomforrásokkal használja, amelyekhez jogosultsága van, és teljeskörűen elfogadja a felhasználási feltételeinket és az adatvédelmi szabályzatunkat.</string>
+    <string name="privacy_accept_label">Elolvastam és elfogadom az adatvédelmi szabályzatot és a felhasználási feltételeket.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Válasszon lejátszási listát</string>
+    <string name="sources_choose_subtitle">Válassza ki, melyik hozzáadott lejátszási listát nyitja meg.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Új lejátszási lista hozzáadása</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Válassza ki a nyelvét</string>
+    <string name="language_select_subtitle">Válassza ki az alkalmazásban használni kívánt nyelvet.</string>
+    <string name="language_picker_label">Nyelv</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Biztosan meg szeretné változtatni a nyelvet?</string>
+    <string name="language_confirm_action">Megerősítés</string>
+    <string name="language_confirm_cancel">Mégse</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Beállítások</string>
+    <string name="settings_section_playlists">Lejátszási listák és szinkronizálás</string>
+    <string name="settings_refresh_catalog">Katalógus frissítése</string>
+    <string name="settings_refresh_now">Frissítés most</string>
+    <string name="settings_refreshing">Frissítés…</string>
+    <string name="settings_refresh_syncing">Szinkronizálás a szolgáltatóval…</string>
+    <string name="settings_refresh_success">Frissítve: %1$d csatorna, %2$d film, %3$d sorozat</string>
+    <string name="settings_refresh_stale">Több mint 2 hetes — frissítsen az új csatornákért és címekért</string>
+    <string name="settings_never_refreshed">Sosem frissült</string>
+    <string name="settings_last_updated_days">Utoljára frissítve %1$d napja</string>
+    <string name="settings_last_updated_days_plural">Utoljára frissítve %1$d napja</string>
+    <string name="settings_last_updated_hours">Utoljára frissítve %1$d órája</string>
+    <string name="settings_last_updated_hours_plural">Utoljára frissítve %1$d órája</string>
+    <string name="settings_last_updated_mins">Utoljára frissítve %1$d perce</string>
+    <string name="settings_last_updated_now">Épp most frissült</string>
+    <string name="settings_section_appearance">Megjelenés</string>
+    <string name="settings_dark_theme">Sötét téma</string>
+    <string name="settings_dark_theme_desc">Kényelmes, hátradőlős nézéshez ajánlott.</string>
+    <string name="settings_reduce_motion">Mozgás csökkentése</string>
+    <string name="settings_reduce_motion_desc">Lágyabb fókuszanimációk.</string>
+    <string name="settings_list_view">Listanézet</string>
+    <string name="settings_list_view_desc">Csatornák, filmek és sorozatok listaként való megjelenítése csemperács helyett.</string>
+    <string name="settings_section_language">Nyelv</string>
+    <string name="settings_language_row_title">Alkalmazás nyelve</string>
+    <string name="settings_language_row_desc">Válassza ki az alkalmazásban használt nyelvet.</string>
+    <string name="settings_section_playback">Lejátszás</string>
+    <string name="settings_hardware_decoding">Hardveres dekódolás</string>
+    <string name="settings_hardware_decoding_desc">A hardveres dekódolókat részesíti előnyben; ha egy adatfolyam megköveteli, szoftveresre vált.</string>
+    <string name="settings_autoplay_next">A következő epizód automatikus lejátszása</string>
+    <string name="settings_autoplay_next_desc">Egyelőre csak beállítás -- az automatikus továbblépés még nincs bekötve; a következő epizódot a Részleteknél válassza ki.</string>
+    <string name="settings_mini_player_behavior">Minilejátszó viselkedése</string>
+    <string name="settings_mini_player_behavior_desc">Amikor a dokkolt minilejátszó közelében böngészik: csúsztassa a szabad sarokba, vagy halványítsa el és zsugorítsa össze.</string>
+    <string name="settings_mini_player_dodge">Automatikus kitérés</string>
+    <string name="settings_mini_player_fade">Halványítás és zsugorítás</string>
+    <string name="settings_section_parental">Szülői felügyelet</string>
+    <string name="settings_lock_adult">Felnőtt kategóriák zárolása</string>
+    <string name="settings_lock_adult_desc">Ha egyszer bekapcsolta, a kikapcsoláshoz a PIN kód szükséges.</string>
+    <string name="settings_change_pin">PIN módosítása</string>
+    <string name="settings_pin_loading">Betöltés…</string>
+    <string name="settings_pin_is_set">PIN kód be van állítva.</string>
+    <string name="settings_pin_not_set">Még nincs PIN kód beállítva.</string>
+    <string name="settings_change">Módosítás</string>
+    <string name="settings_set_pin">PIN beállítása</string>
+    <string name="settings_section_subtitles">Feliratok</string>
+    <string name="settings_subtitle_lang_title">Előnyben részesített nyelv</string>
+    <string name="settings_subtitle_lang_desc">Előre kiválasztva, amikor online feliratokat keres. Videónként így is módosíthatja.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Kész -- az online keresés és letöltés engedélyezve.</string>
+    <string name="settings_opensubs_key_connected">API-kulcs csatlakoztatva. Jelentkezzen be lent is -- az online feliratokhoz mindkettő szükséges.</string>
+    <string name="settings_account">Fiók</string>
+    <string name="settings_account_signed_in">Bejelentkezve mint %1$s -- a feliratletöltések engedélyezve.</string>
+    <string name="settings_signin_title">Jelentkezzen be a feliratok letöltéséhez</string>
+    <string name="settings_signin_desc">Utolsó lépés -- az online feliratokhoz az API-kulcs és a fiókbejelentkezése egyaránt szükséges. Jelentkezzen be az opensubtitles.com felhasználónevével és jelszavával; a letöltések a fiókja napi kvótáját használják. Bejelentkezve tartjuk Önt.</string>
+    <string name="settings_placeholder_username">Felhasználónév</string>
+    <string name="settings_placeholder_password">Jelszó</string>
+    <string name="settings_signing_in">Bejelentkezés…</string>
+    <string name="settings_opensubs_key_title">OpenSubtitles API-kulcs</string>
+    <string name="settings_opensubs_key_desc">Az online feliratokhoz egy ingyenes opensubtitles.com fiók szükséges két dologgal: ez az API-kulcs (a kereséshez) és a fiókbejelentkezése (a letöltéshez). 1. lépés -- illessze be az API-kulcsot; a bejelentkezés a következő lépés. Mentés előtt ellenőrizzük.</string>
+    <string name="settings_placeholder_api_key">API-kulcs</string>
+    <string name="settings_checking">Ellenőrzés…</string>
+    <string name="settings_section_metadata">Film- és sorozatinfó</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Csatlakoztatva -- az IMDb és Rotten Tomatoes értékelések, a cselekmény és a szereplők a Részleteknél jelennek meg.</string>
+    <string name="settings_omdb_key_title">OMDb API-kulcs</string>
+    <string name="settings_omdb_key_desc">Illesszen be egy ingyenes kulcsot az omdbapi.com oldalról, hogy a filmeket és sorozatokat IMDb és Rotten Tomatoes értékelésekkel, tartalmi összefoglalóval és szereplőlistával gazdagítsa. Mentés előtt ellenőrizzük.</string>
+    <string name="settings_section_about">Névjegy</string>
+    <string name="settings_version_title">Verzió</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Támogassa ezt az alkalmazást</string>
+    <string name="settings_support_desc">Vegyen nekem egy kávét, ha az ARE iptv hasznos az Ön számára.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Állítson be egy 4 jegyű PIN kódot</string>
+    <string name="pin_confirm_title">Erősítse meg a PIN kódját</string>
+    <string name="pin_enter_title">Adja meg a PIN kódot</string>
+    <string name="pin_lockout_message">Túl sok hibás próbálkozás -- próbálja újra %1$ds múlva</string>
+    <string name="pin_mismatch_error">A PIN kódok nem egyeztek -- próbálja újra</string>
+    <string name="pin_incorrect_error">Helytelen PIN kód</string>
+    <string name="pin_checking">Ellenőrzés…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Szakasz hozzáadása</string>
+    <string name="home_remove_continue_watching_title">Eltávolítja a Megtekintés folytatásából?</string>
+    <string name="home_remove_continue_watching_body">A(z) „%1$s” nem jelenik meg itt többé. A helye nem marad megjegyezve.</string>
+    <string name="home_loading_catalog">A katalógusa betöltése…</string>
+    <string name="home_no_playlist_title">Még nincs lejátszási lista</string>
+    <string name="home_no_playlist_body">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a csatornáit, filmjeit és sorozatait.</string>
+    <string name="home_section_continue_watching">Megtekintés folytatása</string>
+    <string name="home_section_live_now">Most élőben</string>
+    <string name="home_section_categories">Böngészés kategória szerint</string>
+    <string name="home_section_recommended">Önnek</string>
+    <string name="home_section_for_you">Önnek</string>
+    <string name="home_section_popular">Népszerű</string>
+    <string name="home_section_because_you_like">Mivel kedveli ezt: %1$s</string>
+    <string name="home_section_movies">Filmek</string>
+    <string name="home_section_series">Sorozatok</string>
+    <string name="home_add_section_dialog_title">Szakasz hozzáadása</string>
+    <string name="home_add_section_empty">A lejátszási listája minden kategóriája már a kezdőlaphoz van tűzve.</string>
+    <string name="home_category_live">Élő</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Sorozat</string>
+    <string name="home_edit_grabbed_desc">Megfogva -- Fel/Le a mozgatáshoz, OK az elengedéshez</string>
+    <string name="home_edit_grab_desc">Fogja meg az átrendezéshez</string>
+    <string name="home_edit_show_section">Szakasz megjelenítése</string>
+    <string name="home_edit_hide_section">Szakasz elrejtése</string>
+    <string name="home_edit_remove_section">Szakasz eltávolítása</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a TV-műsorújságot.</string>
+    <string name="guide_title">TV-műsorújság</string>
+    <string name="guide_epg_unavailable">Az EPG-forrás nem érhető el -- a csatornák műsoradatok nélkül jelennek meg.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Fókuszáljon egy műsorra a részletekért</string>
+    <string name="guide_live_badge">ÉLŐ</string>
+    <string name="guide_catchup_available_desc">Visszanézés elérhető</string>
+    <string name="guide_day_yesterday">Tegnap</string>
+    <string name="guide_day_today">Ma</string>
+    <string name="guide_day_tomorrow">Holnap</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa az élő csatornákat.</string>
+    <string name="live_title">Élő TV</string>
+    <string name="live_channel_groups">Csatornacsoportok</string>
+    <string name="live_count_channels">%1$d csatorna</string>
+    <string name="live_empty_group">Ebben a csoportban még nincsenek csatornák.</string>
+    <string name="live_on_air_now">MOST ADÁSBAN</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a filmeket.</string>
+    <string name="movies_title">Filmek</string>
+    <string name="movies_genres">Műfajok</string>
+    <string name="movies_count_titles">%1$d cím</string>
+    <string name="movies_empty_genre">Ebben a műfajban még nincsenek filmek.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a sorozatokat.</string>
+    <string name="series_title">Sorozatok</string>
+    <string name="series_empty_genre">Ebben a műfajban még nincsenek sorozatok.</string>
+    <string name="series_episode_count">%1$d epizód</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, majd jelöljön kedvencnek csatornákat vagy címeket, hogy itt lássa őket.</string>
+    <string name="favorites_title">Kedvencek</string>
+    <string name="favorites_tab_channels">Csatornák</string>
+    <string name="favorites_tab_movies">Filmek</string>
+    <string name="favorites_tab_series">Sorozatok</string>
+    <string name="favorites_empty_channels">Még nincsenek kedvenc csatornák -- érintse meg a szívet egy csatornacsempén a hozzáadáshoz.</string>
+    <string name="favorites_empty_movies">Még nincsenek kedvenc filmek -- érintse meg a szívet egy filmcsempén a hozzáadáshoz.</string>
+    <string name="favorites_empty_series">Még nincsenek kedvenc sorozatok -- érintse meg a szívet egy sorozatcsempén a hozzáadáshoz.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Adjon hozzá egy lejátszási listát az oldalsávból a katalógusa kereséséhez.</string>
+    <string name="search_title">Keresés</string>
+    <string name="search_placeholder">Csatornák, filmek, sorozatok keresése…</string>
+    <string name="search_scope_all">Összes</string>
+    <string name="search_scope_live">Élő TV</string>
+    <string name="search_scope_movies">Filmek</string>
+    <string name="search_scope_series">Sorozatok</string>
+    <string name="search_category_label">Kategória: %1$s</string>
+    <string name="search_type_to_search">Írjon a katalógusa kereséséhez.</string>
+    <string name="search_min_chars">Írjon be legalább %1$d karaktert a kereséshez.</string>
+    <string name="search_no_results">Nincs találat erre: \"%1$s\".</string>
+    <string name="search_section_live">Élő TV</string>
+    <string name="search_section_titles">Filmek és sorozatok</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Betöltés…</string>
+    <string name="detail_not_found">A cím nem található</string>
+    <string name="detail_play">Lejátszás</string>
+    <string name="detail_play_episode">%1$d. évad · %2$d. rész lejátszása</string>
+    <string name="detail_add_to_favorites">Hozzáadás a kedvencekhez</string>
+    <string name="detail_remove_from_favorites">Eltávolítás a kedvencekből</string>
+    <string name="detail_storyline">Történet</string>
+    <string name="detail_cast_label">Szereplők:</string>
+    <string name="detail_director_label">Rendező:</string>
+    <string name="detail_episodes_header">Epizódok</string>
+    <string name="detail_episodes_header_seasons">Epizódok · %1$d évad · összesen %2$d</string>
+    <string name="detail_episodes_header_total">Epizódok · összesen %1$d</string>
+    <string name="detail_season_label">%1$d. évad</string>
+    <string name="detail_season_episode_count">%1$s. évad · %2$d epizód</string>
+    <string name="detail_m3u_no_episodes">Ennek a lejátszásilista-bejegyzésnek nincsenek évad-/epizódadatai -- a fenti Lejátszás gombbal nézheti meg önálló elemként.</string>
+    <string name="detail_episodes_load_error">Nem sikerült betölteni az epizódokat: %1$s</string>
+    <string name="detail_episodes_loading">Epizódok betöltése…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">A tartalom nem található</string>
+    <string name="player_playback_failed">A lejátszás sikertelen</string>
+    <string name="player_buffering">Pufferelés…</string>
+    <string name="player_up_next">Következik</string>
+    <string name="player_up_next_channel">Következik -- %1$s</string>
+    <string name="player_no_programme_data">Nincs műsoradat</string>
+    <string name="player_previous_channel">Előző csatorna</string>
+    <string name="player_next_channel">Következő csatorna</string>
+    <string name="player_previous_episode">Előző epizód</string>
+    <string name="player_next_episode">Következő epizód</string>
+    <string name="player_back_10_min">10 perc vissza</string>
+    <string name="player_forward_10_min">10 perc előre</string>
+    <string name="player_rewind">Visszatekerés</string>
+    <string name="player_pause">Szünet</string>
+    <string name="player_play">Lejátszás</string>
+    <string name="player_fast_forward">Előretekerés</string>
+    <string name="player_audio_track">Hangsáv</string>
+    <string name="player_subtitles">Feliratok</string>
+    <string name="player_minimize_to_corner">Kicsinyítés a sarokba</string>
+    <string name="player_picture_in_picture">Kép a képben</string>
+    <string name="player_up_next_action">Következik</string>
+    <string name="player_open_guide">Műsorújság megnyitása</string>
+    <string name="player_live_badge">Élő</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Ki</string>
+    <string name="subtitle_none_in_stream">Nincs felirat ebben az adatfolyamban.</string>
+    <string name="subtitle_search_online">Keresés online…</string>
+    <string name="subtitle_selected">Kiválasztva</string>
+    <string name="subtitle_picker_title">Feliratok</string>
+    <string name="subtitle_search_title">Feliratok keresése online</string>
+    <string name="subtitle_search_placeholder">Cím</string>
+    <string name="subtitle_searching">Keresés…</string>
+    <string name="subtitle_search_action">Keresés</string>
+    <string name="subtitle_status_searching">Keresés az OpenSubtitles-en…</string>
+    <string name="subtitle_status_downloading">Felirat letöltése…</string>
+    <string name="subtitle_status_no_matches">Nincs találat -- próbáljon másik címet vagy nyelvet.</string>
+    <string name="subtitle_default_label">Felirat %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Leállítja a minilejátszót?</string>
+    <string name="mini_player_stop_body">Leállítja a(z) „%1$s” lejátszását és bezárja a minilejátszót?</string>
+    <string name="mini_player_stop">Leállítás</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Többnézetes</string>
+    <string name="multiview_4up">4 kép</string>
+    <string name="multiview_2up">2 kép</string>
+    <string name="multiview_no_source">Nincs aktív lejátszási lista</string>
+    <string name="multiview_no_channels">Nincs elérhető élő csatorna a többnézetes megjelenítéshez</string>
+    <string name="multiview_audio_badge">Hang</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Testreszabás</string>
+    <string name="shell_add_playlist_desc">Lejátszási lista hozzáadása</string>
+    <string name="nav_home">Kezdőlap</string>
+    <string name="nav_live_tv">Élő TV</string>
+    <string name="nav_tv_guide">TV-műsorújság</string>
+    <string name="nav_movies">Filmek</string>
+    <string name="nav_series">Sorozatok</string>
+    <string name="nav_search">Keresés</string>
+    <string name="nav_favorites">Kedvencek</string>
+    <string name="nav_settings">Beállítások</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Kategóriák</string>
+    <string name="browse_empty_default">Ebben a kategóriában még nincsenek elemek.</string>
+    <string name="browse_load_error">Nem sikerült betölteni — próbálja újra</string>
+    <string name="browse_pin_dialog_pinned_body">Távolítsa el ezt a kategóriát a lista tetejéről.</string>
+    <string name="browse_pin_dialog_unpinned_body">Tűzze ezt a kategóriát a lista tetejére.</string>
+    <string name="browse_unpin">Rögzítés feloldása</string>
+    <string name="browse_pin">Rögzítés</string>
+    <string name="browse_category_pinned_desc">Rögzítve</string>
+    <string name="browse_see_all">Összes megtekintése  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Élő</string>
+    <string name="badge_catchup">Visszanézés</string>
+    <string name="badge_smart">Okos</string>
+    <string name="health_stable">Stabil</string>
+    <string name="health_moderate">Közepes</string>
+    <string name="health_poor">Gyenge</string>
+    <string name="continue_card_resume_desc">Folytatás</string>
+    <string name="channel_tile_now">Most · %1$s</string>
+    <string name="channel_tile_next">Következő · %1$s</string>
+    <string name="browse_all_channels">Összes csatorna</string>
+    <string name="browse_all_movies">Összes film</string>
+    <string name="browse_all_series">Összes sorozat</string>
+    <string name="settings_refresh_no_playlist">Nincs frissíthető aktív lejátszási lista.</string>
+    <string name="settings_refresh_failed">A frissítés nem sikerült — ellenőrizze a kapcsolatot, és próbálja újra.</string>
+    <string name="settings_subs_connect_key_first">Először csatlakoztassa az API kulcsát.</string>
+    <string name="onboarding_error_generic">Valami hiba történt</string>
+</resources>

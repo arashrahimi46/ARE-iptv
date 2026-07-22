@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Takaisin</string>
+    <string name="action_cancel">Peruuta</string>
+    <string name="action_continue">Jatka</string>
+    <string name="action_retry">Yritä uudelleen</string>
+    <string name="action_close">Sulje</string>
+    <string name="action_remove">Poista</string>
+    <string name="action_clear">Tyhjennä</string>
+    <string name="action_connect">Yhdistä</string>
+    <string name="action_disconnect">Katkaise yhteys</string>
+    <string name="action_sign_in">Kirjaudu sisään</string>
+    <string name="action_sign_out">Kirjaudu ulos</string>
+    <string name="action_search">Hae</string>
+    <string name="action_donate">Lahjoita</string>
+    <string name="content_desc_account">Tili</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Poistutaanko ARE iptv:stä?</string>
+    <string name="shell_stay">Jää</string>
+    <string name="shell_leave">Poistu</string>
+    <string name="shell_leave_app_body">Haluatko sulkea ARE iptv:n?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Lähde</string>
+    <string name="onboarding_step_credentials">Kirjautumistiedot</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Vahvista</string>
+    <string name="onboarding_title">Lisää soittolista</string>
+    <string name="onboarding_subtitle">Käytä omaa IPTV-tilaustasi. ARE iptv ei koskaan tallenna kirjautumistietojasi laitteen ulkopuolelle.</string>
+    <string name="onboarding_skip_for_now">Ohita toistaiseksi</string>
+    <string name="onboarding_go_to_home">Siirry aloitusnäyttöön</string>
+    <string name="onboarding_add_playlist">Lisää soittolista</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Anna portaalin isäntä, käyttäjänimi ja salasana. Paras vaihtoehto suoralle TV:lle + VOD:lle automaattisella EPG:llä.</string>
+    <string name="onboarding_m3u_title">M3U / URL-soittolista</string>
+    <string name="onboarding_m3u_desc">Liitä yksittäinen M3U- tai M3U-plus-linkki. Lisää XMLTV EPG-URL erikseen, jos sinulla on sellainen.</string>
+    <string name="onboarding_portal_name_label">Portaalin nimi</string>
+    <string name="onboarding_portal_name_placeholder">Olohuone</string>
+    <string name="onboarding_server_url_label">Palvelimen URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Käyttäjänimi</string>
+    <string name="onboarding_password_label">Salasana</string>
+    <string name="onboarding_m3u_url_label">M3U-soittolistan URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Sovita EPG &amp; logot automaattisesti</string>
+    <string name="onboarding_epg_auto_desc">Hae opastiedot, kanavien logot ja julisteet automaattisesti.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG-URL (valinnainen)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Poistettu käytöstä, kun automaattinen sovitus on päällä.</string>
+    <string name="onboarding_epg_custom_helper">Anna oma opaslähteesi.</string>
+    <string name="onboarding_confirm_adding">Lisätään soittolistaa…</string>
+    <string name="onboarding_confirm_error_title">Soittolistaa ei voitu lisätä</string>
+    <string name="onboarding_confirm_added">Lisätty</string>
+    <string name="onboarding_confirm_ready">Valmis lisättäväksi</string>
+    <string name="onboarding_confirm_channels_badge">%1$d kanavaa</string>
+    <string name="onboarding_confirm_downloading">Ladataan ja tuodaan kanaviasi. Suuret soittolistat voivat kestää hetken — pidä sovellus avoinna.</string>
+    <string name="onboarding_confirm_row_portal">Portaali</string>
+    <string name="onboarding_confirm_default_portal_name">Oma soittolistani</string>
+    <string name="onboarding_confirm_row_source">Lähde</string>
+    <string name="onboarding_confirm_row_server">Palvelin</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Automaattisesti sovitettu</string>
+    <string name="onboarding_confirm_custom_xmltv">Mukautettu XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Luettelo</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d kanavaa · %2$d elokuvaa · %3$d sarjaa</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Tietosuoja &amp; ehdot</string>
+    <string name="privacy_subtitle">Tarkista ja hyväksy ennen jatkamista.</string>
+    <string name="privacy_body">ARE iptv:n tietosuojakäytäntö &amp; käyttöehdot\n\nARE iptv ei kerää tai lähetä soittolistan kirjautumistietojasi laitteen ulkopuolelle. Jatkamalla sitoudut käyttämään tätä sovellusta vain sisältölähteiden kanssa, joihin sinulla on käyttöoikeus, ja hyväksyt käyttöehtomme ja tietosuojakäytäntömme kokonaisuudessaan.</string>
+    <string name="privacy_accept_label">Olen lukenut ja hyväksyn tietosuojakäytännön ja käyttöehdot.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Valitse soittolista</string>
+    <string name="sources_choose_subtitle">Valitse, mikä lisäämistäsi soittolistoista avataan.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Lisää uusi soittolista</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Valitse kielesi</string>
+    <string name="language_select_subtitle">Valitse kieli, jota haluat käyttää koko sovelluksessa.</string>
+    <string name="language_picker_label">Kieli</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Haluatko varmasti vaihtaa kielen?</string>
+    <string name="language_confirm_action">Vahvista</string>
+    <string name="language_confirm_cancel">Peruuta</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Asetukset</string>
+    <string name="settings_section_playlists">Soittolistat &amp; synkronointi</string>
+    <string name="settings_refresh_catalog">Päivitä luettelo</string>
+    <string name="settings_refresh_now">Päivitä nyt</string>
+    <string name="settings_refreshing">Päivitetään…</string>
+    <string name="settings_refresh_syncing">Synkronoidaan palveluntarjoajan kanssa…</string>
+    <string name="settings_refresh_success">Päivitetty: %1$d kanavaa, %2$d elokuvaa, %3$d sarjaa</string>
+    <string name="settings_refresh_stale">Yli 2 viikkoa vanha — päivitä saadaksesi uusia kanavia &amp; nimikkeitä</string>
+    <string name="settings_never_refreshed">Ei koskaan päivitetty</string>
+    <string name="settings_last_updated_days">Päivitetty viimeksi %1$d päivä sitten</string>
+    <string name="settings_last_updated_days_plural">Päivitetty viimeksi %1$d päivää sitten</string>
+    <string name="settings_last_updated_hours">Päivitetty viimeksi %1$d tunti sitten</string>
+    <string name="settings_last_updated_hours_plural">Päivitetty viimeksi %1$d tuntia sitten</string>
+    <string name="settings_last_updated_mins">Päivitetty viimeksi %1$d min sitten</string>
+    <string name="settings_last_updated_now">Päivitetty juuri nyt</string>
+    <string name="settings_section_appearance">Ulkoasu</string>
+    <string name="settings_dark_theme">Tumma teema</string>
+    <string name="settings_dark_theme_desc">Suositellaan rentoon katseluun.</string>
+    <string name="settings_reduce_motion">Vähennä liikettä</string>
+    <string name="settings_reduce_motion_desc">Pehmeämmät kohdistusanimaatiot.</string>
+    <string name="settings_list_view">Luettelonäkymä</string>
+    <string name="settings_list_view_desc">Näytä kanavat, elokuvat ja sarjat luettelona ruudukon sijaan.</string>
+    <string name="settings_section_language">Kieli</string>
+    <string name="settings_language_row_title">Sovelluksen kieli</string>
+    <string name="settings_language_row_desc">Valitse koko sovelluksessa käytettävä kieli.</string>
+    <string name="settings_section_playback">Toisto</string>
+    <string name="settings_hardware_decoding">Laitteistodekoodaus</string>
+    <string name="settings_hardware_decoding_desc">Suosi laitteistodekoodereita; palautuu ohjelmistoon, jos suoratoisto sitä vaatii.</string>
+    <string name="settings_autoplay_next">Toista seuraava jakso automaattisesti</string>
+    <string name="settings_autoplay_next_desc">Vain asetus toistaiseksi -- automaattista siirtymistä ei ole vielä kytketty; valitse seuraava jakso Tiedot-näkymästä.</string>
+    <string name="settings_mini_player_behavior">Minisoittimen toiminta</string>
+    <string name="settings_mini_player_behavior_desc">Kun selaat telakoidun minisoittimen lähellä: siirrä se vapaaseen kulmaan tai häivytä ja pienennä se.</string>
+    <string name="settings_mini_player_dodge">Automaattinen väistö</string>
+    <string name="settings_mini_player_fade">Häivytä &amp; pienennä</string>
+    <string name="settings_section_parental">Lapsilukko</string>
+    <string name="settings_lock_adult">Lukitse aikuiskategoriat</string>
+    <string name="settings_lock_adult_desc">Kun tämä on päällä, sen poistaminen käytöstä vaatii PIN-koodisi.</string>
+    <string name="settings_change_pin">Vaihda PIN</string>
+    <string name="settings_pin_loading">Ladataan…</string>
+    <string name="settings_pin_is_set">PIN on asetettu.</string>
+    <string name="settings_pin_not_set">PIN-koodia ei ole vielä asetettu.</string>
+    <string name="settings_change">Vaihda</string>
+    <string name="settings_set_pin">Aseta PIN</string>
+    <string name="settings_section_subtitles">Tekstitykset</string>
+    <string name="settings_subtitle_lang_title">Ensisijainen kieli</string>
+    <string name="settings_subtitle_lang_desc">Esivalittu, kun haet tekstityksiä verkosta. Voit silti vaihtaa sen videokohtaisesti.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Valmis -- verkkohaku ja lataus ovat käytössä.</string>
+    <string name="settings_opensubs_key_connected">API-avain yhdistetty. Kirjaudu myös alla -- molemmat vaaditaan verkkotekstityksiin.</string>
+    <string name="settings_account">Tili</string>
+    <string name="settings_account_signed_in">Kirjautunut nimellä %1$s -- tekstitysten lataus on käytössä.</string>
+    <string name="settings_signin_title">Kirjaudu sisään ladataksesi tekstityksiä</string>
+    <string name="settings_signin_desc">Viimeinen vaihe -- sekä API-avain että tilisi kirjautuminen vaaditaan verkkotekstityksiin. Kirjaudu sisään opensubtitles.com-käyttäjänimelläsi ja salasanallasi; lataukset käyttävät tilisi päivittäistä kiintiötä. Pidämme sinut kirjautuneena.</string>
+    <string name="settings_placeholder_username">Käyttäjänimi</string>
+    <string name="settings_placeholder_password">Salasana</string>
+    <string name="settings_signing_in">Kirjaudutaan sisään…</string>
+    <string name="settings_opensubs_key_title">OpenSubtitles API-avain</string>
+    <string name="settings_opensubs_key_desc">Verkkotekstitykset vaativat ilmaisen opensubtitles.com-tilin, jossa on kaksi asiaa: tämä API-avain (hakua varten) ja tilisi kirjautuminen (latausta varten). Vaihe 1 -- liitä API-avain; kirjaudut sisään seuraavaksi. Vahvistamme sen ennen tallennusta.</string>
+    <string name="settings_placeholder_api_key">API-avain</string>
+    <string name="settings_checking">Tarkistetaan…</string>
+    <string name="settings_section_metadata">Elokuva- &amp; sarjatiedot</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Yhdistetty -- IMDb &amp; Rotten Tomatoes -arviot, juoni ja näyttelijät näkyvät Tiedot-näkymässä.</string>
+    <string name="settings_omdb_key_title">OMDb API-avain</string>
+    <string name="settings_omdb_key_desc">Liitä ilmainen avain osoitteesta omdbapi.com rikastaaksesi elokuvia ja sarjoja IMDb &amp; Rotten Tomatoes -arvioilla, juonikuvauksella ja näyttelijöillä. Vahvistamme sen ennen tallennusta.</string>
+    <string name="settings_section_about">Tietoja</string>
+    <string name="settings_version_title">Versio</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Tue tätä sovellusta</string>
+    <string name="settings_support_desc">Osta minulle kahvit, jos ARE iptv on sinulle hyödyllinen.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Aseta 4-numeroinen PIN</string>
+    <string name="pin_confirm_title">Vahvista PIN-koodisi</string>
+    <string name="pin_enter_title">Anna PIN</string>
+    <string name="pin_lockout_message">Liian monta väärää yritystä -- yritä uudelleen %1$ds kuluttua</string>
+    <string name="pin_mismatch_error">PIN-koodit eivät täsmänneet -- yritä uudelleen</string>
+    <string name="pin_incorrect_error">Väärä PIN</string>
+    <string name="pin_checking">Tarkistetaan…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Lisää osio</string>
+    <string name="home_remove_continue_watching_title">Poistetaanko kohdasta Jatka katselua?</string>
+    <string name="home_remove_continue_watching_body">”%1$s” ei enää näy täällä. Kohtaasi ei tallenneta.</string>
+    <string name="home_loading_catalog">Ladataan luetteloasi…</string>
+    <string name="home_no_playlist_title">Ei vielä soittolistaa</string>
+    <string name="home_no_playlist_body">Lisää soittolista sivupalkista nähdäksesi kanavasi, elokuvasi ja sarjasi täällä.</string>
+    <string name="home_section_continue_watching">Jatka katselua</string>
+    <string name="home_section_live_now">Suorana nyt</string>
+    <string name="home_section_categories">Selaa kategorioittain</string>
+    <string name="home_section_recommended">Sinulle</string>
+    <string name="home_section_for_you">Sinulle</string>
+    <string name="home_section_popular">Suosittua</string>
+    <string name="home_section_because_you_like">Koska pidät kohteesta %1$s</string>
+    <string name="home_section_movies">Elokuvat</string>
+    <string name="home_section_series">Sarjat</string>
+    <string name="home_add_section_dialog_title">Lisää osio</string>
+    <string name="home_add_section_empty">Kaikki soittolistasi kategoriat on jo kiinnitetty aloitusnäyttöön.</string>
+    <string name="home_category_live">Suora</string>
+    <string name="home_category_movie">Elokuva</string>
+    <string name="home_category_series">Sarja</string>
+    <string name="home_edit_grabbed_desc">Tartuttu -- Ylös/Alas siirtää, OK pudottaa</string>
+    <string name="home_edit_grab_desc">Tartu järjestääksesi uudelleen</string>
+    <string name="home_edit_show_section">Näytä osio</string>
+    <string name="home_edit_hide_section">Piilota osio</string>
+    <string name="home_edit_remove_section">Poista osio</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Lisää soittolista sivupalkista nähdäksesi TV-oppaan täällä.</string>
+    <string name="guide_title">TV-opas</string>
+    <string name="guide_epg_unavailable">EPG-lähde ei ole käytettävissä -- näytetään kanavat ilman ohjelmatietoja.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Kohdista ohjelmaan nähdäksesi tiedot</string>
+    <string name="guide_live_badge">SUORA</string>
+    <string name="guide_catchup_available_desc">Katsottavissa jälkikäteen</string>
+    <string name="guide_day_yesterday">Eilen</string>
+    <string name="guide_day_today">Tänään</string>
+    <string name="guide_day_tomorrow">Huomenna</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Lisää soittolista sivupalkista nähdäksesi suorat kanavat täällä.</string>
+    <string name="live_title">Suora-TV</string>
+    <string name="live_channel_groups">Kanavaryhmät</string>
+    <string name="live_count_channels">%1$d kanavaa</string>
+    <string name="live_empty_group">Tässä ryhmässä ei ole vielä kanavia.</string>
+    <string name="live_on_air_now">LÄHETYKSESSÄ NYT</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Lisää soittolista sivupalkista nähdäksesi elokuvat täällä.</string>
+    <string name="movies_title">Elokuvat</string>
+    <string name="movies_genres">Lajityypit</string>
+    <string name="movies_count_titles">%1$d nimikettä</string>
+    <string name="movies_empty_genre">Tässä lajityypissä ei ole vielä elokuvia.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Lisää soittolista sivupalkista nähdäksesi sarjat täällä.</string>
+    <string name="series_title">Sarjat</string>
+    <string name="series_empty_genre">Tässä lajityypissä ei ole vielä sarjoja.</string>
+    <string name="series_episode_count">%1$d jaksoa</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Lisää soittolista sivupalkista ja merkitse sitten kanavia tai nimikkeitä suosikeiksi nähdäksesi ne täällä.</string>
+    <string name="favorites_title">Suosikit</string>
+    <string name="favorites_tab_channels">Kanavat</string>
+    <string name="favorites_tab_movies">Elokuvat</string>
+    <string name="favorites_tab_series">Sarjat</string>
+    <string name="favorites_empty_channels">Ei vielä suosikkikanavia -- napauta kanavaruudun sydäntä lisätäksesi yhden.</string>
+    <string name="favorites_empty_movies">Ei vielä suosikkielokuvia -- napauta elokuvaruudun sydäntä lisätäksesi yhden.</string>
+    <string name="favorites_empty_series">Ei vielä suosikkisarjoja -- napauta sarjaruudun sydäntä lisätäksesi yhden.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Lisää soittolista sivupalkista hakeaksesi luettelostasi.</string>
+    <string name="search_title">Hae</string>
+    <string name="search_placeholder">Hae kanavia, elokuvia, sarjoja…</string>
+    <string name="search_scope_all">Kaikki</string>
+    <string name="search_scope_live">Suora-TV</string>
+    <string name="search_scope_movies">Elokuvat</string>
+    <string name="search_scope_series">Sarjat</string>
+    <string name="search_category_label">Kategoria: %1$s</string>
+    <string name="search_type_to_search">Kirjoita hakeaksesi luettelostasi.</string>
+    <string name="search_min_chars">Kirjoita vähintään %1$d merkkiä hakeaksesi.</string>
+    <string name="search_no_results">Ei tuloksia haulle \"%1$s\".</string>
+    <string name="search_section_live">Suora-TV</string>
+    <string name="search_section_titles">Elokuvat &amp; sarjat</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Ladataan…</string>
+    <string name="detail_not_found">Nimikettä ei löytynyt</string>
+    <string name="detail_play">Toista</string>
+    <string name="detail_play_episode">Toista K%1$d · J%2$d</string>
+    <string name="detail_add_to_favorites">Lisää suosikkeihin</string>
+    <string name="detail_remove_from_favorites">Poista suosikeista</string>
+    <string name="detail_storyline">Juoni</string>
+    <string name="detail_cast_label">Näyttelijät:</string>
+    <string name="detail_director_label">Ohjaaja:</string>
+    <string name="detail_episodes_header">Jaksot</string>
+    <string name="detail_episodes_header_seasons">Jaksot · %1$d kautta · %2$d yhteensä</string>
+    <string name="detail_episodes_header_total">Jaksot · %1$d yhteensä</string>
+    <string name="detail_season_label">Kausi %1$d</string>
+    <string name="detail_season_episode_count">Kausi %1$s · %2$d jaksoa</string>
+    <string name="detail_m3u_no_episodes">Tällä soittolistamerkinnällä ei ole kausi-/jaksotietoja -- käytä yllä olevaa Toista-painiketta katsoaksesi sen yksittäisenä kohteena.</string>
+    <string name="detail_episodes_load_error">Jaksoja ei voitu ladata: %1$s</string>
+    <string name="detail_episodes_loading">Ladataan jaksoja…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Sisältöä ei löytynyt</string>
+    <string name="player_playback_failed">Toisto epäonnistui</string>
+    <string name="player_buffering">Puskuroidaan…</string>
+    <string name="player_up_next">Seuraavaksi</string>
+    <string name="player_up_next_channel">Seuraavaksi -- %1$s</string>
+    <string name="player_no_programme_data">Ei ohjelmatietoja</string>
+    <string name="player_previous_channel">Edellinen kanava</string>
+    <string name="player_next_channel">Seuraava kanava</string>
+    <string name="player_previous_episode">Edellinen jakso</string>
+    <string name="player_next_episode">Seuraava jakso</string>
+    <string name="player_back_10_min">Taakse 10 minuuttia</string>
+    <string name="player_forward_10_min">Eteen 10 minuuttia</string>
+    <string name="player_rewind">Kelaa taakse</string>
+    <string name="player_pause">Tauko</string>
+    <string name="player_play">Toista</string>
+    <string name="player_fast_forward">Kelaa eteen</string>
+    <string name="player_audio_track">Ääniraita</string>
+    <string name="player_subtitles">Tekstitykset</string>
+    <string name="player_minimize_to_corner">Pienennä kulmaan</string>
+    <string name="player_picture_in_picture">Kuva kuvassa</string>
+    <string name="player_up_next_action">Seuraavaksi</string>
+    <string name="player_open_guide">Avaa opas</string>
+    <string name="player_live_badge">Suora</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Pois</string>
+    <string name="subtitle_none_in_stream">Ei tekstityksiä tässä suoratoistossa.</string>
+    <string name="subtitle_search_online">Hae verkosta…</string>
+    <string name="subtitle_selected">Valittu</string>
+    <string name="subtitle_picker_title">Tekstitykset</string>
+    <string name="subtitle_search_title">Hae tekstityksiä verkosta</string>
+    <string name="subtitle_search_placeholder">Nimike</string>
+    <string name="subtitle_searching">Haetaan…</string>
+    <string name="subtitle_search_action">Hae</string>
+    <string name="subtitle_status_searching">Haetaan OpenSubtitlesista…</string>
+    <string name="subtitle_status_downloading">Ladataan tekstitystä…</string>
+    <string name="subtitle_status_no_matches">Ei osumia -- kokeile eri nimikettä tai kieltä.</string>
+    <string name="subtitle_default_label">Tekstitys %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Pysäytetäänkö minisoitin?</string>
+    <string name="mini_player_stop_body">Pysäytetäänkö kohteen ”%1$s” toisto ja suljetaanko minisoitin?</string>
+    <string name="mini_player_stop">Pysäytä</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Moninäkymä</string>
+    <string name="multiview_4up">4 ruutua</string>
+    <string name="multiview_2up">2 ruutua</string>
+    <string name="multiview_no_source">Ei aktiivista soittolistaa</string>
+    <string name="multiview_no_channels">Moninäkymään ei ole saatavilla suoria kanavia</string>
+    <string name="multiview_audio_badge">Ääni</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Mukauta</string>
+    <string name="shell_add_playlist_desc">Lisää soittolista</string>
+    <string name="nav_home">Aloitus</string>
+    <string name="nav_live_tv">Suora-TV</string>
+    <string name="nav_tv_guide">TV-opas</string>
+    <string name="nav_movies">Elokuvat</string>
+    <string name="nav_series">Sarjat</string>
+    <string name="nav_search">Hae</string>
+    <string name="nav_favorites">Suosikit</string>
+    <string name="nav_settings">Asetukset</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Kategoriat</string>
+    <string name="browse_empty_default">Tässä kategoriassa ei ole vielä kohteita.</string>
+    <string name="browse_load_error">Lataus epäonnistui — yritä uudelleen</string>
+    <string name="browse_pin_dialog_pinned_body">Poista tämä kategoria luettelon yläreunasta.</string>
+    <string name="browse_pin_dialog_unpinned_body">Kiinnitä tämä kategoria luettelon yläreunaan.</string>
+    <string name="browse_unpin">Irrota</string>
+    <string name="browse_pin">Kiinnitä</string>
+    <string name="browse_category_pinned_desc">Kiinnitetty</string>
+    <string name="browse_see_all">Näytä kaikki  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Suora</string>
+    <string name="badge_catchup">Jälkikatselu</string>
+    <string name="badge_smart">Älykäs</string>
+    <string name="health_stable">Vakaa</string>
+    <string name="health_moderate">Kohtalainen</string>
+    <string name="health_poor">Heikko</string>
+    <string name="continue_card_resume_desc">Jatka</string>
+    <string name="channel_tile_now">Nyt · %1$s</string>
+    <string name="channel_tile_next">Seuraava · %1$s</string>
+    <string name="browse_all_channels">Kaikki kanavat</string>
+    <string name="browse_all_movies">Kaikki elokuvat</string>
+    <string name="browse_all_series">Kaikki sarjat</string>
+    <string name="settings_refresh_no_playlist">Ei aktiivista soittolistaa päivitettäväksi.</string>
+    <string name="settings_refresh_failed">Päivitys epäonnistui — tarkista yhteytesi ja yritä uudelleen.</string>
+    <string name="settings_subs_connect_key_first">Yhdistä ensin API-avaimesi.</string>
+    <string name="onboarding_error_generic">Jokin meni pieleen</string>
+</resources>

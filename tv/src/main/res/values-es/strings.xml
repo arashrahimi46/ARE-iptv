@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Atrás</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_continue">Continuar</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_remove">Eliminar</string>
+    <string name="action_clear">Borrar</string>
+    <string name="action_connect">Conectar</string>
+    <string name="action_disconnect">Desconectar</string>
+    <string name="action_sign_in">Iniciar sesión</string>
+    <string name="action_sign_out">Cerrar sesión</string>
+    <string name="action_search">Buscar</string>
+    <string name="action_donate">Donar</string>
+    <string name="content_desc_account">Cuenta</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">¿Salir de ARE iptv?</string>
+    <string name="shell_stay">Quedarme</string>
+    <string name="shell_leave">Salir</string>
+    <string name="shell_leave_app_body">¿Quieres salir de ARE iptv?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Origen</string>
+    <string name="onboarding_step_credentials">Credenciales</string>
+    <string name="onboarding_step_epg">Guía EPG</string>
+    <string name="onboarding_step_confirm">Confirmar</string>
+    <string name="onboarding_title">Añadir una lista de reproducción</string>
+    <string name="onboarding_subtitle">Usa tu propia suscripción IPTV. ARE iptv nunca guarda tus credenciales fuera del dispositivo.</string>
+    <string name="onboarding_skip_for_now">Omitir por ahora</string>
+    <string name="onboarding_go_to_home">Ir a Inicio</string>
+    <string name="onboarding_add_playlist">Añadir lista</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Introduce el host del portal, usuario y contraseña. Ideal para TV en vivo + VOD con EPG automática.</string>
+    <string name="onboarding_m3u_title">Lista M3U / URL</string>
+    <string name="onboarding_m3u_desc">Pega un enlace M3U o M3U-plus. Añade una URL de EPG XMLTV por separado si tienes una.</string>
+    <string name="onboarding_portal_name_label">Nombre del portal</string>
+    <string name="onboarding_portal_name_placeholder">Salón</string>
+    <string name="onboarding_server_url_label">URL del servidor</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Usuario</string>
+    <string name="onboarding_password_label">Contraseña</string>
+    <string name="onboarding_m3u_url_label">URL de la lista M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Emparejar EPG y logos automáticamente</string>
+    <string name="onboarding_epg_auto_desc">Obtiene la guía, los logos de canales y los pósters automáticamente.</string>
+    <string name="onboarding_epg_url_label">URL de EPG XMLTV (opcional)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Desactivado mientras el emparejamiento automático está activo.</string>
+    <string name="onboarding_epg_custom_helper">Indica tu propia fuente de guía.</string>
+    <string name="onboarding_confirm_adding">Añadiendo lista…</string>
+    <string name="onboarding_confirm_error_title">No se pudo añadir la lista</string>
+    <string name="onboarding_confirm_added">Añadida</string>
+    <string name="onboarding_confirm_ready">Lista para añadir</string>
+    <string name="onboarding_confirm_channels_badge">%1$d canales</string>
+    <string name="onboarding_confirm_downloading">Descargando e importando tus canales. Las listas grandes pueden tardar un poco; mantén la app abierta.</string>
+    <string name="onboarding_confirm_row_portal">Portal</string>
+    <string name="onboarding_confirm_default_portal_name">Mi lista</string>
+    <string name="onboarding_confirm_row_source">Origen</string>
+    <string name="onboarding_confirm_row_server">Servidor</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Emparejada automáticamente</string>
+    <string name="onboarding_confirm_custom_xmltv">XMLTV personalizada</string>
+    <string name="onboarding_confirm_row_catalog">Catálogo</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d canales · %2$d películas · %3$d series</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Privacidad y términos</string>
+    <string name="privacy_subtitle">Revisa y acepta antes de continuar.</string>
+    <string name="privacy_body">Política de privacidad y términos de servicio de ARE iptv\n\nARE iptv no recopila ni transmite tus credenciales de listas fuera del dispositivo. Al continuar, aceptas usar esta app únicamente con fuentes de contenido a las que estés autorizado a acceder, y aceptas nuestros términos de servicio y política de privacidad en su totalidad.</string>
+    <string name="privacy_accept_label">He leído y acepto la política de privacidad y los términos de servicio.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Elige una lista</string>
+    <string name="sources_choose_subtitle">Elige cuál de tus listas añadidas quieres abrir.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Añadir nueva lista</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Elige tu idioma</string>
+    <string name="language_select_subtitle">Elige el idioma que quieres usar en toda la app.</string>
+    <string name="language_picker_label">Idioma</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">¿Estás seguro de que quieres cambiar el idioma?</string>
+    <string name="language_confirm_action">Confirmar</string>
+    <string name="language_confirm_cancel">Cancelar</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_section_playlists">Listas y sincronización</string>
+    <string name="settings_refresh_catalog">Actualizar catálogo</string>
+    <string name="settings_refresh_now">Actualizar ahora</string>
+    <string name="settings_refreshing">Actualizando…</string>
+    <string name="settings_refresh_syncing">Sincronizando con el proveedor…</string>
+    <string name="settings_refresh_success">Actualizado: %1$d canales, %2$d películas, %3$d series</string>
+    <string name="settings_refresh_stale">Más de 2 semanas sin actualizar — actualiza para ver canales y títulos nuevos</string>
+    <string name="settings_never_refreshed">Nunca actualizado</string>
+    <string name="settings_last_updated_days">Actualizado hace %1$d día</string>
+    <string name="settings_last_updated_days_plural">Actualizado hace %1$d días</string>
+    <string name="settings_last_updated_hours">Actualizado hace %1$d hora</string>
+    <string name="settings_last_updated_hours_plural">Actualizado hace %1$d horas</string>
+    <string name="settings_last_updated_mins">Actualizado hace %1$d min</string>
+    <string name="settings_last_updated_now">Actualizado justo ahora</string>
+    <string name="settings_section_appearance">Apariencia</string>
+    <string name="settings_dark_theme">Tema oscuro</string>
+    <string name="settings_dark_theme_desc">Recomendado para ver relajado desde el sofá.</string>
+    <string name="settings_reduce_motion">Reducir movimiento</string>
+    <string name="settings_reduce_motion_desc">Animaciones de enfoque más suaves.</string>
+    <string name="settings_list_view">Vista de lista</string>
+    <string name="settings_list_view_desc">Muestra canales, películas y series como lista en lugar de cuadrícula.</string>
+    <string name="settings_section_language">Idioma</string>
+    <string name="settings_language_row_title">Idioma de la app</string>
+    <string name="settings_language_row_desc">Elige el idioma usado en toda la app.</string>
+    <string name="settings_section_playback">Reproducción</string>
+    <string name="settings_hardware_decoding">Decodificación por hardware</string>
+    <string name="settings_hardware_decoding_desc">Prefiere decodificadores por hardware; usa software si un contenido lo necesita.</string>
+    <string name="settings_autoplay_next">Reproducir siguiente episodio automáticamente</string>
+    <string name="settings_autoplay_next_desc">Por ahora solo es una preferencia; el avance automático aún no está activado. Elige el siguiente episodio desde Detalle.</string>
+    <string name="settings_mini_player_behavior">Comportamiento del mini-reproductor</string>
+    <string name="settings_mini_player_behavior_desc">Cuando navegas cerca del mini-reproductor anclado: se desliza a la esquina libre o se difumina y encoge.</string>
+    <string name="settings_mini_player_dodge">Autoesquivar</string>
+    <string name="settings_mini_player_fade">Difuminar y encoger</string>
+    <string name="settings_section_parental">Control parental</string>
+    <string name="settings_lock_adult">Bloquear categorías adultas</string>
+    <string name="settings_lock_adult_desc">Una vez activado, desactivarlo requiere tu PIN.</string>
+    <string name="settings_change_pin">Cambiar PIN</string>
+    <string name="settings_pin_loading">Cargando…</string>
+    <string name="settings_pin_is_set">Hay un PIN configurado.</string>
+    <string name="settings_pin_not_set">Aún no hay PIN configurado.</string>
+    <string name="settings_change">Cambiar</string>
+    <string name="settings_set_pin">Configurar PIN</string>
+    <string name="settings_section_subtitles">Subtítulos</string>
+    <string name="settings_subtitle_lang_title">Idioma preferido</string>
+    <string name="settings_subtitle_lang_desc">Preseleccionado al buscar subtítulos en línea. Puedes cambiarlo por vídeo.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Listo: la búsqueda y descarga en línea están activadas.</string>
+    <string name="settings_opensubs_key_connected">Clave API conectada. Inicia sesión abajo también; ambas cosas son necesarias para subtítulos en línea.</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_account_signed_in">Sesión iniciada como %1$s; las descargas de subtítulos están activadas.</string>
+    <string name="settings_signin_title">Inicia sesión para descargar subtítulos</string>
+    <string name="settings_signin_desc">Último paso: se necesitan tanto la clave API como el inicio de sesión de tu cuenta para subtítulos en línea. Inicia sesión con tu usuario y contraseña de opensubtitles.com; las descargas usan la cuota diaria de tu cuenta. Mantenemos tu sesión iniciada.</string>
+    <string name="settings_placeholder_username">Usuario</string>
+    <string name="settings_placeholder_password">Contraseña</string>
+    <string name="settings_signing_in">Iniciando sesión…</string>
+    <string name="settings_opensubs_key_title">Clave API de OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">Los subtítulos en línea necesitan una cuenta gratuita de opensubtitles.com con dos cosas: esta clave API (para buscar) y el inicio de sesión de tu cuenta (para descargar). Paso 1: pega la clave API; luego iniciarás sesión. La validamos antes de guardarla.</string>
+    <string name="settings_placeholder_api_key">Clave API</string>
+    <string name="settings_checking">Comprobando…</string>
+    <string name="settings_section_metadata">Información de películas y series</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Conectado: las valoraciones de IMDb y Rotten Tomatoes, la sinopsis y el reparto se muestran en Detalle.</string>
+    <string name="settings_omdb_key_title">Clave API de OMDb</string>
+    <string name="settings_omdb_key_desc">Pega una clave gratuita de omdbapi.com para enriquecer películas y series con valoraciones de IMDb y Rotten Tomatoes, sinopsis y reparto. La validamos antes de guardarla.</string>
+    <string name="settings_section_about">Acerca de</string>
+    <string name="settings_version_title">Versión</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Apoya esta app</string>
+    <string name="settings_support_desc">Invítame a un café si ARE iptv te resulta útil.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Configura un PIN de 4 dígitos</string>
+    <string name="pin_confirm_title">Confirma tu PIN</string>
+    <string name="pin_enter_title">Introduce el PIN</string>
+    <string name="pin_lockout_message">Demasiados intentos fallidos; vuelve a intentarlo en %1$ds</string>
+    <string name="pin_mismatch_error">Los PIN no coinciden; inténtalo de nuevo</string>
+    <string name="pin_incorrect_error">PIN incorrecto</string>
+    <string name="pin_checking">Comprobando…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Añadir sección</string>
+    <string name="home_remove_continue_watching_title">¿Quitar de Continuar viendo?</string>
+    <string name="home_remove_continue_watching_body">“%1$s” dejará de mostrarse aquí. No se guarda tu progreso.</string>
+    <string name="home_loading_catalog">Cargando tu catálogo…</string>
+    <string name="home_no_playlist_title">Aún no hay lista</string>
+    <string name="home_no_playlist_body">Añade una lista desde la barra lateral para ver aquí tus canales, películas y series.</string>
+    <string name="home_section_continue_watching">Continuar viendo</string>
+    <string name="home_section_live_now">En vivo ahora</string>
+    <string name="home_section_categories">Explorar por categoría</string>
+    <string name="home_section_recommended">Explorar películas y series</string>
+    <string name="home_section_for_you">Para ti</string>
+    <string name="home_section_popular">Popular</string>
+    <string name="home_section_because_you_like">Porque te gusta %1$s</string>
+    <string name="home_section_movies">Películas</string>
+    <string name="home_section_series">Series</string>
+    <string name="home_add_section_dialog_title">Añadir una sección</string>
+    <string name="home_add_section_empty">Todas las categorías de tu lista ya están fijadas en Inicio.</string>
+    <string name="home_category_live">En vivo</string>
+    <string name="home_category_movie">Película</string>
+    <string name="home_category_series">Serie</string>
+    <string name="home_edit_grabbed_desc">Sujetado: usa Arriba/Abajo para mover, OK para soltar</string>
+    <string name="home_edit_grab_desc">Sujetar para reordenar</string>
+    <string name="home_edit_show_section">Mostrar sección</string>
+    <string name="home_edit_hide_section">Ocultar sección</string>
+    <string name="home_edit_remove_section">Quitar sección</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Añade una lista desde la barra lateral para ver la guía de TV aquí.</string>
+    <string name="guide_title">Guía de TV</string>
+    <string name="guide_epg_unavailable">Fuente de EPG no disponible; se muestran los canales sin datos del programa.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Enfoca un programa para ver los detalles</string>
+    <string name="guide_live_badge">EN VIVO</string>
+    <string name="guide_catchup_available_desc">Repetición disponible</string>
+    <string name="guide_day_yesterday">Ayer</string>
+    <string name="guide_day_today">Hoy</string>
+    <string name="guide_day_tomorrow">Mañana</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Añade una lista desde la barra lateral para ver canales en vivo aquí.</string>
+    <string name="live_title">TV en vivo</string>
+    <string name="live_channel_groups">Grupos de canales</string>
+    <string name="live_count_channels">%1$d canales</string>
+    <string name="live_empty_group">Aún no hay canales en este grupo.</string>
+    <string name="live_on_air_now">EN EMISIÓN AHORA</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Añade una lista desde la barra lateral para ver películas aquí.</string>
+    <string name="movies_title">Películas</string>
+    <string name="movies_genres">Géneros</string>
+    <string name="movies_count_titles">%1$d títulos</string>
+    <string name="movies_empty_genre">Aún no hay películas en este género.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Añade una lista desde la barra lateral para ver series aquí.</string>
+    <string name="series_title">Series</string>
+    <string name="series_empty_genre">Aún no hay series en este género.</string>
+    <string name="series_episode_count">%1$d episodios</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Añade una lista desde la barra lateral y luego marca canales o títulos como favoritos para verlos aquí.</string>
+    <string name="favorites_title">Favoritos</string>
+    <string name="favorites_tab_channels">Canales</string>
+    <string name="favorites_tab_movies">Películas</string>
+    <string name="favorites_tab_series">Series</string>
+    <string name="favorites_empty_channels">Aún no hay canales favoritos; toca el corazón en un canal para añadirlo.</string>
+    <string name="favorites_empty_movies">Aún no hay películas favoritas; toca el corazón en una película para añadirla.</string>
+    <string name="favorites_empty_series">Aún no hay series favoritas; toca el corazón en una serie para añadirla.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Añade una lista desde la barra lateral para buscar en tu catálogo.</string>
+    <string name="search_title">Buscar</string>
+    <string name="search_placeholder">Buscar canales, películas, series…</string>
+    <string name="search_scope_all">Todo</string>
+    <string name="search_scope_live">TV en vivo</string>
+    <string name="search_scope_movies">Películas</string>
+    <string name="search_scope_series">Series</string>
+    <string name="search_category_label">Categoría: %1$s</string>
+    <string name="search_type_to_search">Escribe para buscar en tu catálogo.</string>
+    <string name="search_min_chars">Escribe al menos %1$d caracteres para buscar.</string>
+    <string name="search_no_results">Sin resultados para \"%1$s\".</string>
+    <string name="search_section_live">TV en vivo</string>
+    <string name="search_section_titles">Películas y series</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Cargando…</string>
+    <string name="detail_not_found">Título no encontrado</string>
+    <string name="detail_play">Reproducir</string>
+    <string name="detail_play_episode">Reproducir T%1$d · E%2$d</string>
+    <string name="detail_add_to_favorites">Añadir a favoritos</string>
+    <string name="detail_remove_from_favorites">Quitar de favoritos</string>
+    <string name="detail_storyline">Argumento</string>
+    <string name="detail_cast_label">Reparto:</string>
+    <string name="detail_director_label">Director:</string>
+    <string name="detail_episodes_header">Episodios</string>
+    <string name="detail_episodes_header_seasons">Episodios · %1$d temporadas · %2$d en total</string>
+    <string name="detail_episodes_header_total">Episodios · %1$d en total</string>
+    <string name="detail_season_label">Temporada %1$d</string>
+    <string name="detail_season_episode_count">Temporada %1$s · %2$d episodios</string>
+    <string name="detail_m3u_no_episodes">Este elemento de la lista no tiene datos de temporada/episodio; usa Reproducir arriba para verlo como un solo elemento.</string>
+    <string name="detail_episodes_load_error">No se pudieron cargar los episodios: %1$s</string>
+    <string name="detail_episodes_loading">Cargando episodios…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Contenido no encontrado</string>
+    <string name="player_playback_failed">Error de reproducción</string>
+    <string name="player_buffering">Cargando el búfer…</string>
+    <string name="player_up_next">A continuación</string>
+    <string name="player_up_next_channel">A continuación: %1$s</string>
+    <string name="player_no_programme_data">Sin datos del programa</string>
+    <string name="player_previous_channel">Canal anterior</string>
+    <string name="player_next_channel">Canal siguiente</string>
+    <string name="player_previous_episode">Episodio anterior</string>
+    <string name="player_next_episode">Episodio siguiente</string>
+    <string name="player_back_10_min">Retroceder 10 minutos</string>
+    <string name="player_forward_10_min">Avanzar 10 minutos</string>
+    <string name="player_rewind">Retroceder</string>
+    <string name="player_pause">Pausar</string>
+    <string name="player_play">Reproducir</string>
+    <string name="player_fast_forward">Avance rápido</string>
+    <string name="player_audio_track">Pista de audio</string>
+    <string name="player_subtitles">Subtítulos</string>
+    <string name="player_minimize_to_corner">Minimizar a la esquina</string>
+    <string name="player_picture_in_picture">Imagen en imagen</string>
+    <string name="player_up_next_action">A continuación</string>
+    <string name="player_open_guide">Abrir guía</string>
+    <string name="player_live_badge">En vivo</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Desactivados</string>
+    <string name="subtitle_none_in_stream">No hay subtítulos en este contenido.</string>
+    <string name="subtitle_search_online">Buscar en línea…</string>
+    <string name="subtitle_selected">Seleccionado</string>
+    <string name="subtitle_picker_title">Subtítulos</string>
+    <string name="subtitle_search_title">Buscar subtítulos en línea</string>
+    <string name="subtitle_search_placeholder">Título</string>
+    <string name="subtitle_searching">Buscando…</string>
+    <string name="subtitle_search_action">Buscar</string>
+    <string name="subtitle_status_searching">Buscando en OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Descargando subtítulo…</string>
+    <string name="subtitle_status_no_matches">Sin coincidencias; prueba con otro título o idioma.</string>
+    <string name="subtitle_default_label">Subtítulo %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">¿Detener el mini-reproductor?</string>
+    <string name="mini_player_stop_body">¿Detener “%1$s” y cerrar el mini-reproductor?</string>
+    <string name="mini_player_stop">Detener</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Multivisión</string>
+    <string name="multiview_4up">4 pantallas</string>
+    <string name="multiview_2up">2 pantallas</string>
+    <string name="multiview_no_source">No hay una lista activa</string>
+    <string name="multiview_no_channels">No hay canales en vivo disponibles para multivisión</string>
+    <string name="multiview_audio_badge">Audio</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Personalizar</string>
+    <string name="shell_add_playlist_desc">Añadir lista</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_live_tv">TV en vivo</string>
+    <string name="nav_tv_guide">Guía de TV</string>
+    <string name="nav_movies">Películas</string>
+    <string name="nav_series">Series</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_favorites">Favoritos</string>
+    <string name="nav_settings">Ajustes</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Categorías</string>
+    <string name="browse_empty_default">Aún no hay elementos en esta categoría.</string>
+    <string name="browse_load_error">No se pudo cargar; inténtalo de nuevo</string>
+    <string name="browse_pin_dialog_pinned_body">Quitar esta categoría de la parte superior de la lista.</string>
+    <string name="browse_pin_dialog_unpinned_body">Fijar esta categoría en la parte superior de la lista.</string>
+    <string name="browse_unpin">Desfijar</string>
+    <string name="browse_pin">Fijar</string>
+    <string name="browse_category_pinned_desc">Fijada</string>
+    <string name="browse_see_all">Ver todo  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">En vivo</string>
+    <string name="badge_catchup">Repetición</string>
+    <string name="badge_smart">Inteligente</string>
+    <string name="health_stable">Estable</string>
+    <string name="health_moderate">Moderada</string>
+    <string name="health_poor">Deficiente</string>
+    <string name="continue_card_resume_desc">Reanudar</string>
+    <string name="channel_tile_now">Ahora · %1$s</string>
+    <string name="channel_tile_next">Después · %1$s</string>
+    <string name="browse_all_channels">Todos los canales</string>
+    <string name="browse_all_movies">Todas las películas</string>
+    <string name="browse_all_series">Todas las series</string>
+    <string name="settings_refresh_no_playlist">No hay ninguna lista activa para actualizar.</string>
+    <string name="settings_refresh_failed">Error al actualizar — comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="settings_subs_connect_key_first">Conecta primero tu clave de API.</string>
+    <string name="onboarding_error_generic">Algo salió mal</string>
+</resources>

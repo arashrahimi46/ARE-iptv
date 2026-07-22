@@ -5,11 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.data.parser.OpenSubtitlesClient
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
@@ -69,8 +69,6 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isReducedMotion: StateFlow<Boolean> = flowState(settings.isReducedMotion, false)
     val isHardwareDecoding: StateFlow<Boolean> = flowState(settings.isHardwareDecoding, true)
     val isAutoplayNextEpisode: StateFlow<Boolean> = flowState(settings.isAutoplayNextEpisode, true)
-    val isPictureInPicture: StateFlow<Boolean> = flowState(settings.isPictureInPicture, false)
-    val externalPlayer: StateFlow<ExternalPlayerChoice> = flowState(settings.externalPlayer, ExternalPlayerChoice.BUILT_IN)
     val miniPlayerBehavior: StateFlow<MiniPlayerBehavior> = flowState(settings.miniPlayerBehavior, MiniPlayerBehavior.DODGE)
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
@@ -81,6 +79,9 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Preferred subtitle language (ISO code) used first in online search; defaults to English. */
     val subtitleLanguage: StateFlow<String> = flowState(settings.subtitleLanguage, "en")
+
+    /** Current app language tag (BCP-47), e.g. "en"/"es"/"pt-BR"; see [UserSettings.languageTag]. */
+    val languageTag: StateFlow<String> = flowState(settings.languageTag, "en")
 
     /** The stored OpenSubtitles credential, or null when not connected. */
     val openSubsCredential: StateFlow<String?> = flowState(settings.openSubsCredential, null)
@@ -110,16 +111,16 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setHardwareDecoding(enabled: Boolean) = viewModelScope.launch { settings.setHardwareDecoding(enabled) }
     fun setAutoplayNextEpisode(enabled: Boolean) = viewModelScope.launch { settings.setAutoplayNextEpisode(enabled) }
 
-    /** Storage-only -- see [UserSettings.isPictureInPicture] doc comment. */
-    fun setPictureInPicture(enabled: Boolean) = viewModelScope.launch { settings.setPictureInPicture(enabled) }
-
-    fun setExternalPlayer(choice: ExternalPlayerChoice) = viewModelScope.launch { settings.setExternalPlayer(choice) }
-
     fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) = viewModelScope.launch { settings.setMiniPlayerBehavior(choice) }
 
     fun setBrowseListMode(enabled: Boolean) = viewModelScope.launch { settings.setBrowseListMode(enabled) }
 
     fun setSubtitleLanguage(code: String) = viewModelScope.launch { settings.setSubtitleLanguage(code) }
+
+    /** Persists the app language tag -- the caller (SettingsScreen) applies the locale via
+     * `AppCompatDelegate.setApplicationLocales` itself, since that's a platform call best made
+     * right at the confirm action rather than hidden inside the ViewModel. */
+    fun setLanguageTag(tag: String) = viewModelScope.launch { settings.setLanguageTag(tag) }
 
     /** Validates [credential] against OpenSubtitles and only persists it once a real request succeeds. */
     fun connectOpenSubs(credential: String) {
@@ -172,7 +173,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
             _subsLogin.value = SubsValidation.Validating
             val cred = settings.openSubsCredential.first()
             if (cred == null) {
-                _subsLogin.value = SubsValidation.Error("Connect your API key first.")
+                _subsLogin.value = SubsValidation.Error(getApplication<Application>().getString(R.string.settings_subs_connect_key_first))
                 return@launch
             }
             _subsLogin.value = when (val r = OpenSubtitlesClient.login(cred, username, phrase)) {
@@ -215,7 +216,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val sourceId = settings.activeSourceId.first()
             if (sourceId == null) {
-                _refreshState.value = RefreshState.Error("No active playlist to refresh.")
+                _refreshState.value = RefreshState.Error(getApplication<Application>().getString(R.string.settings_refresh_no_playlist))
                 return@launch
             }
             _refreshState.value = RefreshState.Refreshing
@@ -223,7 +224,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
                 val summary = playlists.refreshSource(sourceId)
                 RefreshState.Success(summary.channels, summary.movies, summary.series)
             } catch (e: Exception) {
-                RefreshState.Error(e.message ?: "Refresh failed -- check your connection and try again.")
+                RefreshState.Error(e.message ?: getApplication<Application>().getString(R.string.settings_refresh_failed))
             }
         }
     }

@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Tillbaka</string>
+    <string name="action_cancel">Avbryt</string>
+    <string name="action_continue">Fortsätt</string>
+    <string name="action_retry">Försök igen</string>
+    <string name="action_close">Stäng</string>
+    <string name="action_remove">Ta bort</string>
+    <string name="action_clear">Rensa</string>
+    <string name="action_connect">Anslut</string>
+    <string name="action_disconnect">Koppla från</string>
+    <string name="action_sign_in">Logga in</string>
+    <string name="action_sign_out">Logga ut</string>
+    <string name="action_search">Sök</string>
+    <string name="action_donate">Donera</string>
+    <string name="content_desc_account">Konto</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Lämna ARE iptv?</string>
+    <string name="shell_stay">Stanna</string>
+    <string name="shell_leave">Lämna</string>
+    <string name="shell_leave_app_body">Vill du avsluta ARE iptv?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Källa</string>
+    <string name="onboarding_step_credentials">Inloggningsuppgifter</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Bekräfta</string>
+    <string name="onboarding_title">Lägg till en spellista</string>
+    <string name="onboarding_subtitle">Använd din egen IPTV-prenumeration. ARE iptv lagrar aldrig dina inloggningsuppgifter utanför enheten.</string>
+    <string name="onboarding_skip_for_now">Hoppa över för nu</string>
+    <string name="onboarding_go_to_home">Gå till Hem</string>
+    <string name="onboarding_add_playlist">Lägg till spellista</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Ange din portalvärd, ditt användarnamn och lösenord. Bäst för live-TV + VOD med automatisk EPG.</string>
+    <string name="onboarding_m3u_title">M3U / URL-spellista</string>
+    <string name="onboarding_m3u_desc">Klistra in en enda M3U- eller M3U-plus-länk. Lägg till en XMLTV EPG-URL separat om du har en.</string>
+    <string name="onboarding_portal_name_label">Portalnamn</string>
+    <string name="onboarding_portal_name_placeholder">Vardagsrummet</string>
+    <string name="onboarding_server_url_label">Server-URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Användarnamn</string>
+    <string name="onboarding_password_label">Lösenord</string>
+    <string name="onboarding_m3u_url_label">M3U-spellistans URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Matcha EPG &amp; logotyper automatiskt</string>
+    <string name="onboarding_epg_auto_desc">Hämta guidedata, kanallogotyper och affischer automatiskt.</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG-URL (valfritt)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Inaktiverad medan automatisk matchning är på.</string>
+    <string name="onboarding_epg_custom_helper">Ange din egen guidekälla.</string>
+    <string name="onboarding_confirm_adding">Lägger till spellista…</string>
+    <string name="onboarding_confirm_error_title">Det gick inte att lägga till spellistan</string>
+    <string name="onboarding_confirm_added">Tillagd</string>
+    <string name="onboarding_confirm_ready">Klar att lägga till</string>
+    <string name="onboarding_confirm_channels_badge">%1$d kanaler</string>
+    <string name="onboarding_confirm_downloading">Laddar ner och importerar dina kanaler. Stora spellistor kan ta en liten stund — håll appen öppen.</string>
+    <string name="onboarding_confirm_row_portal">Portal</string>
+    <string name="onboarding_confirm_default_portal_name">Min spellista</string>
+    <string name="onboarding_confirm_row_source">Källa</string>
+    <string name="onboarding_confirm_row_server">Server</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Automatiskt matchad</string>
+    <string name="onboarding_confirm_custom_xmltv">Anpassad XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Katalog</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d kanaler · %2$d filmer · %3$d serier</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Integritet &amp; villkor</string>
+    <string name="privacy_subtitle">Läs igenom och acceptera innan du fortsätter.</string>
+    <string name="privacy_body">ARE iptv integritetspolicy &amp; användarvillkor\n\nARE iptv samlar inte in eller överför dina inloggningsuppgifter för spellistan utanför enheten. Genom att fortsätta godkänner du att endast använda den här appen med innehållskällor som du har behörighet att komma åt, och du accepterar våra användarvillkor och vår integritetspolicy i sin helhet.</string>
+    <string name="privacy_accept_label">Jag har läst och accepterar integritetspolicyn och användarvillkoren.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Välj en spellista</string>
+    <string name="sources_choose_subtitle">Välj vilken av dina tillagda spellistor du vill öppna.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Lägg till ny spellista</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Välj ditt språk</string>
+    <string name="language_select_subtitle">Välj det språk du vill använda i hela appen.</string>
+    <string name="language_picker_label">Språk</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Är du säker på att du vill byta språk?</string>
+    <string name="language_confirm_action">Bekräfta</string>
+    <string name="language_confirm_cancel">Avbryt</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Inställningar</string>
+    <string name="settings_section_playlists">Spellistor &amp; synk</string>
+    <string name="settings_refresh_catalog">Uppdatera katalog</string>
+    <string name="settings_refresh_now">Uppdatera nu</string>
+    <string name="settings_refreshing">Uppdaterar…</string>
+    <string name="settings_refresh_syncing">Synkroniserar med leverantören…</string>
+    <string name="settings_refresh_success">Uppdaterat: %1$d kanaler, %2$d filmer, %3$d serier</string>
+    <string name="settings_refresh_stale">Över 2 veckor gammal — uppdatera för att få nya kanaler &amp; titlar</string>
+    <string name="settings_never_refreshed">Aldrig uppdaterad</string>
+    <string name="settings_last_updated_days">Senast uppdaterad för %1$d dag sedan</string>
+    <string name="settings_last_updated_days_plural">Senast uppdaterad för %1$d dagar sedan</string>
+    <string name="settings_last_updated_hours">Senast uppdaterad för %1$d timme sedan</string>
+    <string name="settings_last_updated_hours_plural">Senast uppdaterad för %1$d timmar sedan</string>
+    <string name="settings_last_updated_mins">Senast uppdaterad för %1$d min sedan</string>
+    <string name="settings_last_updated_now">Senast uppdaterad just nu</string>
+    <string name="settings_section_appearance">Utseende</string>
+    <string name="settings_dark_theme">Mörkt tema</string>
+    <string name="settings_dark_theme_desc">Rekommenderas för avslappnat tittande.</string>
+    <string name="settings_reduce_motion">Minska rörelse</string>
+    <string name="settings_reduce_motion_desc">Mjukare fokusanimationer.</string>
+    <string name="settings_list_view">Listvy</string>
+    <string name="settings_list_view_desc">Visa kanaler, filmer och serier som en lista i stället för ett rutnät.</string>
+    <string name="settings_section_language">Språk</string>
+    <string name="settings_language_row_title">Appspråk</string>
+    <string name="settings_language_row_desc">Välj språket som används i hela appen.</string>
+    <string name="settings_section_playback">Uppspelning</string>
+    <string name="settings_hardware_decoding">Hårdvaruavkodning</string>
+    <string name="settings_hardware_decoding_desc">Föredra hårdvaruavkodare; faller tillbaka till programvara om en ström kräver det.</string>
+    <string name="settings_autoplay_next">Spela nästa avsnitt automatiskt</string>
+    <string name="settings_autoplay_next_desc">Endast en inställning för nu -- automatisk övergång är inte inkopplad ännu; välj nästa avsnitt från Detalj.</string>
+    <string name="settings_mini_player_behavior">Miniuppspelarens beteende</string>
+    <string name="settings_mini_player_behavior_desc">När du bläddrar nära den dockade miniuppspelaren: skjut den till det lediga hörnet, eller tona ut och krymp den.</string>
+    <string name="settings_mini_player_dodge">Väj automatiskt</string>
+    <string name="settings_mini_player_fade">Tona &amp; krymp</string>
+    <string name="settings_section_parental">Föräldrakontroller</string>
+    <string name="settings_lock_adult">Lås vuxenkategorier</string>
+    <string name="settings_lock_adult_desc">När det är på krävs din PIN för att stänga av det.</string>
+    <string name="settings_change_pin">Ändra PIN</string>
+    <string name="settings_pin_loading">Laddar…</string>
+    <string name="settings_pin_is_set">En PIN är inställd.</string>
+    <string name="settings_pin_not_set">Ingen PIN inställd ännu.</string>
+    <string name="settings_change">Ändra</string>
+    <string name="settings_set_pin">Ange PIN</string>
+    <string name="settings_section_subtitles">Undertexter</string>
+    <string name="settings_subtitle_lang_title">Föredraget språk</string>
+    <string name="settings_subtitle_lang_desc">Förvald när du söker undertexter online. Du kan fortfarande ändra det per video.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Klar -- sökning och nedladdning online är aktiverade.</string>
+    <string name="settings_opensubs_key_connected">API-nyckel ansluten. Logga även in nedan -- båda krävs för undertexter online.</string>
+    <string name="settings_account">Konto</string>
+    <string name="settings_account_signed_in">Inloggad som %1$s -- nedladdning av undertexter är aktiverad.</string>
+    <string name="settings_signin_title">Logga in för att ladda ner undertexter</string>
+    <string name="settings_signin_desc">Sista steget -- både API-nyckeln och din kontoinloggning krävs för undertexter online. Logga in med ditt användarnamn och lösenord på opensubtitles.com; nedladdningar använder ditt kontos dagliga kvot. Vi håller dig inloggad.</string>
+    <string name="settings_placeholder_username">Användarnamn</string>
+    <string name="settings_placeholder_password">Lösenord</string>
+    <string name="settings_signing_in">Loggar in…</string>
+    <string name="settings_opensubs_key_title">OpenSubtitles API-nyckel</string>
+    <string name="settings_opensubs_key_desc">Undertexter online kräver ett gratis konto på opensubtitles.com med två saker: den här API-nyckeln (för sökning) och din kontoinloggning (för nedladdning). Steg 1 -- klistra in API-nyckeln; du loggar in härnäst. Vi validerar den innan vi sparar.</string>
+    <string name="settings_placeholder_api_key">API-nyckel</string>
+    <string name="settings_checking">Kontrollerar…</string>
+    <string name="settings_section_metadata">Film- &amp; serieinfo</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Ansluten -- IMDb &amp; Rotten Tomatoes-betyg, handling och rollista visas i Detalj.</string>
+    <string name="settings_omdb_key_title">OMDb API-nyckel</string>
+    <string name="settings_omdb_key_desc">Klistra in en gratis nyckel från omdbapi.com för att berika filmer och serier med IMDb &amp; Rotten Tomatoes-betyg, en sammanfattning och rollistan. Vi validerar den innan vi sparar.</string>
+    <string name="settings_section_about">Om</string>
+    <string name="settings_version_title">Version</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Stöd den här appen</string>
+    <string name="settings_support_desc">Bjud mig på en kaffe om ARE iptv är användbar för dig.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Ange en 4-siffrig PIN</string>
+    <string name="pin_confirm_title">Bekräfta din PIN</string>
+    <string name="pin_enter_title">Ange PIN</string>
+    <string name="pin_lockout_message">För många felaktiga försök -- försök igen om %1$ds</string>
+    <string name="pin_mismatch_error">PIN-koderna stämde inte -- försök igen</string>
+    <string name="pin_incorrect_error">Felaktig PIN</string>
+    <string name="pin_checking">Kontrollerar…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Lägg till sektion</string>
+    <string name="home_remove_continue_watching_title">Ta bort från Fortsätt titta?</string>
+    <string name="home_remove_continue_watching_body">”%1$s” slutar visas här. Din plats sparas inte.</string>
+    <string name="home_loading_catalog">Laddar din katalog…</string>
+    <string name="home_no_playlist_title">Ingen spellista ännu</string>
+    <string name="home_no_playlist_body">Lägg till en spellista från sidofältet för att se dina kanaler, filmer och serier här.</string>
+    <string name="home_section_continue_watching">Fortsätt titta</string>
+    <string name="home_section_live_now">Live nu</string>
+    <string name="home_section_categories">Bläddra efter kategori</string>
+    <string name="home_section_recommended">För dig</string>
+    <string name="home_section_for_you">För dig</string>
+    <string name="home_section_popular">Populärt</string>
+    <string name="home_section_because_you_like">Eftersom du gillar %1$s</string>
+    <string name="home_section_movies">Filmer</string>
+    <string name="home_section_series">Serier</string>
+    <string name="home_add_section_dialog_title">Lägg till en sektion</string>
+    <string name="home_add_section_empty">Alla kategorier från din spellista är redan fästa på Hem.</string>
+    <string name="home_category_live">Live</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Serie</string>
+    <string name="home_edit_grabbed_desc">Tagen -- Upp/Ned för att flytta, OK för att släppa</string>
+    <string name="home_edit_grab_desc">Ta tag för att ändra ordning</string>
+    <string name="home_edit_show_section">Visa sektion</string>
+    <string name="home_edit_hide_section">Dölj sektion</string>
+    <string name="home_edit_remove_section">Ta bort sektion</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Lägg till en spellista från sidofältet för att se TV-guiden här.</string>
+    <string name="guide_title">TV-guide</string>
+    <string name="guide_epg_unavailable">EPG-källan är inte tillgänglig -- visar kanaler utan programdata.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Fokusera ett program för att se detaljer</string>
+    <string name="guide_live_badge">LIVE</string>
+    <string name="guide_catchup_available_desc">Catch-up tillgänglig</string>
+    <string name="guide_day_yesterday">Igår</string>
+    <string name="guide_day_today">Idag</string>
+    <string name="guide_day_tomorrow">Imorgon</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Lägg till en spellista från sidofältet för att se livekanaler här.</string>
+    <string name="live_title">Live-TV</string>
+    <string name="live_channel_groups">Kanalgrupper</string>
+    <string name="live_count_channels">%1$d kanaler</string>
+    <string name="live_empty_group">Inga kanaler i den här gruppen ännu.</string>
+    <string name="live_on_air_now">SÄNDS NU</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Lägg till en spellista från sidofältet för att se filmer här.</string>
+    <string name="movies_title">Filmer</string>
+    <string name="movies_genres">Genrer</string>
+    <string name="movies_count_titles">%1$d titlar</string>
+    <string name="movies_empty_genre">Inga filmer i den här genren ännu.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Lägg till en spellista från sidofältet för att se serier här.</string>
+    <string name="series_title">Serier</string>
+    <string name="series_empty_genre">Inga serier i den här genren ännu.</string>
+    <string name="series_episode_count">%1$d avsnitt</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Lägg till en spellista från sidofältet och favoritmarkera sedan kanaler eller titlar för att se dem här.</string>
+    <string name="favorites_title">Favoriter</string>
+    <string name="favorites_tab_channels">Kanaler</string>
+    <string name="favorites_tab_movies">Filmer</string>
+    <string name="favorites_tab_series">Serier</string>
+    <string name="favorites_empty_channels">Inga favoritmarkerade kanaler ännu -- tryck på hjärtat på en kanalruta för att lägga till en.</string>
+    <string name="favorites_empty_movies">Inga favoritmarkerade filmer ännu -- tryck på hjärtat på en filmruta för att lägga till en.</string>
+    <string name="favorites_empty_series">Inga favoritmarkerade serier ännu -- tryck på hjärtat på en serieruta för att lägga till en.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Lägg till en spellista från sidofältet för att söka i din katalog.</string>
+    <string name="search_title">Sök</string>
+    <string name="search_placeholder">Sök kanaler, filmer, serier…</string>
+    <string name="search_scope_all">Alla</string>
+    <string name="search_scope_live">Live-TV</string>
+    <string name="search_scope_movies">Filmer</string>
+    <string name="search_scope_series">Serier</string>
+    <string name="search_category_label">Kategori: %1$s</string>
+    <string name="search_type_to_search">Skriv för att söka i din katalog.</string>
+    <string name="search_min_chars">Skriv minst %1$d tecken för att söka.</string>
+    <string name="search_no_results">Inga resultat för \"%1$s\".</string>
+    <string name="search_section_live">Live-TV</string>
+    <string name="search_section_titles">Filmer &amp; serier</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Laddar…</string>
+    <string name="detail_not_found">Titeln hittades inte</string>
+    <string name="detail_play">Spela</string>
+    <string name="detail_play_episode">Spela S%1$d · E%2$d</string>
+    <string name="detail_add_to_favorites">Lägg till i favoriter</string>
+    <string name="detail_remove_from_favorites">Ta bort från favoriter</string>
+    <string name="detail_storyline">Handling</string>
+    <string name="detail_cast_label">Rollista:</string>
+    <string name="detail_director_label">Regissör:</string>
+    <string name="detail_episodes_header">Avsnitt</string>
+    <string name="detail_episodes_header_seasons">Avsnitt · %1$d säsonger · %2$d totalt</string>
+    <string name="detail_episodes_header_total">Avsnitt · %1$d totalt</string>
+    <string name="detail_season_label">Säsong %1$d</string>
+    <string name="detail_season_episode_count">Säsong %1$s · %2$d avsnitt</string>
+    <string name="detail_m3u_no_episodes">Den här spellisteposten har inga säsongs-/avsnittsdata -- använd Spela ovan för att titta på den som ett enda objekt.</string>
+    <string name="detail_episodes_load_error">Det gick inte att ladda avsnitt: %1$s</string>
+    <string name="detail_episodes_loading">Laddar avsnitt…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Innehållet hittades inte</string>
+    <string name="player_playback_failed">Uppspelningen misslyckades</string>
+    <string name="player_buffering">Buffrar…</string>
+    <string name="player_up_next">Nästa</string>
+    <string name="player_up_next_channel">Nästa -- %1$s</string>
+    <string name="player_no_programme_data">Ingen programdata</string>
+    <string name="player_previous_channel">Föregående kanal</string>
+    <string name="player_next_channel">Nästa kanal</string>
+    <string name="player_previous_episode">Föregående avsnitt</string>
+    <string name="player_next_episode">Nästa avsnitt</string>
+    <string name="player_back_10_min">Bakåt 10 minuter</string>
+    <string name="player_forward_10_min">Framåt 10 minuter</string>
+    <string name="player_rewind">Spola tillbaka</string>
+    <string name="player_pause">Pausa</string>
+    <string name="player_play">Spela</string>
+    <string name="player_fast_forward">Snabbspola framåt</string>
+    <string name="player_audio_track">Ljudspår</string>
+    <string name="player_subtitles">Undertexter</string>
+    <string name="player_minimize_to_corner">Minimera till hörnet</string>
+    <string name="player_picture_in_picture">Bild-i-bild</string>
+    <string name="player_up_next_action">Nästa</string>
+    <string name="player_open_guide">Öppna guide</string>
+    <string name="player_live_badge">Live</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Av</string>
+    <string name="subtitle_none_in_stream">Inga undertexter i den här strömmen.</string>
+    <string name="subtitle_search_online">Sök online…</string>
+    <string name="subtitle_selected">Vald</string>
+    <string name="subtitle_picker_title">Undertexter</string>
+    <string name="subtitle_search_title">Sök undertexter online</string>
+    <string name="subtitle_search_placeholder">Titel</string>
+    <string name="subtitle_searching">Söker…</string>
+    <string name="subtitle_search_action">Sök</string>
+    <string name="subtitle_status_searching">Söker på OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Laddar ner undertext…</string>
+    <string name="subtitle_status_no_matches">Inga träffar -- prova en annan titel eller ett annat språk.</string>
+    <string name="subtitle_default_label">Undertext %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Stoppa miniuppspelaren?</string>
+    <string name="mini_player_stop_body">Sluta spela ”%1$s” och stänga miniuppspelaren?</string>
+    <string name="mini_player_stop">Stoppa</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Multivy</string>
+    <string name="multiview_4up">4 i vy</string>
+    <string name="multiview_2up">2 i vy</string>
+    <string name="multiview_no_source">Ingen aktiv spellista</string>
+    <string name="multiview_no_channels">Inga livekanaler tillgängliga för multivy</string>
+    <string name="multiview_audio_badge">Ljud</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Anpassa</string>
+    <string name="shell_add_playlist_desc">Lägg till spellista</string>
+    <string name="nav_home">Hem</string>
+    <string name="nav_live_tv">Live-TV</string>
+    <string name="nav_tv_guide">TV-guide</string>
+    <string name="nav_movies">Filmer</string>
+    <string name="nav_series">Serier</string>
+    <string name="nav_search">Sök</string>
+    <string name="nav_favorites">Favoriter</string>
+    <string name="nav_settings">Inställningar</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Kategorier</string>
+    <string name="browse_empty_default">Inga objekt i den här kategorin ännu.</string>
+    <string name="browse_load_error">Det gick inte att ladda — försök igen</string>
+    <string name="browse_pin_dialog_pinned_body">Ta bort den här kategorin från toppen av listan.</string>
+    <string name="browse_pin_dialog_unpinned_body">Fäst den här kategorin högst upp i listan.</string>
+    <string name="browse_unpin">Lossa</string>
+    <string name="browse_pin">Fäst</string>
+    <string name="browse_category_pinned_desc">Fäst</string>
+    <string name="browse_see_all">Visa alla  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Live</string>
+    <string name="badge_catchup">Catch-up</string>
+    <string name="badge_smart">Smart</string>
+    <string name="health_stable">Stabil</string>
+    <string name="health_moderate">Måttlig</string>
+    <string name="health_poor">Dålig</string>
+    <string name="continue_card_resume_desc">Återuppta</string>
+    <string name="channel_tile_now">Nu · %1$s</string>
+    <string name="channel_tile_next">Nästa · %1$s</string>
+    <string name="browse_all_channels">Alla kanaler</string>
+    <string name="browse_all_movies">Alla filmer</string>
+    <string name="browse_all_series">Alla serier</string>
+    <string name="settings_refresh_no_playlist">Ingen aktiv spellista att uppdatera.</string>
+    <string name="settings_refresh_failed">Uppdateringen misslyckades — kontrollera anslutningen och försök igen.</string>
+    <string name="settings_subs_connect_key_first">Anslut din API-nyckel först.</string>
+    <string name="onboarding_error_generic">Något gick fel</string>
+</resources>

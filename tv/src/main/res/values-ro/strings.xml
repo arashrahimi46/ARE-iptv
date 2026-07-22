@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Înapoi</string>
+    <string name="action_cancel">Anulează</string>
+    <string name="action_continue">Continuă</string>
+    <string name="action_retry">Reîncearcă</string>
+    <string name="action_close">Închide</string>
+    <string name="action_remove">Elimină</string>
+    <string name="action_clear">Șterge</string>
+    <string name="action_connect">Conectează</string>
+    <string name="action_disconnect">Deconectează</string>
+    <string name="action_sign_in">Autentificare</string>
+    <string name="action_sign_out">Deconectare</string>
+    <string name="action_search">Caută</string>
+    <string name="action_donate">Donează</string>
+    <string name="content_desc_account">Cont</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Ieși din ARE iptv?</string>
+    <string name="shell_stay">Rămâi</string>
+    <string name="shell_leave">Ieși</string>
+    <string name="shell_leave_app_body">Vrei să ieși din ARE iptv?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Sursă</string>
+    <string name="onboarding_step_credentials">Date de acces</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Confirmă</string>
+    <string name="onboarding_title">Adaugă o listă de redare</string>
+    <string name="onboarding_subtitle">Folosește propriul abonament IPTV. ARE iptv nu-ți stochează niciodată datele de acces în afara dispozitivului.</string>
+    <string name="onboarding_skip_for_now">Omite deocamdată</string>
+    <string name="onboarding_go_to_home">Mergi la Acasă</string>
+    <string name="onboarding_add_playlist">Adaugă lista de redare</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Introdu gazda portalului, numele de utilizator și parola. Ideal pentru TV live + VOD cu EPG automat.</string>
+    <string name="onboarding_m3u_title">Listă M3U / URL</string>
+    <string name="onboarding_m3u_desc">Lipește un singur link M3U sau M3U-plus. Adaugă separat un URL EPG XMLTV dacă ai unul.</string>
+    <string name="onboarding_portal_name_label">Nume portal</string>
+    <string name="onboarding_portal_name_placeholder">Living</string>
+    <string name="onboarding_server_url_label">URL server</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Nume de utilizator</string>
+    <string name="onboarding_password_label">Parolă</string>
+    <string name="onboarding_m3u_url_label">URL listă de redare M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Potrivește automat EPG &amp; siglele</string>
+    <string name="onboarding_epg_auto_desc">Preia automat datele din ghid, siglele canalelor și posterele.</string>
+    <string name="onboarding_epg_url_label">URL EPG XMLTV (opțional)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Dezactivat cât timp potrivirea automată este activă.</string>
+    <string name="onboarding_epg_custom_helper">Furnizează propria sursă de ghid.</string>
+    <string name="onboarding_confirm_adding">Se adaugă lista de redare…</string>
+    <string name="onboarding_confirm_error_title">Nu s-a putut adăuga lista de redare</string>
+    <string name="onboarding_confirm_added">Adăugată</string>
+    <string name="onboarding_confirm_ready">Gata de adăugat</string>
+    <string name="onboarding_confirm_channels_badge">%1$d canale</string>
+    <string name="onboarding_confirm_downloading">Se descarcă și se importă canalele. Listele mari pot dura puțin — te rugăm să ții aplicația deschisă.</string>
+    <string name="onboarding_confirm_row_portal">Portal</string>
+    <string name="onboarding_confirm_default_portal_name">Lista mea de redare</string>
+    <string name="onboarding_confirm_row_source">Sursă</string>
+    <string name="onboarding_confirm_row_server">Server</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Potrivit automat</string>
+    <string name="onboarding_confirm_custom_xmltv">XMLTV personalizat</string>
+    <string name="onboarding_confirm_row_catalog">Catalog</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d canale · %2$d filme · %3$d seriale</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Confidențialitate &amp; Termeni</string>
+    <string name="privacy_subtitle">Te rugăm să citești și să accepți înainte de a continua.</string>
+    <string name="privacy_body">Politica de confidențialitate &amp; Termenii de utilizare ARE iptv\n\nARE iptv nu colectează și nu transmite datele de acces ale listei tale în afara dispozitivului. Prin continuare, ești de acord să folosești această aplicație doar cu surse de conținut la care ești autorizat să ai acces și accepți integral Termenii de utilizare și Politica de confidențialitate.</string>
+    <string name="privacy_accept_label">Am citit și accept Politica de confidențialitate și Termenii de utilizare.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Alege o listă de redare</string>
+    <string name="sources_choose_subtitle">Alege care dintre listele de redare adăugate să fie deschisă.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Adaugă o listă de redare nouă</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Alege-ți limba</string>
+    <string name="language_select_subtitle">Alege limba pe care vrei să o folosești în întreaga aplicație.</string>
+    <string name="language_picker_label">Limbă</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Sigur vrei să schimbi limba?</string>
+    <string name="language_confirm_action">Confirmă</string>
+    <string name="language_confirm_cancel">Anulează</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Setări</string>
+    <string name="settings_section_playlists">Liste de redare &amp; sincronizare</string>
+    <string name="settings_refresh_catalog">Reîmprospătează catalogul</string>
+    <string name="settings_refresh_now">Reîmprospătează acum</string>
+    <string name="settings_refreshing">Se reîmprospătează…</string>
+    <string name="settings_refresh_syncing">Se sincronizează cu furnizorul…</string>
+    <string name="settings_refresh_success">Actualizat: %1$d canale, %2$d filme, %3$d seriale</string>
+    <string name="settings_refresh_stale">Mai vechi de 2 săptămâni — reîmprospătează pentru canale &amp; titluri noi</string>
+    <string name="settings_never_refreshed">Niciodată reîmprospătat</string>
+    <string name="settings_last_updated_days">Actualizat acum %1$d zi</string>
+    <string name="settings_last_updated_days_plural">Actualizat acum %1$d zile</string>
+    <string name="settings_last_updated_hours">Actualizat acum %1$d oră</string>
+    <string name="settings_last_updated_hours_plural">Actualizat acum %1$d ore</string>
+    <string name="settings_last_updated_mins">Actualizat acum %1$d min</string>
+    <string name="settings_last_updated_now">Actualizat chiar acum</string>
+    <string name="settings_section_appearance">Aspect</string>
+    <string name="settings_dark_theme">Temă întunecată</string>
+    <string name="settings_dark_theme_desc">Recomandată pentru vizionare relaxată.</string>
+    <string name="settings_reduce_motion">Redu mișcarea</string>
+    <string name="settings_reduce_motion_desc">Animații de focalizare mai blânde.</string>
+    <string name="settings_list_view">Vizualizare listă</string>
+    <string name="settings_list_view_desc">Afișează canalele, filmele și serialele ca listă în loc de grilă de dale.</string>
+    <string name="settings_section_language">Limbă</string>
+    <string name="settings_language_row_title">Limba aplicației</string>
+    <string name="settings_language_row_desc">Alege limba folosită în întreaga aplicație.</string>
+    <string name="settings_section_playback">Redare</string>
+    <string name="settings_hardware_decoding">Decodare hardware</string>
+    <string name="settings_hardware_decoding_desc">Preferă decodoarele hardware; revine la software dacă un flux o cere.</string>
+    <string name="settings_autoplay_next">Redă automat episodul următor</string>
+    <string name="settings_autoplay_next_desc">Deocamdată doar o preferință -- avansarea automată nu este încă funcțională; alege episodul următor din Detalii.</string>
+    <string name="settings_mini_player_behavior">Comportamentul mini-playerului</string>
+    <string name="settings_mini_player_behavior_desc">Când navighezi lângă mini-playerul andocat: mută-l în colțul liber sau estompează-l și micșorează-l.</string>
+    <string name="settings_mini_player_dodge">Evitare automată</string>
+    <string name="settings_mini_player_fade">Estompează &amp; micșorează</string>
+    <string name="settings_section_parental">Control parental</string>
+    <string name="settings_lock_adult">Blochează categoriile pentru adulți</string>
+    <string name="settings_lock_adult_desc">După activare, dezactivarea necesită PIN-ul tău.</string>
+    <string name="settings_change_pin">Schimbă PIN-ul</string>
+    <string name="settings_pin_loading">Se încarcă…</string>
+    <string name="settings_pin_is_set">Un PIN este setat.</string>
+    <string name="settings_pin_not_set">Niciun PIN setat încă.</string>
+    <string name="settings_change">Schimbă</string>
+    <string name="settings_set_pin">Setează PIN</string>
+    <string name="settings_section_subtitles">Subtitrări</string>
+    <string name="settings_subtitle_lang_title">Limbă preferată</string>
+    <string name="settings_subtitle_lang_desc">Preselectată când cauți subtitrări online. O poți schimba oricând per videoclip.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Gata -- căutarea și descărcarea online sunt activate.</string>
+    <string name="settings_opensubs_key_connected">Cheie API conectată. Autentifică-te și mai jos -- ambele sunt necesare pentru subtitrări online.</string>
+    <string name="settings_account">Cont</string>
+    <string name="settings_account_signed_in">Autentificat ca %1$s -- descărcarea subtitrărilor este activată.</string>
+    <string name="settings_signin_title">Autentifică-te pentru a descărca subtitrări</string>
+    <string name="settings_signin_desc">Ultimul pas -- atât cheia API, cât și autentificarea în cont sunt necesare pentru subtitrări online. Autentifică-te cu numele de utilizator și parola opensubtitles.com; descărcările folosesc cota zilnică a contului tău. Rămânem autentificați pentru tine.</string>
+    <string name="settings_placeholder_username">Nume de utilizator</string>
+    <string name="settings_placeholder_password">Parolă</string>
+    <string name="settings_signing_in">Se autentifică…</string>
+    <string name="settings_opensubs_key_title">Cheie API OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">Subtitrările online necesită un cont gratuit opensubtitles.com cu două lucruri: această cheie API (pentru căutare) și autentificarea în cont (pentru descărcare). Pasul 1 -- lipește cheia API; te vei autentifica în continuare. O validăm înainte de salvare.</string>
+    <string name="settings_placeholder_api_key">Cheie API</string>
+    <string name="settings_checking">Se verifică…</string>
+    <string name="settings_section_metadata">Informații filme &amp; seriale</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Conectat -- scorurile IMDb &amp; Rotten Tomatoes, subiectul și distribuția apar în Detalii.</string>
+    <string name="settings_omdb_key_title">Cheie API OMDb</string>
+    <string name="settings_omdb_key_desc">Lipește o cheie gratuită de la omdbapi.com pentru a îmbogăți filmele și serialele cu scoruri IMDb &amp; Rotten Tomatoes, un rezumat și distribuția. O validăm înainte de salvare.</string>
+    <string name="settings_section_about">Despre</string>
+    <string name="settings_version_title">Versiune</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Sprijină această aplicație</string>
+    <string name="settings_support_desc">Fă-mi cinste cu o cafea dacă ARE iptv îți este de folos.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Setează un PIN din 4 cifre</string>
+    <string name="pin_confirm_title">Confirmă PIN-ul</string>
+    <string name="pin_enter_title">Introdu PIN-ul</string>
+    <string name="pin_lockout_message">Prea multe încercări greșite -- reîncearcă peste %1$ds</string>
+    <string name="pin_mismatch_error">PIN-urile nu s-au potrivit -- reîncearcă</string>
+    <string name="pin_incorrect_error">PIN incorect</string>
+    <string name="pin_checking">Se verifică…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Adaugă secțiune</string>
+    <string name="home_remove_continue_watching_title">Elimini din Continuă vizionarea?</string>
+    <string name="home_remove_continue_watching_body">„%1$s” nu va mai fi afișat aici. Locul tău nu este păstrat.</string>
+    <string name="home_loading_catalog">Se încarcă catalogul tău…</string>
+    <string name="home_no_playlist_title">Nicio listă de redare încă</string>
+    <string name="home_no_playlist_body">Adaugă o listă de redare din bara laterală pentru a-ți vedea aici canalele, filmele și serialele.</string>
+    <string name="home_section_continue_watching">Continuă vizionarea</string>
+    <string name="home_section_live_now">Live acum</string>
+    <string name="home_section_categories">Răsfoiește pe categorii</string>
+    <string name="home_section_recommended">Pentru tine</string>
+    <string name="home_section_for_you">Pentru tine</string>
+    <string name="home_section_popular">Populare</string>
+    <string name="home_section_because_you_like">Pentru că îți place %1$s</string>
+    <string name="home_section_movies">Filme</string>
+    <string name="home_section_series">Seriale</string>
+    <string name="home_add_section_dialog_title">Adaugă o secțiune</string>
+    <string name="home_add_section_empty">Fiecare categorie din lista ta de redare este deja fixată pe Acasă.</string>
+    <string name="home_category_live">Live</string>
+    <string name="home_category_movie">Film</string>
+    <string name="home_category_series">Serial</string>
+    <string name="home_edit_grabbed_desc">Apucat -- Sus/Jos pentru a muta, OK pentru a plasa</string>
+    <string name="home_edit_grab_desc">Apucă pentru a reordona</string>
+    <string name="home_edit_show_section">Afișează secțiunea</string>
+    <string name="home_edit_hide_section">Ascunde secțiunea</string>
+    <string name="home_edit_remove_section">Elimină secțiunea</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Adaugă o listă de redare din bara laterală pentru a vedea aici ghidul TV.</string>
+    <string name="guide_title">Ghid TV</string>
+    <string name="guide_epg_unavailable">Sursa EPG indisponibilă -- se afișează canalele fără date despre programe.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Focalizează un program pentru a vedea detaliile</string>
+    <string name="guide_live_badge">LIVE</string>
+    <string name="guide_catchup_available_desc">Reluare disponibilă</string>
+    <string name="guide_day_yesterday">Ieri</string>
+    <string name="guide_day_today">Azi</string>
+    <string name="guide_day_tomorrow">Mâine</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Adaugă o listă de redare din bara laterală pentru a vedea aici canalele live.</string>
+    <string name="live_title">TV live</string>
+    <string name="live_channel_groups">Grupuri de canale</string>
+    <string name="live_count_channels">%1$d canale</string>
+    <string name="live_empty_group">Niciun canal în acest grup încă.</string>
+    <string name="live_on_air_now">ACUM ÎN DIRECT</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Adaugă o listă de redare din bara laterală pentru a vedea aici filme.</string>
+    <string name="movies_title">Filme</string>
+    <string name="movies_genres">Genuri</string>
+    <string name="movies_count_titles">%1$d titluri</string>
+    <string name="movies_empty_genre">Niciun film în acest gen încă.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Adaugă o listă de redare din bara laterală pentru a vedea aici seriale.</string>
+    <string name="series_title">Seriale</string>
+    <string name="series_empty_genre">Niciun serial în acest gen încă.</string>
+    <string name="series_episode_count">%1$d episoade</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Adaugă o listă de redare din bara laterală, apoi marchează canale sau titluri ca favorite pentru a le vedea aici.</string>
+    <string name="favorites_title">Favorite</string>
+    <string name="favorites_tab_channels">Canale</string>
+    <string name="favorites_tab_movies">Filme</string>
+    <string name="favorites_tab_series">Seriale</string>
+    <string name="favorites_empty_channels">Niciun canal favorit încă -- apasă pe inima de pe o dală de canal pentru a adăuga unul.</string>
+    <string name="favorites_empty_movies">Niciun film favorit încă -- apasă pe inima de pe o dală de film pentru a adăuga unul.</string>
+    <string name="favorites_empty_series">Niciun serial favorit încă -- apasă pe inima de pe o dală de serial pentru a adăuga unul.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Adaugă o listă de redare din bara laterală pentru a-ți căuta catalogul.</string>
+    <string name="search_title">Caută</string>
+    <string name="search_placeholder">Caută canale, filme, seriale…</string>
+    <string name="search_scope_all">Toate</string>
+    <string name="search_scope_live">TV live</string>
+    <string name="search_scope_movies">Filme</string>
+    <string name="search_scope_series">Seriale</string>
+    <string name="search_category_label">Categorie: %1$s</string>
+    <string name="search_type_to_search">Scrie pentru a-ți căuta catalogul.</string>
+    <string name="search_min_chars">Scrie cel puțin %1$d caractere pentru a căuta.</string>
+    <string name="search_no_results">Niciun rezultat pentru \"%1$s\".</string>
+    <string name="search_section_live">TV live</string>
+    <string name="search_section_titles">Filme &amp; seriale</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Se încarcă…</string>
+    <string name="detail_not_found">Titlu negăsit</string>
+    <string name="detail_play">Redă</string>
+    <string name="detail_play_episode">Redă S%1$d · E%2$d</string>
+    <string name="detail_add_to_favorites">Adaugă la favorite</string>
+    <string name="detail_remove_from_favorites">Elimină de la favorite</string>
+    <string name="detail_storyline">Subiect</string>
+    <string name="detail_cast_label">Distribuție:</string>
+    <string name="detail_director_label">Regizor:</string>
+    <string name="detail_episodes_header">Episoade</string>
+    <string name="detail_episodes_header_seasons">Episoade · %1$d sezoane · %2$d în total</string>
+    <string name="detail_episodes_header_total">Episoade · %1$d în total</string>
+    <string name="detail_season_label">Sezonul %1$d</string>
+    <string name="detail_season_episode_count">Sezonul %1$s · %2$d episoade</string>
+    <string name="detail_m3u_no_episodes">Această intrare din lista de redare nu are date despre sezon/episod -- folosește Redă mai sus pentru a o viziona ca element unic.</string>
+    <string name="detail_episodes_load_error">Nu s-au putut încărca episoadele: %1$s</string>
+    <string name="detail_episodes_loading">Se încarcă episoadele…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Conținut negăsit</string>
+    <string name="player_playback_failed">Redarea a eșuat</string>
+    <string name="player_buffering">Se memorează în buffer…</string>
+    <string name="player_up_next">Urmează</string>
+    <string name="player_up_next_channel">Urmează -- %1$s</string>
+    <string name="player_no_programme_data">Fără date despre programe</string>
+    <string name="player_previous_channel">Canalul anterior</string>
+    <string name="player_next_channel">Canalul următor</string>
+    <string name="player_previous_episode">Episodul anterior</string>
+    <string name="player_next_episode">Episodul următor</string>
+    <string name="player_back_10_min">Înapoi 10 minute</string>
+    <string name="player_forward_10_min">Înainte 10 minute</string>
+    <string name="player_rewind">Derulează înapoi</string>
+    <string name="player_pause">Pauză</string>
+    <string name="player_play">Redă</string>
+    <string name="player_fast_forward">Derulează înainte</string>
+    <string name="player_audio_track">Pistă audio</string>
+    <string name="player_subtitles">Subtitrări</string>
+    <string name="player_minimize_to_corner">Minimizează în colț</string>
+    <string name="player_picture_in_picture">Imagine în imagine</string>
+    <string name="player_up_next_action">Urmează</string>
+    <string name="player_open_guide">Deschide ghidul</string>
+    <string name="player_live_badge">Live</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Dezactivat</string>
+    <string name="subtitle_none_in_stream">Nicio subtitrare în acest flux.</string>
+    <string name="subtitle_search_online">Caută online…</string>
+    <string name="subtitle_selected">Selectată</string>
+    <string name="subtitle_picker_title">Subtitrări</string>
+    <string name="subtitle_search_title">Caută subtitrări online</string>
+    <string name="subtitle_search_placeholder">Titlu</string>
+    <string name="subtitle_searching">Se caută…</string>
+    <string name="subtitle_search_action">Caută</string>
+    <string name="subtitle_status_searching">Se caută pe OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Se descarcă subtitrarea…</string>
+    <string name="subtitle_status_no_matches">Nicio potrivire -- încearcă un alt titlu sau o altă limbă.</string>
+    <string name="subtitle_default_label">Subtitrare %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Oprești mini-playerul?</string>
+    <string name="mini_player_stop_body">Oprești redarea „%1$s” și închizi mini-playerul?</string>
+    <string name="mini_player_stop">Oprește</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Vizualizare multiplă</string>
+    <string name="multiview_4up">4 deodată</string>
+    <string name="multiview_2up">2 deodată</string>
+    <string name="multiview_no_source">Nicio listă de redare activă</string>
+    <string name="multiview_no_channels">Niciun canal live disponibil pentru vizualizare multiplă</string>
+    <string name="multiview_audio_badge">Audio</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Personalizează</string>
+    <string name="shell_add_playlist_desc">Adaugă lista de redare</string>
+    <string name="nav_home">Acasă</string>
+    <string name="nav_live_tv">TV live</string>
+    <string name="nav_tv_guide">Ghid TV</string>
+    <string name="nav_movies">Filme</string>
+    <string name="nav_series">Seriale</string>
+    <string name="nav_search">Caută</string>
+    <string name="nav_favorites">Favorite</string>
+    <string name="nav_settings">Setări</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Categorii</string>
+    <string name="browse_empty_default">Niciun element în această categorie încă.</string>
+    <string name="browse_load_error">Nu s-a putut încărca — reîncearcă</string>
+    <string name="browse_pin_dialog_pinned_body">Elimină această categorie din partea de sus a listei.</string>
+    <string name="browse_pin_dialog_unpinned_body">Fixează această categorie în partea de sus a listei.</string>
+    <string name="browse_unpin">Anulează fixarea</string>
+    <string name="browse_pin">Fixează</string>
+    <string name="browse_category_pinned_desc">Fixată</string>
+    <string name="browse_see_all">Vezi tot  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Live</string>
+    <string name="badge_catchup">Reluare</string>
+    <string name="badge_smart">Smart</string>
+    <string name="health_stable">Stabil</string>
+    <string name="health_moderate">Moderat</string>
+    <string name="health_poor">Slab</string>
+    <string name="continue_card_resume_desc">Reia</string>
+    <string name="channel_tile_now">Acum · %1$s</string>
+    <string name="channel_tile_next">Urmează · %1$s</string>
+    <string name="browse_all_channels">Toate canalele</string>
+    <string name="browse_all_movies">Toate filmele</string>
+    <string name="browse_all_series">Toate serialele</string>
+    <string name="settings_refresh_no_playlist">Nicio listă de redare activă de reîmprospătat.</string>
+    <string name="settings_refresh_failed">Reîmprospătarea a eșuat — verifică conexiunea și încearcă din nou.</string>
+    <string name="settings_subs_connect_key_first">Conectează mai întâi cheia API.</string>
+    <string name="onboarding_error_generic">Ceva nu a mers bine</string>
+</resources>

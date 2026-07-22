@@ -6,10 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryCard
@@ -18,10 +20,11 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /** [CategoryKind]'s label in the picker, e.g. "Sports · Live". */
+@Composable
 private fun CategoryKind.pickerLabel(): String = when (this) {
-    CategoryKind.LIVE -> "Live"
-    CategoryKind.MOVIE -> "Movie"
-    CategoryKind.SERIES -> "Series"
+    CategoryKind.LIVE -> stringResource(R.string.home_category_live)
+    CategoryKind.MOVIE -> stringResource(R.string.home_category_movie)
+    CategoryKind.SERIES -> stringResource(R.string.home_category_series)
 }
 
 private fun CategoryKind.toAreCategoryKind(): AreCategoryKind = when (this) {
@@ -54,12 +57,12 @@ fun HomeAddSectionDialog(
     ) {
         AreDialog(
             onDismiss = onDismiss,
-            title = "Add a section",
-            actions = { AreButton("Close", onClick = onDismiss, variant = AreButtonVariant.Ghost) },
+            title = stringResource(R.string.home_add_section_dialog_title),
+            actions = { AreButton(stringResource(R.string.action_close), onClick = onDismiss, variant = AreButtonVariant.Ghost) },
         ) {
             if (categories.isEmpty()) {
                 Text(
-                    text = "Every category from your playlist is already pinned to Home.",
+                    text = stringResource(R.string.home_add_section_empty),
                     style = AreIptvTheme.typography.body,
                     color = AreIptvTheme.colors.textSecondary,
                 )

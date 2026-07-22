@@ -1,0 +1,398 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">Назад</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_continue">Продолжить</string>
+    <string name="action_retry">Повторить</string>
+    <string name="action_close">Закрыть</string>
+    <string name="action_remove">Удалить</string>
+    <string name="action_clear">Очистить</string>
+    <string name="action_connect">Подключить</string>
+    <string name="action_disconnect">Отключить</string>
+    <string name="action_sign_in">Войти</string>
+    <string name="action_sign_out">Выйти</string>
+    <string name="action_search">Поиск</string>
+    <string name="action_donate">Поддержать</string>
+    <string name="content_desc_account">Аккаунт</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">Выйти из ARE iptv?</string>
+    <string name="shell_stay">Остаться</string>
+    <string name="shell_leave">Выйти</string>
+    <string name="shell_leave_app_body">Вы хотите выйти из ARE iptv?</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">Источник</string>
+    <string name="onboarding_step_credentials">Данные для входа</string>
+    <string name="onboarding_step_epg">EPG</string>
+    <string name="onboarding_step_confirm">Подтверждение</string>
+    <string name="onboarding_title">Добавить плейлист</string>
+    <string name="onboarding_subtitle">Используйте свою подписку IPTV. ARE iptv никогда не хранит ваши данные за пределами устройства.</string>
+    <string name="onboarding_skip_for_now">Пропустить пока</string>
+    <string name="onboarding_go_to_home">На главную</string>
+    <string name="onboarding_add_playlist">Добавить плейлист</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Введите хост портала, имя пользователя и пароль. Лучший вариант для прямого эфира и VOD с автоматическим EPG.</string>
+    <string name="onboarding_m3u_title">Плейлист M3U / URL</string>
+    <string name="onboarding_m3u_desc">Вставьте одну ссылку M3U или M3U-plus. При необходимости отдельно добавьте URL XMLTV EPG.</string>
+    <string name="onboarding_portal_name_label">Название портала</string>
+    <string name="onboarding_portal_name_placeholder">Гостиная</string>
+    <string name="onboarding_server_url_label">URL сервера</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Имя пользователя</string>
+    <string name="onboarding_password_label">Пароль</string>
+    <string name="onboarding_m3u_url_label">URL плейлиста M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">Автоподбор EPG и логотипов</string>
+    <string name="onboarding_epg_auto_desc">Автоматически загружать данные телегида, логотипы каналов и постеры.</string>
+    <string name="onboarding_epg_url_label">URL XMLTV EPG (необязательно)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">Отключено, пока включён автоподбор.</string>
+    <string name="onboarding_epg_custom_helper">Укажите свой источник телегида.</string>
+    <string name="onboarding_confirm_adding">Добавление плейлиста…</string>
+    <string name="onboarding_confirm_error_title">Не удалось добавить плейлист</string>
+    <string name="onboarding_confirm_added">Добавлено</string>
+    <string name="onboarding_confirm_ready">Готово к добавлению</string>
+    <string name="onboarding_confirm_channels_badge">%1$d каналов</string>
+    <string name="onboarding_confirm_downloading">Загрузка и импорт ваших каналов. Большие плейлисты могут занять некоторое время — пожалуйста, не закрывайте приложение.</string>
+    <string name="onboarding_confirm_row_portal">Портал</string>
+    <string name="onboarding_confirm_default_portal_name">Мой плейлист</string>
+    <string name="onboarding_confirm_row_source">Источник</string>
+    <string name="onboarding_confirm_row_server">Сервер</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">EPG</string>
+    <string name="onboarding_confirm_auto_matched">Автоподбор</string>
+    <string name="onboarding_confirm_custom_xmltv">Свой XMLTV</string>
+    <string name="onboarding_confirm_row_catalog">Каталог</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d каналов · %2$d фильмов · %3$d сериалов</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">Конфиденциальность и условия</string>
+    <string name="privacy_subtitle">Пожалуйста, ознакомьтесь и примите перед продолжением.</string>
+    <string name="privacy_body">Политика конфиденциальности и Условия использования ARE iptv\n\nARE iptv не собирает и не передаёт данные вашего плейлиста за пределы устройства. Продолжая, вы соглашаетесь использовать это приложение только с источниками контента, к которым у вас есть доступ, и принимаете наши Условия использования и Политику конфиденциальности в полном объёме.</string>
+    <string name="privacy_accept_label">Я прочитал(а) и принимаю Политику конфиденциальности и Условия использования.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">Выберите плейлист</string>
+    <string name="sources_choose_subtitle">Выберите, какой из добавленных плейлистов открыть.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">Добавить новый плейлист</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">Выберите язык</string>
+    <string name="language_select_subtitle">Выберите язык, который вы хотите использовать в приложении.</string>
+    <string name="language_picker_label">Язык</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_confirm_title">Вы уверены, что хотите изменить язык?</string>
+    <string name="language_confirm_action">Подтвердить</string>
+    <string name="language_confirm_cancel">Отмена</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_section_playlists">Плейлисты и синхронизация</string>
+    <string name="settings_refresh_catalog">Обновить каталог</string>
+    <string name="settings_refresh_now">Обновить сейчас</string>
+    <string name="settings_refreshing">Обновление…</string>
+    <string name="settings_refresh_syncing">Синхронизация с провайдером…</string>
+    <string name="settings_refresh_success">Обновлено: %1$d каналов, %2$d фильмов, %3$d сериалов</string>
+    <string name="settings_refresh_stale">Старше 2 недель — обновите, чтобы получить новые каналы и материалы</string>
+    <string name="settings_never_refreshed">Никогда не обновлялось</string>
+    <string name="settings_last_updated_days">Обновлено %1$d день назад</string>
+    <string name="settings_last_updated_days_plural">Обновлено %1$d дней назад</string>
+    <string name="settings_last_updated_hours">Обновлено %1$d час назад</string>
+    <string name="settings_last_updated_hours_plural">Обновлено %1$d часов назад</string>
+    <string name="settings_last_updated_mins">Обновлено %1$d мин. назад</string>
+    <string name="settings_last_updated_now">Обновлено только что</string>
+    <string name="settings_section_appearance">Оформление</string>
+    <string name="settings_dark_theme">Тёмная тема</string>
+    <string name="settings_dark_theme_desc">Рекомендуется для расслабленного просмотра.</string>
+    <string name="settings_reduce_motion">Уменьшить анимацию</string>
+    <string name="settings_reduce_motion_desc">Более мягкие анимации фокуса.</string>
+    <string name="settings_list_view">Списком</string>
+    <string name="settings_list_view_desc">Показывать каналы, фильмы и сериалы списком вместо сетки плиток.</string>
+    <string name="settings_section_language">Язык</string>
+    <string name="settings_language_row_title">Язык приложения</string>
+    <string name="settings_language_row_desc">Выберите язык, используемый в приложении.</string>
+    <string name="settings_section_playback">Воспроизведение</string>
+    <string name="settings_hardware_decoding">Аппаратное декодирование</string>
+    <string name="settings_hardware_decoding_desc">Предпочитать аппаратные декодеры; при необходимости переключается на программные.</string>
+    <string name="settings_autoplay_next">Автовоспроизведение следующей серии</string>
+    <string name="settings_autoplay_next_desc">Пока только настройка -- автопереход ещё не реализован; выберите следующую серию из раздела «Детали».</string>
+    <string name="settings_mini_player_behavior">Поведение мини-плеера</string>
+    <string name="settings_mini_player_behavior_desc">Когда вы перемещаетесь рядом с закреплённым мини-плеером: сдвигать его в свободный угол или затемнять и уменьшать.</string>
+    <string name="settings_mini_player_dodge">Автоуклонение</string>
+    <string name="settings_mini_player_fade">Затемнить и уменьшить</string>
+    <string name="settings_section_parental">Родительский контроль</string>
+    <string name="settings_lock_adult">Блокировать категории 18+</string>
+    <string name="settings_lock_adult_desc">После включения для отключения потребуется ваш PIN.</string>
+    <string name="settings_change_pin">Изменить PIN</string>
+    <string name="settings_pin_loading">Загрузка…</string>
+    <string name="settings_pin_is_set">PIN установлен.</string>
+    <string name="settings_pin_not_set">PIN ещё не установлен.</string>
+    <string name="settings_change">Изменить</string>
+    <string name="settings_set_pin">Установить PIN</string>
+    <string name="settings_section_subtitles">Субтитры</string>
+    <string name="settings_subtitle_lang_title">Предпочитаемый язык</string>
+    <string name="settings_subtitle_lang_desc">Выбирается заранее при поиске субтитров онлайн. Вы можете изменить его для каждого видео.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">Готово -- онлайн-поиск и загрузка включены.</string>
+    <string name="settings_opensubs_key_connected">API-ключ подключён. Также войдите ниже -- для онлайн-субтитров требуется и то, и другое.</string>
+    <string name="settings_account">Аккаунт</string>
+    <string name="settings_account_signed_in">Выполнен вход как %1$s -- загрузка субтитров включена.</string>
+    <string name="settings_signin_title">Войдите, чтобы загружать субтитры</string>
+    <string name="settings_signin_desc">Последний шаг -- для онлайн-субтитров нужны и API-ключ, и вход в аккаунт. Войдите с именем пользователя и паролем opensubtitles.com; загрузки используют дневную квоту вашего аккаунта. Мы сохраняем вход за вас.</string>
+    <string name="settings_placeholder_username">Имя пользователя</string>
+    <string name="settings_placeholder_password">Пароль</string>
+    <string name="settings_signing_in">Вход…</string>
+    <string name="settings_opensubs_key_title">API-ключ OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">Для онлайн-субтитров нужен бесплатный аккаунт opensubtitles.com с двумя вещами: этот API-ключ (для поиска) и вход в аккаунт (для загрузки). Шаг 1 -- вставьте API-ключ; вход выполните далее. Мы проверяем его перед сохранением.</string>
+    <string name="settings_placeholder_api_key">API-ключ</string>
+    <string name="settings_checking">Проверка…</string>
+    <string name="settings_section_metadata">Информация о фильмах и сериалах</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">Подключено -- рейтинги IMDb и Rotten Tomatoes, сюжет и актёры отображаются в разделе «Детали».</string>
+    <string name="settings_omdb_key_title">API-ключ OMDb</string>
+    <string name="settings_omdb_key_desc">Вставьте бесплатный ключ с omdbapi.com, чтобы дополнить фильмы и сериалы рейтингами IMDb и Rotten Tomatoes, описанием и актёрским составом. Мы проверяем его перед сохранением.</string>
+    <string name="settings_section_about">О приложении</string>
+    <string name="settings_version_title">Версия</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">Поддержать это приложение</string>
+    <string name="settings_support_desc">Купите мне кофе, если ARE iptv вам полезен.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">Задайте 4-значный PIN</string>
+    <string name="pin_confirm_title">Подтвердите PIN</string>
+    <string name="pin_enter_title">Введите PIN</string>
+    <string name="pin_lockout_message">Слишком много неверных попыток -- повторите через %1$dс</string>
+    <string name="pin_mismatch_error">PIN не совпадают -- попробуйте снова</string>
+    <string name="pin_incorrect_error">Неверный PIN</string>
+    <string name="pin_checking">Проверка…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">+ Добавить раздел</string>
+    <string name="home_remove_continue_watching_title">Убрать из «Продолжить просмотр»?</string>
+    <string name="home_remove_continue_watching_body">«%1$s» больше не будет показываться здесь. Ваше место не сохранится.</string>
+    <string name="home_loading_catalog">Загрузка вашего каталога…</string>
+    <string name="home_no_playlist_title">Пока нет плейлиста</string>
+    <string name="home_no_playlist_body">Добавьте плейлист из боковой панели, чтобы увидеть здесь свои каналы, фильмы и сериалы.</string>
+    <string name="home_section_continue_watching">Продолжить просмотр</string>
+    <string name="home_section_live_now">В эфире сейчас</string>
+    <string name="home_section_categories">Просмотр по категориям</string>
+    <string name="home_section_recommended">Для вас</string>
+    <string name="home_section_for_you">Для вас</string>
+    <string name="home_section_popular">Популярное</string>
+    <string name="home_section_because_you_like">Потому что вам нравится %1$s</string>
+    <string name="home_section_movies">Фильмы</string>
+    <string name="home_section_series">Сериалы</string>
+    <string name="home_add_section_dialog_title">Добавить раздел</string>
+    <string name="home_add_section_empty">Все категории из вашего плейлиста уже закреплены на главной.</string>
+    <string name="home_category_live">Прямой эфир</string>
+    <string name="home_category_movie">Фильм</string>
+    <string name="home_category_series">Сериал</string>
+    <string name="home_edit_grabbed_desc">Захвачено -- Вверх/Вниз для перемещения, OK чтобы отпустить</string>
+    <string name="home_edit_grab_desc">Захватить для перестановки</string>
+    <string name="home_edit_show_section">Показать раздел</string>
+    <string name="home_edit_hide_section">Скрыть раздел</string>
+    <string name="home_edit_remove_section">Удалить раздел</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь телегид.</string>
+    <string name="guide_title">Телегид</string>
+    <string name="guide_epg_unavailable">Источник EPG недоступен -- каналы показаны без данных о программах.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">Наведите на программу, чтобы увидеть детали</string>
+    <string name="guide_live_badge">В ЭФИРЕ</string>
+    <string name="guide_catchup_available_desc">Доступен архив</string>
+    <string name="guide_day_yesterday">Вчера</string>
+    <string name="guide_day_today">Сегодня</string>
+    <string name="guide_day_tomorrow">Завтра</string>
+
+    <!-- Live -->
+    <string name="live_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь прямые каналы.</string>
+    <string name="live_title">Прямой эфир</string>
+    <string name="live_channel_groups">Группы каналов</string>
+    <string name="live_count_channels">%1$d каналов</string>
+    <string name="live_empty_group">В этой группе пока нет каналов.</string>
+    <string name="live_on_air_now">В ЭФИРЕ СЕЙЧАС</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь фильмы.</string>
+    <string name="movies_title">Фильмы</string>
+    <string name="movies_genres">Жанры</string>
+    <string name="movies_count_titles">%1$d наименований</string>
+    <string name="movies_empty_genre">В этом жанре пока нет фильмов.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь сериалы.</string>
+    <string name="series_title">Сериалы</string>
+    <string name="series_empty_genre">В этом жанре пока нет сериалов.</string>
+    <string name="series_episode_count">%1$d серий</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">Добавьте плейлист из боковой панели, затем добавьте каналы или материалы в избранное, чтобы увидеть их здесь.</string>
+    <string name="favorites_title">Избранное</string>
+    <string name="favorites_tab_channels">Каналы</string>
+    <string name="favorites_tab_movies">Фильмы</string>
+    <string name="favorites_tab_series">Сериалы</string>
+    <string name="favorites_empty_channels">Пока нет избранных каналов -- нажмите на сердечко на плитке канала, чтобы добавить.</string>
+    <string name="favorites_empty_movies">Пока нет избранных фильмов -- нажмите на сердечко на плитке фильма, чтобы добавить.</string>
+    <string name="favorites_empty_series">Пока нет избранных сериалов -- нажмите на сердечко на плитке сериала, чтобы добавить.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">Добавьте плейлист из боковой панели, чтобы искать в каталоге.</string>
+    <string name="search_title">Поиск</string>
+    <string name="search_placeholder">Поиск каналов, фильмов, сериалов…</string>
+    <string name="search_scope_all">Все</string>
+    <string name="search_scope_live">Прямой эфир</string>
+    <string name="search_scope_movies">Фильмы</string>
+    <string name="search_scope_series">Сериалы</string>
+    <string name="search_category_label">Категория: %1$s</string>
+    <string name="search_type_to_search">Введите текст для поиска в каталоге.</string>
+    <string name="search_min_chars">Введите не менее %1$d символов для поиска.</string>
+    <string name="search_no_results">Нет результатов по запросу \"%1$s\".</string>
+    <string name="search_section_live">Прямой эфир</string>
+    <string name="search_section_titles">Фильмы и сериалы</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">Загрузка…</string>
+    <string name="detail_not_found">Наименование не найдено</string>
+    <string name="detail_play">Смотреть</string>
+    <string name="detail_play_episode">Смотреть С%1$d · Э%2$d</string>
+    <string name="detail_add_to_favorites">В избранное</string>
+    <string name="detail_remove_from_favorites">Убрать из избранного</string>
+    <string name="detail_storyline">Сюжет</string>
+    <string name="detail_cast_label">В ролях:</string>
+    <string name="detail_director_label">Режиссёр:</string>
+    <string name="detail_episodes_header">Серии</string>
+    <string name="detail_episodes_header_seasons">Серии · %1$d сезонов · %2$d всего</string>
+    <string name="detail_episodes_header_total">Серии · %1$d всего</string>
+    <string name="detail_season_label">Сезон %1$d</string>
+    <string name="detail_season_episode_count">Сезон %1$s · %2$d серий</string>
+    <string name="detail_m3u_no_episodes">У этой записи плейлиста нет данных о сезонах/сериях -- используйте «Смотреть» выше, чтобы воспроизвести как один элемент.</string>
+    <string name="detail_episodes_load_error">Не удалось загрузить серии: %1$s</string>
+    <string name="detail_episodes_loading">Загрузка серий…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">Контент не найден</string>
+    <string name="player_playback_failed">Ошибка воспроизведения</string>
+    <string name="player_buffering">Буферизация…</string>
+    <string name="player_up_next">Далее</string>
+    <string name="player_up_next_channel">Далее -- %1$s</string>
+    <string name="player_no_programme_data">Нет данных о программе</string>
+    <string name="player_previous_channel">Предыдущий канал</string>
+    <string name="player_next_channel">Следующий канал</string>
+    <string name="player_previous_episode">Предыдущая серия</string>
+    <string name="player_next_episode">Следующая серия</string>
+    <string name="player_back_10_min">Назад на 10 минут</string>
+    <string name="player_forward_10_min">Вперёд на 10 минут</string>
+    <string name="player_rewind">Перемотка назад</string>
+    <string name="player_pause">Пауза</string>
+    <string name="player_play">Смотреть</string>
+    <string name="player_fast_forward">Перемотка вперёд</string>
+    <string name="player_audio_track">Аудиодорожка</string>
+    <string name="player_subtitles">Субтитры</string>
+    <string name="player_minimize_to_corner">Свернуть в угол</string>
+    <string name="player_picture_in_picture">Картинка в картинке</string>
+    <string name="player_up_next_action">Далее</string>
+    <string name="player_open_guide">Открыть телегид</string>
+    <string name="player_live_badge">Прямой эфир</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">Выкл.</string>
+    <string name="subtitle_none_in_stream">В этом потоке нет субтитров.</string>
+    <string name="subtitle_search_online">Искать онлайн…</string>
+    <string name="subtitle_selected">Выбрано</string>
+    <string name="subtitle_picker_title">Субтитры</string>
+    <string name="subtitle_search_title">Искать субтитры онлайн</string>
+    <string name="subtitle_search_placeholder">Название</string>
+    <string name="subtitle_searching">Поиск…</string>
+    <string name="subtitle_search_action">Поиск</string>
+    <string name="subtitle_status_searching">Поиск в OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">Загрузка субтитров…</string>
+    <string name="subtitle_status_no_matches">Совпадений нет -- попробуйте другое название или язык.</string>
+    <string name="subtitle_default_label">Субтитры %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">Остановить мини-плеер?</string>
+    <string name="mini_player_stop_body">Остановить воспроизведение «%1$s» и закрыть мини-плеер?</string>
+    <string name="mini_player_stop">Остановить</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">Мультипросмотр</string>
+    <string name="multiview_4up">4 экрана</string>
+    <string name="multiview_2up">2 экрана</string>
+    <string name="multiview_no_source">Нет активного плейлиста</string>
+    <string name="multiview_no_channels">Нет прямых каналов для мультипросмотра</string>
+    <string name="multiview_audio_badge">Звук</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">Настроить</string>
+    <string name="shell_add_playlist_desc">Добавить плейлист</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_live_tv">Прямой эфир</string>
+    <string name="nav_tv_guide">Телегид</string>
+    <string name="nav_movies">Фильмы</string>
+    <string name="nav_series">Сериалы</string>
+    <string name="nav_search">Поиск</string>
+    <string name="nav_favorites">Избранное</string>
+    <string name="nav_settings">Настройки</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">Категории</string>
+    <string name="browse_empty_default">В этой категории пока нет элементов.</string>
+    <string name="browse_load_error">Не удалось загрузить — попробуйте снова</string>
+    <string name="browse_pin_dialog_pinned_body">Убрать эту категорию из верха списка.</string>
+    <string name="browse_pin_dialog_unpinned_body">Закрепить эту категорию вверху списка.</string>
+    <string name="browse_unpin">Открепить</string>
+    <string name="browse_pin">Закрепить</string>
+    <string name="browse_category_pinned_desc">Закреплено</string>
+    <string name="browse_see_all">Все  ›</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">Прямой эфир</string>
+    <string name="badge_catchup">Архив</string>
+    <string name="badge_smart">Умный</string>
+    <string name="health_stable">Стабильно</string>
+    <string name="health_moderate">Средне</string>
+    <string name="health_poor">Плохо</string>
+    <string name="continue_card_resume_desc">Продолжить</string>
+    <string name="channel_tile_now">Сейчас · %1$s</string>
+    <string name="channel_tile_next">Далее · %1$s</string>
+    <string name="browse_all_channels">Все каналы</string>
+    <string name="browse_all_movies">Все фильмы</string>
+    <string name="browse_all_series">Все сериалы</string>
+    <string name="settings_refresh_no_playlist">Нет активного плейлиста для обновления.</string>
+    <string name="settings_refresh_failed">Не удалось обновить — проверьте подключение и повторите попытку.</string>
+    <string name="settings_subs_connect_key_first">Сначала подключите свой ключ API.</string>
+    <string name="onboarding_error_generic">Что-то пошло не так</string>
+</resources>

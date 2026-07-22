@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
@@ -60,6 +62,8 @@ fun AreGuideCell(
     val background = if (now) colors.accentWash else colors.surface1
     val focused by interactionSource.collectIsFocusedAsState()
     LaunchedEffect(focused) { onFocusChange(focused) }
+    val liveDesc = stringResource(R.string.badge_live)
+    val catchupDesc = stringResource(R.string.guide_catchup_available_desc)
 
     TvFocusable(
         onClick = onClick,
@@ -94,7 +98,7 @@ fun AreGuideCell(
                                 .padding(start = 8.dp)
                                 .size(6.dp)
                                 .background(colors.live, CircleShape)
-                                .semantics { contentDescription = "Live" },
+                                .semantics { contentDescription = liveDesc },
                         )
                     }
                     if (catchup) {
@@ -102,7 +106,7 @@ fun AreGuideCell(
                             text = " ⟲",
                             style = AreIptvTheme.typography.caption,
                             color = colors.success,
-                            modifier = Modifier.semantics { contentDescription = "Catch-up available" },
+                            modifier = Modifier.semantics { contentDescription = catchupDesc },
                         )
                     }
                 }

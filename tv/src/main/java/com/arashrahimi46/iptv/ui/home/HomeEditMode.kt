@@ -32,10 +32,12 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonSize
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
@@ -43,14 +45,15 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /** Human-readable label for a Home section, used by [HomeSectionEditRow] and (for a built-in
  * section) matching the rail title it renders with the Customize button off. */
+@Composable
 fun homeSectionLabel(section: HomeSection): String = when (section) {
     is HomeSection.Builtin -> when (section.key) {
-        BuiltinSection.CONTINUE_WATCHING -> "Continue Watching"
-        BuiltinSection.LIVE_NOW -> "Live now"
-        BuiltinSection.CATEGORIES -> "Browse by category"
-        BuiltinSection.RECOMMENDED -> "Browse movies & series"
-        BuiltinSection.MOVIES -> "Movies"
-        BuiltinSection.SERIES -> "Series"
+        BuiltinSection.CONTINUE_WATCHING -> stringResource(R.string.home_section_continue_watching)
+        BuiltinSection.LIVE_NOW -> stringResource(R.string.home_section_live_now)
+        BuiltinSection.CATEGORIES -> stringResource(R.string.home_section_categories)
+        BuiltinSection.RECOMMENDED -> stringResource(R.string.home_section_recommended)
+        BuiltinSection.MOVIES -> stringResource(R.string.home_section_movies)
+        BuiltinSection.SERIES -> stringResource(R.string.home_section_series)
     }
     is HomeSection.Category -> section.name
 }
@@ -156,7 +159,7 @@ fun HomeSectionEditRow(
             ) {
                 Icon(
                     Icons.Filled.DragHandle,
-                    contentDescription = if (grabbed) "Grabbed -- Up/Down to move, OK to drop" else "Grab to reorder",
+                    contentDescription = if (grabbed) stringResource(R.string.home_edit_grabbed_desc) else stringResource(R.string.home_edit_grab_desc),
                     tint = if (grabbed) colors.accent else colors.textTertiary,
                 )
                 Text(text = "${position + 1}/$total", style = AreIptvTheme.typography.caption, color = colors.textTertiary)
@@ -164,7 +167,7 @@ fun HomeSectionEditRow(
             Text(text = label, style = AreIptvTheme.typography.label, color = colors.textPrimary, modifier = Modifier.weight(1f))
             AreIconButton(
                 icon = if (hidden) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                contentDescription = if (hidden) "Show section" else "Hide section",
+                contentDescription = if (hidden) stringResource(R.string.home_edit_show_section) else stringResource(R.string.home_edit_hide_section),
                 onClick = onToggleHidden,
                 variant = AreIconButtonVariant.Ghost,
                 size = AreIconButtonSize.Small,
@@ -172,7 +175,7 @@ fun HomeSectionEditRow(
             if (onDelete != null) {
                 AreIconButton(
                     icon = Icons.Filled.Delete,
-                    contentDescription = "Remove section",
+                    contentDescription = stringResource(R.string.home_edit_remove_section),
                     onClick = onDelete,
                     variant = AreIconButtonVariant.Ghost,
                     size = AreIconButtonSize.Small,

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
@@ -78,7 +79,7 @@ class LiveViewModel(app: Application) : AndroidViewModel(app) {
                     val (pinnedCats, others) = visibleCounts
                         .map { LiveCategorySummary(it.name, it.count, it.name in pinned) }
                         .partition { it.pinned }
-                    val categories = listOf(LiveCategorySummary("All channels", allTotal)) +
+                    val categories = listOf(LiveCategorySummary(getApplication<Application>().getString(R.string.browse_all_channels), allTotal)) +
                         pinnedCats.sortedBy { it.name.lowercase() } + others
                     val index = if (selectedName == null) 0
                         else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }

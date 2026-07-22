@@ -15,10 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreNumericKeypad
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -67,9 +69,15 @@ fun ParentalPinDialog(
     var lockedUntilMs by remember { mutableStateOf(0L) }
     var lockRemainingSec by remember { mutableStateOf(0) }
 
+    val setTitle = stringResource(R.string.pin_set_title)
+    val confirmTitle = stringResource(R.string.pin_confirm_title)
+    val enterTitle = stringResource(R.string.pin_enter_title)
+    val mismatchError = stringResource(R.string.pin_mismatch_error)
+    val incorrectError = stringResource(R.string.pin_incorrect_error)
+
     val title = when (mode) {
-        ParentalPinDialogMode.Set -> if (firstEntry == null) "Set a 4-digit PIN" else "Confirm your PIN"
-        ParentalPinDialogMode.Verify -> "Enter PIN"
+        ParentalPinDialogMode.Set -> if (firstEntry == null) setTitle else confirmTitle
+        ParentalPinDialogMode.Verify -> enterTitle
     }
 
     // Ticks the lockout countdown while active; keypad input is ignored during this window
@@ -93,7 +101,7 @@ fun ParentalPinDialog(
                 } else if (pin == entry) {
                     onPinConfirmed(pin)
                 } else {
-                    error = "PINs didn't match -- try again"
+                    error = mismatchError
                     firstEntry = null
                     pin = ""
                 }
@@ -120,7 +128,7 @@ fun ParentalPinDialog(
                         lockedUntilMs = System.currentTimeMillis() + lockoutSec * 1000L
                         error = null
                     } else {
-                        error = "Incorrect PIN"
+                        error = incorrectError
                     }
                 }
             }
@@ -135,7 +143,7 @@ fun ParentalPinDialog(
                 val currentError = error
                 if (lockRemainingSec > 0) {
                     Text(
-                        text = "Too many wrong attempts -- try again in ${lockRemainingSec}s",
+                        text = stringResource(R.string.pin_lockout_message, lockRemainingSec),
                         style = AreIptvTheme.typography.caption,
                         color = AreIptvTheme.colors.danger,
                     )
@@ -144,7 +152,7 @@ fun ParentalPinDialog(
                     Text(text = currentError, style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.danger)
                     Box(Modifier.padding(top = 10.dp))
                 } else if (verifying) {
-                    Text(text = "Checking…", style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.textTertiary)
+                    Text(text = stringResource(R.string.pin_checking), style = AreIptvTheme.typography.caption, color = AreIptvTheme.colors.textTertiary)
                     Box(Modifier.padding(top = 10.dp))
                 }
                 AreNumericKeypad(

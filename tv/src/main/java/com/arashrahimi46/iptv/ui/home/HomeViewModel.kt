@@ -33,6 +33,15 @@ import kotlinx.coroutines.launch
 
 data class HomeCategorySummary(val name: String, val count: Int)
 
+/** Title for the personalized "Recommended" rail, resolved to a localized string in the UI.
+ *  [BecauseYouLike] names the user's dominant liked category; [ForYou] is the mixed-taste label;
+ *  [Popular] is the cold-start fallback shown before there's any pin/favorite/watch signal. */
+sealed interface RecommendedLabel {
+    data object ForYou : RecommendedLabel
+    data object Popular : RecommendedLabel
+    data class BecauseYouLike(val category: String) : RecommendedLabel
+}
+
 /** One catalog category not yet pinned to Home (step 6's "+ Add section" picker), with its
  * [CategoryKind] so the picker can label it ("Sports · Live") and the tile knows which tile
  * shape (channel vs poster) it'll render as once pinned. */
@@ -78,6 +87,8 @@ data class HomeUiState(
     val series: List<VodTitle> = emptyList(),
     /** Personalized best-of across movies+series for the "Recommended" rail (see [HomeRailCurator]). */
     val recommended: List<VodTitle> = emptyList(),
+    /** Title for [recommended], resolved to a localized string in the UI (see [RecommendedLabel]). */
+    val recommendedLabel: RecommendedLabel = RecommendedLabel.Popular,
     val categories: List<HomeCategorySummary> = emptyList(),
     /** P1.2: most-recently-updated resume bookmarks, resolved to real titles/posters. Source-
      * independent (same reasoning as Favorites -- vod/episode ids are globally unique), so this
@@ -129,10 +140,33 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      *  doesn't reshuffle mid-use); a new day yields a fresh selection from the same pool. */
     private val daySeed: Long = System.currentTimeMillis() / 86_400_000L
 
-    /** Normalized category taste weights (top category -> 1.0), the curator's personalization input. */
-    private fun List<CategoryCount>.toWeights(): Map<String, Double> {
-        val max = maxOfOrNull { it.count }?.takeIf { it > 0 } ?: return emptyMap()
-        return associate { it.name to it.count.toDouble() / max }
+    /** Taste signal weights. Explicit intent (pinning a category to Home, favoriting) counts for
+     *  more than a single implicit watch, but many watches still accumulate past one pin/favorite. */
+    private val PIN_WEIGHT = 2.0
+    private val FAVORITE_WEIGHT = 2.0
+    private val WATCH_WEIGHT = 1.0
+
+    /** Re-scales raw category weights so the top category is 1.0 (the curator's 0..1 taste input);
+     *  empty in, empty out (no signal -> no personalization). */
+    private fun Map<String, Double>.normalized(): Map<String, Double> {
+        val max = values.maxOrNull()?.takeIf { it > 0 } ?: return emptyMap()
+        return mapValues { it.value / max }
+    }
+
+    /** Adds each [counts] row into [into], scaled by [weight]. */
+    private fun accumulate(into: MutableMap<String, Double>, counts: List<CategoryCount>, weight: Double) {
+        counts.forEach { into[it.name] = (into[it.name] ?: 0.0) + it.count * weight }
+    }
+
+    /** Dynamic label for the personalized rail: a clearly-dominant liked category names the rail
+     *  ("Because you like X"); mixed tastes fall back to "For You"; no signal at all -> "Popular"
+     *  (the cold-start top-rated fallback). [taste] is already max-normalized (top == 1.0). */
+    private fun recommendedLabelFor(taste: Map<String, Double>): RecommendedLabel {
+        if (taste.isEmpty()) return RecommendedLabel.Popular
+        val ranked = taste.entries.sortedByDescending { it.value }
+        val runnerUp = ranked.getOrNull(1)?.value ?: 0.0
+        // top is 1.0; call it "dominant" only when the runner-up trails clearly, else it's a toss-up.
+        return if (runnerUp <= 0.6) RecommendedLabel.BecauseYouLike(ranked.first().key) else RecommendedLabel.ForYou
     }
 
     private val _nowPlayingTitles = MutableStateFlow<Map<Long, String>>(emptyMap())
@@ -161,16 +195,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         repository.sampleMovies(sourceId, POOL_LIMIT),
                         repository.sampleSeries(sourceId, POOL_LIMIT),
                     ) { channels, movies, series -> Triple(channels, movies, series) }
-                    // Personalization signals: which categories the user actually watches (strongest)
-                    // and favorites. VOD taste (movies+series) is kept separate from Live taste since
-                    // a channel favorite shouldn't sway movie ranking. Merged max-normalized to 0..1.
+                    // Personalization signals (raw category counts -- pinned categories are folded in
+                    // downstream, where the current Home layout is in scope). Weighted + normalized in
+                    // the main combine so a channel favorite never sways movie ranking and vice versa.
                     val taste = combine(
                         repository.watchedCategoryCounts(sourceId),
                         repository.favoriteVodCategoryCounts(sourceId),
                         repository.favoriteChannelCategoryCounts(sourceId),
-                    ) { watched, favVod, favLive ->
-                        (watched + favVod).toWeights() to favLive.toWeights()
-                    }
+                    ) { watched, favVod, favLive -> Triple(watched, favVod, favLive) }
                     // Same three GROUP BY count flows drive both the "Browse by category" rail
                     // (merged by name across catalogs, as before) and step 6's available-categories
                     // picker (kept per-kind, since a pin must be a single real source category).
@@ -196,14 +228,26 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         val available = availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
                         summaries to available
                     }
-                    combine(rails, categoryData, taste, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), (vodTaste, liveTaste), parentalLock, layout ->
+                    combine(rails, categoryData, taste, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), (watched, favVod, favLive), parentalLock, layout ->
                         // Parental lock: strip adult items from every pool and adult chips from the
                         // category row, so the toggle actually hides adult content on Home too. Filter
                         // the pools BEFORE curating so adult items can't leak into the picked rail.
-                        val pinned = layout.filterIsInstance<HomeSection.Category>().map { it.kind to it.name }.toSet()
+                        val pinnedCategories = layout.filterIsInstance<HomeSection.Category>()
+                        val pinned = pinnedCategories.map { it.kind to it.name }.toSet()
                         val availableCategories = available
                             .filterNot { (it.kind to it.name) in pinned }
                             .let { if (parentalLock) it.filterNot { a -> AdultContentFilter.isAdult(a.name) } else it }
+                        // Taste = watches + favorites + PINS. Pinning a category to Home is the clearest
+                        // "I like this" the user can give, so it feeds the same weights that rank every rail.
+                        val vodTaste = mutableMapOf<String, Double>().also {
+                            accumulate(it, watched, WATCH_WEIGHT)
+                            accumulate(it, favVod, FAVORITE_WEIGHT)
+                            pinnedCategories.filter { p -> p.kind != CategoryKind.LIVE }.forEach { p -> it[p.name] = (it[p.name] ?: 0.0) + PIN_WEIGHT }
+                        }.normalized()
+                        val liveTaste = mutableMapOf<String, Double>().also {
+                            accumulate(it, favLive, FAVORITE_WEIGHT)
+                            pinnedCategories.filter { p -> p.kind == CategoryKind.LIVE }.forEach { p -> it[p.name] = (it[p.name] ?: 0.0) + PIN_WEIGHT }
+                        }.normalized()
                         val channelPool = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels
                         val moviePool = if (parentalLock) movies.filterNot { AdultContentFilter.isAdult(it.categoryName) } else movies
                         val seriesPool = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series
@@ -213,6 +257,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             movies = HomeRailCurator.curateTitles(moviePool, vodTaste, daySeed),
                             series = HomeRailCurator.curateTitles(seriesPool, vodTaste, daySeed),
                             recommended = HomeRailCurator.recommend(moviePool, seriesPool, vodTaste, daySeed),
+                            recommendedLabel = recommendedLabelFor(vodTaste),
                             categories = if (parentalLock) cats.filterNot { AdultContentFilter.isAdult(it.name) } else cats,
                             isInitializing = false,
                             sections = layout,

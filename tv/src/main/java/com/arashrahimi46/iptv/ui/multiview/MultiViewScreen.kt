@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.ui.components.AreBadge
@@ -81,17 +83,17 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                AreIconButton(Icons.Filled.ArrowBack, "Back", onClick = onBack, variant = AreIconButtonVariant.Glass)
-                Text(text = "Multi-view", style = AreIptvTheme.typography.h2, color = Color.White)
+                AreIconButton(Icons.Filled.ArrowBack, stringResource(R.string.action_back), onClick = onBack, variant = AreIconButtonVariant.Glass)
+                Text(text = stringResource(R.string.multiview_title), style = AreIptvTheme.typography.h2, color = Color.White)
                 Box(Modifier.weight(1f))
                 AreChip(
-                    text = "4-up",
+                    text = stringResource(R.string.multiview_4up),
                     icon = Icons.Filled.GridView,
                     selected = state.paneCount == 4,
                     onClick = { viewModel.setPaneCount(4) },
                 )
                 AreChip(
-                    text = "2-up",
+                    text = stringResource(R.string.multiview_2up),
                     icon = Icons.Filled.ViewColumn,
                     selected = state.paneCount == 2,
                     onClick = { viewModel.setPaneCount(2) },
@@ -102,7 +104,7 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             if (!state.hasSource || panes.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = if (!state.hasSource) "No active playlist" else "No live channels available for multi-view",
+                        text = if (!state.hasSource) stringResource(R.string.multiview_no_source) else stringResource(R.string.multiview_no_channels),
                         style = AreIptvTheme.typography.body,
                         color = AreIptvTheme.colors.textSecondary,
                     )
@@ -256,8 +258,8 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
                 modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AreBadge("Live", tone = AreBadgeTone.Live, glow = true)
-                if (active) AreBadge("Audio", tone = AreBadgeTone.New)
+                AreBadge(stringResource(R.string.player_live_badge), tone = AreBadgeTone.Live, glow = true)
+                if (active) AreBadge(stringResource(R.string.multiview_audio_badge), tone = AreBadgeTone.New)
             }
             Box(Modifier.align(Alignment.TopEnd).padding(12.dp)) {
                 AreStreamHealth(level = health, showLabel = false)

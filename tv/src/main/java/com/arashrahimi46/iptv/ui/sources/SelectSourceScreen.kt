@@ -22,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
@@ -50,6 +52,8 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     val sources by viewModel.sources.collectAsState()
     val colors = AreIptvTheme.colors
     val firstItemFocus = remember { FocusRequester() }
+    val xtreamLabel = stringResource(R.string.sources_type_xtream)
+    val m3uLabel = stringResource(R.string.sources_type_m3u)
 
     Box(
         modifier = Modifier
@@ -71,13 +75,13 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                 ) {
                     Text(text = "A", style = AreIptvTheme.typography.h2, color = colors.accentFg)
                 }
-                Text(text = "ARE iptv", style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
             Box(Modifier.height(18.dp))
-            Text(text = "Choose a playlist", style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.sources_choose_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(
-                text = "Pick which of your added playlists to open.",
+                text = stringResource(R.string.sources_choose_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
@@ -88,7 +92,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 sources.forEachIndexed { index, source ->
-                    val label = "${source.name}  ·  ${if (source.type == SourceType.XTREAM) "Xtream" else "M3U"}"
+                    val label = "${source.name}  ·  ${if (source.type == SourceType.XTREAM) xtreamLabel else m3uLabel}"
                     AreButton(
                         text = label,
                         onClick = { viewModel.select(source.id, onSelected) },
@@ -101,7 +105,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
 
                 Box(Modifier.height(8.dp))
                 AreButton(
-                    text = "Add new playlist",
+                    text = stringResource(R.string.sources_add_new_playlist),
                     onClick = onAddNew,
                     variant = AreButtonVariant.Ghost,
                     size = AreButtonSize.Large,
