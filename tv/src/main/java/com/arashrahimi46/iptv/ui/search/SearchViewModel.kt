@@ -11,6 +11,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.AdultContentFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,26 +78,31 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         // merged into the state. DB-side LIKE + category queries stay bounded by LIMIT and
         // cancel-on-newer via mapLatest -- never loads the catalog into memory.
         val debouncedQuery = _query.debounce { q -> if (q.isEmpty()) 0L else SEARCH_DEBOUNCE_MS }
-        combine(settings.activeSourceId, debouncedQuery, _categoryFilter, _scope) { sid, query, categoryFilter, scope ->
-            SearchInputs(sid, query, categoryFilter, scope)
+        combine(settings.activeSourceId, debouncedQuery, _categoryFilter, _scope, settings.isParentalLockEnabled) { sid, query, categoryFilter, scope, parentalLock ->
+            SearchInputs(sid, query, categoryFilter, scope, parentalLock)
         }
             .mapLatest { buildResults(it) }
             .onEach { r -> _uiState.update { it.copy(hasSource = r.hasSource, channelResults = r.channels, titleResults = r.titles) } }
             .launchIn(viewModelScope)
     }
 
-    private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope)
+    private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope, val parentalLock: Boolean)
 
     private data class SearchResults(val hasSource: Boolean, val channels: List<Channel>, val titles: List<VodTitle>)
 
     private suspend fun buildResults(inputs: SearchInputs): SearchResults {
-        val (sourceId, query, categoryFilter, scope) = inputs
+        val (sourceId, query, categoryFilter, scope, parentalLock) = inputs
         if (sourceId == null) return SearchResults(hasSource = false, channels = emptyList(), titles = emptyList())
         val wantChannels = scope == SearchScope.All || scope == SearchScope.LiveTv
         val wantMovies = scope == SearchScope.All || scope == SearchScope.Movies
         val wantSeries = scope == SearchScope.All || scope == SearchScope.Series
 
         if (categoryFilter != null) {
+            // With the parental lock on, an adult category can't be searched either (its chip is
+            // hidden everywhere, but guard the direct category-filter path too).
+            if (parentalLock && AdultContentFilter.isAdult(categoryFilter)) {
+                return SearchResults(hasSource = true, channels = emptyList(), titles = emptyList())
+            }
             val channelResults = if (wantChannels) repository.channelsByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()
             val titleResults = (if (wantMovies) repository.moviesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()) +
                 (if (wantSeries) repository.seriesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList())
@@ -106,17 +112,28 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         // Require at least MIN_QUERY_LENGTH characters -- a single letter matches almost the whole
         // catalog and isn't a useful search.
         if (trimmed.length < MIN_QUERY_LENGTH) return SearchResults(hasSource = true, channels = emptyList(), titles = emptyList())
-        val channelResults = if (wantChannels) repository.searchChannels(sourceId, trimmed, RESULT_LIMIT) else emptyList()
-        val titleResults = (if (wantMovies) repository.searchMovies(sourceId, trimmed, RESULT_LIMIT) else emptyList()) +
-            (if (wantSeries) repository.searchSeries(sourceId, trimmed, RESULT_LIMIT) else emptyList())
+        val channelResults = (if (wantChannels) repository.searchChannels(sourceId, trimmed, RESULT_LIMIT) else emptyList())
+            .let { if (parentalLock) it.filterNot { ch -> AdultContentFilter.isAdult(ch.categoryName) } else it }
+        val titleResults = ((if (wantMovies) repository.searchMovies(sourceId, trimmed, RESULT_LIMIT) else emptyList()) +
+            (if (wantSeries) repository.searchSeries(sourceId, trimmed, RESULT_LIMIT) else emptyList()))
+            .let { if (parentalLock) it.filterNot { t -> AdultContentFilter.isAdult(t.categoryName) } else it }
         return SearchResults(hasSource = true, channels = channelResults, titles = titleResults)
     }
 
     fun setQuery(value: String) {
         _categoryFilter.value = null
         _query.value = value
-        // Reflect the typed text instantly, independent of the debounced search below.
-        _uiState.update { it.copy(query = value, categoryFilter = null) }
+        // Reflect the typed text instantly, independent of the debounced search below. When the
+        // new query is empty or below the minimum length no search will run, so clear the previous
+        // results synchronously too -- otherwise stale hits linger through the debounce window.
+        val belowMin = value.trim().length < MIN_QUERY_LENGTH
+        _uiState.update {
+            if (belowMin) {
+                it.copy(query = value, categoryFilter = null, channelResults = emptyList(), titleResults = emptyList())
+            } else {
+                it.copy(query = value, categoryFilter = null)
+            }
+        }
     }
 
     /** Null clears back to normal text search (e.g. the category header's "Clear" action). */
@@ -144,8 +161,9 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         /** Max results per catalog (channels / movies / series) -- matches the old in-memory `.take(30)`. */
         private const val RESULT_LIMIT = 30
 
-        /** Minimum typed characters before a text search runs (a single letter is not a useful query). */
-        private const val MIN_QUERY_LENGTH = 2
+        /** Minimum typed characters before a text search runs (a single letter is not a useful query).
+         * Public so [com.arashrahimi46.iptv.ui.search.SearchScreen] can show a "keep typing" hint. */
+        const val MIN_QUERY_LENGTH = 2
 
         /** How long typing must pause before the search fires -- keeps a huge catalog from being
          * queried on every keystroke while staying responsive. */

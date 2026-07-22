@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -286,10 +288,20 @@ fun ConfirmStep(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 11.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(text = key, style = AreIptvTheme.typography.caption, color = colors.textTertiary)
-                        Text(text = value, style = AreIptvTheme.typography.mono, color = colors.textPrimary)
+                        // A long get.php URL is a single unbreakable token; bound it to the remaining
+                        // width and ellipsize so it can't clip/overflow against the key label.
+                        Text(
+                            text = value,
+                            style = AreIptvTheme.typography.mono,
+                            color = colors.textPrimary,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
             }

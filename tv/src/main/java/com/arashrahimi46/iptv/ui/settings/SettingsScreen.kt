@@ -90,7 +90,12 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
     val externalPlayer by viewModel.externalPlayer.collectAsState()
     val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
+    // null = the PIN state hasn't loaded from DataStore yet. Until it resolves the PIN row and
+    // lock toggle are disabled, so a fast tap during that window can't route to a no-verify
+    // SetOnly / SetThenEnable flow and clobber an existing PIN.
     val hasPinSet by viewModel.hasPinSet.collectAsState()
+    val pinLoaded = hasPinSet != null
+    val hasPin = hasPinSet == true
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
 
@@ -166,9 +171,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             ) {
                 AreSwitch(
                     checked = isParentalLockEnabled,
+                    disabled = !pinLoaded,
                     onCheckedChange = { turnOn ->
                         if (turnOn) {
-                            if (hasPinSet) {
+                            if (hasPin) {
                                 viewModel.setParentalLockEnabled(true)
                             } else {
                                 pinDialog = PinFlow.SetThenEnable
@@ -179,10 +185,19 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     },
                 )
             }
-            SettingsRow(icon = Icons.Filled.VpnKey, title = "Change PIN", desc = if (hasPinSet) "A PIN is set." else "No PIN set yet.") {
+            SettingsRow(
+                icon = Icons.Filled.VpnKey,
+                title = "Change PIN",
+                desc = when {
+                    !pinLoaded -> "Loading…"
+                    hasPin -> "A PIN is set."
+                    else -> "No PIN set yet."
+                },
+            ) {
                 AreButton(
-                    text = if (hasPinSet) "Change" else "Set PIN",
-                    onClick = { pinDialog = if (hasPinSet) PinFlow.VerifyThenChange else PinFlow.SetOnly },
+                    text = if (hasPin) "Change" else "Set PIN",
+                    onClick = { pinDialog = if (hasPin) PinFlow.VerifyThenChange else PinFlow.SetOnly },
+                    disabled = !pinLoaded,
                     variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Small,
                 )

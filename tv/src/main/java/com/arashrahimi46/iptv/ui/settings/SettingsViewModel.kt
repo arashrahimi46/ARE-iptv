@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 /**
  * Backs the real Settings screen (Phase 4): every flow here is a live read
@@ -40,15 +39,15 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val externalPlayer: StateFlow<ExternalPlayerChoice> = flowState(settings.externalPlayer, ExternalPlayerChoice.BUILT_IN)
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
-    val hasPinSet: StateFlow<Boolean> = flowState(settings.parentalPinHash.map { it != null }, false)
+    /** Nullable so "not yet loaded" (null) is distinct from "loaded, no PIN set" (false) --
+     * the Settings screen gates the PIN row / lock toggle until this resolves so a fast tap
+     * during the initial async DataStore read can't route to a no-verify PIN-set flow. */
+    val hasPinSet: StateFlow<Boolean?> = flowState(settings.parentalPinHash.map { it != null }, null)
 
-    // QA HIGH defect: dark-theme (and, by the same async-write-vs-process-death race,
-    // reduced-motion) toggles were lost across an immediate `am force-stop` right after
-    // flipping them -- viewModelScope.launch { ... } is fire-and-forget, so a process kill
-    // could land before the DataStore write actually completed. These two block the caller
-    // (a quick, single-key disk write) until the write is durable, closing that window.
-    fun setDarkTheme(enabled: Boolean) = runBlocking { settings.setDarkTheme(enabled) }
-    fun setReducedMotion(enabled: Boolean) = runBlocking { settings.setReducedMotion(enabled) }
+    // Async, off the main thread -- these are DataStore file writes and must not block the UI
+    // thread's switch callback (jank/ANR on low-end boxes). Matches every other setter below.
+    fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { settings.setDarkTheme(enabled) }
+    fun setReducedMotion(enabled: Boolean) = viewModelScope.launch { settings.setReducedMotion(enabled) }
     fun setHardwareDecoding(enabled: Boolean) = viewModelScope.launch { settings.setHardwareDecoding(enabled) }
     fun setAutoplayNextEpisode(enabled: Boolean) = viewModelScope.launch { settings.setAutoplayNextEpisode(enabled) }
 

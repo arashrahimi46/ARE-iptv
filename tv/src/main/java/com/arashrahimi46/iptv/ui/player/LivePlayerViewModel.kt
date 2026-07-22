@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,11 @@ data class LivePlayerUiState(
     val favoriteTargetId: Long? = null,
     val favoriteContentType: ContentType? = null,
     val isFavorite: Boolean = false,
+    /** Continue-watching bookmark keys for VOD -- exactly one is set for a movie/series title
+     * ([resumeVodTitleId]) or an episode ([resumeEpisodeId]); both null for live channels, which
+     * never resume. Drive [resumePositionMs]/[saveProgress]. */
+    val resumeVodTitleId: Long? = null,
+    val resumeEpisodeId: Long? = null,
 )
 
 /**
@@ -77,6 +83,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     // list) over the same [com.arashrahimi46.iptv.data.model.EPGProgram] rows.
     private val epgRepository = EpgRepository(app)
     private val favoritesRepository = FavoritesRepository(app)
+    private val continueWatchingRepository = ContinueWatchingRepository(app)
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
@@ -183,6 +190,11 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             } else {
                 emptyList()
             }
+            // Continue-watching keys: VOD title / episode resume against exactly the id that
+            // played (movie/series title -> vodTitleId, episode -> its own episode id); live
+            // channels resume nothing.
+            val resumeVodId = (source as? PlaybackSource.Vod)?.vodTitleId
+            val resumeEpisodeId = (source as? PlaybackSource.Episode)?.episodeId
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
@@ -192,6 +204,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 siblingChannelIds = siblingIds,
                 favoriteTargetId = favoriteId,
                 favoriteContentType = favoriteType,
+                resumeVodTitleId = if (media == null) null else resumeVodId,
+                resumeEpisodeId = if (media == null) null else resumeEpisodeId,
             )
         }
     }
@@ -211,6 +225,25 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
 
     fun setPhase(phase: PlaybackPhase, errorMessage: String? = null) {
         _uiState.value = _uiState.value.copy(phase = phase, errorMessage = errorMessage)
+    }
+
+    /** P1.2: saved VOD resume position (ms) for whatever is currently playing, or 0 for live
+     * channels / titles with no bookmark. The screen seeks a freshly-built ExoPlayer to this. */
+    suspend fun resumePositionMs(): Long {
+        val state = _uiState.value
+        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null) return 0L
+        return continueWatchingRepository.resumePositionFor(state.resumeVodTitleId, state.resumeEpisodeId)
+    }
+
+    /** P1.2: persists the VOD watch bookmark. No-op for live channels (no resume keys) and for
+     * a not-yet-advanced position, so a still-buffering title never overwrites a real bookmark. */
+    fun saveProgress(positionMs: Long, durationMs: Long) {
+        val state = _uiState.value
+        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null) return
+        if (positionMs <= 0) return
+        viewModelScope.launch {
+            continueWatchingRepository.updateProgress(state.resumeVodTitleId, state.resumeEpisodeId, positionMs, durationMs)
+        }
     }
 
     /** P0.1: called once auto-retry/backoff on the current channel's source is exhausted.

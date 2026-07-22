@@ -8,9 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.repository.ImportSummary
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 enum class OnboardingSourceType { XTREAM, M3U }
@@ -38,6 +40,7 @@ data class OnboardingUiState(
  */
 class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
+    private val settings = UserSettings(app)
 
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
@@ -64,11 +67,21 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun setEpg(auto: Boolean = _uiState.value.epgAuto, url: String = _uiState.value.epgUrl) {
-        _uiState.value = _uiState.value.copy(epgAuto = auto, epgUrl = url)
+        _uiState.value = _uiState.value.copy(epgAuto = auto, epgUrl = url, error = null)
     }
 
-    /** Runs the real fetch + parse and persists the result. Safe to call multiple times (idempotent per attempt). */
-    fun submit(onDone: () -> Unit) {
+    /** Clears a stale submit error, e.g. when the user navigates between steps to review/edit. */
+    fun clearError() {
+        if (_uiState.value.error != null) _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    /**
+     * Runs the real fetch + parse and persists the result. Safe to call multiple times (idempotent per attempt).
+     * On success it populates [OnboardingUiState.result] + [OnboardingUiState.completedSourceId] and stops --
+     * it does NOT navigate away, so the Confirm step can render the import summary. The "Go to Home" button
+     * is what finishes onboarding (with [OnboardingUiState.completedSourceId]).
+     */
+    fun submit() {
         val state = _uiState.value
         if (state.isSubmitting) return
         _uiState.value = state.copy(isSubmitting = true, error = null)
@@ -90,8 +103,14 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
                         epgUrl = epgUrl,
                     )
                 }
-                _uiState.value = _uiState.value.copy(isSubmitting = false, result = summary)
-                onDone()
+                // The add methods return only the ImportSummary; the newly created source is made the
+                // active source (setActiveSourceId), so read its id back to thread through onFinished.
+                val sourceId = settings.activeSourceId.first()
+                _uiState.value = _uiState.value.copy(
+                    isSubmitting = false,
+                    result = summary,
+                    completedSourceId = sourceId,
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isSubmitting = false, error = e.message ?: "Something went wrong")
             }

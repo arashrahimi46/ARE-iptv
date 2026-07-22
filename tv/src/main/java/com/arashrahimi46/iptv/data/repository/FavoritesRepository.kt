@@ -78,10 +78,18 @@ class FavoritesRepository(context: Context) {
     }
 
     companion object {
-        /** MUST match FavoriteDao's `COALESCE(externalId, streamUrl)` channel-key expression. */
-        fun channelKey(channel: Channel): String = channel.externalId ?: channel.streamUrl
+        // Stable-key priority: externalId (Xtream, truly stable) -> name -> streamUrl.
+        // name is preferred over streamUrl because many providers hand out a rotating
+        // session token/port/host in the URL, so streamUrl differs on every re-import and
+        // the favorite would silently drop; name is far more stable. Tradeoff: name can be
+        // slightly less unique than a stable id, but for favorites surviving re-import is the
+        // correct priority. name is non-null on both entities, so streamUrl is a formal tail
+        // only reached if name were ever blank. MUST match FavoriteDao's COALESCE(externalId, name, streamUrl).
 
-        /** MUST match FavoriteDao's `COALESCE(externalId, streamUrl, name)` VOD-key expression. */
-        fun vodKey(title: VodTitle): String = title.externalId ?: title.streamUrl ?: title.name
+        /** MUST match FavoriteDao's `COALESCE(externalId, name, streamUrl)` channel-key expression. */
+        fun channelKey(channel: Channel): String = channel.externalId ?: channel.name
+
+        /** MUST match FavoriteDao's `COALESCE(externalId, name, streamUrl)` VOD-key expression. */
+        fun vodKey(title: VodTitle): String = title.externalId ?: title.name
     }
 }

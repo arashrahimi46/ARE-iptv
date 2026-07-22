@@ -19,6 +19,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -32,6 +33,14 @@ private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
 
 /** Rows flushed to Room per batch during a streaming M3U import (bounds peak memory). */
 private const val IMPORT_BATCH_SIZE = 1500
+
+/**
+ * Fallback category for Xtream items whose `category_id` is absent or not present in the
+ * `get_*_categories` response (portals commonly use "0" or omit it). Without this the item's
+ * categoryName is null, so it's reachable only via the "All" pseudo-category and vanishes from
+ * every real, filterable category tab (which GROUP BY a non-null categoryName).
+ */
+private const val UNCATEGORIZED_CATEGORY = "Uncategorized"
 
 /**
  * Trim the URL and lowercase only the known Xtream query-parameter KEYS (values left
@@ -229,8 +238,16 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             // to raw M3U parsing if the portal's player_api is unreachable/disabled (addXtreamSource
             // fully rolls back its half-imported source first, so no orphan row is left behind).
             parseXtreamGetPhp(url)?.let { portal ->
-                runCatching { addXtreamSource(name, portal.host, portal.username, portal.password, epgUrl) }
-                    .onSuccess { return@withContext it }
+                try {
+                    return@withContext addXtreamSource(name, portal.host, portal.username, portal.password, epgUrl)
+                } catch (e: Exception) {
+                    // A reachable portal that rejected the credentials is authoritative -- surface it
+                    // instead of silently degrading to the lossy raw-M3U keyword path (which would
+                    // "succeed" with a mis-classified catalog and hide the real auth problem). Any
+                    // other failure means this URL isn't a usable Xtream portal, so fall through to
+                    // raw-M3U parsing (addXtreamSource has already rolled back its half-import).
+                    if (e is XtreamException && e.isAuthError) throw e
+                }
             }
             // Normalize a pasted link (e.g. capitalized `Password`) so it doesn't 404, then
             // persist the normalized form so later refreshes hit the same working URL.
@@ -375,6 +392,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             // Fall back to the playlist's own declared EPG feed when the user didn't supply one,
             // so an M3U with a `url-tvg` header populates the Guide automatically.
             if (epgUrl == null && headerEpgUrl != null) db.playlistSourceDao().setEpgUrl(sourceId, headerEpgUrl)
+            // Import succeeded -- drop any prior same-URL source so a re-import replaces it.
+            replaceDuplicateSources(sourceId)
             settings.setActiveSourceId(sourceId)
 
             ImportSummary(channels = channelCount, movies = movieCount, series = seriesCount)
@@ -423,7 +442,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     name = it.name,
                     streamUrl = xtream.streamUrl("live", it.id, "m3u8"),
                     logoUrl = it.logo,
-                    categoryName = it.categoryId?.let(liveCatNames::get),
+                    categoryName = it.categoryId?.let(liveCatNames::get) ?: UNCATEGORIZED_CATEGORY,
                     externalId = it.id,
                     tvgId = it.epgChannelId,
                 )
@@ -434,7 +453,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     name = it.name,
                     isSeries = false,
                     posterUrl = it.icon,
-                    categoryName = it.categoryId?.let(vodCatNames::get),
+                    categoryName = it.categoryId?.let(vodCatNames::get) ?: UNCATEGORIZED_CATEGORY,
                     streamUrl = xtream.streamUrl("movie", it.id, it.containerExtension ?: "mp4"),
                     externalId = it.id,
                 )
@@ -445,7 +464,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     name = it.name,
                     isSeries = true,
                     posterUrl = it.cover,
-                    categoryName = it.categoryId?.let(seriesCatNames::get),
+                    categoryName = it.categoryId?.let(seriesCatNames::get) ?: UNCATEGORIZED_CATEGORY,
                     externalId = it.id,
                 )
             }
@@ -453,6 +472,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             db.categoryDao().upsertAll(categories)
             db.channelDao().insertAll(channels)
             db.vodTitleDao().insertAll(movies + series)
+            // Import succeeded -- drop any prior same-URL source so a re-import replaces it.
+            replaceDuplicateSources(sourceId)
             settings.setActiveSourceId(sourceId)
 
             ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
@@ -468,6 +489,27 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             credentials.clear(sourceId)
             db.playlistSourceDao().delete(source.copy(id = sourceId))
             throw e
+        }
+    }
+
+    /**
+     * De-dup on re-import: once a fresh import of [keepId] has fully succeeded, drop any *other*
+     * source whose URL normalizes to the same value (plus its catalog rows, categories, and stored
+     * credentials), so re-adding the same portal/URL replaces the old entry instead of leaving a
+     * duplicate source and its orphaned catalog behind. Runs only after success -- a failed import
+     * has already rolled its own new source back and never touches the user's existing working one.
+     */
+    private suspend fun replaceDuplicateSources(keepId: Long) {
+        val sources = db.playlistSourceDao().observeAll().first()
+        val keepKey = sources.firstOrNull { it.id == keepId }?.let { normalizeSourceUrl(it.url) } ?: return
+        sources.filter { it.id != keepId && normalizeSourceUrl(it.url) == keepKey }.forEach { dup ->
+            db.channelDao().deleteForSource(dup.id)
+            // Before vod_titles: the episode delete subquery reads vod_titles for this source.
+            db.seriesEpisodeDao().deleteForSource(dup.id)
+            db.vodTitleDao().deleteForSource(dup.id)
+            db.categoryDao().deleteForSource(dup.id)
+            credentials.clear(dup.id)
+            db.playlistSourceDao().delete(dup)
         }
     }
 

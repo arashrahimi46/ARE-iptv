@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -112,7 +113,7 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
         // current value forward on every emission (see there) for the same reason.
         viewModelScope.launch {
             epgRepository.availability.collectLatest { availability ->
-                _uiState.value = _uiState.value.copy(epgUnavailable = availability is EpgAvailability.Unavailable)
+                _uiState.update { it.copy(epgUnavailable = availability is EpgAvailability.Unavailable) }
             }
         }
         viewModelScope.launch {
@@ -160,18 +161,19 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                 programsFlow.map { programs -> GuideEmission(day, group, groups, window, buildRows(channels, programs, window)) }
             }
             .collectLatest { e ->
-                _uiState.value = GuideUiState(
-                    hasSource = true,
-                    groups = e.groups,
-                    selectedGroup = e.group,
-                    day = e.day,
-                    windowStartMs = e.window.first,
-                    windowEndMs = e.window.second,
-                    rows = e.rows,
-                    // Carried forward rather than reset -- this pipeline (day/group/rows) is
-                    // independent of the availability collector above.
-                    epgUnavailable = _uiState.value.epgUnavailable,
-                )
+                // Atomic read-modify-write: epgUnavailable is carried forward from `it` inside
+                // the same update lambda, so a concurrent availability write can't be lost.
+                _uiState.update {
+                    it.copy(
+                        hasSource = true,
+                        groups = e.groups,
+                        selectedGroup = e.group,
+                        day = e.day,
+                        windowStartMs = e.window.first,
+                        windowEndMs = e.window.second,
+                        rows = e.rows,
+                    )
+                }
             }
     }
 

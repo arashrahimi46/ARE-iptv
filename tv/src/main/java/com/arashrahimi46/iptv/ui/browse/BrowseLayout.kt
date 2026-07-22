@@ -23,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -97,6 +99,11 @@ fun <T : Any> BrowseLayout(
      * whatever [itemContent] actually renders (channel tiles vs. narrower poster tiles) so
      * the grid wraps the same number of columns per row the old [FlowRow] did. */
     minItemWidth: Dp = AreIptvTheme.spacing.tileLandWidth,
+    /** Optional target for a screen's initial D-pad focus: attached to the first (index 0)
+     * category row so the caller can drive focus into the browse content on first entry
+     * instead of leaving it stranded on the persistent shell's sidebar. Null = no auto-focus
+     * target (the sidebar keeps focus, as before). */
+    contentFocusRequester: FocusRequester? = null,
     itemContent: @Composable (T) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -180,6 +187,13 @@ fun <T : Any> BrowseLayout(
                     AreCategoryRow(
                         name = category.name,
                         onClick = { onCategorySelected(index) },
+                        // Index 0 is always composed (top of the column) so it's a reliable
+                        // initial-focus target for the caller's contentFocusRequester.
+                        modifier = if (index == 0 && contentFocusRequester != null) {
+                            Modifier.focusRequester(contentFocusRequester)
+                        } else {
+                            Modifier
+                        },
                         count = category.count,
                         kind = category.kind,
                         smart = category.smart,
@@ -198,10 +212,17 @@ fun <T : Any> BrowseLayout(
             // Content grid for the selected category. The section title/count now lives in the
             // shared header band above (aligned with the page title), not here.
             Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                // Paged: only "empty" once the first load has settled (avoid flashing the empty
-                // label during the initial page fetch on a huge catalog).
-                val settled = items.loadState.refresh !is LoadState.Loading
-                if (items.itemCount == 0 && settled) {
+                // Paged refresh outcome. A failed refresh (query/DB error) is ALSO "settled",
+                // so it must be split out from the genuine empty state -- otherwise a real
+                // failure silently renders the friendly "nothing here yet" label with no way
+                // to recover. Error -> short message + focusable Retry; empty -> empty label.
+                val refresh = items.loadState.refresh
+                if (refresh is LoadState.Error) {
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing.sp3)) {
+                        Text(text = "Couldn't load — try again", style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                        AreButton("Retry", onClick = { items.retry() }, variant = AreButtonVariant.Primary)
+                    }
+                } else if (items.itemCount == 0 && refresh !is LoadState.Loading) {
                     Text(text = emptyLabel, style = AreIptvTheme.typography.body, color = colors.textSecondary)
                 } else if (listMode) {
                     // List/table mode: one item per row. Paging only holds the visible window

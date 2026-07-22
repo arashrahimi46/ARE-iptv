@@ -12,8 +12,10 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.AdultContentFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.browsePager
+import androidx.paging.filter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -64,12 +67,16 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
                     repository.seriesCount(sourceId),
                     selectedCategoryName,
                     settings.pinnedCategories(PIN_NAMESPACE),
-                ) { counts, total, selectedName, pinned ->
+                    settings.isParentalLockEnabled,
+                ) { counts, total, selectedName, pinned, parentalLock ->
+                    // Parental lock: hide adult genres and subtract them from the "All" total.
+                    val visibleCounts = if (parentalLock) counts.filterNot { AdultContentFilter.isAdult(it.name) } else counts
+                    val allTotal = if (parentalLock) total - counts.filter { AdultContentFilter.isAdult(it.name) }.sumOf { it.count } else total
                     // Pinned genres float to the top (alphabetical); "All series" is always first.
-                    val (pinnedCats, others) = counts
+                    val (pinnedCats, others) = visibleCounts
                         .map { SeriesCategorySummary(it.name, it.count, it.name in pinned) }
                         .partition { it.pinned }
-                    val categories = listOf(SeriesCategorySummary("All series", total)) +
+                    val categories = listOf(SeriesCategorySummary("All series", allTotal)) +
                         pinnedCats.sortedBy { it.name.lowercase() } + others
                     val index = if (selectedName == null) 0
                         else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }
@@ -82,10 +89,12 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
     val pagingData: Flow<PagingData<VodTitle>> = combine(
         settings.activeSourceId,
         selectedCategoryName,
-    ) { sourceId, category -> sourceId to category }
-        .flatMapLatest { (sourceId, category) ->
+        settings.isParentalLockEnabled,
+    ) { sourceId, category, parentalLock -> Triple(sourceId, category, parentalLock) }
+        .flatMapLatest { (sourceId, category, parentalLock) ->
             if (sourceId == null) flowOf(PagingData.empty())
             else browsePager { repository.pagingSeries(sourceId, category) }.flow
+                .let { flow -> if (parentalLock) flow.map { it.filter { s -> !AdultContentFilter.isAdult(s.categoryName) } } else flow }
         }
         .cachedIn(viewModelScope)
 

@@ -204,6 +204,13 @@ private fun SearchResultsColumn(
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
+        } else if (state.categoryFilter == null && state.query.trim().length < SearchViewModel.MIN_QUERY_LENGTH) {
+            // Non-blank but too short to search yet -- a "keep typing" hint, not a "no results" dead end.
+            Text(
+                text = "Type at least ${SearchViewModel.MIN_QUERY_LENGTH} characters to search.",
+                style = AreIptvTheme.typography.body,
+                color = colors.textSecondary,
+            )
         } else if (state.channelResults.isEmpty() && state.titleResults.isEmpty()) {
             val label = state.categoryFilter ?: state.query
             Text(text = "No results for \"$label\".", style = AreIptvTheme.typography.body, color = colors.textSecondary)

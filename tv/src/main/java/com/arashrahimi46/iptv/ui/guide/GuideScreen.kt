@@ -183,7 +183,9 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
                                     },
                                     live = slot.isNow,
                                     now = slot.isNow,
-                                    width = (DpPerMinute * durationMinutes.toInt()) - 6.dp,
+                                    // Clamp so window-clipped boundary programmes (1-2 min) don't
+                                    // compute a <=0.dp, invisible/unfocusable cell.
+                                    width = ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp),
                                     onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
                                     modifier = Modifier.focusRequester(focusRequester),
                                 )

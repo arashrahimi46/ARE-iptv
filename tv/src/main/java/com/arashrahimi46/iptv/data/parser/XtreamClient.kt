@@ -20,8 +20,13 @@ data class XtreamShortEpgEntry(val title: String, val description: String?, val 
 /** A single episode from `get_series_info`, grouped by [season] (as Xtream returns them, keyed by season number). */
 data class XtreamSeriesEpisode(val id: String, val season: Int, val episode: Int, val title: String, val containerExtension: String?)
 
-/** Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns (bad credentials). */
-class XtreamException(message: String, cause: Throwable? = null) : Exception(message, cause)
+/**
+ * Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns.
+ * [isAuthError] is set when the portal was reached but rejected the credentials (auth==0, or a
+ * 401/403-shaped HTTP response) -- an authoritative failure the caller must surface rather than
+ * silently degrade a get.php import to the lossy raw-M3U path.
+ */
+class XtreamException(message: String, cause: Throwable? = null, val isAuthError: Boolean = false) : Exception(message, cause)
 
 /**
  * Minimal Xtream Codes `player_api.php` client -- enough to populate the
@@ -51,7 +56,10 @@ class XtreamClient(
         try {
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    throw XtreamException(httpErrorMessage(response.code))
+                    throw XtreamException(
+                        httpErrorMessage(response.code),
+                        isAuthError = response.code == 401 || response.code == 403,
+                    )
                 }
                 response.body?.string() ?: throw XtreamException("Empty response body for action=$action")
             }
@@ -70,7 +78,7 @@ class XtreamClient(
         }
         val auth = json.optJSONObject("user_info")
         if (auth == null || auth.optInt("auth", 0) != 1) {
-            throw XtreamException("Invalid username or password")
+            throw XtreamException("Invalid username or password", isAuthError = true)
         }
     }
 

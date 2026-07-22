@@ -189,7 +189,14 @@ fun AreIptvApp() {
                 source = PlaybackSource.Channel(channelId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
-                onOpenGuide = { navController.popBackStack() },
+                // Return to the shell with the Guide tab selected (via the shell's `tab` arg),
+                // not popBackStack -- which landed on whatever launched the player (Home/Detail).
+                // inclusive pops the old shell so the new instance recomposes with tab=guide.
+                onOpenGuide = {
+                    navController.navigate("shell?tab=guide") {
+                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                    }
+                },
             )
         }
         composable(

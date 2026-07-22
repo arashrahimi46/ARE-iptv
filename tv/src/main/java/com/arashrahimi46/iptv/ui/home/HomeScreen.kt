@@ -81,7 +81,7 @@ fun HomeScreen(
         // P1.2: hidden when empty, same as every other rail below.
         if (state.continueWatching.isNotEmpty()) {
             AreRail(title = "Continue Watching", seeAll = false) {
-                items(state.continueWatching, key = { it.vodTitleId ?: it.seriesEpisodeId!! }) { item ->
+                items(state.continueWatching, key = { it.vodTitleId?.let { id -> "v$id" } ?: "e${it.seriesEpisodeId}" }) { item ->
                     AreContinueCard(
                         title = item.title,
                         onClick = {

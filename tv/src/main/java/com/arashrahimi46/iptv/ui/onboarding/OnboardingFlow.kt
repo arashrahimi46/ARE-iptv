@@ -145,7 +145,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
             // growth before it started covering Continue's tap area. 40dp gives real clearance.
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
                 if (stepIndex > 0) {
-                    AreButton("Back", onClick = { navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
+                    AreButton("Back", onClick = { viewModel.clearError(); navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 }
                 Box(Modifier.weight(1f))
                 AreButton("Skip for now", onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
@@ -160,7 +160,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                     }
                     AreButton(
                         "Continue",
-                        onClick = { navController.navigate(stepRoutes[stepIndex + 1]) },
+                        onClick = { viewModel.clearError(); navController.navigate(stepRoutes[stepIndex + 1]) },
                         size = AreButtonSize.Large,
                         disabled = !canContinue,
                     )
@@ -170,9 +170,9 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                         modifier = Modifier.focusRequester(primaryFocus),
                         onClick = {
                             if (uiState.result != null) {
-                                onFinished(null)
+                                onFinished(uiState.completedSourceId)
                             } else {
-                                viewModel.submit(onDone = { onFinished(null) })
+                                viewModel.submit()
                             }
                         },
                         size = AreButtonSize.Large,

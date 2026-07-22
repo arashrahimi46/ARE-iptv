@@ -70,18 +70,22 @@ class FavoritesViewModel(app: Application) : AndroidViewModel(app) {
         val vodKeys = favorites.filter { it.contentType != ContentType.LIVE }.map { it.streamKey }
         val channelByKey = favoritesRepository.channelsByKeys(sourceId, channelKeys)
             .associateBy { FavoritesRepository.channelKey(it) }
-        val vodByKey = favoritesRepository.titlesByKeys(sourceId, vodKeys)
-            .associateBy { FavoritesRepository.vodKey(it) }
+        // Xtream vod_id and series_id are independent, overlapping id spaces, so a movie and a
+        // series can share the same key -- keep them in SEPARATE maps (partitioned by isSeries)
+        // so a MOVIE favorite resolves only to a movie row and a SERIES favorite only to a series row.
+        val vodTitles = favoritesRepository.titlesByKeys(sourceId, vodKeys)
+        val movieByKey = vodTitles.filter { !it.isSeries }.associateBy { FavoritesRepository.vodKey(it) }
+        val seriesByKey = vodTitles.filter { it.isSeries }.associateBy { FavoritesRepository.vodKey(it) }
 
         val channels = favorites
             .filter { it.contentType == ContentType.LIVE }
             .mapNotNull { channelByKey[it.streamKey] }
         val movies = favorites
             .filter { it.contentType == ContentType.MOVIE }
-            .mapNotNull { vodByKey[it.streamKey] }
+            .mapNotNull { movieByKey[it.streamKey] }
         val series = favorites
             .filter { it.contentType == ContentType.SERIES }
-            .mapNotNull { vodByKey[it.streamKey] }
+            .mapNotNull { seriesByKey[it.streamKey] }
 
         return FavoritesUiState(hasSource = true, channels = channels, movies = movies, series = series)
     }

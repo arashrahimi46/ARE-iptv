@@ -117,6 +117,13 @@ fun LivePlayerScreen(
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
 
+    // Hoisted so the outer Box's key handler (declared before the video content) can see whether an
+    // error overlay is up: when it is, the outer handler must NOT swallow OK/Up/Down, or the error
+    // state's Retry/Back buttons never get focus or activation. Set by the player listener below.
+    var playerError by remember { mutableStateOf<String?>(null) }
+    val errorFocusRequester = remember { FocusRequester() }
+    val errorVisible = playerError != null || (!state.loading && state.media == null)
+
     // QA MEDIUM defect: BACK from "Playback failed" intermittently left a blank, unrecoverable
     // screen (~4/6 attempts). Root cause: TWO independent paths can call onBack() for the same
     // system-BACK press -- the BackHandler callback below, and the ON_STOP LifecycleEventObserver
@@ -165,7 +172,17 @@ fun LivePlayerScreen(
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) {
             panelFocused = false
-            channelSwitchFocusRequester.requestFocus()
+            // Don't yank focus back to the video while an error overlay is up -- its Retry/Back
+            // buttons own focus then (see the error-focus effect below).
+            if (!errorVisible) channelSwitchFocusRequester.requestFocus()
+        }
+    }
+    // Give the error overlay's primary button initial focus the moment an error appears, and
+    // re-grab it if the HUD auto-hides out from under it, so Retry is always reachable by remote.
+    LaunchedEffect(errorVisible, controlsVisible) {
+        if (errorVisible) {
+            delay(50)
+            runCatching { errorFocusRequester.requestFocus() }
         }
     }
     LaunchedEffect(panelFocused) {
@@ -196,7 +213,11 @@ fun LivePlayerScreen(
             // Up/Down with a control focused just moves focus (or escapes the player)
             // instead of switching channel.
             .onPreviewKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyUp) {
+                if (errorVisible) {
+                    // Error overlay is up -- let its own Retry/Back buttons receive focus and OK
+                    // instead of the player D-pad model consuming these keys.
+                    false
+                } else if (keyEvent.type == KeyEventType.KeyUp) {
                     // Any key press is "activity" -- reset the idle-hide timer (also captures OK on
                     // a focused HUD button, which passes through preview before the button handles it).
                     interactionTick++
@@ -243,12 +264,11 @@ fun LivePlayerScreen(
             }
         } else if (media == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = handleBack)
+                PlayerErrorState(message = state.errorMessage ?: "Content not found", onBack = handleBack, focusRequester = errorFocusRequester)
             }
         } else {
             var playing by remember { mutableStateOf(true) }
             var isBuffering by remember { mutableStateOf(true) }
-            var playerError by remember { mutableStateOf<String?>(null) }
             // Bumped by the error state's Retry action (manual) AND by the auto-retry
             // LaunchedEffect below (automatic). Changing this changes exoPlayer's
             // remember() key below, which tears down the old instance through the existing
@@ -310,6 +330,9 @@ fun LivePlayerScreen(
                 val listener = object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         playing = isPlaying
+                        // Persist the VOD bookmark on pause (VM no-ops for live) so a pause-then-leave
+                        // still resumes where the user stopped, not just the last 5s poll.
+                        if (!isPlaying) viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                     }
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -337,6 +360,10 @@ fun LivePlayerScreen(
                 }
                 exoPlayer.addListener(listener)
                 onDispose {
+                    // Save the VOD bookmark before this instance is torn down -- covers leaving the
+                    // screen AND a retry/fallback rebuild (P2): the rebuilt player's resume-seek
+                    // above then restores this position instead of restarting at 0:00.
+                    viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                     exoPlayer.removeListener(listener)
                     exoPlayer.release()
                 }
@@ -372,6 +399,9 @@ fun LivePlayerScreen(
                     return@LaunchedEffect
                 }
                 delay(if (playerError != null) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
+                // P2: persist the VOD position before the rebuild (VM no-ops for live) so the new
+                // player's resume-seek restores it instead of restarting the movie/episode at 0:00.
+                viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                 autoRetryAttempt++
                 retryCount++
             }
@@ -385,10 +415,21 @@ fun LivePlayerScreen(
             var durationMs by remember { mutableStateOf(C.TIME_UNSET) }
             var bufferedPositionMs by remember { mutableStateOf(0L) }
             LaunchedEffect(exoPlayer) {
+                // P1.2: restore the VOD resume bookmark onto this freshly-built player (no-op /
+                // returns 0 for live). Runs for every exoPlayer instance -- so an auto-retry /
+                // fallback rebuild (P2) also lands back at the last saved position rather than 0:00.
+                val resume = viewModel.resumePositionMs()
+                if (resume > 0) exoPlayer.seekTo(resume)
+                var saveTick = 0
                 while (true) {
                     positionMs = exoPlayer.currentPosition
                     durationMs = exoPlayer.duration
                     bufferedPositionMs = exoPlayer.bufferedPosition
+                    // Throttle the bookmark write to ~5s (every 10th 500ms poll); VM gates it to VOD.
+                    if (++saveTick >= 10) {
+                        saveTick = 0
+                        viewModel.saveProgress(positionMs, durationMs)
+                    }
                     delay(500)
                 }
             }
@@ -427,6 +468,11 @@ fun LivePlayerScreen(
                         player = exoPlayer
                     }
                 },
+                // exoPlayer is remember(streamUrl, retryCount, hardwareDecoding) -- a NEW instance
+                // on every channel switch, retry, fallback or decoder toggle. The one-shot factory
+                // only binds the first one, so without this the surface stays attached to the
+                // released old player (black video). Rebind the surface to the current instance.
+                update = { view -> view.player = exoPlayer },
             )
 
             Box(
@@ -497,7 +543,13 @@ fun LivePlayerScreen(
                             // effect (autoRetryAttempt unchanged, playerError -> null on rebuild),
                             // silently falling back to another source instead of actually
                             // retrying the source the user asked to retry.
-                            onRetry = { autoRetryAttempt = 0; retryCount++ },
+                            // P2: save VOD position first so manual retry also resumes, not 0:00.
+                            onRetry = {
+                                viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
+                                autoRetryAttempt = 0
+                                retryCount++
+                            },
+                            focusRequester = errorFocusRequester,
                         )
                     } else if (isBuffering) {
                         BufferingIndicator()
@@ -637,7 +689,15 @@ private fun BufferingIndicator() {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun PlayerErrorState(message: String, onBack: () -> Unit, onRetry: (() -> Unit)? = null) {
+private fun PlayerErrorState(
+    message: String,
+    onBack: () -> Unit,
+    onRetry: (() -> Unit)? = null,
+    // When set, focus lands on the primary action (Retry when present, else Back) as the overlay
+    // appears -- otherwise the remote can't reach these buttons at all (the outer key handler is
+    // gated off while the error is up).
+    focusRequester: FocusRequester? = null,
+) {
     val colors = AreIptvTheme.colors
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(
@@ -651,12 +711,24 @@ private fun PlayerErrorState(message: String, onBack: () -> Unit, onRetry: (() -
         Text(text = message, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         Box(Modifier.padding(top = 20.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AreIconButton(icon = Icons.Filled.ArrowBack, contentDescription = "Back", onClick = onBack, variant = AreIconButtonVariant.Solid)
+            AreIconButton(
+                icon = Icons.Filled.ArrowBack,
+                contentDescription = "Back",
+                onClick = onBack,
+                variant = AreIconButtonVariant.Solid,
+                modifier = if (onRetry == null && focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
+            )
             // Content-not-found (no resolved media at all) has nothing to retry -- onRetry is
             // omitted for that call site below, so this button only appears for real transient
             // playback failures (network/codec/etc) where rebuilding the player might succeed.
             if (onRetry != null) {
-                AreIconButton(icon = Icons.Filled.Autorenew, contentDescription = "Retry", onClick = onRetry, variant = AreIconButtonVariant.Solid)
+                AreIconButton(
+                    icon = Icons.Filled.Autorenew,
+                    contentDescription = "Retry",
+                    onClick = onRetry,
+                    variant = AreIconButtonVariant.Solid,
+                    modifier = if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
+                )
             }
         }
     }

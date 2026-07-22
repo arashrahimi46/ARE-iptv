@@ -59,16 +59,21 @@ private fun normalizeTvgId(raw: String): String = raw.trim().lowercase()
  */
 internal fun matchXmlTvProgrammes(channels: List<Channel>, programmes: List<XmlTvProgramme>): List<EPGProgram> {
     if (channels.isEmpty() || programmes.isEmpty()) return emptyList()
-    val byKey = channels.filter { !it.tvgId.isNullOrBlank() }.associateBy { normalizeTvgId(it.tvgId!!) }
-    return programmes.mapNotNull { p ->
-        val channel = byKey[normalizeTvgId(p.channelRef)] ?: return@mapNotNull null
-        EPGProgram(
-            channelId = channel.id,
-            title = p.title,
-            startMs = p.startMs,
-            endMs = p.stopMs,
-            description = p.description,
-        )
+    // groupBy (not associateBy): playlists routinely list SD/HD/backup variants of a channel that
+    // share one tvg-id. associateBy kept only the LAST variant, so every other one rendered "No
+    // programme data". Fan each programme out to ALL channels sharing its id instead.
+    val byKey = channels.filter { !it.tvgId.isNullOrBlank() }.groupBy { normalizeTvgId(it.tvgId!!) }
+    return programmes.flatMap { p ->
+        val matched = byKey[normalizeTvgId(p.channelRef)] ?: return@flatMap emptyList()
+        matched.map { channel ->
+            EPGProgram(
+                channelId = channel.id,
+                title = p.title,
+                startMs = p.startMs,
+                endMs = p.stopMs,
+                description = p.description,
+            )
+        }
     }
 }
 

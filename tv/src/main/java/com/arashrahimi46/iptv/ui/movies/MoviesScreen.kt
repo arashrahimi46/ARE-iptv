@@ -2,13 +2,16 @@ package com.arashrahimi46.iptv.ui.movies
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,6 +48,19 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     // LiveScreen; survives this screen being paused under the overlay via rememberSaveable.
     var lastSelectedId by rememberSaveable { mutableStateOf<Long?>(null) }
 
+    // Initial D-pad focus into the category column on genuine first entry -- but NOT when
+    // returning from Detail/player (lastSelectedId != null), where rememberPlaybackFocusRequester
+    // restores focus to the launched tile. initialFocusDone keeps this to the first entry only.
+    val contentFocusRequester = remember { FocusRequester() }
+    var initialFocusDone by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!initialFocusDone && lastSelectedId == null) {
+            withFrameNanos { }
+            runCatching { contentFocusRequester.requestFocus() }
+            initialFocusDone = true
+        }
+    }
+
     if (!state.hasSource) {
         Text(
             text = "Add a playlist from the sidebar to see movies here.",
@@ -75,6 +91,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         // column count to the available width, so covers stay small enough to show fully (with
         // their title) even when the sidebar expands and squeezes the content.
         minItemWidth = 130.dp,
+        contentFocusRequester = contentFocusRequester,
         modifier = modifier,
     ) { movie ->
         val focusRequester = rememberPlaybackFocusRequester(lastSelectedId, movie.id) { lastSelectedId = null }

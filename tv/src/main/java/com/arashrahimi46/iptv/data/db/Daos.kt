@@ -81,10 +81,10 @@ interface ChannelDao {
 
     // --- Large-catalog browse (Paging 3): only the visible window is ever in memory. ---
 
-    @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name")
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name, id")
     fun pagingAll(sourceId: Long): PagingSource<Int, Channel>
 
-    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND categoryName = :category ORDER BY name")
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND categoryName = :category ORDER BY name, id")
     fun pagingByCategory(sourceId: Long, category: String): PagingSource<Int, Channel>
 
     /** Category column data (GROUP BY) -- no catalog rows loaded. */
@@ -110,7 +110,7 @@ interface ChannelDao {
     suspend fun getByIds(ids: List<Long>): List<Channel>
 
     /** Resolve favorited channel keys to the active source's current rows (see [Favorite.streamKey]). */
-    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND COALESCE(externalId, streamUrl) IN (:keys)")
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND COALESCE(externalId, name, streamUrl) IN (:keys)")
     suspend fun channelsByFavoriteKeys(sourceId: Long, keys: List<String>): List<Channel>
 
     /** Ordered channel ids only (player prev/next nav) -- ids, not full rows, for large catalogs. */
@@ -148,10 +148,10 @@ interface VodTitleDao {
 
     // --- Large-catalog browse (Paging 3): only the visible window is ever in memory. ---
 
-    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries ORDER BY name")
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries ORDER BY name, id")
     fun paging(sourceId: Long, isSeries: Boolean): PagingSource<Int, VodTitle>
 
-    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries AND categoryName = :category ORDER BY name")
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries AND categoryName = :category ORDER BY name, id")
     fun pagingByCategory(sourceId: Long, isSeries: Boolean, category: String): PagingSource<Int, VodTitle>
 
     /** Category column data (GROUP BY) -- no catalog rows loaded. */
@@ -177,7 +177,7 @@ interface VodTitleDao {
     suspend fun getByIds(ids: List<Long>): List<VodTitle>
 
     /** Resolve favorited VOD keys to the active source's current rows (see [Favorite.streamKey]). */
-    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND COALESCE(externalId, streamUrl, name) IN (:keys)")
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND COALESCE(externalId, name, streamUrl) IN (:keys)")
     suspend fun titlesByFavoriteKeys(sourceId: Long, keys: List<String>): List<VodTitle>
 
     /** Content-id-driven lookup for Detail/Search -- mirrors [ChannelDao.getById]. */
@@ -211,6 +211,11 @@ interface SeriesEpisodeDao {
     @Query("DELETE FROM series_episodes WHERE seriesTitleId IN (:seriesTitleIds)")
     suspend fun deleteForSeries(seriesTitleIds: List<Long>)
 
+    /** Re-import dedup cleanup: drop all episodes of a duplicate source's series (there's no FK
+     * cascade). MUST run before the source's vod_titles rows are deleted -- the subquery reads them. */
+    @Query("DELETE FROM series_episodes WHERE seriesTitleId IN (SELECT id FROM vod_titles WHERE sourceId = :sourceId)")
+    suspend fun deleteForSource(sourceId: Long)
+
     @Query("SELECT * FROM series_episodes WHERE seriesTitleId = :seriesTitleId ORDER BY season, episode")
     fun observeForSeries(seriesTitleId: Long): Flow<List<SeriesEpisode>>
 
@@ -240,19 +245,27 @@ interface FavoriteDao {
     fun observeAll(): Flow<List<Favorite>>
 
     // The stable-key expressions below MUST stay in sync with FavoritesRepository.channelKey/vodKey
-    // (Kotlin) -- both compute the same COALESCE(externalId, streamUrl[, name]) identity.
+    // (Kotlin) -- both compute the same COALESCE(externalId, name, streamUrl) identity. name is
+    // preferred over streamUrl so M3U favorites (externalId null, tokenized/rotating streamUrl)
+    // survive re-imports (see FavoritesRepository.vodKey/channelKey for the tradeoff).
 
     /** Row ids of the active source's channels that are favorited, for tile favorite-icon state. */
     @Query(
-        "SELECT c.id FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.streamUrl) " +
+        "SELECT c.id FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
             "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE'",
     )
     fun observeFavoriteChannelIdsInSource(sourceId: Long): Flow<List<Long>>
 
-    /** Row ids of the active source's VOD titles (movies + series) that are favorited. */
+    /**
+     * Row ids of the active source's VOD titles (movies + series) that are favorited.
+     * The join correlates the favorite's contentType with the row's isSeries flag
+     * (MOVIE -> isSeries 0, SERIES -> isSeries 1) so favoriting movie "100" never lights
+     * the heart on series "100" (their externalId spaces overlap).
+     */
     @Query(
-        "SELECT v.id FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.streamUrl, v.name) " +
-            "WHERE v.sourceId = :sourceId AND f.contentType IN ('MOVIE', 'SERIES')",
+        "SELECT v.id FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+            "WHERE v.sourceId = :sourceId AND " +
+            "((f.contentType = 'MOVIE' AND v.isSeries = 0) OR (f.contentType = 'SERIES' AND v.isSeries = 1))",
     )
     fun observeFavoriteVodIdsInSource(sourceId: Long): Flow<List<Long>>
 }

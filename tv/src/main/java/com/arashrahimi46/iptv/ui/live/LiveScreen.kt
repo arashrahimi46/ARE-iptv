@@ -5,14 +5,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +52,21 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     // Issue #5: which channel tile started playback -- see HomeScreen's identical use of
     // rememberPlaybackFocusRequester for the full explanation.
     var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    // Initial D-pad focus: on genuine first entry the persistent shell leaves focus on the
+    // sidebar and the category column reads as dead until the user blindly presses RIGHT.
+    // Drive focus into the category column once -- but NOT when returning from the player
+    // (lastPlayedChannelId != null), where rememberPlaybackFocusRequester restores focus to
+    // the launched tile instead. initialFocusDone (rememberSaveable) keeps it to first entry.
+    val contentFocusRequester = remember { FocusRequester() }
+    var initialFocusDone by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!initialFocusDone && lastPlayedChannelId == null) {
+            withFrameNanos { }
+            runCatching { contentFocusRequester.requestFocus() }
+            initialFocusDone = true
+        }
+    }
 
     if (!state.hasSource) {
         Text(
@@ -87,6 +105,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         // Responsive channel grid (was one fixed 320dp tile per row): ~180dp columns that the tiles
         // fill, so the content pane packs 2-3 readable channel cards per row instead of one big tile.
         minItemWidth = 180.dp,
+        contentFocusRequester = contentFocusRequester,
         modifier = modifier,
     ) { channel ->
         val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }

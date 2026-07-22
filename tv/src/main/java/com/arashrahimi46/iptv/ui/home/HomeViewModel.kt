@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.AdultContentFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -118,13 +119,15 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         (c + m + s).forEach { merged[it.name] = (merged[it.name] ?: 0) + it.count }
                         merged.map { (name, count) -> HomeCategorySummary(name, count) }
                     }
-                    combine(rails, categories) { (channels, movies, series), cats ->
+                    combine(rails, categories, settings.isParentalLockEnabled) { (channels, movies, series), cats, parentalLock ->
+                        // Parental lock: strip adult items from every rail and adult chips from the
+                        // category row, so the toggle actually hides adult content on Home too.
                         HomeUiState(
                             hasSource = true,
-                            channels = channels,
-                            movies = movies,
-                            series = series,
-                            categories = cats,
+                            channels = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels,
+                            movies = if (parentalLock) movies.filterNot { AdultContentFilter.isAdult(it.categoryName) } else movies,
+                            series = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series,
+                            categories = if (parentalLock) cats.filterNot { AdultContentFilter.isAdult(it.name) } else cats,
                             isInitializing = false,
                         )
                     }
