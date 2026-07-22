@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
+import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,6 +38,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isAutoplayNextEpisode: StateFlow<Boolean> = flowState(settings.isAutoplayNextEpisode, true)
     val isPictureInPicture: StateFlow<Boolean> = flowState(settings.isPictureInPicture, false)
     val externalPlayer: StateFlow<ExternalPlayerChoice> = flowState(settings.externalPlayer, ExternalPlayerChoice.BUILT_IN)
+    val miniPlayerBehavior: StateFlow<MiniPlayerBehavior> = flowState(settings.miniPlayerBehavior, MiniPlayerBehavior.DODGE)
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
     /** Nullable so "not yet loaded" (null) is distinct from "loaded, no PIN set" (false) --
@@ -55,6 +57,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setPictureInPicture(enabled: Boolean) = viewModelScope.launch { settings.setPictureInPicture(enabled) }
 
     fun setExternalPlayer(choice: ExternalPlayerChoice) = viewModelScope.launch { settings.setExternalPlayer(choice) }
+
+    fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) = viewModelScope.launch { settings.setMiniPlayerBehavior(choice) }
 
     fun setBrowseListMode(enabled: Boolean) = viewModelScope.launch { settings.setBrowseListMode(enabled) }
 

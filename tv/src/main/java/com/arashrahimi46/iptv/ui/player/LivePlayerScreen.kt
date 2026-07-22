@@ -30,8 +30,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +63,8 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
+import androidx.media3.common.text.CueGroup
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -116,6 +120,11 @@ fun LivePlayerScreen(
     var showUpNext by remember { mutableStateOf(false) }
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
+
+    // In-app mini-player: while a live channel is docked in the corner (LivePlaybackController owns
+    // its ExoPlayer), this screen hands its player off on minimize and adopts it back on expand so
+    // playback is seamless. Null when the controller isn't provided (minimize simply unavailable).
+    val livePlayback = LocalLivePlaybackController.current
 
     // Hoisted so the outer Box's key handler (declared before the video content) can see whether an
     // error overlay is up: when it is, the outer handler must NOT swallow OK/Up/Down, or the error
@@ -280,41 +289,70 @@ fun LivePlayerScreen(
             // see the listener below and the reset LaunchedEffect -- so a source that recovers
             // gets a fresh retry budget instead of inheriting exhaustion from an earlier stretch.
             var autoRetryAttempt by remember(media.streamUrl) { mutableStateOf(0) }
+            // Set true just before minimizing so the DisposableEffect below hands the live player
+            // to LivePlaybackController instead of releasing it (seamless dock, no re-buffer).
+            var handedOffToMini by remember { mutableStateOf(false) }
+
+            // Subtitle state, reset per stream: the player's current text tracks (updated by the
+            // listener below) and the user's pick. Default Off -- subtitles are opt-in, toggled from
+            // the HUD's CC button. Applied to the player by the effect further down.
+            var tracks by remember(media.streamUrl) { mutableStateOf(Tracks.EMPTY) }
+            var subtitleChoice by remember(media.streamUrl) { mutableStateOf<SubtitleTrack>(SubtitleTrack.Off) }
+            var showSubtitles by remember { mutableStateOf(false) }
+            val textTracks = remember(tracks) { textTracksFrom(tracks) }
+            // Language sniffed from the selected track's rendered text (rowKey -> language), for
+            // tracks the container left untagged. Reset per stream. Read live in the cue listener.
+            val detectedLangs = remember(media.streamUrl) { mutableStateMapOf<String, String>() }
+            val currentSubtitleChoice by rememberUpdatedState(subtitleChoice)
 
             val exoPlayer = remember(media.streamUrl, retryCount, hardwareDecoding) {
-                // Real wiring of the Settings "Hardware decoding" preference -- a player
-                // configuration flag only, not new playback-surface work. ON (default) keeps
-                // Media3's default platform-decoder-only behavior (EXTENSION_RENDERER_MODE_OFF);
-                // OFF additionally allows software/extension decoders as a compatibility
-                // fallback (EXTENSION_RENDERER_MODE_ON) for streams the platform decoder can't
-                // handle, at the cost of more CPU/battery use.
-                val renderersFactory = DefaultRenderersFactory(context).apply {
-                    setExtensionRendererMode(
-                        if (hardwareDecoding) DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF
-                        else DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON,
-                    )
-                    setEnableDecoderFallback(true)
-                }
-                ExoPlayer.Builder(context, renderersFactory)
-                    // Request audio focus and route as media audio so sound actually plays
-                    // (and ducks/pauses correctly around other apps) rather than being silent.
-                    .setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setUsage(C.USAGE_MEDIA)
-                            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                            .build(),
-                        /* handleAudioFocus = */ true,
-                    )
-                    .build().apply {
-                    // No hardcoded "HLS-only" assumption -- Media3's DefaultMediaSourceFactory
-                    // (used implicitly by setMediaItem/prepare) inspects the URI to pick
-                    // HlsMediaSource for .m3u8 (media3-exoplayer-hls is on the classpath)
-                    // or falls back to ProgressiveMediaSource (bundled TS/MP4/etc extractors)
-                    // for raw .ts / other URLs -- covers both shapes real M3U/Xtream sources hand back.
-                    setMediaItem(MediaItem.fromUri(media.streamUrl))
-                    playWhenReady = true
-                    prepare()
+                // Seamless EXPAND: if this exact live stream is the one currently docked in the
+                // corner mini-player, take that already-running instance back rather than building
+                // a fresh one -- no re-buffer, continuous audio/video. Otherwise build normally.
+                val adopted = if (media.isLive) livePlayback?.takeIfAdopting(media.streamUrl) else null
+                adopted ?: run {
+                    // Real wiring of the Settings "Hardware decoding" preference -- a player
+                    // configuration flag only, not new playback-surface work. ON (default) keeps
+                    // Media3's default platform-decoder-only behavior (EXTENSION_RENDERER_MODE_OFF);
+                    // OFF additionally allows software/extension decoders as a compatibility
+                    // fallback (EXTENSION_RENDERER_MODE_ON) for streams the platform decoder can't
+                    // handle, at the cost of more CPU/battery use.
+                    val renderersFactory = DefaultRenderersFactory(context).apply {
+                        setExtensionRendererMode(
+                            if (hardwareDecoding) DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF
+                            else DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON,
+                        )
+                        setEnableDecoderFallback(true)
+                    }
+                    ExoPlayer.Builder(context, renderersFactory)
+                        // Request audio focus and route as media audio so sound actually plays
+                        // (and ducks/pauses correctly around other apps) rather than being silent.
+                        .setAudioAttributes(
+                            AudioAttributes.Builder()
+                                .setUsage(C.USAGE_MEDIA)
+                                .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                                .build(),
+                            /* handleAudioFocus = */ true,
+                        )
+                        .build().apply {
+                        // No hardcoded "HLS-only" assumption -- Media3's DefaultMediaSourceFactory
+                        // (used implicitly by setMediaItem/prepare) inspects the URI to pick
+                        // HlsMediaSource for .m3u8 (media3-exoplayer-hls is on the classpath)
+                        // or falls back to ProgressiveMediaSource (bundled TS/MP4/etc extractors)
+                        // for raw .ts / other URLs -- covers both shapes real M3U/Xtream sources hand back.
+                        setMediaItem(MediaItem.fromUri(media.streamUrl))
+                        playWhenReady = true
+                        prepare()
+                    }
                 }.also { playerError = null }
+            }
+
+            // Opening a fullscreen player that did NOT adopt the docked instance supersedes it:
+            // release the stale mini (a different channel, or any VOD -- the choice to close the
+            // live mini when VOD starts). After an adopt, the session is already cleared so this
+            // is a no-op.
+            LaunchedEffect(media.streamUrl) {
+                if (livePlayback?.session?.streamUrl != media.streamUrl) livePlayback?.closeMini()
             }
 
             // Keep the screen awake while actually playing so the system screensaver / display
@@ -343,6 +381,23 @@ fun LivePlayerScreen(
                         }
                     }
 
+                    // Feeds the subtitle picker: text tracks become known once the stream is parsed
+                    // (and change on a channel switch / MediaItem rebuild).
+                    override fun onTracksChanged(newTracks: Tracks) {
+                        tracks = newTracks
+                    }
+
+                    // Sniff the active track's language from its rendered text -- once per track,
+                    // for tracks the container left untagged (see detectSubtitleLanguage). Relabels
+                    // the picker row (e.g. "Bamabin.Com" -> "Persian · Bamabin.Com").
+                    override fun onCues(cueGroup: CueGroup) {
+                        val choice = currentSubtitleChoice as? SubtitleTrack.Embedded ?: return
+                        val key = choice.rowKey()
+                        if (detectedLangs.containsKey(key)) return
+                        val text = cueGroup.cues.joinToString(" ") { it.text?.toString().orEmpty() }
+                        detectSubtitleLanguage(text)?.let { detectedLangs[key] = it }
+                    }
+
                     override fun onPlayerError(error: PlaybackException) {
                         // Surface the real HTTP status when the server rejects the stream (e.g. a
                         // 461/403 from an expired, connection-limited or IP-locked line) -- far more
@@ -365,7 +420,10 @@ fun LivePlayerScreen(
                     // above then restores this position instead of restarting at 0:00.
                     viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                     exoPlayer.removeListener(listener)
-                    exoPlayer.release()
+                    // Minimizing hands this exact instance to LivePlaybackController (which keeps it
+                    // playing in the corner and owns its release), so skip the release here -- else
+                    // we'd tear down the very player the mini-player is about to show.
+                    if (!handedOffToMini) exoPlayer.release()
                 }
             }
 
@@ -433,6 +491,14 @@ fun LivePlayerScreen(
                     delay(500)
                 }
             }
+            // Apply the subtitle pick to the player: Off disables text rendering; an embedded track
+            // is force-selected. Re-runs on a player rebuild (channel switch / retry) so the choice
+            // survives, and when the user changes it. textTracks is a key so a just-arrived track
+            // that matches the current pick gets (re)applied once it's actually available.
+            LaunchedEffect(exoPlayer, subtitleChoice, textTracks) {
+                exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters.withSubtitle(subtitleChoice)
+            }
+
             // Live streams' HLS timeline usually reports no fixed duration (C.TIME_UNSET) --
             // there's no "total" to divide by, so the seek bar reads as parked at the live
             // edge (matches the design's TimeShift-seek-bar-at-live-edge default) rather than
@@ -443,13 +509,12 @@ fun LivePlayerScreen(
             val elapsedLabel = formatPlaybackTime(positionMs)
             val totalLabel = if (hasKnownDuration) formatPlaybackTime(durationMs) else elapsedLabel
 
-            // Backgrounding exits the player (rather than just pause()-ing in place) so the
-            // ExoPlayer instance releases fully through the SAME DisposableEffect(exoPlayer)
+            // Fully backgrounding (ON_STOP) exits the player rather than just pause()-ing in place,
+            // so the ExoPlayer instance releases through the SAME DisposableEffect(exoPlayer)
             // cleanup path already verified above -- one release() call site, not two racing
-            // against each other. TV-box memory is more constrained than mobile and there's no
-            // PiP mode yet to justify holding the decoder/audio focus alive with nothing visible
-            // (product-lead ruling on qa's Phase 2 finding). PiP, when built later, is the
-            // natural place to special-case "stay alive while backgrounded" for that mode only.
+            // against each other. Minimizing to the corner mini-player is NOT this case: it's an
+            // in-app nav pop (no ON_STOP), and it hands the player to LivePlaybackController before
+            // popping (see handedOffToMini below), so teardown deliberately skips release for it.
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
@@ -593,10 +658,45 @@ fun LivePlayerScreen(
                         } else {
                             null
                         },
+                        // Minimize to the corner mini-player -- live channels only. Hands this exact
+                        // ExoPlayer to the controller (seamless, still playing) then pops back to the
+                        // shell where the mini overlay renders it.
+                        onPictureInPicture = if (media.isLive && livePlayback != null && state.currentChannelId != null) {
+                            {
+                                livePlayback.minimize(
+                                    exoPlayer,
+                                    LiveMiniSession(
+                                        channelId = state.currentChannelId!!,
+                                        streamUrl = media.streamUrl,
+                                        title = media.title,
+                                        subtitle = media.subtitle,
+                                    ),
+                                )
+                                handedOffToMini = true
+                                handleBack()
+                            }
+                        } else {
+                            null
+                        },
+                        // Subtitles: enabled once the stream is playing (media resolved); opens the
+                        // picker. Lit while an embedded track is active.
+                        onSubtitles = { showSubtitles = true },
+                        subtitlesActive = subtitleChoice is SubtitleTrack.Embedded,
                         playPauseFocusRequester = hudFocusRequester,
                     )
                 }
                 }
+            }
+
+            if (showSubtitles) {
+                SubtitleMenuDialog(
+                    tracks = textTracks,
+                    selectedKey = (subtitleChoice as? SubtitleTrack.Embedded)?.rowKey(),
+                    onSelectOff = { subtitleChoice = SubtitleTrack.Off; showSubtitles = false },
+                    onSelectTrack = { subtitleChoice = it; showSubtitles = false },
+                    onDismiss = { showSubtitles = false },
+                    detectedLangs = detectedLangs,
+                )
             }
         }
     }

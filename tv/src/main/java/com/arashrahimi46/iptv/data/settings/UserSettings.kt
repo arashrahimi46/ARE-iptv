@@ -15,6 +15,11 @@ private val Context.dataStore by preferencesDataStore(name = "are_iptv_settings"
 /** Which player handles playback -- persisted only, see [UserSettings.externalPlayer] doc. */
 enum class ExternalPlayerChoice { BUILT_IN, VLC, MX }
 
+/** How the docked mini-player avoids covering the tab content behind it: [DODGE] slides it to the
+ * free corner when focus reaches its slot (returning home when focus leaves); [FADE] keeps it put
+ * but fades+shrinks it while the user browses. See [com.arashrahimi46.iptv.ui.player.LiveMiniPlayerOverlay]. */
+enum class MiniPlayerBehavior { DODGE, FADE }
+
 /**
  * Preferences DataStore for app-wide settings that outlive a single screen.
  * Fully wired to the real Settings screen (Phase 4) -- see
@@ -29,6 +34,7 @@ class UserSettings(private val context: Context) {
         val AUTOPLAY_NEXT_EPISODE = booleanPreferencesKey("autoplay_next_episode")
         val PICTURE_IN_PICTURE = booleanPreferencesKey("picture_in_picture")
         val EXTERNAL_PLAYER = stringPreferencesKey("external_player")
+        val MINI_PLAYER_BEHAVIOR = stringPreferencesKey("mini_player_behavior")
         val PARENTAL_LOCK_ENABLED = booleanPreferencesKey("parental_lock_enabled")
         val PARENTAL_PIN_HASH = stringPreferencesKey("parental_pin_hash")
         val PARENTAL_PIN_SALT = stringPreferencesKey("parental_pin_salt")
@@ -67,6 +73,11 @@ class UserSettings(private val context: Context) {
     /** Persisted choice only -- doesn't launch an external player intent yet. */
     val externalPlayer: Flow<ExternalPlayerChoice> = context.dataStore.data.map { prefs ->
         prefs[Keys.EXTERNAL_PLAYER]?.let { runCatching { ExternalPlayerChoice.valueOf(it) }.getOrNull() } ?: ExternalPlayerChoice.BUILT_IN
+    }
+
+    /** Docked mini-player anti-occlusion behavior; defaults to [MiniPlayerBehavior.DODGE]. */
+    val miniPlayerBehavior: Flow<MiniPlayerBehavior> = context.dataStore.data.map { prefs ->
+        prefs[Keys.MINI_PLAYER_BEHAVIOR]?.let { runCatching { MiniPlayerBehavior.valueOf(it) }.getOrNull() } ?: MiniPlayerBehavior.DODGE
     }
 
     val isParentalLockEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.PARENTAL_LOCK_ENABLED] ?: false }
@@ -110,6 +121,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setExternalPlayer(choice: ExternalPlayerChoice) {
         context.dataStore.edit { it[Keys.EXTERNAL_PLAYER] = choice.name }
+    }
+
+    suspend fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) {
+        context.dataStore.edit { it[Keys.MINI_PLAYER_BEHAVIOR] = choice.name }
     }
 
     suspend fun setParentalLockEnabled(enabled: Boolean) {

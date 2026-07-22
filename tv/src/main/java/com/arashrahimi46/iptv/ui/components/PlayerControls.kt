@@ -69,6 +69,14 @@ fun ArePlayerControls(
     /** Favorite state of whatever is playing; null hides the favorite affordance entirely. */
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
+    /** Minimizes the fullscreen player to the in-app corner mini-player (live channels only).
+     * Null for VOD / when unavailable -- the PiP glyph stays a dimmed, non-focusable placeholder. */
+    onPictureInPicture: (() -> Unit)? = null,
+    /** Opens the subtitle picker (Off / embedded tracks / online search). Null keeps the CC glyph
+     * a dimmed placeholder (e.g. before a stream's tracks are known). */
+    onSubtitles: (() -> Unit)? = null,
+    /** True when a subtitle track is currently active -- lights the CC button so the user can see subtitles are on. */
+    subtitlesActive: Boolean = false,
     // When set, the play/pause button carries this requester so the screen can move
     // focus straight onto it when the panel is opened.
     playPauseFocusRequester: FocusRequester? = null,
@@ -151,15 +159,22 @@ fun ArePlayerControls(
             Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
             AreIconButton(Icons.Filled.SkipNext, "Jump to live", onClick = onJumpToLive, variant = AreIconButtonVariant.Glass)
             Box(Modifier.weight(1f))
-            // Audio track / subtitle track selection need a real track-selector UI (which
-            // ExoPlayer track group to expose, how to present it) -- a product decision to make
-            // before building, not something to fake. Picture-in-picture is an existing, accepted
-            // v1 scope cut (see LivePlayerScreen's PiP comment). All three were focusable no-ops
-            // before this fix -- a silent dead-focus-trap, the same defect class QA found on the
-            // avatar icon and the "+" Add Playlist glyph -- so all three render as static, dimmed,
-            // non-focusable glyphs until built for real, same treatment as Add Playlist.
+            // Audio track selection still needs a real track-selector UI -- stays a dimmed,
+            // non-focusable placeholder (same treatment as Add Playlist) until built.
             StaticGlyph(Icons.Filled.VolumeUp, "Audio track")
-            StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
+            // Subtitles: real picker (Off / embedded tracks / online search) once tracks are known;
+            // a dimmed placeholder before then (onSubtitles == null). Lit when a track is active.
+            if (onSubtitles != null) {
+                AreIconButton(
+                    Icons.Filled.ClosedCaption,
+                    "Subtitles",
+                    onClick = onSubtitles,
+                    variant = AreIconButtonVariant.Glass,
+                    active = subtitlesActive,
+                )
+            } else {
+                StaticGlyph(Icons.Filled.ClosedCaption, "Subtitles")
+            }
             // Multi-view button intentionally removed for now -- feature isn't ready. Re-add here
             // (wired to onMultiView) once it ships.
             if (onToggleFavorite != null) {
@@ -170,7 +185,13 @@ fun ArePlayerControls(
                     variant = AreIconButtonVariant.Glass,
                 )
             }
-            StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+            // Live: a real button that minimizes to the in-app corner mini-player. VOD: unchanged
+            // dimmed placeholder (minimize-and-browse only makes sense for live channels).
+            if (onPictureInPicture != null) {
+                AreIconButton(Icons.Filled.PictureInPicture, "Minimize to corner", onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
+            } else {
+                StaticGlyph(Icons.Filled.PictureInPicture, "Picture in picture")
+            }
             // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
             // guide" below (which leaves the player for the full multi-channel TV Guide).
             AreIconButton(Icons.Filled.Schedule, "Up next", onClick = onUpNext, variant = AreIconButtonVariant.Glass)

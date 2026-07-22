@@ -6,9 +6,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import com.arashrahimi46.iptv.ui.player.LiveMiniPlayerOverlay
+import com.arashrahimi46.iptv.ui.player.LivePlaybackController
+import com.arashrahimi46.iptv.ui.player.LocalLivePlaybackController
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.onFocusedBoundsChanged
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -21,6 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -37,6 +49,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.detail.DetailScreen
 import com.arashrahimi46.iptv.ui.detail.PlayTarget
@@ -65,7 +78,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AreIptvApp()
+            // One Activity-scoped controller owns the in-app "minimized to a corner" live player's
+            // ExoPlayer while it's docked, so playback survives navigating between the fullscreen
+            // player and the shell's tabs. Released when the Activity's composition tears down.
+            val livePlayback = androidx.compose.runtime.remember { LivePlaybackController() }
+            DisposableEffect(Unit) { onDispose { livePlayback.closeMini() } }
+            CompositionLocalProvider(LocalLivePlaybackController provides livePlayback) {
+                AreIptvApp()
+            }
         }
     }
 }
@@ -255,14 +275,26 @@ fun AreIptvApp() {
  * the INNER controller (content-only swap); player/detail open on the OUTER
  * [rootNav] as full-bleed overlays.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     val innerNav = rememberNavController()
     val backStackEntry by innerNav.currentBackStackEntryAsState()
     // Route pattern -> base id (e.g. "search?category={category}" -> "search").
     val activeNav = (backStackEntry?.destination?.route ?: "home").substringBefore("?")
-    val activity = LocalContext.current as? Activity
+    val context = LocalContext.current
+    val activity = context as? Activity
     var showExitDialog by remember { mutableStateOf(false) }
+    val livePlayback = LocalLivePlaybackController.current
+    // Focus target for the docked mini-player -- so the remote's Window/PiP key can jump focus
+    // straight to it from any tab (the tab grids otherwise trap D-pad focus).
+    val miniFocus = remember { FocusRequester() }
+    // Mini-player anti-occlusion: the user's DODGE-vs-FADE choice + reduced-motion, and the rect of
+    // whatever tab content currently holds focus (fed to the overlay so it can slide out of the way).
+    val settings = remember { UserSettings(context) }
+    val miniBehavior by settings.miniPlayerBehavior.collectAsState(initial = MiniPlayerBehavior.DODGE)
+    val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
+    var focusedContentBounds by remember { mutableStateOf<Rect?>(null) }
 
     // Honor a tab requested by a full-bleed caller (player -> open guide) once.
     LaunchedEffect(initialTab) {
@@ -275,7 +307,28 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
         rootNav.navigate("detail/$contentType/$contentId")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            // onPreviewKeyEvent on this ancestor sees the key BEFORE the focused tab content, so
+            // the remote's dedicated Window/PiP key reaches the docked mini even while a lazy grid
+            // holds focus. Fires once per press (KeyUp) to avoid auto-repeat re-triggering.
+            .onPreviewKeyEvent { event ->
+                val isWindowKey = event.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_WINDOW
+                if (isWindowKey && event.type == KeyEventType.KeyUp &&
+                    livePlayback?.mode == com.arashrahimi46.iptv.ui.player.LiveMiniMode.Mini
+                ) {
+                    runCatching { miniFocus.requestFocus() }
+                    true
+                } else {
+                    false
+                }
+            },
+    ) {
+    // Report the focused tab content's bounds to the mini overlay so it can dodge out of the way.
+    // Scoped to the shell only (NOT the whole outer Box) so focus landing on the mini itself --
+    // which sits outside this wrapper -- reports null instead of the mini self-triggering a dodge.
+    Box(modifier = Modifier.fillMaxSize().onFocusedBoundsChanged { focusedContentBounds = it?.boundsInRoot() }) {
     AreIptvAppShell(
         activeNav = activeNav,
         onNavSelect = { id ->
@@ -357,6 +410,21 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 ScrollableTab { SettingsScreen() }
             }
         }
+    }
+    } // end focused-bounds wrapper
+
+    // In-app corner mini-player, drawn over ALL tab content so a docked live channel stays visible
+    // and selectable on every tab. Short OK expands it back to fullscreen (the same instance, no
+    // re-buffer); long OK opens its Stop dialog. Only renders while a live channel is docked.
+    livePlayback?.let { controller ->
+        LiveMiniPlayerOverlay(
+            controller = controller,
+            onExpand = { channelId -> rootNav.navigate("player/$channelId") },
+            behavior = miniBehavior,
+            focusedContentBounds = focusedContentBounds,
+            reducedMotion = reducedMotion,
+            focusRequester = miniFocus,
+        )
     }
 
     }

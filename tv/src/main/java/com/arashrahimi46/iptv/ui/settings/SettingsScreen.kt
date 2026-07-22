@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.VpnKey
@@ -41,6 +42,7 @@ import android.content.Intent
 import android.net.Uri
 import com.arashrahimi46.iptv.BuildConfig
 import com.arashrahimi46.iptv.data.settings.ExternalPlayerChoice
+import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
@@ -89,6 +91,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val isPictureInPicture by viewModel.isPictureInPicture.collectAsState()
     val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
     val externalPlayer by viewModel.externalPlayer.collectAsState()
+    val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
     val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
     // null = the PIN state hasn't loaded from DataStore yet. Until it resolves the PIN row and
     // lock toggle are disabled, so a fast tap during that window can't route to a no-verify
@@ -148,6 +151,22 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             ) {
                 // Storage-only per explicit product-lead scoping -- see UserSettings.isPictureInPicture.
                 AreSwitch(checked = isPictureInPicture, onCheckedChange = viewModel::setPictureInPicture)
+            }
+            SettingsRow(
+                icon = Icons.Filled.OpenWith,
+                title = "Mini-player behavior",
+                desc = "When you browse near the docked mini-player: slide it to the free corner, or fade and shrink it.",
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MiniPlayerBehavior.entries.forEach { choice ->
+                        AreChip(
+                            text = choice.label(),
+                            selected = choice == miniPlayerBehavior,
+                            onClick = { viewModel.setMiniPlayerBehavior(choice) },
+                            size = com.arashrahimi46.iptv.ui.components.AreChipSize.Small,
+                        )
+                    }
+                }
             }
             SettingsRow(icon = Icons.Filled.OpenInNew, title = "External player", desc = "Choice is saved; playback still uses the built-in player.") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -264,6 +283,11 @@ private fun ExternalPlayerChoice.label(): String = when (this) {
     ExternalPlayerChoice.BUILT_IN -> "Built-in"
     ExternalPlayerChoice.VLC -> "VLC"
     ExternalPlayerChoice.MX -> "MX"
+}
+
+private fun MiniPlayerBehavior.label(): String = when (this) {
+    MiniPlayerBehavior.DODGE -> "Auto-dodge"
+    MiniPlayerBehavior.FADE -> "Fade & shrink"
 }
 
 @Composable
