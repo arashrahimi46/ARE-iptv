@@ -48,6 +48,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -294,6 +295,15 @@ fun LivePlayerScreen(
                     playWhenReady = true
                     prepare()
                 }.also { playerError = null }
+            }
+
+            // Keep the screen awake while actually playing so the system screensaver / display
+            // sleep doesn't kick in mid-stream on an idle remote. Cleared when paused (so a long
+            // pause can still sleep) and when the player leaves.
+            val view = LocalView.current
+            DisposableEffect(playing) {
+                view.keepScreenOn = playing
+                onDispose { view.keepScreenOn = false }
             }
 
             DisposableEffect(exoPlayer) {

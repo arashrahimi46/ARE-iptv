@@ -12,15 +12,18 @@ import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Search.jsx's scope chips (All / Live TV / Movies / Series) -- Catch-up is an accepted v1
@@ -45,7 +48,7 @@ data class SearchUiState(
  * Android TV's native IME via [com.arashrahimi46.iptv.ui.components.AreTextField]
  * (issue #10 -- no custom on-screen keyboard).
  */
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SearchViewModel(app: Application) : AndroidViewModel(app) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
     private val settings = UserSettings(app)
@@ -64,22 +67,31 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     init {
-        // DB-side search: LIKE + category queries with a bounded LIMIT, run per keystroke via
-        // mapLatest (older in-flight queries cancel). Never loads the catalog into memory --
-        // essential at 100k+ channels / 300k+ titles.
-        combine(settings.activeSourceId, _query, _categoryFilter, _scope) { sid, query, categoryFilter, scope ->
+        // The text field's displayed query ([SearchUiState.query]) is updated SYNCHRONOUSLY in
+        // setQuery -- never gated behind the DB query -- so typing is instant and never drops a
+        // keystroke (the old pipeline only surfaced the query after the search returned, which on
+        // a huge catalog lagged the field enough to swallow the next character).
+        //
+        // The actual search is debounced: it runs only after typing pauses (empty query is
+        // instant, so clearing / category browsing isn't delayed), and only its RESULTS are
+        // merged into the state. DB-side LIKE + category queries stay bounded by LIMIT and
+        // cancel-on-newer via mapLatest -- never loads the catalog into memory.
+        val debouncedQuery = _query.debounce { q -> if (q.isEmpty()) 0L else SEARCH_DEBOUNCE_MS }
+        combine(settings.activeSourceId, debouncedQuery, _categoryFilter, _scope) { sid, query, categoryFilter, scope ->
             SearchInputs(sid, query, categoryFilter, scope)
         }
-            .mapLatest { buildState(it) }
-            .onEach { _uiState.value = it }
+            .mapLatest { buildResults(it) }
+            .onEach { r -> _uiState.update { it.copy(hasSource = r.hasSource, channelResults = r.channels, titleResults = r.titles) } }
             .launchIn(viewModelScope)
     }
 
     private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope)
 
-    private suspend fun buildState(inputs: SearchInputs): SearchUiState {
+    private data class SearchResults(val hasSource: Boolean, val channels: List<Channel>, val titles: List<VodTitle>)
+
+    private suspend fun buildResults(inputs: SearchInputs): SearchResults {
         val (sourceId, query, categoryFilter, scope) = inputs
-        if (sourceId == null) return SearchUiState(hasSource = false, query = query, categoryFilter = categoryFilter, scope = scope)
+        if (sourceId == null) return SearchResults(hasSource = false, channels = emptyList(), titles = emptyList())
         val wantChannels = scope == SearchScope.All || scope == SearchScope.LiveTv
         val wantMovies = scope == SearchScope.All || scope == SearchScope.Movies
         val wantSeries = scope == SearchScope.All || scope == SearchScope.Series
@@ -88,29 +100,35 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
             val channelResults = if (wantChannels) repository.channelsByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()
             val titleResults = (if (wantMovies) repository.moviesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()) +
                 (if (wantSeries) repository.seriesByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList())
-            return SearchUiState(hasSource = true, query = query, categoryFilter = categoryFilter, scope = scope, channelResults = channelResults, titleResults = titleResults)
+            return SearchResults(hasSource = true, channels = channelResults, titles = titleResults)
         }
         val trimmed = query.trim()
-        if (trimmed.isEmpty()) return SearchUiState(hasSource = true, query = query, scope = scope)
+        // Require at least MIN_QUERY_LENGTH characters -- a single letter matches almost the whole
+        // catalog and isn't a useful search.
+        if (trimmed.length < MIN_QUERY_LENGTH) return SearchResults(hasSource = true, channels = emptyList(), titles = emptyList())
         val channelResults = if (wantChannels) repository.searchChannels(sourceId, trimmed, RESULT_LIMIT) else emptyList()
         val titleResults = (if (wantMovies) repository.searchMovies(sourceId, trimmed, RESULT_LIMIT) else emptyList()) +
             (if (wantSeries) repository.searchSeries(sourceId, trimmed, RESULT_LIMIT) else emptyList())
-        return SearchUiState(hasSource = true, query = query, scope = scope, channelResults = channelResults, titleResults = titleResults)
+        return SearchResults(hasSource = true, channels = channelResults, titles = titleResults)
     }
 
     fun setQuery(value: String) {
         _categoryFilter.value = null
         _query.value = value
+        // Reflect the typed text instantly, independent of the debounced search below.
+        _uiState.update { it.copy(query = value, categoryFilter = null) }
     }
 
     /** Null clears back to normal text search (e.g. the category header's "Clear" action). */
     fun setCategoryFilter(category: String?) {
         _categoryFilter.value = category
         _query.value = ""
+        _uiState.update { it.copy(categoryFilter = category, query = "") }
     }
 
     fun setScope(scope: SearchScope) {
         _scope.value = scope
+        _uiState.update { it.copy(scope = scope) }
     }
 
     fun toggleChannelFavorite(channelId: Long) {
@@ -125,6 +143,13 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
         /** Max results per catalog (channels / movies / series) -- matches the old in-memory `.take(30)`. */
         private const val RESULT_LIMIT = 30
+
+        /** Minimum typed characters before a text search runs (a single letter is not a useful query). */
+        private const val MIN_QUERY_LENGTH = 2
+
+        /** How long typing must pause before the search fires -- keeps a huge catalog from being
+         * queried on every keystroke while staying responsive. */
+        private const val SEARCH_DEBOUNCE_MS = 250L
 
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
