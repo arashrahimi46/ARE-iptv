@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -88,6 +89,7 @@ fun HomeSectionEditRow(
     onDrop: () -> Unit,
     onToggleHidden: () -> Unit,
     modifier: Modifier = Modifier,
+    onDelete: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -179,6 +181,15 @@ fun HomeSectionEditRow(
                 variant = AreIconButtonVariant.Ghost,
                 size = AreIconButtonSize.Small,
             )
+            if (onDelete != null) {
+                AreIconButton(
+                    icon = Icons.Filled.Delete,
+                    contentDescription = "Remove section",
+                    onClick = onDelete,
+                    variant = AreIconButtonVariant.Ghost,
+                    size = AreIconButtonSize.Small,
+                )
+            }
         }
         Box(modifier = if (hidden) Modifier.alpha(0.35f) else Modifier) {
             content()

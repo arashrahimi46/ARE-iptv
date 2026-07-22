@@ -183,6 +183,15 @@ fun HomeScreen(
                         workingSections = updated
                         viewModel.updateLayout(updated)
                     },
+                    onDelete = if (section is HomeSection.Category) {
+                        {
+                            val updated = workingSections.toMutableList().apply { removeAt(index) }
+                            workingSections = updated
+                            viewModel.updateLayout(updated)
+                        }
+                    } else {
+                        null
+                    },
                 ) {
                     HomeSectionContent(
                         section = section,
