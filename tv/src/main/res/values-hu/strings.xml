@@ -199,7 +199,7 @@
     <string name="pin_checking">Ellenőrzés…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Szakasz hozzáadása</string>
+    <string name="home_add_section">Szakasz hozzáadása</string>
     <string name="home_remove_continue_watching_title">Eltávolítja a Megtekintés folytatásából?</string>
     <string name="home_remove_continue_watching_body">A(z) „%1$s” nem jelenik meg itt többé. A helye nem marad megjegyezve.</string>
     <string name="home_loading_catalog">A katalógusa betöltése…</string>

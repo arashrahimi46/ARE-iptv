@@ -35,6 +35,12 @@ class SelectSourceViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Permanently deletes a playlist and all its data (see [PlaylistRepository.deleteSource]); the
+     *  [sources] list refreshes itself via its Flow once the rows are gone. */
+    fun delete(id: Long) {
+        viewModelScope.launch { repository.deleteSource(id) }
+    }
+
     companion object {
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

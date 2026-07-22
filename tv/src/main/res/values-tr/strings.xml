@@ -199,7 +199,7 @@
     <string name="pin_checking">Kontrol ediliyor…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Bölüm ekle</string>
+    <string name="home_add_section">Bölüm ekle</string>
     <string name="home_remove_continue_watching_title">İzlemeye Devam Et\'ten kaldırılsın mı?</string>
     <string name="home_remove_continue_watching_body">“%1$s” burada artık gösterilmeyecek. Kaldığınız yer saklanmaz.</string>
     <string name="home_loading_catalog">Kataloğunuz yükleniyor…</string>

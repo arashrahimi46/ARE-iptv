@@ -87,6 +87,10 @@
     <string name="sources_type_xtream">Xtream</string>
     <string name="sources_type_m3u">M3U</string>
     <string name="sources_add_new_playlist">Add new playlist</string>
+    <string name="sources_delete_title">Delete playlist?</string>
+    <string name="sources_delete_body">This permanently deletes “%1$s” and everything in it — channels, movies, series, favorites and watch history — from this device. This can\'t be undone.</string>
+    <string name="sources_delete_hint">Hold OK on a playlist to delete it.</string>
+    <string name="action_delete">Delete</string>
 
     <!-- Language selector / first run -->
     <string name="language_select_title">Choose your language</string>
@@ -203,7 +207,7 @@
     <string name="pin_checking">Checking…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Add section</string>
+    <string name="home_add_section">Add section</string>
     <string name="home_remove_continue_watching_title">Remove from Continue Watching?</string>
     <string name="home_remove_continue_watching_body">“%1$s” will stop showing here. Your place isn\'t kept.</string>
     <string name="home_loading_catalog">Loading your catalog…</string>

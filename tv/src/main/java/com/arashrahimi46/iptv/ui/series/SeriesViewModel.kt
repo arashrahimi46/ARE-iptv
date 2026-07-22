@@ -73,14 +73,21 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
                     // Parental lock: hide adult genres and subtract them from the "All" total.
                     val visibleCounts = if (parentalLock) counts.filterNot { AdultContentFilter.isAdult(it.name) } else counts
                     val allTotal = if (parentalLock) total - counts.filter { AdultContentFilter.isAdult(it.name) }.sumOf { it.count } else total
-                    // Pinned genres float to the top (alphabetical); "All series" is always first.
+                    // Pinned genres float to the top (alphabetical); "All series" sits right after the "Favorites" row.
                     val (pinnedCats, others) = visibleCounts
                         .map { SeriesCategorySummary(it.name, it.count, it.name in pinned) }
                         .partition { it.pinned }
-                    val categories = listOf(SeriesCategorySummary(getApplication<Application>().getString(R.string.browse_all_series), allTotal)) +
+                    val nonFav = listOf(SeriesCategorySummary(getApplication<Application>().getString(R.string.browse_all_series), allTotal)) +
                         pinnedCats.sortedBy { it.name.lowercase() } + others
-                    val index = if (selectedName == null) 0
-                        else categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 0 }
+                    nonFav to selectedName
+                }.combine(repository.favoriteSeriesCount(sourceId)) { (nonFav, selectedName), favCount ->
+                    // "Favorites" always leads the column (order: favorite, [all], pinned, rest).
+                    val categories = listOf(SeriesCategorySummary(getApplication<Application>().getString(R.string.nav_favorites), favCount)) + nonFav
+                    val index = when (selectedName) {
+                        FAVORITES -> 0
+                        null -> 1
+                        else -> categories.indexOfFirst { it.name == selectedName }.let { if (it >= 0) it else 1 }
+                    }
                     SeriesUiState(hasSource = true, categories = categories, selectedCategoryIndex = index)
                 }
             }
@@ -94,18 +101,26 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
     ) { sourceId, category, parentalLock -> Triple(sourceId, category, parentalLock) }
         .flatMapLatest { (sourceId, category, parentalLock) ->
             if (sourceId == null) flowOf(PagingData.empty())
-            else browsePager { repository.pagingSeries(sourceId, category) }.flow
-                .let { flow -> if (parentalLock) flow.map { it.filter { s -> !AdultContentFilter.isAdult(s.categoryName) } } else flow }
+            else {
+                val pager = if (category == FAVORITES) browsePager { repository.pagingFavoriteSeries(sourceId) }
+                    else browsePager { repository.pagingSeries(sourceId, category) }
+                pager.flow
+                    .let { flow -> if (parentalLock) flow.map { it.filter { s -> !AdultContentFilter.isAdult(s.categoryName) } } else flow }
+            }
         }
         .cachedIn(viewModelScope)
 
     fun selectCategory(index: Int) {
-        selectedCategoryName.value = if (index == 0) null else uiState.value.categories.getOrNull(index)?.name
+        selectedCategoryName.value = when (index) {
+            0 -> FAVORITES
+            1 -> null
+            else -> uiState.value.categories.getOrNull(index)?.name
+        }
     }
 
-    /** Pin/unpin the genre at [index] (index 0 = "All series" is not pinnable). */
+    /** Pin/unpin the genre at [index] (index 0 = "Favorites", 1 = "All series" -- neither is pinnable). */
     fun togglePin(index: Int) {
-        if (index == 0) return
+        if (index <= 1) return
         val name = uiState.value.categories.getOrNull(index)?.name ?: return
         viewModelScope.launch { settings.togglePinnedCategory(PIN_NAMESPACE, name) }
     }
@@ -116,6 +131,10 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
 
     companion object {
         private const val PIN_NAMESPACE = "series"
+
+        /** Sentinel [selectedCategoryName] value for the "Favorites" pseudo-category (null = "All").
+         *  NUL-wrapped so it can never collide with a real provider category name. */
+        private const val FAVORITES = " favorites "
 
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

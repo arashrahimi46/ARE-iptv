@@ -74,7 +74,10 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         return
     }
 
-    val categoryOptions = state.categories.map { BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned) }
+    // index 0 = "Favorites", 1 = "All movies" -- neither is pinnable.
+    val categoryOptions = state.categories.mapIndexed { index, it ->
+        BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned, pinnable = index >= 2)
+    }
 
     BrowseLayout(
         title = stringResource(R.string.movies_title),

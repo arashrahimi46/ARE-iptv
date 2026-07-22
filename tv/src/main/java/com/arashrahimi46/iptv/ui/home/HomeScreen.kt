@@ -5,6 +5,9 @@ import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.round
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.unit.dp
@@ -71,6 +75,7 @@ import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
  * real source category. Normal mode is unchanged: hidden sections are omitted and empty sections
  * auto-hide, same as before customization existed.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onChannelSelected: (Channel) -> Unit,
@@ -116,8 +121,23 @@ fun HomeScreen(
     // a plain forEachIndexed loop has no per-item key, so recomposition alone doesn't move focus
     // for us the way a keyed lazy list might).
     val rowFocusRequesters = remember(workingSections.size) { List(workingSections.size) { FocusRequester() } }
+    // Attached to the grabbed row so the scroll container follows it. The focused node MOVES to a
+    // new slot without a fresh focus event, so verticalScroll's on-focus auto-scroll never
+    // re-fires when a section is pushed past the viewport edge -- we pull it into view explicitly.
+    val bringGrabbedIntoView = remember { BringIntoViewRequester() }
     LaunchedEffect(grabbedIndex) {
-        grabbedIndex?.let { index -> runCatching { rowFocusRequesters.getOrNull(index)?.requestFocus() } }
+        grabbedIndex?.let { index ->
+            runCatching { rowFocusRequesters.getOrNull(index)?.requestFocus() }
+            // The row springs to its new slot via animatePlacement. A bringIntoView fired now sees
+            // the row still at its OLD, on-screen position and no-ops; by the time it settles below
+            // the fold nothing has scrolled. Re-issue across the spring's lifetime so a call lands
+            // once the row has actually moved off-screen and scrolls it back into view (each call
+            // is a cheap no-op while the row is already visible).
+            repeat(6) {
+                delay(60)
+                runCatching { bringGrabbedIntoView.bringIntoView() }
+            }
+        }
     }
 
     // Wraps the whole screen (rails Column + the step 6 dialog below) so the dialog actually
@@ -179,6 +199,7 @@ fun HomeScreen(
                 key(homeSectionKey(section)) {
                 HomeSectionEditRow(
                     modifier = Modifier.animatePlacement(),
+                    headerModifier = if (grabbedIndex == index) Modifier.bringIntoViewRequester(bringGrabbedIntoView) else Modifier,
                     label = homeSectionLabel(section),
                     position = index,
                     total = workingSections.size,

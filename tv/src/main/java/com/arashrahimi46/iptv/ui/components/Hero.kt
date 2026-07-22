@@ -77,7 +77,10 @@ fun AreHero(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { badges() }
                 Box(Modifier.height(16.dp))
             }
-            Text(text = title, style = AreIptvTheme.typography.hero, color = Color.White)
+            // textPrimary, not white: the hero has no backdrop image -- it renders over the
+            // surface2->bgSunken gradient, which is LIGHT in light theme, so a white title
+            // washed out entirely (same defect class as the invisible glass back button).
+            Text(text = title, style = AreIptvTheme.typography.hero, color = colors.textPrimary)
             if (meta != null) {
                 Box(Modifier.height(14.dp))
                 Text(text = meta, style = AreIptvTheme.typography.label, color = colors.textSecondary)

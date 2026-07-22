@@ -172,16 +172,18 @@ fun AreIptvApp() {
     // destination, so a source that already exists on launch doesn't flash Onboarding.
     if (activeSourceId == UNKNOWN || hasAcceptedTerms == null || hasSelectedLanguage == null || sources == null) return
     val hasMultipleSources = (sources?.size ?: 0) > 1
+    val hasAnySource = (sources?.isNotEmpty() == true)
 
-    // A non-null activeSourceId means at least one playlist has been added. With more than
-    // one, land on the picker so the user can see and choose which added playlist to open
-    // (their existing sources were never listed before); with exactly one, there's nothing
-    // to pick between, so go straight to the shell as before.
+    // Onboarding shows only when NO playlist exists at all -- keyed off the source list, not
+    // activeSourceId, because deleting the active playlist clears the active pointer while others
+    // may remain: that case must land on the picker (choose a surviving playlist), not shove the
+    // user back into add-a-playlist. With >1 source, or exactly one but none active (the active one
+    // was just deleted), land on the picker; a single active source goes straight to the shell.
     val startDestination = when {
         hasSelectedLanguage == false -> "language"
         hasAcceptedTerms == false -> "privacy"
-        activeSourceId == null -> "onboarding"
-        hasMultipleSources -> "sources"
+        !hasAnySource -> "onboarding"
+        activeSourceId == null || hasMultipleSources -> "sources"
         else -> "shell"
     }
 
@@ -525,7 +527,13 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     // Back at the shell's start tab exits the app -- intercept to confirm first.
     // Disabled while the dialog is open (the Dialog window owns back then).
     BackHandler(enabled = !showExitDialog) {
-        if (!innerNav.popBackStack()) showExitDialog = true
+        if (homeEditMode && activeNav == "home") {
+            // In Home edit mode, Back means "done": every move/hide/delete is already persisted
+            // as it happens, so just leave edit mode instead of falling through to the exit prompt.
+            homeEditMode = false
+        } else if (!innerNav.popBackStack()) {
+            showExitDialog = true
+        }
     }
 }
 

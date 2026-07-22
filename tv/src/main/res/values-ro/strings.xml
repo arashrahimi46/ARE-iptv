@@ -199,7 +199,7 @@
     <string name="pin_checking">Se verifică…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Adaugă secțiune</string>
+    <string name="home_add_section">Adaugă secțiune</string>
     <string name="home_remove_continue_watching_title">Elimini din Continuă vizionarea?</string>
     <string name="home_remove_continue_watching_body">„%1$s” nu va mai fi afișat aici. Locul tău nu este păstrat.</string>
     <string name="home_loading_catalog">Se încarcă catalogul tău…</string>

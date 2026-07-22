@@ -67,7 +67,10 @@ fun AreCategoryCard(
         modifier = modifier.width(width).aspectRatio(if (compact) 16f / 7f else 16f / 10f),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = colors.surface2,
+        // surface2 (#F7F9FC) vanished on bgBase (#F3F5F9) in light theme. surface1 (raised
+        // white) + a border reads as a distinct card in both themes, focused or not.
+        backgroundColor = colors.surface1,
+        borderColor = colors.borderDefault,
     ) { _, _ ->
         Box(Modifier.fillMaxSize()) {
             Icon(

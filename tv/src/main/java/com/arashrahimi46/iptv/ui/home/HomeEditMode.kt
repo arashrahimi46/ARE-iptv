@@ -92,6 +92,10 @@ fun HomeSectionEditRow(
     onDrop: () -> Unit,
     onToggleHidden: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Applied to the small header row (grab handle + label). The reorder-follow bring-into-view
+     *  anchors here, NOT on the whole row -- a row taller than the viewport can't be fully shown,
+     *  which left the handle off-screen after a move. */
+    headerModifier: Modifier = Modifier,
     onDelete: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
@@ -104,7 +108,7 @@ fun HomeSectionEditRow(
             .padding(vertical = 4.dp),
     ) {
         Row(
-            modifier = Modifier
+            modifier = headerModifier
                 .fillMaxWidth()
                 .padding(horizontal = AreIptvTheme.spacing.safeX)
                 .padding(bottom = 2.dp),

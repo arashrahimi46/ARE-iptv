@@ -199,7 +199,7 @@
     <string name="pin_checking">Sjekker…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Legg til seksjon</string>
+    <string name="home_add_section">Legg til seksjon</string>
     <string name="home_remove_continue_watching_title">Fjerne fra Fortsett å se?</string>
     <string name="home_remove_continue_watching_body">“%1$s” vises ikke lenger her. Plassen din blir ikke lagret.</string>
     <string name="home_loading_catalog">Laster katalogen din…</string>

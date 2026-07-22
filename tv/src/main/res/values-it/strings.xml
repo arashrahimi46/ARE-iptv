@@ -199,7 +199,7 @@
     <string name="pin_checking">Verifica…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Aggiungi sezione</string>
+    <string name="home_add_section">Aggiungi sezione</string>
     <string name="home_remove_continue_watching_title">Rimuovere da Continua a guardare?</string>
     <string name="home_remove_continue_watching_body">“%1$s” non verrà più mostrato qui. Il tuo progresso non viene mantenuto.</string>
     <string name="home_loading_catalog">Caricamento del catalogo…</string>

@@ -199,7 +199,7 @@
     <string name="pin_checking">Έλεγχος…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Προσθήκη ενότητας</string>
+    <string name="home_add_section">Προσθήκη ενότητας</string>
     <string name="home_remove_continue_watching_title">Αφαίρεση από τη Συνέχιση προβολής;</string>
     <string name="home_remove_continue_watching_body">Το «%1$s» δεν θα εμφανίζεται πλέον εδώ. Η θέση σας δεν διατηρείται.</string>
     <string name="home_loading_catalog">Φόρτωση του καταλόγου σας…</string>

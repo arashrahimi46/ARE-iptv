@@ -199,7 +199,7 @@
     <string name="pin_checking">Kontrola…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Přidat sekci</string>
+    <string name="home_add_section">Přidat sekci</string>
     <string name="home_remove_continue_watching_title">Odebrat z Pokračovat ve sledování?</string>
     <string name="home_remove_continue_watching_body">„%1$s“ se zde přestane zobrazovat. Vaše pozice se neuloží.</string>
     <string name="home_loading_catalog">Načítání vašeho katalogu…</string>

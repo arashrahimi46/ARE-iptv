@@ -199,7 +199,7 @@
     <string name="pin_checking">Yoxlanılır…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Bölmə əlavə et</string>
+    <string name="home_add_section">Bölmə əlavə et</string>
     <string name="home_remove_continue_watching_title">İzləməyə davam etdən silinsin?</string>
     <string name="home_remove_continue_watching_body">“%1$s” burada göstərilməyi dayandıracaq. Yeriniz saxlanılmır.</string>
     <string name="home_loading_catalog">Kataloqunuz yüklənir…</string>

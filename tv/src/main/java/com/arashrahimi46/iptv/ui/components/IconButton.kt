@@ -57,7 +57,9 @@ fun AreIconButton(
 
     val (background, contentColor) = when (variant) {
         AreIconButtonVariant.Solid -> colors.surface2 to colors.textPrimary
-        AreIconButtonVariant.Glass -> colors.surfaceGlass to Color.White
+        // textPrimary (not a hardcoded white) so glass icons read on the frosted panel in BOTH
+        // themes -- white-on-60%-white was invisible in light mode (e.g. the player HUD).
+        AreIconButtonVariant.Glass -> colors.surfaceGlass to colors.textPrimary
         AreIconButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
     }
     val resolvedBackground = if (active) colors.accent else background

@@ -112,6 +112,22 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND categoryName = :category ORDER BY name, id")
     fun pagingByCategory(sourceId: Long, category: String): PagingSource<Int, Channel>
 
+    /** Favorited channels of the active source, most-recently-favorited first -- backs the
+     *  "Favorites" pseudo-category at the top of the browse column. Keyed the same way as the
+     *  favorite-icon queries (COALESCE(externalId, name, streamUrl)). */
+    @Query(
+        "SELECT c.* FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+            "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE' ORDER BY f.addedAtMs DESC, c.id",
+    )
+    fun pagingFavorites(sourceId: Long): PagingSource<Int, Channel>
+
+    /** Live count of favorited channels in the source -- the "Favorites" browse-row total. */
+    @Query(
+        "SELECT COUNT(*) FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+            "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE'",
+    )
+    fun observeFavoriteCount(sourceId: Long): Flow<Int>
+
     /** Category column data (GROUP BY) -- no catalog rows loaded. */
     @Query("SELECT categoryName AS name, COUNT(*) AS count FROM channels WHERE sourceId = :sourceId AND categoryName IS NOT NULL GROUP BY categoryName ORDER BY categoryName")
     fun observeCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
@@ -232,6 +248,22 @@ interface VodTitleDao {
     @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries AND categoryName = :category ORDER BY name, id")
     fun pagingByCategory(sourceId: Long, isSeries: Boolean, category: String): PagingSource<Int, VodTitle>
 
+    /** Favorited movies/series of the active source, most-recently-favorited first -- backs the
+     *  "Favorites" pseudo-category at the top of the browse column. [contentType] (MOVIE/SERIES)
+     *  is correlated with [isSeries] so a favorited movie never surfaces on the series page. */
+    @Query(
+        "SELECT v.* FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+            "WHERE v.sourceId = :sourceId AND v.isSeries = :isSeries AND f.contentType = :contentType ORDER BY f.addedAtMs DESC, v.id",
+    )
+    fun pagingFavorites(sourceId: Long, isSeries: Boolean, contentType: ContentType): PagingSource<Int, VodTitle>
+
+    /** Live count of favorited movies/series in the source -- the "Favorites" browse-row total (per type). */
+    @Query(
+        "SELECT COUNT(*) FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+            "WHERE v.sourceId = :sourceId AND v.isSeries = :isSeries AND f.contentType = :contentType",
+    )
+    fun observeFavoriteCount(sourceId: Long, isSeries: Boolean, contentType: ContentType): Flow<Int>
+
     /** Category column data (GROUP BY) -- no catalog rows loaded. */
     @Query("SELECT categoryName AS name, COUNT(*) AS count FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries AND categoryName IS NOT NULL GROUP BY categoryName ORDER BY categoryName")
     fun observeCategoryCounts(sourceId: Long, isSeries: Boolean): Flow<List<CategoryCount>>
@@ -299,6 +331,11 @@ interface EPGProgramDao {
     @Query("DELETE FROM epg_programs WHERE channelId IN (:channelIds)")
     suspend fun deleteForChannels(channelIds: List<Long>)
 
+    /** Purge-a-source cleanup: drop EPG for every channel of a source. MUST run before the
+     *  source's channels are deleted -- the subquery reads them. */
+    @Query("DELETE FROM epg_programs WHERE channelId IN (SELECT id FROM channels WHERE sourceId = :sourceId)")
+    suspend fun deleteForSource(sourceId: Long)
+
     @Query("SELECT * FROM epg_programs WHERE channelId IN (:channelIds) AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
     fun observeForChannelsInWindow(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>>
 }
@@ -348,6 +385,19 @@ interface FavoriteDao {
 
     @Query("DELETE FROM favorites WHERE contentType = :contentType AND streamKey = :streamKey")
     suspend fun deleteByKey(contentType: ContentType, streamKey: String)
+
+    /**
+     * Purge-a-source cleanup: drop every favorite whose stable key belongs to this source's catalog
+     * -- LIVE favorites keyed to its channels, MOVIE/SERIES favorites to its VOD titles (contentType
+     * is matched so a movie and a channel that share a streamKey don't cross-delete). MUST run before
+     * the source's channels/vod_titles are deleted -- the subqueries read them.
+     */
+    @Query(
+        "DELETE FROM favorites WHERE " +
+            "(contentType = 'LIVE' AND streamKey IN (SELECT COALESCE(externalId, name, streamUrl) FROM channels WHERE sourceId = :sourceId)) OR " +
+            "(contentType IN ('MOVIE', 'SERIES') AND streamKey IN (SELECT COALESCE(externalId, name, streamUrl) FROM vod_titles WHERE sourceId = :sourceId))",
+    )
+    suspend fun deleteForSource(sourceId: Long)
 
     @Query("SELECT COUNT(*) FROM favorites WHERE contentType = :contentType AND streamKey = :streamKey")
     suspend fun countByKey(contentType: ContentType, streamKey: String): Int
@@ -402,6 +452,15 @@ interface ContinueWatchingDao {
 
     @Query("DELETE FROM continue_watching WHERE seriesEpisodeId = :episodeId")
     suspend fun deleteByEpisode(episodeId: Long)
+
+    /** Purge-a-source cleanup: drop resume points for the source's movies (by title) and series
+     *  (episode -> series title). MUST run before the source's vod_titles/series_episodes are deleted. */
+    @Query(
+        "DELETE FROM continue_watching WHERE " +
+            "vodTitleId IN (SELECT id FROM vod_titles WHERE sourceId = :sourceId) OR " +
+            "seriesEpisodeId IN (SELECT id FROM series_episodes WHERE seriesTitleId IN (SELECT id FROM vod_titles WHERE sourceId = :sourceId))",
+    )
+    suspend fun deleteForSource(sourceId: Long)
 
     /** Recent in-progress entries, most-recent first -- bounded for the Home "Continue Watching" rail. */
     @Query("SELECT * FROM continue_watching ORDER BY updatedAtMs DESC LIMIT :limit")

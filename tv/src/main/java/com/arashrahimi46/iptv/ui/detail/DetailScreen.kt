@@ -411,6 +411,9 @@ private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit, modifier: Mo
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
         backgroundColor = colors.surface1,
+        // Border so the white row reads as a distinct card on the off-white page in light
+        // theme when unfocused (focused rows already carry the accent ring).
+        borderColor = colors.borderDefault,
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

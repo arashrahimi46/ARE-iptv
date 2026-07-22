@@ -266,10 +266,18 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 }
             }
-            // Preserves categoryRails (owned by the separate pipeline below) instead of the plain
-            // `_uiState.value = it` this replaced -- that would reset categoryRails to the fresh
-            // HomeUiState()'s emptyMap() default on every rail/category/layout emission.
-            .onEach { state -> _uiState.value = state.copy(categoryRails = _uiState.value.categoryRails) }
+            // Preserves categoryRails AND continueWatching (each owned by a separate pipeline
+            // below) instead of the plain `_uiState.value = it` this replaced -- that would reset
+            // them to the fresh HomeUiState()'s empty defaults on every rail/category/layout
+            // emission. Dropping continueWatching here is why a just-watched title only appeared
+            // after an app restart: any main-rails re-emission wiped it until the CW pipeline
+            // happened to emit last.
+            .onEach { state ->
+                _uiState.value = state.copy(
+                    categoryRails = _uiState.value.categoryRails,
+                    continueWatching = _uiState.value.continueWatching,
+                )
+            }
             .launchIn(viewModelScope)
 
         // Step 5: resolve every pinned category's real content whenever the active source or the

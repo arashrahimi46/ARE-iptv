@@ -127,6 +127,12 @@ class UserSettings(private val context: Context) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
     }
 
+    /** Drop the active-source pointer (e.g. the active playlist was deleted) so nothing points at a
+     *  gone source; [activeSourceId] then reads null until the user picks another. */
+    suspend fun clearActiveSourceId() {
+        context.dataStore.edit { it.remove(Keys.ACTIVE_SOURCE_ID) }
+    }
+
     suspend fun setDarkTheme(enabled: Boolean) {
         context.dataStore.edit { it[Keys.DARK_THEME] = enabled }
     }

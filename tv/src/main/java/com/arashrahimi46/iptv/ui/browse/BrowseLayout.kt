@@ -49,6 +49,8 @@ data class BrowseCategoryOption(
     val kind: AreCategoryKind = AreCategoryKind.Default,
     val smart: Boolean = false,
     val pinned: Boolean = false,
+    /** Whether long-press pin/unpin is offered. False for the "Favorites" and "All" pseudo-rows. */
+    val pinnable: Boolean = true,
 )
 
 /**
@@ -201,8 +203,8 @@ fun <T : Any> BrowseLayout(
                         smart = category.smart,
                         active = index == selectedIndex,
                         pinned = category.pinned,
-                        // Only real categories are pinnable -- index 0 is the "All" pseudo-row.
-                        onLongClick = if (onCategoryPinToggle != null && index != 0) {
+                        // Only real categories are pinnable -- the leading "Favorites"/"All" pseudo-rows aren't.
+                        onLongClick = if (onCategoryPinToggle != null && category.pinnable) {
                             { pinDialogIndex = index }
                         } else {
                             null

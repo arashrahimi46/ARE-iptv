@@ -164,7 +164,10 @@ fun SubtitleMenuDialog(
 ) {
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         AreDialog(onDismiss = onDismiss, title = stringResource(R.string.subtitle_picker_title), width = 420.dp) {
-            Column {
+            // Scroll: streams can carry many subtitle tracks -- a plain Column overflowed the dialog
+            // with no way to reach (or even see) the rows past the bottom. Bounded height + scroll
+            // makes every row reachable and auto-follows D-pad focus down the list.
+            Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
                 SubtitleRow(label = stringResource(R.string.subtitle_off), selected = selectedKey == null, onClick = onSelectOff)
                 if (tracks.isEmpty()) {
                     Box(Modifier.height(8.dp))

@@ -199,7 +199,7 @@
     <string name="pin_checking">Controleren…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Sectie toevoegen</string>
+    <string name="home_add_section">Sectie toevoegen</string>
     <string name="home_remove_continue_watching_title">Uit Verder kijken verwijderen?</string>
     <string name="home_remove_continue_watching_body">“%1$s” wordt hier niet meer getoond. Je positie wordt niet bewaard.</string>
     <string name="home_loading_catalog">Je catalogus laden…</string>

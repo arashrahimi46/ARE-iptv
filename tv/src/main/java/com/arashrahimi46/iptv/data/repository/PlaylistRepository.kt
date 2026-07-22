@@ -116,6 +116,14 @@ interface PlaylistRepository {
     fun pagingMovies(sourceId: Long, category: String?): PagingSource<Int, VodTitle>
     fun pagingSeries(sourceId: Long, category: String?): PagingSource<Int, VodTitle>
 
+    // --- Browse "Favorites" pseudo-category: only the source's favorited items (paged). ---
+    fun pagingFavoriteChannels(sourceId: Long): PagingSource<Int, Channel>
+    fun pagingFavoriteMovies(sourceId: Long): PagingSource<Int, VodTitle>
+    fun pagingFavoriteSeries(sourceId: Long): PagingSource<Int, VodTitle>
+    fun favoriteChannelCount(sourceId: Long): Flow<Int>
+    fun favoriteMovieCount(sourceId: Long): Flow<Int>
+    fun favoriteSeriesCount(sourceId: Long): Flow<Int>
+
     // --- Category columns + totals (GROUP BY / COUNT -- no catalog rows loaded). ---
     fun channelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
     fun movieCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
@@ -197,6 +205,15 @@ interface PlaylistRepository {
      * success. Throws on network/auth failure. (M3U sources fall back to a full URL-keyed re-import.)
      */
     suspend fun refreshSource(sourceId: Long): ImportSummary
+
+    /**
+     * Permanently deletes a playlist source and EVERYTHING derived from it -- channels, movies,
+     * series + their episodes, categories, the source's EPG, and any favorites/continue-watching
+     * that pointed at its items -- plus the source row and its stored credentials. The catalog wipe
+     * runs in one transaction (all-or-nothing). If the deleted source was the active one, the active
+     * pointer is cleared so nothing references a gone source. No-op if the id doesn't exist.
+     */
+    suspend fun deleteSource(sourceId: Long)
 }
 
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
@@ -223,6 +240,15 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         if (category == null) vodDao.paging(sourceId, false) else vodDao.pagingByCategory(sourceId, false, category)
     override fun pagingSeries(sourceId: Long, category: String?): PagingSource<Int, VodTitle> =
         if (category == null) vodDao.paging(sourceId, true) else vodDao.pagingByCategory(sourceId, true, category)
+
+    override fun pagingFavoriteChannels(sourceId: Long): PagingSource<Int, Channel> = channelDao.pagingFavorites(sourceId)
+    override fun pagingFavoriteMovies(sourceId: Long): PagingSource<Int, VodTitle> =
+        vodDao.pagingFavorites(sourceId, false, ContentType.MOVIE)
+    override fun pagingFavoriteSeries(sourceId: Long): PagingSource<Int, VodTitle> =
+        vodDao.pagingFavorites(sourceId, true, ContentType.SERIES)
+    override fun favoriteChannelCount(sourceId: Long): Flow<Int> = channelDao.observeFavoriteCount(sourceId)
+    override fun favoriteMovieCount(sourceId: Long): Flow<Int> = vodDao.observeFavoriteCount(sourceId, false, ContentType.MOVIE)
+    override fun favoriteSeriesCount(sourceId: Long): Flow<Int> = vodDao.observeFavoriteCount(sourceId, true, ContentType.SERIES)
 
     override fun channelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = channelDao.observeCategoryCounts(sourceId)
     override fun movieCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = vodDao.observeCategoryCounts(sourceId, false)
@@ -701,6 +727,27 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         }
 
         ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
+    }
+
+    override suspend fun deleteSource(sourceId: Long): Unit = withContext(Dispatchers.IO) {
+        val source = db.playlistSourceDao().getById(sourceId) ?: return@withContext
+        // Order matters: the favorites/continue-watching/EPG purges read the catalog rows they key
+        // off, so they must run BEFORE those rows are deleted; series_episodes before vod_titles
+        // (its delete subquery reads vod_titles). All atomic so a crash mid-wipe rolls back.
+        db.withTransaction {
+            db.favoriteDao().deleteForSource(sourceId)
+            db.continueWatchingDao().deleteForSource(sourceId)
+            db.epgProgramDao().deleteForSource(sourceId)
+            db.seriesEpisodeDao().deleteForSource(sourceId)
+            db.channelDao().deleteForSource(sourceId)
+            db.vodTitleDao().deleteForSource(sourceId)
+            db.categoryDao().deleteForSource(sourceId)
+            db.playlistSourceDao().delete(source)
+        }
+        // Credentials live in encrypted prefs (not Room), so clear them outside the DB transaction.
+        credentials.clear(sourceId)
+        // Don't leave the active pointer dangling at a source that no longer exists.
+        if (settings.activeSourceId.first() == sourceId) settings.clearActiveSourceId()
     }
 
     /**

@@ -85,8 +85,10 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         BrowseCategoryOption(
             name = category.name,
             count = category.count,
-            kind = if (index == 0) AreCategoryKind.Live else AreCategoryKind.Default,
+            kind = if (index == 1) AreCategoryKind.Live else AreCategoryKind.Default,
             pinned = category.pinned,
+            // index 0 = "Favorites", 1 = "All channels" -- neither is pinnable.
+            pinnable = index >= 2,
         )
     }
 

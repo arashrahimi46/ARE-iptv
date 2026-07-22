@@ -199,7 +199,7 @@
     <string name="pin_checking">Kontrollerar…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Lägg till sektion</string>
+    <string name="home_add_section">Lägg till sektion</string>
     <string name="home_remove_continue_watching_title">Ta bort från Fortsätt titta?</string>
     <string name="home_remove_continue_watching_body">”%1$s” slutar visas här. Din plats sparas inte.</string>
     <string name="home_loading_catalog">Laddar din katalog…</string>

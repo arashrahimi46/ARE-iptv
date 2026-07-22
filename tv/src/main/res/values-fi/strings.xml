@@ -199,7 +199,7 @@
     <string name="pin_checking">Tarkistetaan…</string>
 
     <!-- Home -->
-    <string name="home_add_section">+ Lisää osio</string>
+    <string name="home_add_section">Lisää osio</string>
     <string name="home_remove_continue_watching_title">Poistetaanko kohdasta Jatka katselua?</string>
     <string name="home_remove_continue_watching_body">”%1$s” ei enää näy täällä. Kohtaasi ei tallenneta.</string>
     <string name="home_loading_catalog">Ladataan luetteloasi…</string>

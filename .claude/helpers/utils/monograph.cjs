@@ -9,6 +9,18 @@ const { _getRecentEdits } = require('./telemetry.cjs');
 
 const CWD = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
+// Node's require(esm) support (used below to load @monoes/monograph's ESM
+// entry file) unconditionally prints an ExperimentalWarning to stderr the
+// first time it fires per process. That warning can't be try/caught since
+// it's emitted via process.emitWarning, not thrown — and Claude Code's hook
+// runner surfaces any stderr output as a scary "hook error" even though the
+// hook itself succeeds. Filter out just that one warning; let others through.
+var _origEmitWarning = process.emitWarning;
+process.emitWarning = function (warning) {
+  if (typeof warning === 'string' && /CommonJS module .* is loading ES Module/.test(warning)) return;
+  return _origEmitWarning.apply(process, arguments);
+};
+
 // @monoes/monograph is "type":"module" with an exports map that has no
 // "require" condition — a bare `require('@monoes/monograph')` (or
 // require() of its package directory) always throws "No exports main
@@ -340,22 +352,32 @@ function _graphGateMarkQueried(sessionId) {
   } catch (e) { /* non-fatal */ }
 }
 
+// Returns 'block' (hard block, exitCode 2), 'warn' (allow but remind), or false (no action).
 function _graphGateShouldBlock(sessionId) {
-  // MONOMIND_GRAPH_GATE=off disables the gate entirely — for headless/CI runs
-  // (claude -p, org agents, scripted probes) where each run is a fresh session
-  // that would otherwise eat one deliberate block on its first grep/find.
   if (String(process.env.MONOMIND_GRAPH_GATE || '').toLowerCase() === 'off') return false;
   if (!sessionId || !_isGraphFresh()) return false;
   var sessions = _graphGateReadSessions();
   var s = sessions[sessionId] || { queried: false, blockedOnce: false };
-  if (s.queried || s.blockedOnce) return false;
-  s.blockedOnce = true;
-  s.ts = Date.now();
-  sessions[sessionId] = s;
+  if (s.queried) return false;
+  if (!s.blockedOnce) {
+    s.blockedOnce = true;
+    s.ts = Date.now();
+    sessions[sessionId] = s;
+    try { _graphGateWriteSessions(sessions); } catch (e) { return false; }
+    return 'block';
+  }
+  // Already blocked once but monograph still not called — warn without blocking
+  // so subagents without MCP access don't deadlock.
+  return 'warn';
+}
+
+function _getNodeCount() {
   try {
-    _graphGateWriteSessions(sessions);
-  } catch (e) { return false; }
-  return true;
+    var db = _openMonographDb();
+    if (!db) return null;
+    try { return db.prepare('SELECT COUNT(*) AS c FROM nodes').get().c; }
+    finally { db.close(); }
+  } catch (e) { return null; }
 }
 
 function _injectCompactGraphMap() {
@@ -579,5 +601,6 @@ module.exports = {
   _maybeRebuildMonograph,
   _graphGateShouldBlock,
   _graphGateMarkQueried,
+  _getNodeCount,
   injectGodNodesContext,
 };

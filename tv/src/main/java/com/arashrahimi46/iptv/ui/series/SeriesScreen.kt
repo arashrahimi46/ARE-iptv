@@ -75,7 +75,10 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         return
     }
 
-    val categoryOptions = state.categories.map { BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned) }
+    // index 0 = "Favorites", 1 = "All series" -- neither is pinnable.
+    val categoryOptions = state.categories.mapIndexed { index, it ->
+        BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned, pinnable = index >= 2)
+    }
 
     BrowseLayout(
         title = stringResource(R.string.series_title),

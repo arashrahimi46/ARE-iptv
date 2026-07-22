@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -86,8 +87,13 @@ fun AreChannelTile(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = colors.surface2,
+        // surface1/surface2 fills are near-white on the off-white light-theme page -- a border
+        // gives the unfocused tile a distinct edge.
+        borderColor = colors.borderDefault,
     ) { focused, _ ->
-        Column(Modifier.fillMaxWidth()) {
+        // Clip the content to the tile shape so the info panel's square surface1 background
+        // doesn't poke square corners through the rounded focus ring.
+        Column(Modifier.fillMaxWidth().clip(shape)) {
             // logo zone
             Box(
                 modifier = Modifier
@@ -138,7 +144,7 @@ fun AreChannelTile(
                         // in the middle of the card): ~78% of the logo zone's height, kept square.
                         .fillMaxHeight(0.78f)
                         .aspectRatio(1f)
-                        .background(colors.surfaceOverlay, RoundedCornerShape(AreIptvTheme.radius.sm)),
+                        .background(colors.logoWell, RoundedCornerShape(AreIptvTheme.radius.sm)),
                     contentAlignment = Alignment.Center,
                 ) {
                     // Initials show only until the logo resolves -- logos often have transparent
@@ -147,7 +153,7 @@ fun AreChannelTile(
                     // like SubcomposeAsyncImage) flips them off on success, keeping grid scroll smooth.
                     val logoLoaded = remember(logoUrl) { mutableStateOf(false) }
                     if (logoUrl == null || !logoLoaded.value) {
-                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.logoWellText)
                     }
                     if (logoUrl != null) {
                         AsyncImage(

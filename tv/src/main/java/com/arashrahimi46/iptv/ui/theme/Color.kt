@@ -104,6 +104,12 @@ data class AreIptvColors(
     val ratingStar: Color = Amber400,
     val onAirText: Color = Red400,
     val catchupText: Color = Green400,
+    // Channel-logo "well": kept a dark neutral in BOTH themes because provider logos are
+    // overwhelmingly white/light PNGs designed for dark backgrounds -- a light-theme white
+    // well (surfaceOverlay = 86% white) made them vanish. logoWellText is the initials
+    // fallback colour, which must read on that dark well.
+    val logoWell: Color = Ink800,
+    val logoWellText: Color = White,
 )
 
 val AreIptvDarkColors = AreIptvColors(

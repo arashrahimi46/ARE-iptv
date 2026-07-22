@@ -58,6 +58,7 @@ fun AreButton(
     trailingIcon: ImageVector? = null,
     full: Boolean = false,
     disabled: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -77,6 +78,11 @@ fun AreButton(
     val background = if (!disabled) enabledBg
         else if (variant == AreButtonVariant.Ghost) Color.Transparent else colors.surface3
     val contentColor = if (disabled) colors.textTertiary else enabledFg
+    // Secondary's surface2 fill is nearly identical to the light bgBase (#F7F9FC on #F3F5F9), so
+    // unfocused secondary cards had no visible edge in light mode (the "Choose a playlist" list
+    // read as floating text). Give them a border so they read as distinct cards; harmless in dark
+    // where borderDefault is a faint white overlay.
+    val borderColor = if (variant == AreButtonVariant.Secondary && !disabled) colors.borderDefault else null
 
     TvFocusable(
         onClick = onClick,
@@ -85,6 +91,8 @@ fun AreButton(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
+        borderColor = borderColor,
+        onLongClick = onLongClick,
         enabled = !disabled,
     ) { _, _ ->
         // QA regression root cause (onboarding Continue engulfed by Skip's hit-region, Settings
