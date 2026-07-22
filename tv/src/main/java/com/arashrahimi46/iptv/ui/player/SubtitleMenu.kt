@@ -283,35 +283,35 @@ fun OnlineSubtitleSearchDialog(
                     size = AreButtonSize.Small,
                 )
                 Box(Modifier.height(12.dp))
-                // Results stay visible even when a download fails (e.g. not signed in) so the user can
-                // fix it and retry the same row; the error shows as an extra line rather than replacing them.
-                if (loading) {
-                    StatusLine("Searching OpenSubtitles…")
-                } else {
-                    if (results.isNotEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp).verticalScroll(rememberScrollState()),
-                        ) {
-                            results.take(30).forEach { sub ->
-                                val busy = downloadingId == sub.fileId
-                                val label = if (busy) "Downloading…" else
-                                    "${sub.release}  ·  ${displayLanguage(sub.language)} · ${sub.downloads}↓"
-                                SubtitleRow(label = label, selected = false) {
-                                    if (downloadingId != null) return@SubtitleRow
-                                    scope.launch {
-                                        downloadingId = sub.fileId; error = null
-                                        onPick(sub)
-                                            .onSuccess { onDismiss() }
-                                            .onFailure { error = it.message ?: "Download failed." }
-                                        downloadingId = null
-                                    }
+                // Fixed status line ABOVE the results so it's always visible -- a download error (e.g.
+                // not signed in) or "Downloading…" must never be pushed below the dialog fold by a long
+                // list. Results stay put so the user can fix the issue and retry the same row.
+                when {
+                    loading -> StatusLine("Searching OpenSubtitles…")
+                    downloadingId != null -> StatusLine("Downloading subtitle…")
+                    error != null -> StatusLine(error!!, danger = true)
+                    searched && results.isEmpty() -> StatusLine("No matches -- try a different title or language.")
+                    else -> {}
+                }
+                if (results.isNotEmpty()) {
+                    Box(Modifier.height(4.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 260.dp).verticalScroll(rememberScrollState()),
+                    ) {
+                        results.take(30).forEach { sub ->
+                            val label = "${sub.release}  ·  ${displayLanguage(sub.language)} · ${sub.downloads}↓"
+                            SubtitleRow(label = label, selected = false) {
+                                if (downloadingId != null) return@SubtitleRow
+                                scope.launch {
+                                    downloadingId = sub.fileId; error = null
+                                    onPick(sub)
+                                        .onSuccess { onDismiss() }
+                                        .onFailure { error = it.message ?: "Download failed." }
+                                    downloadingId = null
                                 }
                             }
                         }
-                    } else if (searched && error == null) {
-                        StatusLine("No matches -- try a different title or language.")
                     }
-                    if (error != null) StatusLine(error!!, danger = true)
                 }
             }
         }

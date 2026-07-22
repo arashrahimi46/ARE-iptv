@@ -271,7 +271,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 SettingsRow(
                     icon = Icons.Filled.ClosedCaption,
                     title = "OpenSubtitles",
-                    desc = "Connected -- online subtitle search is enabled.",
+                    desc = if (openSubsUsername != null) {
+                        "Ready -- online search and download are enabled."
+                    } else {
+                        "API key connected. Also sign in below -- both are required for online subtitles."
+                    },
                 ) {
                     AreButton(
                         text = "Disconnect",
@@ -305,7 +309,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         Text(text = "Sign in to download subtitles", style = AreIptvTheme.typography.label, color = colors.textPrimary)
                         Box(Modifier.padding(top = 4.dp))
                         Text(
-                            text = "Your OpenSubtitles account. Search works without it; downloading a subtitle uses your account's daily quota.",
+                            text = "Last step -- both the API key and your account sign-in are required for online subtitles. Sign in with your opensubtitles.com username and password; downloads use your account's daily quota. We stay signed in for you.",
                             style = AreIptvTheme.typography.caption,
                             color = colors.textTertiary,
                         )
@@ -342,7 +346,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     Text(text = "OpenSubtitles API key", style = AreIptvTheme.typography.label, color = colors.textPrimary)
                     Box(Modifier.padding(top = 4.dp))
                     Text(
-                        text = "Paste the personal API key from your opensubtitles.com account to search subtitles online. We validate it before saving.",
+                        text = "Online subtitles need a free opensubtitles.com account with two things: this API key (for search) and your account sign-in (for download). Step 1 -- paste the API key; you'll sign in next. We validate it before saving.",
                         style = AreIptvTheme.typography.caption,
                         color = colors.textTertiary,
                     )

@@ -122,6 +122,11 @@ fun LivePlayerScreen(
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
+    // Online subtitles need BOTH the API key (search) and the account login (download). If either is
+    // missing the feature is unusable, so the "Search online" entry is hidden until both are set.
+    val subsKeyConnected by settings.openSubsCredential.collectAsState(initial = null)
+    val subsSignedIn by settings.openSubsUsername.collectAsState(initial = null)
+    val onlineSubsReady = subsKeyConnected != null && subsSignedIn != null
 
     // In-app mini-player: while a live channel is docked in the corner (LivePlaybackController owns
     // its ExoPlayer), this screen hands its player off on minimize and adopts it back on expand so
@@ -734,7 +739,7 @@ fun LivePlayerScreen(
                     onSelectTrack = { subtitleChoice = it; showSubtitles = false },
                     onDismiss = { showSubtitles = false },
                     detectedLangs = detectedLangs,
-                    onSearchOnline = if (searchName != null) {
+                    onSearchOnline = if (searchName != null && onlineSubsReady) {
                         { showSubtitles = false; showSubtitleSearch = true }
                     } else {
                         null

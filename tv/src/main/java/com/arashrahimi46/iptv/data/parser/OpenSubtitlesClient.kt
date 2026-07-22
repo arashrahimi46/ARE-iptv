@@ -144,15 +144,24 @@ object OpenSubtitlesClient {
         }
     }
 
-    /** Marker for a download rejected because the token is missing/expired -- the caller re-logs in and retries. */
-    class UnauthorizedException : Exception()
+    /** Outcome of a `/download` request, split so the caller can give the user an actionable reason. */
+    sealed interface LinkResult {
+        data class Ok(val link: String) : LinkResult
+        /** Token missing/expired (401) -- caller re-logs in and retries. */
+        data object Unauthorized : LinkResult
+        /** Daily download quota used up (406) -- [message] is OpenSubtitles' own wording when present. */
+        data class Quota(val message: String) : LinkResult
+        /** Too many requests (429) -- back off and retry shortly. */
+        data object RateLimited : LinkResult
+        data class Error(val message: String) : LinkResult
+    }
 
     /**
      * `POST /download` -- turns a [fileId] into a one-time subtitle download URL, spending one unit of
-     * the account's daily quota. Throws [UnauthorizedException] on 401/406 so the caller can re-login;
-     * returns null for other failures.
+     * the account's daily quota. Distinguishes expired-token (401), quota-exhausted (406) and
+     * rate-limit (429) so the caller can tell the user exactly what to do.
      */
-    suspend fun requestDownloadLink(credential: String, bearer: String, fileId: Long): String? = withContext(Dispatchers.IO) {
+    suspend fun requestDownloadLink(credential: String, bearer: String, fileId: Long): LinkResult = withContext(Dispatchers.IO) {
         val payload = JSONObject().put("file_id", fileId).toString()
         val request = Request.Builder()
             .url("$BASE/download")
@@ -160,10 +169,23 @@ object OpenSubtitlesClient {
             .header("Authorization", "Bearer $bearer")
             .post(payload.toRequestBody(jsonType))
             .build()
-        client.newCall(request).execute().use { response ->
-            if (response.code == 401 || response.code == 406) throw UnauthorizedException()
-            if (!response.isSuccessful) return@withContext null
-            JSONObject(response.body?.string().orEmpty()).optString("link").takeIf { it.isNotBlank() }
+        try {
+            client.newCall(request).execute().use { response ->
+                val body = response.body?.string().orEmpty()
+                val msg = runCatching { JSONObject(body).optString("message") }.getOrNull()?.takeIf { it.isNotBlank() }
+                when {
+                    response.code == 401 -> LinkResult.Unauthorized
+                    response.code == 406 -> LinkResult.Quota(msg ?: "You've used your daily download quota. Try again in ~24 hours.")
+                    response.code == 429 -> LinkResult.RateLimited
+                    !response.isSuccessful -> LinkResult.Error(msg ?: "OpenSubtitles error (HTTP ${response.code}).")
+                    else -> {
+                        val link = runCatching { JSONObject(body).optString("link") }.getOrNull()?.takeIf { it.isNotBlank() }
+                        if (link != null) LinkResult.Ok(link) else LinkResult.Error("OpenSubtitles returned no download link.")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            LinkResult.Error("Couldn't reach OpenSubtitles -- check your connection.")
         }
     }
 
