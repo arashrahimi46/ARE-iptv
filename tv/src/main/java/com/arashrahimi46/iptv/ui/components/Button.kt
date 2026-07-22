@@ -64,12 +64,19 @@ fun AreButton(
     val spec = sizeSpec(size)
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
 
-    val (background, contentColor) = when (variant) {
+    val (enabledBg, enabledFg) = when (variant) {
         AreButtonVariant.Primary -> colors.accent to colors.accentFg
         AreButtonVariant.Secondary -> colors.surface2 to colors.textPrimary
         AreButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
         AreButtonVariant.Danger -> colors.danger to Color.White
     }
+    // Disabled: dimming both fill and label by the same alpha collapses contrast in light mode
+    // (a 40% accent fill under 40% white text is unreadable -- the "Refresh now" defect). Use a
+    // neutral muted surface + tertiary text so the label stays legible and clearly disabled in
+    // both themes. Ghost stays transparent.
+    val background = if (!disabled) enabledBg
+        else if (variant == AreButtonVariant.Ghost) Color.Transparent else colors.surface3
+    val contentColor = if (disabled) colors.textTertiary else enabledFg
 
     TvFocusable(
         onClick = onClick,
@@ -77,7 +84,7 @@ fun AreButton(
             .height(spec.height),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = if (disabled) background.copy(alpha = 0.4f) else background,
+        backgroundColor = background,
         enabled = !disabled,
     ) { _, _ ->
         // QA regression root cause (onboarding Continue engulfed by Skip's hit-region, Settings
@@ -110,7 +117,7 @@ fun AreButton(
             Text(
                 text = text,
                 style = AreIptvTheme.typography.label,
-                color = if (disabled) contentColor.copy(alpha = 0.4f) else contentColor,
+                color = contentColor,
             )
             if (trailingIcon != null) {
                 Icon(trailingIcon, contentDescription = null, tint = contentColor, modifier = Modifier.size(spec.iconSize))

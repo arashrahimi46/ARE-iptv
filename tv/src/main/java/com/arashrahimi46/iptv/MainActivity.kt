@@ -398,10 +398,6 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 onMultiView = { rootNav.navigate("multiview") },
                 onSearch = { if (activeNav != "search") innerNav.selectTab("search") },
                 onAddPlaylist = { rootNav.navigate("onboarding") },
-                // QA MEDIUM defect: onAvatar was declared on AreTopBar but never attached to
-                // anything. Settings is the closest existing real destination for an
-                // account/profile icon (no dedicated profile screen exists).
-                onAvatar = { if (activeNav != "settings") innerNav.selectTab("settings") },
                 onCustomize = if (activeNav == "home") ({ homeEditMode = !homeEditMode }) else null,
                 customizeActive = homeEditMode,
             )

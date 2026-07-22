@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -75,11 +74,17 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
             .fillMaxSize()
             .background(colors.bgBase),
     ) {
+        // Header (brand + step indicator) and the button row are pinned; only the step-content
+        // region between them flexes/scrolls. A single page-wide verticalScroll used to let a
+        // field's auto-focus bring-into-view scroll the header off the top when moving between
+        // steps -- clipping the title despite plenty of free space below.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 40.dp, vertical = 56.dp),
+                // Vertical inset is deliberately tight: TV panels are only ~540dp tall, and the
+                // pinned header + button row must leave real room for the taller steps (EPG,
+                // Confirm) whose cards aren't focusable and so must fit without scrolling.
+                .padding(horizontal = 40.dp, vertical = 20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Box(
@@ -92,22 +97,33 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 }
                 Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
-            Box(Modifier.height(18.dp))
-            Text(text = stringResource(R.string.onboarding_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Box(Modifier.height(10.dp))
+            Text(text = stringResource(R.string.onboarding_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(
                 text = stringResource(R.string.onboarding_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
-            Box(Modifier.height(36.dp))
+            Box(Modifier.height(14.dp))
 
             val currentRoute = stepRoutes.getOrElse(currentStepIndex(navController)) { "source" }
             AreStepIndicator(steps = stepLabels, current = stepRoutes.indexOf(currentRoute).coerceAtLeast(0))
 
-            Box(Modifier.height(40.dp))
+            Box(Modifier.height(16.dp))
 
-            Box(modifier = Modifier.heightIn(min = 260.dp)) {
+            // Flexes to fill the space between the pinned header and buttons; scrolls internally
+            // only if a step's content is taller than that space (it never is on TV, hence the
+            // free room below each short step).
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    // Headroom inside the scroll clip so a focused card's scale-up + glow halo
+                    // aren't cut off at the region's top/bottom edge.
+                    .padding(vertical = 12.dp),
+            ) {
                 NavHost(navController = navController, startDestination = "source") {
                     composable("source") {
                         SourceStep(selected = uiState.sourceType, onSelect = viewModel::setSourceType)
@@ -134,7 +150,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 }
             }
 
-            Box(Modifier.height(36.dp))
+            Box(Modifier.height(14.dp))
             val stepIndex = stepRoutes.indexOf(currentRoute).coerceAtLeast(0)
             // On the Confirm step there's nothing to interact with except the buttons, so the
             // primary "Add playlist" action should hold focus -- not "Back" (the first focusable

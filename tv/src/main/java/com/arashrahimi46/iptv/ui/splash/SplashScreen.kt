@@ -35,6 +35,7 @@ import com.arashrahimi46.iptv.ui.theme.Blue500
 import com.arashrahimi46.iptv.ui.theme.BlueGlow
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.Violet400
+import com.arashrahimi46.iptv.ui.theme.White
 
 /**
  * Cold-start splash (Issue #13, reworked per design review). Abstract
@@ -103,7 +104,9 @@ fun AreSplashScreen() {
                 )
             }
             Box(Modifier.padding(top = 24.dp))
-            Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = AreIptvTheme.colors.textPrimary)
+            // Splash backdrop is always the dark Ink950 -- the brand text must stay light
+            // regardless of the app theme, or it's dark-on-dark (invisible) in light mode.
+            Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = White)
         }
     }
 }

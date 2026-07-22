@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -169,7 +170,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     // focusable (Dark theme) and never consults it. focusProperties{enter} intercepts every entry into
     // this focus group and redirects it -- so it wins over the directional pick.
     val topFocus = remember { FocusRequester() }
-    LazyColumn(modifier = modifier.fillMaxSize().focusProperties { enter = { topFocus } }.focusGroup().padding(horizontal = spacing.safeX, vertical = spacing.sp6).widthIn(max = 900.dp)) {
+    // vertical inset via contentPadding (NOT modifier .padding): with modifier padding the list's clip
+    // edge lands exactly on the first item's top and shears the big display title's glyph tops. As
+    // contentPadding the clip edge sits above the first item, so the title's ascenders have room.
+    LazyColumn(
+        modifier = modifier.fillMaxSize().focusProperties { enter = { topFocus } }.focusGroup().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
+        contentPadding = PaddingValues(vertical = spacing.sp6),
+    ) {
         item {
             Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp8))

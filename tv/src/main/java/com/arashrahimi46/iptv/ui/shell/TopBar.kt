@@ -1,18 +1,12 @@
 package com.arashrahimi46.iptv.ui.shell
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -23,11 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -43,13 +35,11 @@ fun AreTopBar(
     onMultiView: () -> Unit = {},
     onSearch: () -> Unit = {},
     onAddPlaylist: () -> Unit = {},
-    onAvatar: () -> Unit = {},
     // Home-only: null on every other screen so the Customize action doesn't appear there.
     // [customizeActive] reflects whether Home is currently in edit mode (accent-highlighted).
     onCustomize: (() -> Unit)? = null,
     customizeActive: Boolean = false,
 ) {
-    val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     // Vertical inset is intentionally the literal 18dp from the source, NOT spacing.safeY (40dp):
     // are-iptv-design-system/.../ui_kits/are-tv/app.jsx top-bar div uses
@@ -76,21 +66,8 @@ fun AreTopBar(
         // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
         // management UI, so this effectively adds/replaces the active source.)
         AreIconButton(Icons.Filled.Add, stringResource(R.string.shell_add_playlist_desc), onClick = onAddPlaylist, variant = AreIconButtonVariant.Solid)
-        // QA MEDIUM defect: this was a plain Box -- not focusable at all, D-pad couldn't
-        // land on it and onAvatar was declared but never attached to anything.
-        TvFocusable(
-            onClick = onAvatar,
-            modifier = Modifier.size(44.dp),
-            shape = CircleShape,
-            backgroundColor = colors.surface2,
-        ) { _, _ ->
-            Box(
-                modifier = Modifier.fillMaxSize().border(2.dp, colors.borderStrong, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.content_desc_account), tint = colors.textSecondary, modifier = Modifier.size(28.dp))
-            }
-        }
+        // Avatar removed: it only re-routed to Settings, already reachable via the sidebar gear --
+        // a redundant, non-functional profile glyph (no account/profile screen exists).
     }
 }
 

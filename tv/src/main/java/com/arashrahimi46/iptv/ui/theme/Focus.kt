@@ -269,6 +269,9 @@ fun TvFocusable(
     shape: Shape = RoundedCornerShape(AreIptvTheme.radius.md),
     glowColor: Color = AreIptvTheme.colors.focusRing,
     backgroundColor: Color = Color.Transparent,
+    /** Optional 1dp outline drawn over the fill (under the focus ring) -- lets low-contrast
+     *  fills (e.g. an unselected chip on a white card in light mode) read as a distinct shape. */
+    borderColor: Color? = null,
     enabled: Boolean = true,
     /** Long-press (hold OK ~[LONG_PRESS_MS]) handler; when null the control has short-press only. */
     onLongClick: (() -> Unit)? = null,
@@ -280,6 +283,7 @@ fun TvFocusable(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor)
             .background(backgroundColor, shape)
+            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,

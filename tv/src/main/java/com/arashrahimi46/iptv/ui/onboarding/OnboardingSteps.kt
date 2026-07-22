@@ -109,17 +109,17 @@ private fun SourceCard(
                     color = if (selected) colors.accent else colors.borderDefault,
                     shape = shape,
                 )
-                .padding(24.dp),
+                .padding(18.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(44.dp)
                     .background(if (selected) colors.accent else colors.surface3, RoundedCornerShape(AreIptvTheme.radius.md)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(icon, contentDescription = null, tint = if (selected) colors.accentFg else colors.textSecondary, modifier = Modifier.size(26.dp))
+                Icon(icon, contentDescription = null, tint = if (selected) colors.accentFg else colors.textSecondary, modifier = Modifier.size(22.dp))
             }
-            Box(Modifier.height(16.dp))
+            Box(Modifier.height(12.dp))
             Text(text = title, style = AreIptvTheme.typography.h3, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(text = desc, style = AreIptvTheme.typography.caption, color = colors.textTertiary)
@@ -201,7 +201,7 @@ fun EpgStep(
                 .fillMaxWidth()
                 .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.md))
                 .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.md))
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -215,7 +215,7 @@ fun EpgStep(
             }
             AreSwitch(checked = epgAuto, onCheckedChange = onEpgAutoChange)
         }
-        Box(Modifier.height(18.dp))
+        Box(Modifier.height(12.dp))
         AreTextField(
             value = epgUrl,
             onValueChange = onEpgUrlChange,
@@ -241,7 +241,7 @@ fun ConfirmStep(
                 .fillMaxWidth()
                 .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
                 .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.lg))
-                .padding(24.dp),
+                .padding(18.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (state.isSubmitting) {
@@ -266,7 +266,7 @@ fun ConfirmStep(
                 Box(Modifier.weight(1f))
                 state.result?.let { AreBadge(stringResource(R.string.onboarding_confirm_channels_badge, it.channels), tone = AreBadgeTone.Catchup) }
             }
-            Box(Modifier.height(20.dp))
+            Box(Modifier.height(14.dp))
             if (state.isSubmitting) {
                 Text(
                     text = stringResource(R.string.onboarding_confirm_downloading),
@@ -292,7 +292,7 @@ fun ConfirmStep(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 11.dp),
+                            .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(text = key, style = AreIptvTheme.typography.caption, color = colors.textTertiary)

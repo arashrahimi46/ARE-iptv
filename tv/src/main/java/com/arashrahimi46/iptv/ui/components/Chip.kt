@@ -57,6 +57,10 @@ fun AreChip(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
+        // Unselected chips over a near-white surface (light mode) barely register as pills --
+        // an outline gives the shape definition the fill can't. Selected chips are the solid
+        // accent and need none.
+        borderColor = if (selected) null else colors.borderDefault,
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
