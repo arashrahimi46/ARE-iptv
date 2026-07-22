@@ -129,6 +129,14 @@ interface PlaylistRepository {
     fun topMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>>
     fun topSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>>
 
+    // --- Diverse candidate pools + taste signals for the curated Home rails (HomeRailCurator). ---
+    fun sampleChannels(sourceId: Long, limit: Int): Flow<List<Channel>>
+    fun sampleMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>>
+    fun sampleSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>>
+    fun watchedCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+    fun favoriteVodCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+    fun favoriteChannelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+
     // --- DB-side search (Search screen). ---
     suspend fun searchChannels(sourceId: Long, query: String, limit: Int): List<Channel>
     suspend fun searchMovies(sourceId: Long, query: String, limit: Int): List<VodTitle>
@@ -226,6 +234,13 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
     override fun topChannels(sourceId: Long, limit: Int): Flow<List<Channel>> = channelDao.observeTop(sourceId, limit)
     override fun topMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeTop(sourceId, false, limit)
     override fun topSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeTop(sourceId, true, limit)
+
+    override fun sampleChannels(sourceId: Long, limit: Int): Flow<List<Channel>> = channelDao.observeSample(sourceId, limit)
+    override fun sampleMovies(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeSample(sourceId, false, limit)
+    override fun sampleSeries(sourceId: Long, limit: Int): Flow<List<VodTitle>> = vodDao.observeSample(sourceId, true, limit)
+    override fun watchedCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = vodDao.watchedCategoryCounts(sourceId)
+    override fun favoriteVodCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = vodDao.favoriteCategoryCounts(sourceId)
+    override fun favoriteChannelCategoryCounts(sourceId: Long): Flow<List<CategoryCount>> = channelDao.favoriteCategoryCounts(sourceId)
 
     override suspend fun searchChannels(sourceId: Long, query: String, limit: Int): List<Channel> = channelDao.search(sourceId, query, limit)
     override suspend fun searchMovies(sourceId: Long, query: String, limit: Int): List<VodTitle> = vodDao.search(sourceId, false, query, limit)

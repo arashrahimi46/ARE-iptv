@@ -123,6 +123,26 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY name LIMIT :limit")
     fun observeTop(sourceId: Long, limit: Int): Flow<List<Channel>>
 
+    /**
+     * Diverse bounded candidate pool for the curated Live-now rail: a deterministic id-hash spread
+     * instead of the alphabetical head, so the sample covers the whole catalog (not just "A…"
+     * channels, which clustered near-duplicate quality variants) before [HomeRailCurator] de-dups
+     * and personalizes. id-based, so the Flow doesn't re-shuffle on every emission.
+     * // monolean: full-table scan on catalog change (no index on the hash) -- acceptable, same
+     * // trigger/cost class as the GROUP BY category counts; upgrade to a materialized sample if slow.
+     */
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId ORDER BY (id * 2654435761) % 2147483647 LIMIT :limit")
+    fun observeSample(sourceId: Long, limit: Int): Flow<List<Channel>>
+
+    /** Category weights from the user's favorite channels -- Live-now personalization signal. */
+    @Query(
+        "SELECT c.categoryName AS name, COUNT(*) AS count FROM channels c " +
+            "JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+            "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE' AND c.categoryName IS NOT NULL " +
+            "GROUP BY c.categoryName",
+    )
+    fun favoriteCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+
     /** DB-side search (Search screen) -- LIKE + LIMIT instead of in-memory filtering. */
     @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND name LIKE '%' || :query || '%' ORDER BY name LIMIT :limit")
     suspend fun search(sourceId: Long, query: String, limit: Int): List<Channel>
@@ -222,6 +242,34 @@ interface VodTitleDao {
     /** Bounded rail/preview load (Home) -- never the whole catalog. */
     @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries ORDER BY name LIMIT :limit")
     fun observeTop(sourceId: Long, isSeries: Boolean, limit: Int): Flow<List<VodTitle>>
+
+    /** Diverse bounded candidate pool for the curated Movies/Series rails -- see
+     *  [ChannelDao.observeSample] for the id-hash-spread rationale. */
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries ORDER BY (id * 2654435761) % 2147483647 LIMIT :limit")
+    fun observeSample(sourceId: Long, isSeries: Boolean, limit: Int): Flow<List<VodTitle>>
+
+    /** Category weights from favorited movies+series -- VOD personalization signal. */
+    @Query(
+        "SELECT v.categoryName AS name, COUNT(*) AS count FROM vod_titles v " +
+            "JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+            "WHERE v.sourceId = :sourceId AND v.categoryName IS NOT NULL AND " +
+            "((f.contentType = 'MOVIE' AND v.isSeries = 0) OR (f.contentType = 'SERIES' AND v.isSeries = 1)) " +
+            "GROUP BY v.categoryName",
+    )
+    fun favoriteCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
+
+    /** Category weights from continue-watching (the strongest "you watch this" signal), covering
+     *  both resumed movies (by title) and resumed series (episode -> series title). */
+    @Query(
+        "SELECT categoryName AS name, COUNT(*) AS count FROM (" +
+            "SELECT v.categoryName FROM continue_watching w JOIN vod_titles v ON v.id = w.vodTitleId " +
+            "WHERE v.sourceId = :sourceId AND v.categoryName IS NOT NULL " +
+            "UNION ALL " +
+            "SELECT v.categoryName FROM continue_watching w JOIN series_episodes e ON e.id = w.seriesEpisodeId " +
+            "JOIN vod_titles v ON v.id = e.seriesTitleId WHERE v.sourceId = :sourceId AND v.categoryName IS NOT NULL" +
+            ") GROUP BY categoryName",
+    )
+    fun watchedCategoryCounts(sourceId: Long): Flow<List<CategoryCount>>
 
     /** DB-side search (Search screen) -- LIKE + LIMIT instead of in-memory filtering. */
     @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND isSeries = :isSeries AND name LIKE '%' || :query || '%' ORDER BY name LIMIT :limit")

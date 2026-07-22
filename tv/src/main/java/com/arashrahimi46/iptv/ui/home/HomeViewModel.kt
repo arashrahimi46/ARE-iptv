@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.db.CategoryCount
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
 import com.arashrahimi46.iptv.data.model.VodTitle
@@ -75,6 +76,8 @@ data class HomeUiState(
     val channels: List<Channel> = emptyList(),
     val movies: List<VodTitle> = emptyList(),
     val series: List<VodTitle> = emptyList(),
+    /** Personalized best-of across movies+series for the "Recommended" rail (see [HomeRailCurator]). */
+    val recommended: List<VodTitle> = emptyList(),
     val categories: List<HomeCategorySummary> = emptyList(),
     /** P1.2: most-recently-updated resume bookmarks, resolved to real titles/posters. Source-
      * independent (same reasoning as Favorites -- vod/episode ids are globally unique), so this
@@ -118,6 +121,20 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     /** Per-rail preview size -- Home shows a "browse for more" affordance, never the full catalog. */
     private val RAIL_LIMIT = 40
 
+    /** Candidate-pool size the curator picks each rail's ~20 tiles from. Larger than a rail so
+     *  de-dup + per-category diversity have room to work; still tiny vs a 300k catalog. */
+    private val POOL_LIMIT = 200
+
+    /** Epoch-day seed for the curator's daily rotation -- stable for the whole session (Home
+     *  doesn't reshuffle mid-use); a new day yields a fresh selection from the same pool. */
+    private val daySeed: Long = System.currentTimeMillis() / 86_400_000L
+
+    /** Normalized category taste weights (top category -> 1.0), the curator's personalization input. */
+    private fun List<CategoryCount>.toWeights(): Map<String, Double> {
+        val max = maxOfOrNull { it.count }?.takeIf { it > 0 } ?: return emptyMap()
+        return associate { it.name to it.count.toDouble() / max }
+    }
+
     private val _nowPlayingTitles = MutableStateFlow<Map<Long, String>>(emptyMap())
     /** channelId -> current EPG programme title, for the "Live now" rail. Issue #15: the rail
      * previously showed `channel.categoryName` in the "now playing" slot -- never a program
@@ -140,10 +157,20 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                     // on large sources). Category counts come from GROUP BY, merged across the
                     // three catalogs by name -- same shape the old in-memory aggregation produced.
                     val rails = combine(
-                        repository.topChannels(sourceId, RAIL_LIMIT),
-                        repository.topMovies(sourceId, RAIL_LIMIT),
-                        repository.topSeries(sourceId, RAIL_LIMIT),
+                        repository.sampleChannels(sourceId, POOL_LIMIT),
+                        repository.sampleMovies(sourceId, POOL_LIMIT),
+                        repository.sampleSeries(sourceId, POOL_LIMIT),
                     ) { channels, movies, series -> Triple(channels, movies, series) }
+                    // Personalization signals: which categories the user actually watches (strongest)
+                    // and favorites. VOD taste (movies+series) is kept separate from Live taste since
+                    // a channel favorite shouldn't sway movie ranking. Merged max-normalized to 0..1.
+                    val taste = combine(
+                        repository.watchedCategoryCounts(sourceId),
+                        repository.favoriteVodCategoryCounts(sourceId),
+                        repository.favoriteChannelCategoryCounts(sourceId),
+                    ) { watched, favVod, favLive ->
+                        (watched + favVod).toWeights() to favLive.toWeights()
+                    }
                     // Same three GROUP BY count flows drive both the "Browse by category" rail
                     // (merged by name across catalogs, as before) and step 6's available-categories
                     // picker (kept per-kind, since a pin must be a single real source category).
@@ -169,18 +196,23 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         val available = availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
                         summaries to available
                     }
-                    combine(rails, categoryData, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), parentalLock, layout ->
-                        // Parental lock: strip adult items from every rail and adult chips from the
-                        // category row, so the toggle actually hides adult content on Home too.
+                    combine(rails, categoryData, taste, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), (vodTaste, liveTaste), parentalLock, layout ->
+                        // Parental lock: strip adult items from every pool and adult chips from the
+                        // category row, so the toggle actually hides adult content on Home too. Filter
+                        // the pools BEFORE curating so adult items can't leak into the picked rail.
                         val pinned = layout.filterIsInstance<HomeSection.Category>().map { it.kind to it.name }.toSet()
                         val availableCategories = available
                             .filterNot { (it.kind to it.name) in pinned }
                             .let { if (parentalLock) it.filterNot { a -> AdultContentFilter.isAdult(a.name) } else it }
+                        val channelPool = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels
+                        val moviePool = if (parentalLock) movies.filterNot { AdultContentFilter.isAdult(it.categoryName) } else movies
+                        val seriesPool = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series
                         HomeUiState(
                             hasSource = true,
-                            channels = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels,
-                            movies = if (parentalLock) movies.filterNot { AdultContentFilter.isAdult(it.categoryName) } else movies,
-                            series = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series,
+                            channels = HomeRailCurator.curateChannels(channelPool, liveTaste, daySeed),
+                            movies = HomeRailCurator.curateTitles(moviePool, vodTaste, daySeed),
+                            series = HomeRailCurator.curateTitles(seriesPool, vodTaste, daySeed),
+                            recommended = HomeRailCurator.recommend(moviePool, seriesPool, vodTaste, daySeed),
                             categories = if (parentalLock) cats.filterNot { AdultContentFilter.isAdult(it.name) } else cats,
                             isInitializing = false,
                             sections = layout,

@@ -140,12 +140,10 @@ fun HomeScreen(
             Box(Modifier.padding(top = spacing.sp10))
         }
 
-        // "Recommended" has no real personalization engine yet -- shown as a
-        // catalog sample (first titles across movies+series) rather than
-        // hardcoded mock data, clearly a placeholder pending a real Phase 4+ engine.
-        // Copy and the "Smart"/AI badge are both neutral until there's a real
-        // recommender behind this rail (product-lead ruling on qa's Phase 1 finding).
-        val recommended = (state.movies + state.series).take(12)
+        // "Recommended" is now a real personalized best-of across movies+series, ranked by the
+        // categories the user watches/favorites (see [HomeRailCurator]); falls back to top-rated/
+        // newest when there's no history yet. Empty only when the catalog itself has no VOD.
+        val recommended = state.recommended
 
         if (!editMode) {
             // Home layout customization (step 1-3): rails are driven by state.sections instead of
