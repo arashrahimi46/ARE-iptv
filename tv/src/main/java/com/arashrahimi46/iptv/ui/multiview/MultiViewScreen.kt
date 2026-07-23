@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ViewColumn
 import androidx.compose.runtime.Composable
@@ -44,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -158,7 +161,8 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
 
         if (pickerOpen) {
             ChannelPickerDialog(
-                candidates = state.pickerCandidates,
+                categories = state.pickerCategories,
+                loadChannels = viewModel::channelsFor,
                 onPick = { viewModel.addChannel(it); pickerOpen = false },
                 onDismiss = { pickerOpen = false },
             )
@@ -197,11 +201,21 @@ private fun EmptyPaneSlot(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ChannelPickerDialog(candidates: List<Channel>, onPick: (Channel) -> Unit, onDismiss: () -> Unit) {
+private fun ChannelPickerDialog(
+    categories: List<String>,
+    loadChannels: suspend (PickerFilter) -> List<Channel>,
+    onPick: (Channel) -> Unit,
+    onDismiss: () -> Unit,
+) {
     val colors = AreIptvTheme.colors
     var query by remember { mutableStateOf("") }
-    val filtered = remember(query, candidates) {
-        if (query.isBlank()) candidates else candidates.filter { it.name.contains(query.trim(), ignoreCase = true) }
+    var filter by remember { mutableStateOf<PickerFilter>(PickerFilter.All) }
+    var channels by remember { mutableStateOf<List<Channel>>(emptyList()) }
+    // Category/Favorites hit the DB; "All" returns the pre-loaded candidates -- reloaded whenever
+    // the selected chip changes. Search then refines this set client-side (search within category).
+    LaunchedEffect(filter) { channels = loadChannels(filter) }
+    val filtered = remember(query, channels) {
+        if (query.isBlank()) channels else channels.filter { it.name.contains(query.trim(), ignoreCase = true) }
     }
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         AreDialog(
@@ -209,6 +223,33 @@ private fun ChannelPickerDialog(candidates: List<Channel>, onPick: (Channel) -> 
             title = stringResource(R.string.multiview_add_to),
             width = 560.dp,
         ) {
+            // Filter chips: All · Favorites · categories (pinned categories already floated to the
+            // front by the view model). Default "All" is selected.
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    AreChip(
+                        text = stringResource(R.string.search_scope_all),
+                        selected = filter is PickerFilter.All,
+                        onClick = { filter = PickerFilter.All },
+                    )
+                }
+                item {
+                    AreChip(
+                        text = stringResource(R.string.favorites_title),
+                        icon = Icons.Filled.Favorite,
+                        selected = filter is PickerFilter.Favorites,
+                        onClick = { filter = PickerFilter.Favorites },
+                    )
+                }
+                items(categories, key = { it }) { cat ->
+                    AreChip(
+                        text = cat,
+                        selected = (filter as? PickerFilter.Category)?.name == cat,
+                        onClick = { filter = PickerFilter.Category(cat) },
+                    )
+                }
+            }
+            Box(Modifier.height(12.dp))
             // activateOnClick: on TV the channel list is the primary content -- an auto-popping IME
             // would bury it. The field is a focusable row; OK opens the keyboard, D-pad-down drops
             // straight into the list.
@@ -260,7 +301,16 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
     var autoRetryAttempt by remember(currentSource.id) { mutableStateOf(0) }
 
     val exoPlayer = remember(currentSource.streamUrl, retryCount) {
-        ExoPlayer.Builder(context).build().apply {
+        // Multi-view runs up to 4 decoders at once, but a TV box has only a handful of hardware
+        // decoders. A pane that can't acquire one previously rendered BLACK (the reported bug --
+        // player-added streams that play fine fullscreen were black here). Mirror LivePlayerScreen:
+        // enable decoder fallback so an overflow pane drops to a software decoder instead of black,
+        // and allow extension decoders for codecs the platform decoder can't handle.
+        val renderersFactory = DefaultRenderersFactory(context).apply {
+            setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+            setEnableDecoderFallback(true)
+        }
+        ExoPlayer.Builder(context, renderersFactory).build().apply {
             setMediaItem(MediaItem.fromUri(currentSource.streamUrl))
             playWhenReady = true
             prepare()
