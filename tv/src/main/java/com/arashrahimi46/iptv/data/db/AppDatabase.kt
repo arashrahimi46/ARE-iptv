@@ -59,7 +59,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Recording::class,
         DirectStream::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -273,13 +273,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** v10 -> v11: recordings become per-playlist. Add a nullable `sourceId` FK column to
+         * `recordings`, then backfill each existing row from the channel it captured (so old
+         * recordings keep showing under their playlist). A row whose channel is already gone stays
+         * NULL (unscoped) rather than being wiped. */
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `recordings` ADD COLUMN `sourceId` INTEGER")
+                db.execSQL(
+                    "UPDATE `recordings` SET `sourceId` = " +
+                        "(SELECT `sourceId` FROM `channels` WHERE `channels`.`id` = `recordings`.`channelId`)",
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .build().also { instance = it }
             }
     }

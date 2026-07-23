@@ -220,6 +220,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
     private val db = AppDatabase.get(context)
     private val settings = UserSettings(context)
     private val credentials = CredentialsStore(context)
+    private val recordings = RecordingRepository(context)
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(20, TimeUnit.SECONDS)
@@ -747,6 +748,9 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             db.categoryDao().deleteForSource(sourceId)
             db.playlistSourceDao().delete(source)
         }
+        // Recordings are per-playlist: drop their rows and (for internal storage only) their files.
+        // Outside the transaction -- it does file I/O, not just Room writes.
+        recordings.deleteForSource(sourceId)
         // Credentials live in encrypted prefs (not Room), so clear them outside the DB transaction.
         credentials.clear(sourceId)
         // Don't leave the active pointer dangling at a source that no longer exists.

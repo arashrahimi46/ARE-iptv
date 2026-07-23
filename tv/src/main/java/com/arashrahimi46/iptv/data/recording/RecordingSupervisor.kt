@@ -127,6 +127,7 @@ class RecordingSupervisor(
         programTitle: String?,
         treeUri: Uri,
         isHls: Boolean,
+        sourceId: Long?,
     ): StartResult = withContext(Dispatchers.IO) {
         if (session != null) return@withContext StartResult.Started(session!!.recordingId)
         when (val pre = storage.preflight(treeUri, isHls, PREFLIGHT_BITRATE_BPS)) {
@@ -154,6 +155,7 @@ class RecordingSupervisor(
                 storageTreeUri = treeUri.toString(),
                 documentId = created.documentId,
                 volumeUuid = storage.volumeUuid(treeUri),
+                sourceId = sourceId,
             ),
         )
         val s = Session(

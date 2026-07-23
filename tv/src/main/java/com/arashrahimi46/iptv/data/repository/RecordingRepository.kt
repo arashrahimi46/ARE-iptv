@@ -23,9 +23,10 @@ class RecordingRepository(context: Context) {
     private val continueWatchingDao = AppDatabase.get(context).continueWatchingDao()
     private val storage = RecordingStorage(context)
 
-    /** All recordings, newest first, with UNAVAILABLE/MISSING layered on top of the stored status. */
-    fun observeRecordings(): Flow<List<Recording>> =
-        dao.observeAll().map { list -> list.map { it.withDerivedAvailability() } }.flowOn(Dispatchers.IO)
+    /** Recordings for one playlist [sourceId], newest first, with UNAVAILABLE/MISSING layered on top
+     * of the stored status. Recordings are per-playlist -- see [deleteForSource]. */
+    fun observeRecordings(sourceId: Long): Flow<List<Recording>> =
+        dao.observeBySource(sourceId).map { list -> list.map { it.withDerivedAvailability() } }.flowOn(Dispatchers.IO)
 
     private fun Recording.withDerivedAvailability(): Recording {
         // A live capture in progress, or a row that never captured a byte, has no file to probe.
@@ -61,5 +62,22 @@ class RecordingRepository(context: Context) {
             storage.deleteDocument(treeUri, recording.documentId)
         }
         dao.delete(recording)
+    }
+
+    /**
+     * Cascade when a playlist source is deleted: drop every recording row for [sourceId] and its
+     * resume bookmark, AND delete the file on disk -- but only for recordings on INTERNAL storage.
+     * Files on external drives (USB/SD/SAF) are left in place (the drive may be shared / removed).
+     */
+    suspend fun deleteForSource(sourceId: Long) = withContext(Dispatchers.IO) {
+        val rows = dao.getBySource(sourceId)
+        for (r in rows) {
+            continueWatchingDao.deleteByRecording(r.id)
+            val treeUri = runCatching { Uri.parse(r.storageTreeUri) }.getOrNull()
+            if (treeUri != null && storage.isInternalStorage(treeUri)) {
+                storage.deleteDocument(treeUri, r.documentId)
+            }
+        }
+        dao.deleteBySource(sourceId)
     }
 }

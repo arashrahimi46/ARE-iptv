@@ -503,9 +503,17 @@ interface RecordingDao {
     @Query("SELECT * FROM recordings WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): Recording?
 
-    /** All recordings, newest first -- backs the Recordings tab (the ● Recording row sorts to top). */
-    @Query("SELECT * FROM recordings ORDER BY startedAtMs DESC")
-    fun observeAll(): Flow<List<Recording>>
+    /** Recordings for one playlist source, newest first -- backs the (per-playlist) Recordings tab. */
+    @Query("SELECT * FROM recordings WHERE sourceId = :sourceId ORDER BY startedAtMs DESC")
+    fun observeBySource(sourceId: Long): Flow<List<Recording>>
+
+    /** All recordings for a source -- read before a cascade delete so their files can be removed. */
+    @Query("SELECT * FROM recordings WHERE sourceId = :sourceId")
+    suspend fun getBySource(sourceId: Long): List<Recording>
+
+    /** Drop all recording rows for a source (files handled separately by the repository). */
+    @Query("DELETE FROM recordings WHERE sourceId = :sourceId")
+    suspend fun deleteBySource(sourceId: Long)
 
     /** Live running totals for an in-progress recording (size/duration/bitrate/parts). */
     @Query("UPDATE recordings SET sizeBytes = :sizeBytes, durationMs = :durationMs, bitrateBps = :bitrateBps, parts = :parts WHERE id = :id")

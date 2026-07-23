@@ -228,6 +228,9 @@ data class Recording(
     /** Reserved: recordings of parental-locked channels play without PIN in V1 (§7 trade-off);
      * this lets that be tightened later without a migration. */
     val locked: Boolean = false,
+    /** Owning playlist source -- recordings are per-playlist (filtered by the active source, and
+     * cascade-deleted when the source is removed). Null for pre-v11 rows recorded before scoping. */
+    val sourceId: Long? = null,
 )
 
 /**

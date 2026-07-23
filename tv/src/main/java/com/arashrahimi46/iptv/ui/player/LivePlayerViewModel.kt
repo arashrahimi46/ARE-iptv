@@ -409,7 +409,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             // Already progressive (plain .ts / extensionless): record what's playing now.
             val program = _upNext.value.firstOrNull { it.isNow }?.title
             viewModelScope.launch {
-                onResult(recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false))
+                val sourceId = db.channelDao().getById(channelId)?.sourceId
+                onResult(recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false, sourceId = sourceId))
             }
         }
     }
@@ -425,7 +426,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
         val media = _uiState.value.media ?: return
         val program = _upNext.value.firstOrNull { it.isNow }?.title
         viewModelScope.launch {
-            val result = recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false)
+            val sourceId = db.channelDao().getById(channelId)?.sourceId
+            val result = recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false, sourceId = sourceId)
             onResult?.invoke(result)
         }
     }

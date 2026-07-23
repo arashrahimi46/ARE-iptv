@@ -161,6 +161,10 @@ class RecordingStorage(private val context: Context) {
         return Regex("/storage/([^/]+)/").find(path)?.groupValues?.getOrNull(1)?.ifBlank { null }
     }
 
+    /** True when the recording lives on the device's internal/primary volume (vs a USB/SD/SAF drive).
+     * Playlist-delete only removes recording FILES for internal storage; external drives are left. */
+    fun isInternalStorage(treeUri: Uri): Boolean = volumeUuid(treeUri).equals("primary", ignoreCase = true)
+
     /** Human-readable drive label for the "location badge" (e.g. "SanDisk USB" / "Internal storage").
      * Best-effort: providers rarely expose a friendly name, so fall back to the volume UUID. */
     fun driveLabel(treeUri: Uri): String? {

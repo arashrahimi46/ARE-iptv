@@ -12,8 +12,11 @@ import com.arashrahimi46.iptv.data.model.RecordingStatus
 import com.arashrahimi46.iptv.data.recording.RecordingStorage
 import com.arashrahimi46.iptv.data.recording.RecordingSupervisor
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -44,9 +47,15 @@ data class RecordingRow(
 class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
     private val repository = RecordingRepository(app)
     private val storage = RecordingStorage(app)
+    private val settings = UserSettings(app)
 
+    // Recordings are per-playlist: show only the active source's, and re-query when it switches.
+    // No active source -> nothing to show.
     val rows: StateFlow<List<RecordingRow>> =
-        repository.observeRecordings()
+        settings.activeSourceId
+            .flatMapLatest { sourceId ->
+                if (sourceId == null) flowOf(emptyList()) else repository.observeRecordings(sourceId)
+            }
             .map { list -> list.map { it.toRow() } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
