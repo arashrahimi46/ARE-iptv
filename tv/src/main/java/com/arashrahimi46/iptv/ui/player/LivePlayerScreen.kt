@@ -377,7 +377,10 @@ fun LivePlayerScreen(
                                 lastScrubAt = now
                                 val step = SCRUB_STEPS_MS[scrubStepIndex]
                                 val delta = if (keyEvent.key == Key.DirectionRight) step else -step
-                                val dur = player.duration
+                                // Prefer our known recorded length (see effectiveDurationMs) so a
+                                // scrub can reach the true end of a recording, not ExoPlayer's short
+                                // TS estimate.
+                                val dur = state.media?.knownDurationMs ?: player.duration
                                 val target = player.currentPosition + delta
                                 player.seekTo(
                                     if (dur > 0 && dur != C.TIME_UNSET) target.coerceIn(0L, dur)
@@ -748,11 +751,16 @@ fun LivePlayerScreen(
             // there's no "total" to divide by, so the seek bar reads as parked at the live
             // edge (matches the design's TimeShift-seek-bar-at-live-edge default) rather than
             // computing a meaningless ratio.
-            val hasKnownDuration = durationMs > 0 && durationMs != C.TIME_UNSET
-            val seekPosition = if (hasKnownDuration) (positionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
-            val seekBuffered = if (hasKnownDuration) (bufferedPositionMs.toFloat() / durationMs).coerceIn(0f, 1f) else 1f
+            // Prefer a duration we already know (recordings carry their measured wall-clock length)
+            // over ExoPlayer's own estimate -- the latter is garbage for a raw recorded live-TS
+            // (PTS resets on ad loops), which is what made a 57-min recording read as a few seconds.
+            // Real VOD has no knownDurationMs, so it still uses the player's (accurate) duration.
+            val effectiveDurationMs = media.knownDurationMs ?: durationMs
+            val hasKnownDuration = effectiveDurationMs > 0 && effectiveDurationMs != C.TIME_UNSET
+            val seekPosition = if (hasKnownDuration) (positionMs.toFloat() / effectiveDurationMs).coerceIn(0f, 1f) else 1f
+            val seekBuffered = if (hasKnownDuration) (bufferedPositionMs.toFloat() / effectiveDurationMs).coerceIn(0f, 1f) else 1f
             val elapsedLabel = formatPlaybackTime(positionMs)
-            val totalLabel = if (hasKnownDuration) formatPlaybackTime(durationMs) else elapsedLabel
+            val totalLabel = if (hasKnownDuration) formatPlaybackTime(effectiveDurationMs) else elapsedLabel
 
             // ⏮/⏭ transport-skip pair, resolved per content type:
             //  - live: previous/next channel (switchChannel wraps the sibling list).
@@ -781,7 +789,7 @@ fun LivePlayerScreen(
                     skipPrevious = { exoPlayer.seekTo((exoPlayer.currentPosition - 600_000).coerceAtLeast(0)) }
                     skipNext = {
                         val target = exoPlayer.currentPosition + 600_000
-                        exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(durationMs) else target)
+                        exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(effectiveDurationMs) else target)
                     }
                     skipPreviousLabel = back10MinLabel
                     skipNextLabel = forward10MinLabel
@@ -927,7 +935,7 @@ fun LivePlayerScreen(
                         },
                         onFastForward = {
                             val target = exoPlayer.currentPosition + 10_000
-                            exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(durationMs) else target)
+                            exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(effectiveDurationMs) else target)
                         },
                         // ⏮/⏭ are context-dependent: live -> prev/next channel; series episode ->
                         // prev/next episode (hidden at the first/last); movie -> −10min/+10min. See

@@ -61,6 +61,10 @@ data class PlayableMedia(
     val year: String? = null,
     val season: Int? = null,
     val episode: Int? = null,
+    /** Authoritative duration we already know (recordings: the measured wall-clock length). Overrides
+     * ExoPlayer's own estimate, which is unreliable for a raw recorded live-TS (PTS resets on ad
+     * loops make it read a garbage duration and stop after ~one loop). Null => trust the player. */
+    val knownDurationMs: Long? = null,
 )
 
 /** One upcoming/now-playing programme for the currently-playing channel's mini up-next panel. */
@@ -243,6 +247,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                             subtitle = rec.programTitle,
                             streamUrl = recordingStorage.documentUri(treeUri, rec.documentId).toString(),
                             isLive = false,
+                            // Trust our measured record length over ExoPlayer's TS estimate.
+                            knownDurationMs = rec.durationMs?.takeIf { it > 0 },
                         )
                     }
                 }
