@@ -278,3 +278,80 @@ npx monomind@latest doctor --fix
 
 - Documentation: https://github.com/monoes/monomind
 - Issues: https://github.com/monoes/monomind/issues
+
+---
+
+# This Repository — are-iptv (Android TV app)
+
+> The generic guidance above is the monomind baseline. The rules below describe THIS actual
+> project and override the generic build/test/architecture notes where they conflict.
+> This is a **Kotlin + Jetpack Compose for TV** app built with **Gradle** — NOT a Node/npm project,
+> so `npm run build`/`npm test` do not apply here.
+
+## What it is
+
+Android **TV** IPTV player. Plays live channels, movies and series from M3U / Xtream playlists,
+with EPG, favorites, continue-watching, online subtitles, a customizable Home, and light/dark
+theming. App package: `com.arashrahimi46.iptv`.
+
+## Modules
+
+| Module | What it is |
+|--------|------------|
+| `:tv` | **The app** — nearly all work happens here |
+| `:mobile` | Phone stub — not the focus |
+| `:baselineprofile` | Startup baseline profile generation |
+
+Layout under `tv/src/main/java/com/arashrahimi46/iptv/`: `data/` (db=Room, repository, parser,
+settings=DataStore, model) · `ui/` (one package per screen + `ui/components` + `ui/theme`).
+
+## Build / test / run (Gradle, JDK 21)
+
+- **JDK 21 required.** `JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home`
+  (also in `.claude/settings.json`). `/usr/bin/java` is a stub — don't use it.
+- Compile check: `./gradlew :tv:compileDebugKotlin`
+- Debug APK: `./gradlew :tv:assembleDebug` — also validates all string resources (aapt)
+- Release APK: `./gradlew :tv:assembleRelease` → `tv/build/outputs/apk/release/tv-release.apk`
+- Unit tests: `./gradlew :tv:testDebugUnitTest` (JUnit, in `tv/src/test`)
+- Lint: `./gradlew :tv:lintDebug`
+- e2e: TV emulator `emulator-5554`; `adb install -r` the debug APK, launch, screenshot to verify.
+- Never commit build outputs (`**/build/`), `.idea/`, or `.kotlin/`.
+- **Release:** bump `versionCode` AND `versionName` in `tv/build.gradle.kts`. Signing uses the
+  keystore only if `TV_RELEASE_KEYSTORE_PATH`/`TV_RELEASE_KEYSTORE_PASSWORD` (+ key alias/pass)
+  are set, else falls back to debug signing.
+
+## Internationalization — READ BEFORE ADDING ANY USER-FACING STRING
+
+Ships **English + 21 translated locales**. A missing translation silently falls back to English
+(no build error), so keep them in sync by hand.
+
+- Every user-facing string goes through `stringResource(R.string.…)` — never a hardcoded literal
+  in `Text(...)` / `contentDescription` (glyphs, counters, and the brand mark excepted).
+- When you add/rename a key, add it to **`values/strings.xml` AND all 21 `values-*/strings.xml`**:
+  `az, b+pt+BR, b+pt+PT, bg, cs, da, de, el, es, fi, fr, hu, it, nb, nl, pl, ro, ru, sv, tr, uk`.
+- Preserve positional format args exactly (`%1$s`, `%1$d`, `%2$d`); a locale may reorder them but
+  every index must still appear. Escape `'` as `\'`; XML-escape `&`/`<`/`>`.
+- Audit gaps: diff each `values-*/strings.xml`'s `name="…"` keys against `values/strings.xml`.
+
+## TV UX conventions (do not regress)
+
+- **Focus:** every focusable composes `TvFocusable` / `Modifier.tvFocusable` (accent ring + glow).
+  Nothing focusable without a visible indicator. `TvFocusable` already handles remote `DPAD_CENTER`.
+- **Dialogs must trap focus:** render modals in a real `Dialog(...)` window (see
+  `HomeAddSectionDialog`), never inline — inline overlays let D-pad focus leak to the content
+  behind. Focus the default action on open.
+- **Text inputs in scrolling lists:** `AreTextField(activateOnClick = true)` so D-pad scrolling
+  past a field doesn't pop the IME (OK enters edit, Back/Done exits). Leave off for Search.
+
+## Theming
+
+- Two themes (`AreIptvDarkColors` / `AreIptvLightColors`) via semantic tokens in `ui/theme/Color.kt`
+  (`AreIptvColors`). Reference **semantic** aliases (`colors.surface1`, `colors.textPrimary`,
+  `colors.borderDefault`) — never the raw `Ink*/Blue*/Light*` ramps.
+- Light-theme gotchas: near-white surfaces on the off-white page need a `borderDefault` edge to
+  read; clip tile content to the tile shape so square fills don't poke through rounded focus rings;
+  glass/HUD icons use `textPrimary`, not a hardcoded white.
+
+## Commits
+
+Conventional commits scoped to the module: `fix(tv):`, `feat(tv):`, `release(tv):`.

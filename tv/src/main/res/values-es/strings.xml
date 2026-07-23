@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Error al actualizar — comprueba tu conexión e inténtalo de nuevo.</string>
     <string name="settings_subs_connect_key_first">Conecta primero tu clave de API.</string>
     <string name="onboarding_error_generic">Algo salió mal</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Eliminar</string>
+    <string name="settings_section_provider">Proveedor</string>
+    <string name="settings_provider_status">Estado</string>
+    <string name="settings_provider_loading">Actualiza para cargar los detalles del proveedor</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Servidor</string>
+    <string name="settings_provider_server_time">Hora del servidor</string>
+    <string name="settings_provider_timezone">Zona horaria</string>
+    <string name="settings_provider_connections">Conexiones</string>
+    <string name="settings_provider_connections_value">%1$d de %2$d en uso</string>
+    <string name="settings_provider_connections_max">máx. %1$d</string>
+    <string name="settings_provider_expires">Caduca</string>
+    <string name="settings_provider_expires_days">%1$s · quedan %2$d días</string>
+    <string name="settings_provider_expires_today">%1$s · caduca hoy</string>
+    <string name="settings_provider_expired">Caducado</string>
+    <string name="settings_provider_trial">Tipo de cuenta</string>
+    <string name="settings_provider_trial_value">Prueba</string>
+    <string name="settings_provider_unlimited">Ilimitado</string>
+    <string name="sources_delete_title">¿Eliminar la lista?</string>
+    <string name="sources_delete_body">Esto elimina permanentemente «%1$s» y todo su contenido —canales, películas, series, favoritos e historial de reproducción— de este dispositivo. Esta acción no se puede deshacer.</string>
+    <string name="sources_delete_hint">Mantén OK sobre una lista para eliminarla.</string>
 </resources>

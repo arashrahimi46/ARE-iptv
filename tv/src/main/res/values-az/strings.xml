@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Yeniləmə alınmadı — bağlantınızı yoxlayıb yenidən cəhd edin.</string>
     <string name="settings_subs_connect_key_first">Əvvəlcə API açarınızı qoşun.</string>
     <string name="onboarding_error_generic">Nəsə səhv oldu</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Sil</string>
+    <string name="settings_section_provider">Provayder</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Provayder məlumatlarını yükləmək üçün yeniləyin</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Server vaxtı</string>
+    <string name="settings_provider_timezone">Saat qurşağı</string>
+    <string name="settings_provider_connections">Bağlantılar</string>
+    <string name="settings_provider_connections_value">%2$d bağlantıdan %1$d istifadədə</string>
+    <string name="settings_provider_connections_max">maks. %1$d</string>
+    <string name="settings_provider_expires">Bitmə</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d gün qalıb</string>
+    <string name="settings_provider_expires_today">%1$s · bu gün bitir</string>
+    <string name="settings_provider_expired">Bitib</string>
+    <string name="settings_provider_trial">Hesab növü</string>
+    <string name="settings_provider_trial_value">Sınaq</string>
+    <string name="settings_provider_unlimited">Limitsiz</string>
+    <string name="sources_delete_title">Pleylist silinsin?</string>
+    <string name="sources_delete_body">Bu, \"%1$s\" və onun daxilindəki hər şeyi — kanallar, filmlər, seriallar, sevimlilər və baxış tarixçəsi — bu cihazdan həmişəlik silir. Bunu geri qaytarmaq mümkün deyil.</string>
+    <string name="sources_delete_hint">Silmək üçün pleylistdə OK düyməsini basılı saxlayın.</string>
 </resources>

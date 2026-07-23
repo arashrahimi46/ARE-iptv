@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Odświeżanie nie powiodło się — sprawdź połączenie i spróbuj ponownie.</string>
     <string name="settings_subs_connect_key_first">Najpierw połącz swój klucz API.</string>
     <string name="onboarding_error_generic">Coś poszło nie tak</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Usuń</string>
+    <string name="settings_section_provider">Dostawca</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Odśwież, aby wczytać szczegóły dostawcy</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Serwer</string>
+    <string name="settings_provider_server_time">Czas serwera</string>
+    <string name="settings_provider_timezone">Strefa czasowa</string>
+    <string name="settings_provider_connections">Połączenia</string>
+    <string name="settings_provider_connections_value">%1$d z %2$d w użyciu</string>
+    <string name="settings_provider_connections_max">maks. %1$d</string>
+    <string name="settings_provider_expires">Wygasa</string>
+    <string name="settings_provider_expires_days">%1$s · pozostało %2$d dni</string>
+    <string name="settings_provider_expires_today">%1$s · wygasa dzisiaj</string>
+    <string name="settings_provider_expired">Wygasło</string>
+    <string name="settings_provider_trial">Typ konta</string>
+    <string name="settings_provider_trial_value">Wersja próbna</string>
+    <string name="settings_provider_unlimited">Bez limitu</string>
+    <string name="sources_delete_title">Usunąć playlistę?</string>
+    <string name="sources_delete_body">Spowoduje to trwałe usunięcie „%1$s” i całej jej zawartości — kanałów, filmów, seriali, ulubionych i historii oglądania — z tego urządzenia. Tej operacji nie można cofnąć.</string>
+    <string name="sources_delete_hint">Przytrzymaj OK na playliście, aby ją usunąć.</string>
 </resources>

@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Oppdatering mislyktes — sjekk tilkoblingen og prøv igjen.</string>
     <string name="settings_subs_connect_key_first">Koble til API-nøkkelen din først.</string>
     <string name="onboarding_error_generic">Noe gikk galt</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Slett</string>
+    <string name="settings_section_provider">Leverandør</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Oppdater for å laste leverandørdetaljer</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Servertid</string>
+    <string name="settings_provider_timezone">Tidssone</string>
+    <string name="settings_provider_connections">Tilkoblinger</string>
+    <string name="settings_provider_connections_value">%1$d av %2$d i bruk</string>
+    <string name="settings_provider_connections_max">maks. %1$d</string>
+    <string name="settings_provider_expires">Utløper</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d dager igjen</string>
+    <string name="settings_provider_expires_today">%1$s · utløper i dag</string>
+    <string name="settings_provider_expired">Utløpt</string>
+    <string name="settings_provider_trial">Kontotype</string>
+    <string name="settings_provider_trial_value">Prøve</string>
+    <string name="settings_provider_unlimited">Ubegrenset</string>
+    <string name="sources_delete_title">Slette spillelisten?</string>
+    <string name="sources_delete_body">Dette sletter «%1$s» og alt i den — kanaler, filmer, serier, favoritter og avspillingshistorikk — permanent fra denne enheten. Dette kan ikke angres.</string>
+    <string name="sources_delete_hint">Hold inne OK på en spilleliste for å slette den.</string>
 </resources>

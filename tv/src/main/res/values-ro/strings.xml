@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Reîmprospătarea a eșuat — verifică conexiunea și încearcă din nou.</string>
     <string name="settings_subs_connect_key_first">Conectează mai întâi cheia API.</string>
     <string name="onboarding_error_generic">Ceva nu a mers bine</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Șterge</string>
+    <string name="settings_section_provider">Furnizor</string>
+    <string name="settings_provider_status">Stare</string>
+    <string name="settings_provider_loading">Reîmprospătează pentru a încărca detaliile furnizorului</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Ora serverului</string>
+    <string name="settings_provider_timezone">Fus orar</string>
+    <string name="settings_provider_connections">Conexiuni</string>
+    <string name="settings_provider_connections_value">%1$d din %2$d în uz</string>
+    <string name="settings_provider_connections_max">max. %1$d</string>
+    <string name="settings_provider_expires">Expiră</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d zile rămase</string>
+    <string name="settings_provider_expires_today">%1$s · expiră astăzi</string>
+    <string name="settings_provider_expired">Expirat</string>
+    <string name="settings_provider_trial">Tip de cont</string>
+    <string name="settings_provider_trial_value">Probă</string>
+    <string name="settings_provider_unlimited">Nelimitat</string>
+    <string name="sources_delete_title">Ștergi playlistul?</string>
+    <string name="sources_delete_body">Aceasta șterge definitiv „%1$s” și tot ce conține — canale, filme, seriale, favorite și istoricul vizionărilor — de pe acest dispozitiv. Această acțiune nu poate fi anulată.</string>
+    <string name="sources_delete_hint">Ține apăsat OK pe un playlist pentru a-l șterge.</string>
 </resources>

@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Vernieuwen mislukt — controleer je verbinding en probeer het opnieuw.</string>
     <string name="settings_subs_connect_key_first">Verbind eerst je API-sleutel.</string>
     <string name="onboarding_error_generic">Er is iets misgegaan</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Verwijderen</string>
+    <string name="settings_section_provider">Provider</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Vernieuw om providergegevens te laden</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Servertijd</string>
+    <string name="settings_provider_timezone">Tijdzone</string>
+    <string name="settings_provider_connections">Verbindingen</string>
+    <string name="settings_provider_connections_value">%1$d van %2$d in gebruik</string>
+    <string name="settings_provider_connections_max">max. %1$d</string>
+    <string name="settings_provider_expires">Verloopt</string>
+    <string name="settings_provider_expires_days">%1$s · nog %2$d dagen</string>
+    <string name="settings_provider_expires_today">%1$s · verloopt vandaag</string>
+    <string name="settings_provider_expired">Verlopen</string>
+    <string name="settings_provider_trial">Accounttype</string>
+    <string name="settings_provider_trial_value">Proef</string>
+    <string name="settings_provider_unlimited">Onbeperkt</string>
+    <string name="sources_delete_title">Afspeellijst verwijderen?</string>
+    <string name="sources_delete_body">Hiermee worden ‘%1$s’ en alles erin — kanalen, films, series, favorieten en kijkgeschiedenis — permanent van dit apparaat verwijderd. Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="sources_delete_hint">Houd OK ingedrukt op een afspeellijst om deze te verwijderen.</string>
 </resources>

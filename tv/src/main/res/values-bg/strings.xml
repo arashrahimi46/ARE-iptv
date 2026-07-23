@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Обновяването не бе успешно — проверете връзката и опитайте отново.</string>
     <string name="settings_subs_connect_key_first">Първо свържете своя API ключ.</string>
     <string name="onboarding_error_generic">Нещо се обърка</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Изтрий</string>
+    <string name="settings_section_provider">Доставчик</string>
+    <string name="settings_provider_status">Състояние</string>
+    <string name="settings_provider_loading">Опреснете, за да заредите данните за доставчика</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Сървър</string>
+    <string name="settings_provider_server_time">Време на сървъра</string>
+    <string name="settings_provider_timezone">Часова зона</string>
+    <string name="settings_provider_connections">Връзки</string>
+    <string name="settings_provider_connections_value">%1$d от %2$d в употреба</string>
+    <string name="settings_provider_connections_max">макс. %1$d</string>
+    <string name="settings_provider_expires">Изтича</string>
+    <string name="settings_provider_expires_days">%1$s · остават %2$d дни</string>
+    <string name="settings_provider_expires_today">%1$s · изтича днес</string>
+    <string name="settings_provider_expired">Изтекъл</string>
+    <string name="settings_provider_trial">Тип акаунт</string>
+    <string name="settings_provider_trial_value">Пробен</string>
+    <string name="settings_provider_unlimited">Неограничено</string>
+    <string name="sources_delete_title">Изтриване на плейлиста?</string>
+    <string name="sources_delete_body">Това изтрива за постоянно „%1$s“ и цялото ѝ съдържание — канали, филми, сериали, любими и история на гледане — от това устройство. Действието е необратимо.</string>
+    <string name="sources_delete_hint">Задръжте OK върху плейлист, за да го изтриете.</string>
 </resources>

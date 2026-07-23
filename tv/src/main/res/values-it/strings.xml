@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Aggiornamento non riuscito — controlla la connessione e riprova.</string>
     <string name="settings_subs_connect_key_first">Collega prima la tua chiave API.</string>
     <string name="onboarding_error_generic">Qualcosa è andato storto</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Elimina</string>
+    <string name="settings_section_provider">Provider</string>
+    <string name="settings_provider_status">Stato</string>
+    <string name="settings_provider_loading">Aggiorna per caricare i dettagli del provider</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Ora del server</string>
+    <string name="settings_provider_timezone">Fuso orario</string>
+    <string name="settings_provider_connections">Connessioni</string>
+    <string name="settings_provider_connections_value">%1$d di %2$d in uso</string>
+    <string name="settings_provider_connections_max">max %1$d</string>
+    <string name="settings_provider_expires">Scade</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d giorni rimasti</string>
+    <string name="settings_provider_expires_today">%1$s · scade oggi</string>
+    <string name="settings_provider_expired">Scaduto</string>
+    <string name="settings_provider_trial">Tipo di account</string>
+    <string name="settings_provider_trial_value">Prova</string>
+    <string name="settings_provider_unlimited">Illimitato</string>
+    <string name="sources_delete_title">Eliminare la playlist?</string>
+    <string name="sources_delete_body">Questo elimina definitivamente «%1$s» e tutto il suo contenuto — canali, film, serie, preferiti e cronologia di riproduzione — da questo dispositivo. L\'operazione non può essere annullata.</string>
+    <string name="sources_delete_hint">Tieni premuto OK su una playlist per eliminarla.</string>
 </resources>

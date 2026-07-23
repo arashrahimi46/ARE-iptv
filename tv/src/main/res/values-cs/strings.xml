@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Obnovení se nezdařilo — zkontrolujte připojení a zkuste to znovu.</string>
     <string name="settings_subs_connect_key_first">Nejprve připojte svůj API klíč.</string>
     <string name="onboarding_error_generic">Něco se pokazilo</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Smazat</string>
+    <string name="settings_section_provider">Poskytovatel</string>
+    <string name="settings_provider_status">Stav</string>
+    <string name="settings_provider_loading">Obnovte pro načtení údajů o poskytovateli</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Čas serveru</string>
+    <string name="settings_provider_timezone">Časové pásmo</string>
+    <string name="settings_provider_connections">Připojení</string>
+    <string name="settings_provider_connections_value">%1$d z %2$d se používá</string>
+    <string name="settings_provider_connections_max">max. %1$d</string>
+    <string name="settings_provider_expires">Vyprší</string>
+    <string name="settings_provider_expires_days">%1$s · zbývá %2$d dní</string>
+    <string name="settings_provider_expires_today">%1$s · vyprší dnes</string>
+    <string name="settings_provider_expired">Vypršelo</string>
+    <string name="settings_provider_trial">Typ účtu</string>
+    <string name="settings_provider_trial_value">Zkušební</string>
+    <string name="settings_provider_unlimited">Neomezeně</string>
+    <string name="sources_delete_title">Smazat playlist?</string>
+    <string name="sources_delete_body">Tímto trvale odstraníte „%1$s“ a vše v něm — kanály, filmy, seriály, oblíbené a historii sledování — z tohoto zařízení. Tuto akci nelze vrátit zpět.</string>
+    <string name="sources_delete_hint">Podržením OK na playlistu jej smažete.</string>
 </resources>

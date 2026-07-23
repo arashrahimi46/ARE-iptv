@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Päivitys epäonnistui — tarkista yhteytesi ja yritä uudelleen.</string>
     <string name="settings_subs_connect_key_first">Yhdistä ensin API-avaimesi.</string>
     <string name="onboarding_error_generic">Jokin meni pieleen</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Poista</string>
+    <string name="settings_section_provider">Palveluntarjoaja</string>
+    <string name="settings_provider_status">Tila</string>
+    <string name="settings_provider_loading">Päivitä ladataksesi palveluntarjoajan tiedot</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Palvelin</string>
+    <string name="settings_provider_server_time">Palvelimen aika</string>
+    <string name="settings_provider_timezone">Aikavyöhyke</string>
+    <string name="settings_provider_connections">Yhteydet</string>
+    <string name="settings_provider_connections_value">%1$d/%2$d käytössä</string>
+    <string name="settings_provider_connections_max">enintään %1$d</string>
+    <string name="settings_provider_expires">Vanhenee</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d päivää jäljellä</string>
+    <string name="settings_provider_expires_today">%1$s · vanhenee tänään</string>
+    <string name="settings_provider_expired">Vanhentunut</string>
+    <string name="settings_provider_trial">Tilin tyyppi</string>
+    <string name="settings_provider_trial_value">Kokeilu</string>
+    <string name="settings_provider_unlimited">Rajoittamaton</string>
+    <string name="sources_delete_title">Poistetaanko soittolista?</string>
+    <string name="sources_delete_body">Tämä poistaa pysyvästi kohteen ”%1$s” ja kaiken sen sisällön — kanavat, elokuvat, sarjat, suosikit ja katseluhistorian — tästä laitteesta. Tätä ei voi kumota.</string>
+    <string name="sources_delete_hint">Poista soittolista pitämällä OK-painiketta painettuna.</string>
 </resources>

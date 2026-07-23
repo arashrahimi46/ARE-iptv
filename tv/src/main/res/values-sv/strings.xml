@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Uppdateringen misslyckades — kontrollera anslutningen och försök igen.</string>
     <string name="settings_subs_connect_key_first">Anslut din API-nyckel först.</string>
     <string name="onboarding_error_generic">Något gick fel</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Ta bort</string>
+    <string name="settings_section_provider">Leverantör</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Uppdatera för att läsa in leverantörsinformation</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Servertid</string>
+    <string name="settings_provider_timezone">Tidszon</string>
+    <string name="settings_provider_connections">Anslutningar</string>
+    <string name="settings_provider_connections_value">%1$d av %2$d används</string>
+    <string name="settings_provider_connections_max">max %1$d</string>
+    <string name="settings_provider_expires">Upphör</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d dagar kvar</string>
+    <string name="settings_provider_expires_today">%1$s · upphör idag</string>
+    <string name="settings_provider_expired">Upphört</string>
+    <string name="settings_provider_trial">Kontotyp</string>
+    <string name="settings_provider_trial_value">Testversion</string>
+    <string name="settings_provider_unlimited">Obegränsat</string>
+    <string name="sources_delete_title">Ta bort spellistan?</string>
+    <string name="sources_delete_body">Detta tar permanent bort ”%1$s” och allt i den — kanaler, filmer, serier, favoriter och visningshistorik — från den här enheten. Detta kan inte ångras.</string>
+    <string name="sources_delete_hint">Håll ned OK på en spellista för att ta bort den.</string>
 </resources>

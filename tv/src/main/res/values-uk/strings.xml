@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Не вдалося оновити — перевірте підключення та повторіть спробу.</string>
     <string name="settings_subs_connect_key_first">Спочатку підключіть свій ключ API.</string>
     <string name="onboarding_error_generic">Щось пішло не так</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Видалити</string>
+    <string name="settings_section_provider">Провайдер</string>
+    <string name="settings_provider_status">Статус</string>
+    <string name="settings_provider_loading">Оновіть, щоб завантажити дані провайдера</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Сервер</string>
+    <string name="settings_provider_server_time">Час сервера</string>
+    <string name="settings_provider_timezone">Часовий пояс</string>
+    <string name="settings_provider_connections">Підключення</string>
+    <string name="settings_provider_connections_value">%1$d з %2$d використовується</string>
+    <string name="settings_provider_connections_max">макс. %1$d</string>
+    <string name="settings_provider_expires">Завершується</string>
+    <string name="settings_provider_expires_days">%1$s · залишилося %2$d дн.</string>
+    <string name="settings_provider_expires_today">%1$s · завершується сьогодні</string>
+    <string name="settings_provider_expired">Завершено</string>
+    <string name="settings_provider_trial">Тип облікового запису</string>
+    <string name="settings_provider_trial_value">Пробний</string>
+    <string name="settings_provider_unlimited">Без обмежень</string>
+    <string name="sources_delete_title">Видалити плейлист?</string>
+    <string name="sources_delete_body">Це назавжди видалить «%1$s» і весь його вміст — канали, фільми, серіали, вибране та історію переглядів — із цього пристрою. Цю дію не можна скасувати.</string>
+    <string name="sources_delete_hint">Утримуйте OK на плейлисті, щоб видалити його.</string>
 </resources>

@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Yenileme başarısız — bağlantınızı kontrol edip tekrar deneyin.</string>
     <string name="settings_subs_connect_key_first">Önce API anahtarınızı bağlayın.</string>
     <string name="onboarding_error_generic">Bir şeyler ters gitti</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Sil</string>
+    <string name="settings_section_provider">Sağlayıcı</string>
+    <string name="settings_provider_status">Durum</string>
+    <string name="settings_provider_loading">Sağlayıcı ayrıntılarını yüklemek için yenileyin</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Sunucu</string>
+    <string name="settings_provider_server_time">Sunucu saati</string>
+    <string name="settings_provider_timezone">Saat dilimi</string>
+    <string name="settings_provider_connections">Bağlantılar</string>
+    <string name="settings_provider_connections_value">%2$d bağlantıdan %1$d tanesi kullanımda</string>
+    <string name="settings_provider_connections_max">en fazla %1$d</string>
+    <string name="settings_provider_expires">Bitiş</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d gün kaldı</string>
+    <string name="settings_provider_expires_today">%1$s · bugün doluyor</string>
+    <string name="settings_provider_expired">Süresi doldu</string>
+    <string name="settings_provider_trial">Hesap türü</string>
+    <string name="settings_provider_trial_value">Deneme</string>
+    <string name="settings_provider_unlimited">Sınırsız</string>
+    <string name="sources_delete_title">Oynatma listesi silinsin mi?</string>
+    <string name="sources_delete_body">Bu, \"%1$s\" ve içindeki her şeyi — kanallar, filmler, diziler, favoriler ve izleme geçmişi — bu cihazdan kalıcı olarak siler. Bu işlem geri alınamaz.</string>
+    <string name="sources_delete_hint">Silmek için bir oynatma listesinde OK tuşunu basılı tutun.</string>
 </resources>

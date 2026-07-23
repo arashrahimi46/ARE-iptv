@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Η ανανέωση απέτυχε — ελέγξτε τη σύνδεσή σας και δοκιμάστε ξανά.</string>
     <string name="settings_subs_connect_key_first">Συνδέστε πρώτα το κλειδί API.</string>
     <string name="onboarding_error_generic">Κάτι πήγε στραβά</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Διαγραφή</string>
+    <string name="settings_section_provider">Πάροχος</string>
+    <string name="settings_provider_status">Κατάσταση</string>
+    <string name="settings_provider_loading">Ανανεώστε για φόρτωση των στοιχείων του παρόχου</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Διακομιστής</string>
+    <string name="settings_provider_server_time">Ώρα διακομιστή</string>
+    <string name="settings_provider_timezone">Ζώνη ώρας</string>
+    <string name="settings_provider_connections">Συνδέσεις</string>
+    <string name="settings_provider_connections_value">%1$d από %2$d σε χρήση</string>
+    <string name="settings_provider_connections_max">έως %1$d</string>
+    <string name="settings_provider_expires">Λήγει</string>
+    <string name="settings_provider_expires_days">%1$s · απομένουν %2$d ημέρες</string>
+    <string name="settings_provider_expires_today">%1$s · λήγει σήμερα</string>
+    <string name="settings_provider_expired">Έληξε</string>
+    <string name="settings_provider_trial">Τύπος λογαριασμού</string>
+    <string name="settings_provider_trial_value">Δοκιμαστικό</string>
+    <string name="settings_provider_unlimited">Απεριόριστο</string>
+    <string name="sources_delete_title">Διαγραφή λίστας;</string>
+    <string name="sources_delete_body">Αυτό διαγράφει οριστικά τη λίστα «%1$s» και όλα όσα περιέχει — κανάλια, ταινίες, σειρές, αγαπημένα και ιστορικό προβολής — από αυτή τη συσκευή. Δεν είναι δυνατή η αναίρεση.</string>
+    <string name="sources_delete_hint">Κρατήστε πατημένο το OK σε μια λίστα για να τη διαγράψετε.</string>
 </resources>

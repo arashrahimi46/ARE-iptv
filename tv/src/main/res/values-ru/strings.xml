@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Не удалось обновить — проверьте подключение и повторите попытку.</string>
     <string name="settings_subs_connect_key_first">Сначала подключите свой ключ API.</string>
     <string name="onboarding_error_generic">Что-то пошло не так</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Удалить</string>
+    <string name="settings_section_provider">Провайдер</string>
+    <string name="settings_provider_status">Статус</string>
+    <string name="settings_provider_loading">Обновите, чтобы загрузить данные провайдера</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Сервер</string>
+    <string name="settings_provider_server_time">Время сервера</string>
+    <string name="settings_provider_timezone">Часовой пояс</string>
+    <string name="settings_provider_connections">Подключения</string>
+    <string name="settings_provider_connections_value">%1$d из %2$d используется</string>
+    <string name="settings_provider_connections_max">макс. %1$d</string>
+    <string name="settings_provider_expires">Истекает</string>
+    <string name="settings_provider_expires_days">%1$s · осталось %2$d дн.</string>
+    <string name="settings_provider_expires_today">%1$s · истекает сегодня</string>
+    <string name="settings_provider_expired">Истёк</string>
+    <string name="settings_provider_trial">Тип аккаунта</string>
+    <string name="settings_provider_trial_value">Пробный</string>
+    <string name="settings_provider_unlimited">Безлимитно</string>
+    <string name="sources_delete_title">Удалить плейлист?</string>
+    <string name="sources_delete_body">Это навсегда удалит «%1$s» и всё его содержимое — каналы, фильмы, сериалы, избранное и историю просмотров — с этого устройства. Это действие нельзя отменить.</string>
+    <string name="sources_delete_hint">Удерживайте OK на плейлисте, чтобы удалить его.</string>
 </resources>

@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Aktualisierung fehlgeschlagen — überprüfe deine Verbindung und versuche es erneut.</string>
     <string name="settings_subs_connect_key_first">Verbinde zuerst deinen API-Schlüssel.</string>
     <string name="onboarding_error_generic">Etwas ist schiefgelaufen</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Löschen</string>
+    <string name="settings_section_provider">Anbieter</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Zum Laden der Anbieterdetails aktualisieren</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Server</string>
+    <string name="settings_provider_server_time">Serverzeit</string>
+    <string name="settings_provider_timezone">Zeitzone</string>
+    <string name="settings_provider_connections">Verbindungen</string>
+    <string name="settings_provider_connections_value">%1$d von %2$d in Verwendung</string>
+    <string name="settings_provider_connections_max">max. %1$d</string>
+    <string name="settings_provider_expires">Läuft ab</string>
+    <string name="settings_provider_expires_days">%1$s · noch %2$d Tage</string>
+    <string name="settings_provider_expires_today">%1$s · läuft heute ab</string>
+    <string name="settings_provider_expired">Abgelaufen</string>
+    <string name="settings_provider_trial">Kontotyp</string>
+    <string name="settings_provider_trial_value">Testversion</string>
+    <string name="settings_provider_unlimited">Unbegrenzt</string>
+    <string name="sources_delete_title">Playlist löschen?</string>
+    <string name="sources_delete_body">Dadurch werden „%1$s“ und alle Inhalte – Sender, Filme, Serien, Favoriten und Wiedergabeverlauf – dauerhaft von diesem Gerät gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
+    <string name="sources_delete_hint">OK auf einer Playlist gedrückt halten, um sie zu löschen.</string>
 </resources>

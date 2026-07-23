@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">A frissítés nem sikerült — ellenőrizze a kapcsolatot, és próbálja újra.</string>
     <string name="settings_subs_connect_key_first">Először csatlakoztassa az API kulcsát.</string>
     <string name="onboarding_error_generic">Valami hiba történt</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Törlés</string>
+    <string name="settings_section_provider">Szolgáltató</string>
+    <string name="settings_provider_status">Állapot</string>
+    <string name="settings_provider_loading">Frissítsen a szolgáltató adatainak betöltéséhez</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Kiszolgáló</string>
+    <string name="settings_provider_server_time">Kiszolgáló ideje</string>
+    <string name="settings_provider_timezone">Időzóna</string>
+    <string name="settings_provider_connections">Kapcsolatok</string>
+    <string name="settings_provider_connections_value">%1$d / %2$d használatban</string>
+    <string name="settings_provider_connections_max">max. %1$d</string>
+    <string name="settings_provider_expires">Lejár</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d nap van hátra</string>
+    <string name="settings_provider_expires_today">%1$s · ma lejár</string>
+    <string name="settings_provider_expired">Lejárt</string>
+    <string name="settings_provider_trial">Fiók típusa</string>
+    <string name="settings_provider_trial_value">Próba</string>
+    <string name="settings_provider_unlimited">Korlátlan</string>
+    <string name="sources_delete_title">Törli a lejátszási listát?</string>
+    <string name="sources_delete_body">Ezzel véglegesen törli a(z) „%1$s” listát és annak teljes tartalmát — csatornák, filmek, sorozatok, kedvencek és megtekintési előzmények — erről az eszközről. A művelet nem vonható vissza.</string>
+    <string name="sources_delete_hint">Tartsa lenyomva az OK gombot egy listán a törléshez.</string>
 </resources>

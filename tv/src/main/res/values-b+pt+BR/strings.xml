@@ -395,4 +395,26 @@
     <string name="settings_refresh_failed">Falha na atualização — verifique sua conexão e tente novamente.</string>
     <string name="settings_subs_connect_key_first">Conecte sua chave de API primeiro.</string>
     <string name="onboarding_error_generic">Algo deu errado</string>
+    <!-- Provider details & playlist deletion -->
+    <string name="action_delete">Excluir</string>
+    <string name="settings_section_provider">Provedor</string>
+    <string name="settings_provider_status">Status</string>
+    <string name="settings_provider_loading">Atualize para carregar os detalhes do provedor</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_provider_server">Servidor</string>
+    <string name="settings_provider_server_time">Hora do servidor</string>
+    <string name="settings_provider_timezone">Fuso horário</string>
+    <string name="settings_provider_connections">Conexões</string>
+    <string name="settings_provider_connections_value">%1$d de %2$d em uso</string>
+    <string name="settings_provider_connections_max">%1$d no máximo</string>
+    <string name="settings_provider_expires">Expira</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d dias restantes</string>
+    <string name="settings_provider_expires_today">%1$s · expira hoje</string>
+    <string name="settings_provider_expired">Expirado</string>
+    <string name="settings_provider_trial">Tipo de conta</string>
+    <string name="settings_provider_trial_value">Teste</string>
+    <string name="settings_provider_unlimited">Ilimitado</string>
+    <string name="sources_delete_title">Excluir playlist?</string>
+    <string name="sources_delete_body">Isso exclui permanentemente “%1$s” e tudo o que há nela — canais, filmes, séries, favoritos e histórico de reprodução — deste dispositivo. Isso não pode ser desfeito.</string>
+    <string name="sources_delete_hint">Segure OK em uma playlist para excluí-la.</string>
 </resources>
