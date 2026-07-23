@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Canvas
 import androidx.compose.material.icons.Icons
@@ -112,7 +113,9 @@ fun FeedbackDialog(onDismiss: () -> Unit) {
     AreDialog(
         onDismiss = onDismiss,
         title = stringResource(R.string.feedback_title),
-        width = 640.dp,
+        // Wider so the form (left) and the QR hand-off (right) sit side by side -- keeps the modal
+        // short enough to fit the screen without scrolling (the QR used to overflow off the bottom).
+        width = 880.dp,
         actions = {
             AreButton(
                 text = stringResource(R.string.action_close),
@@ -156,66 +159,70 @@ fun FeedbackDialog(onDismiss: () -> Unit) {
         )
         Box(Modifier.size(16.dp))
 
-        // Star rating.
-        Text(stringResource(R.string.feedback_rating_label), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-        Box(Modifier.size(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (i in 1..5) {
-                val filled = i <= rating
-                TvFocusable(
-                    onClick = { rating = i },
-                    modifier = Modifier.size(48.dp),
-                    shape = RoundedCornerShape(AreIptvTheme.radius.sm),
-                ) { _, _ ->
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Filled.Star,
-                            contentDescription = stringResource(R.string.feedback_star_cd, i),
-                            tint = if (filled) colors.accent else colors.textTertiary,
-                            modifier = Modifier.size(30.dp),
+        // Two columns: the form on the left, the phone hand-off (QR) on the right, so the modal
+        // stays short enough to fit without scrolling. If the form is unconfigured the right column
+        // is dropped and the form takes the full width.
+        Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
+            Column(Modifier.weight(1f)) {
+                // Star rating.
+                Text(stringResource(R.string.feedback_rating_label), style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                Box(Modifier.size(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (i in 1..5) {
+                        val filled = i <= rating
+                        TvFocusable(
+                            onClick = { rating = i },
+                            modifier = Modifier.size(48.dp),
+                            shape = RoundedCornerShape(AreIptvTheme.radius.sm),
+                        ) { _, _ ->
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Filled.Star,
+                                    contentDescription = stringResource(R.string.feedback_star_cd, i),
+                                    tint = if (filled) colors.accent else colors.textTertiary,
+                                    modifier = Modifier.size(30.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+                Box(Modifier.size(20.dp))
+
+                // Category chips (single-select, optional).
+                Text(stringResource(R.string.feedback_category_label), style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                Box(Modifier.size(8.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    FeedbackCategory.entries.forEach { cat ->
+                        AreChip(
+                            text = stringResource(cat.labelRes),
+                            selected = cat == category,
+                            onClick = { category = if (category == cat) null else cat },
+                            size = AreChipSize.Small,
                         )
                     }
                 }
-            }
-        }
-        Box(Modifier.size(20.dp))
+                Box(Modifier.size(20.dp))
 
-        // Category chips (single-select, optional).
-        Text(stringResource(R.string.feedback_category_label), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-        Box(Modifier.size(8.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            FeedbackCategory.entries.forEach { cat ->
-                AreChip(
-                    text = stringResource(cat.labelRes),
-                    selected = cat == category,
-                    onClick = { category = if (category == cat) null else cat },
-                    size = AreChipSize.Small,
+                // Optional message (short — long messages belong on the phone form via the QR).
+                AreTextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    label = stringResource(R.string.feedback_message_label),
+                    placeholder = stringResource(R.string.feedback_message_placeholder),
+                    activateOnClick = true,
                 )
+
+                if (submit == SubmitState.Error) {
+                    Box(Modifier.size(10.dp))
+                    Text(stringResource(R.string.feedback_error), style = AreIptvTheme.typography.caption, color = colors.danger)
+                }
             }
-        }
-        Box(Modifier.size(20.dp))
 
-        // Optional message (short — long messages belong on the phone form via the QR).
-        AreTextField(
-            value = message,
-            onValueChange = { message = it },
-            label = stringResource(R.string.feedback_message_label),
-            placeholder = stringResource(R.string.feedback_message_placeholder),
-            activateOnClick = true,
-        )
-
-        if (submit == SubmitState.Error) {
-            Box(Modifier.size(10.dp))
-            Text(stringResource(R.string.feedback_error), style = AreIptvTheme.typography.caption, color = colors.danger)
-        }
-
-        Box(Modifier.size(24.dp))
-
-        // Phone hand-off: scan to write a longer message on a real keyboard.
-        if (FeedbackConfig.isConfigured) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                QrCode(FeedbackConfig.formUrl)
-                Column(Modifier.weight(1f)) {
+            // Phone hand-off: scan to write a longer message on a real keyboard.
+            if (FeedbackConfig.isConfigured) {
+                Column(Modifier.width(200.dp)) {
+                    QrCode(FeedbackConfig.formUrl)
+                    Box(Modifier.size(10.dp))
                     Text(stringResource(R.string.feedback_qr_title), style = AreIptvTheme.typography.label, color = colors.textPrimary)
                     Box(Modifier.size(4.dp))
                     Text(stringResource(R.string.feedback_qr_desc), style = AreIptvTheme.typography.caption, color = colors.textTertiary)

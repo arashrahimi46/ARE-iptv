@@ -341,7 +341,7 @@ fun LivePlayerScreen(
                         // are consumed no-ops on live's single row so focus can't escape the panel.
                         Key.DirectionUp -> {
                             if (!panelFocused) {
-                                if (!isVod) viewModel.switchChannel(1)
+                                if (!isVod) viewModel.switchChannel(-1)
                                 controlsVisible = true
                             } else if (isVod && !seekBarFocused) {
                                 // Button row -> back up to the seek bar.
@@ -353,7 +353,7 @@ fun LivePlayerScreen(
                             if (!panelFocused) {
                                 if (isVod) panelFocused = true
                                 else {
-                                    viewModel.switchChannel(-1)
+                                    viewModel.switchChannel(1)
                                     controlsVisible = true
                                 }
                             } else if (isVod && seekBarFocused) {
