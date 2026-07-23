@@ -109,6 +109,8 @@ dependencies {
     // user-picked internal/USB drive via a persistable treeUri, not a File path).
     implementation(libs.androidx.documentfile)
     implementation(libs.coil.compose)
+    // Extracts a still frame from a recorded video file so the Recordings list can show thumbnails.
+    implementation(libs.coil.video)
     // QR code generation for the "Send feedback" screen — renders the phone-form link on the TV.
     implementation(libs.zxing.core)
     // Crash/ANR reporting + performance monitoring. DSN + auto-init flag live in the manifest;

@@ -37,6 +37,8 @@ data class RecordingRow(
     val reconnectMessage: String?,
     val group: RecordingGroup,
     val playable: Boolean,
+    /** Resolved file/content URI of the recording, for the thumbnail frame; null when not playable. */
+    val videoUri: Uri? = null,
 )
 
 class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
@@ -81,6 +83,12 @@ class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             null
         }
+        val playable = status == RecordingStatus.COMPLETED || status == RecordingStatus.INTERRUPTED
+        val videoUri = if (playable && treeUri != null) {
+            runCatching { storage.documentUri(treeUri, documentId) }.getOrNull()
+        } else {
+            null
+        }
         return RecordingRow(
             recording = this,
             title = channelName,
@@ -90,7 +98,8 @@ class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
             statusLabel = statusLabel,
             reconnectMessage = reconnectMessage,
             group = group,
-            playable = status == RecordingStatus.COMPLETED || status == RecordingStatus.INTERRUPTED,
+            playable = playable,
+            videoUri = videoUri,
         )
     }
 

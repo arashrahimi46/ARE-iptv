@@ -68,6 +68,7 @@ androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.re
 androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

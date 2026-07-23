@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +40,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import coil.request.videoFrameMillis
 import com.arashrahimi46.iptv.data.model.Recording
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
@@ -167,13 +170,18 @@ private fun RecordingCard(
 ) {
     val colors = AreIptvTheme.colors
     val unavailable = row.group == RecordingGroup.UNAVAILABLE
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
             .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.lg))
             .padding(18.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (row.videoUri != null) {
+            RecordingThumb(uri = row.videoUri, modifier = Modifier.padding(end = 16.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (row.group == RecordingGroup.RECORDING_NOW) {
                 Icon(Icons.Filled.FiberManualRecord, contentDescription = null, tint = colors.danger, modifier = Modifier.padding(end = 2.dp))
@@ -230,5 +238,37 @@ private fun RecordingCard(
                 icon = Icons.Filled.Delete,
             )
         }
+        }
+    }
+}
+
+/**
+ * 16:9 thumbnail: a still frame ~3s into the recording (skips black intro frames), decoded by Coil's
+ * [coil.decode.VideoFrameDecoder] and cached. A play glyph on [surface2] shows through as the empty
+ * state while it loads or when a partial/interrupted file can't yield a frame.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun RecordingThumb(uri: android.net.Uri, modifier: Modifier = Modifier) {
+    val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    Box(
+        modifier = modifier
+            .size(width = 150.dp, height = 84.dp)
+            .clip(shape)
+            .background(colors.surface2),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(26.dp))
+        coil.compose.AsyncImage(
+            model = coil.request.ImageRequest.Builder(LocalContext.current)
+                .data(uri)
+                .videoFrameMillis(3000)
+                .crossfade(true)
+                .build(),
+            contentDescription = null,
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

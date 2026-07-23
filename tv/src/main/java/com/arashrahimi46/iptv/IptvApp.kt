@@ -7,6 +7,7 @@ import com.arashrahimi46.iptv.data.settings.UserSettings
 import coil.ImageLoader
 import kotlinx.coroutines.flow.first
 import coil.ImageLoaderFactory
+import coil.decode.VideoFrameDecoder
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
@@ -65,6 +66,8 @@ class IptvApp : Application(), ImageLoaderFactory {
         ImageLoader.Builder(this)
             .crossfade(false)
             .allowRgb565(true)
+            // Lets AsyncImage decode a frame out of a recorded video URI (Recordings thumbnails).
+            .components { add(VideoFrameDecoder.Factory()) }
             .memoryCache {
                 MemoryCache.Builder(this)
                     .maxSizePercent(0.25)
