@@ -284,10 +284,9 @@ fun LivePlayerScreen(
             controlsVisible = true
             delay(50)
             runCatching {
-                // VOD opens on the seek bar (the thing the user came to move); live has no
-                // seekable bar, so it opens on the Play button as before.
-                if (state.media?.isLive == false) seekBarFocusRequester.requestFocus()
-                else hudFocusRequester.requestFocus()
+                // Both VOD and live open on the Play button -- the seek bar is one Up press away
+                // (VOD) so the user isn't dropped straight onto the scrub row by surprise.
+                hudFocusRequester.requestFocus()
             }
         }
     }
@@ -402,6 +401,15 @@ fun LivePlayerScreen(
                         }
                         else -> false
                     }
+                } else if (keyEvent.type == KeyEventType.KeyDown &&
+                    state.media?.isLive == false && panelFocused && seekBarFocused &&
+                    (keyEvent.key == Key.DirectionLeft || keyEvent.key == Key.DirectionRight)
+                ) {
+                    // Consume Left/Right on the DOWN edge while the seek bar is focused. Our seek
+                    // runs on KeyUp; if the down edge isn't consumed the focus system moves focus
+                    // first -- Right had no focusable neighbour so it stayed and "worked", but Left
+                    // jumped to the Back button, dropping the KeyUp seek (the "can't go back" bug).
+                    true
                 } else {
                     false
                 }

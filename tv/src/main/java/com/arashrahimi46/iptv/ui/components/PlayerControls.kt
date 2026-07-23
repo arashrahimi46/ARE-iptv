@@ -207,6 +207,18 @@ fun ArePlayerControls(
                 .fillMaxWidth()
                 // Reserve room for the thumb so the row height doesn't jump when it appears.
                 .height(20.dp)
+                // Selected state: an accent wash + ring around the whole bar so arriving from the
+                // button row (Up) reads unmistakably as "the scrub bar is now selected" -- not just
+                // the thin thumb.
+                .then(
+                    if (barFocused) {
+                        Modifier
+                            .background(colors.accentWash, pill)
+                            .border(1.dp, colors.accent, pill)
+                    } else {
+                        Modifier
+                    },
+                )
                 .then(
                     if (interactive) {
                         Modifier
