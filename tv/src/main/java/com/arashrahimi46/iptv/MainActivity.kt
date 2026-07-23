@@ -187,12 +187,22 @@ fun AreIptvApp() {
     // may remain: that case must land on the picker (choose a surviving playlist), not shove the
     // user back into add-a-playlist. With >1 source, or exactly one but none active (the active one
     // was just deleted), land on the picker; a single active source goes straight to the shell.
-    val startDestination = when {
-        hasSelectedLanguage == false -> "language"
-        hasAcceptedTerms == false -> "privacy"
-        !hasAnySource -> "onboarding"
-        activeSourceId == null || hasMultipleSources -> "sources"
-        else -> "shell"
+    //
+    // Captured ONCE (remember) rather than recomputed on every state change: this is only the
+    // NavHost's INITIAL destination -- every subsequent move is an explicit navController.navigate.
+    // If it stayed reactive, a source appearing mid-onboarding-import (addXtreamSource inserts its
+    // row before the catalog finishes) would flip this "onboarding"->"sources", rebuild the graph,
+    // tear down OnboardingFlow, and cancel its still-running import -- leaving a half-written source
+    // plus a bogus M3U fallback (two dead playlists from one add). We only reach here past the guard
+    // above, so every value read is already settled.
+    val startDestination = remember {
+        when {
+            hasSelectedLanguage == false -> "language"
+            hasAcceptedTerms == false -> "privacy"
+            !hasAnySource -> "onboarding"
+            activeSourceId == null || hasMultipleSources -> "sources"
+            else -> "shell"
+        }
     }
 
     AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {

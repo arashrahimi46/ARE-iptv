@@ -19,6 +19,7 @@ import com.arashrahimi46.iptv.data.parser.XtreamException
 import androidx.room.withTransaction
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -383,6 +384,11 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             parseXtreamGetPhp(url)?.let { portal ->
                 try {
                     return@withContext addXtreamSource(name, portal.host, portal.username, portal.password, epgUrl)
+                } catch (e: CancellationException) {
+                    // The import was cancelled (e.g. the screen/scope was torn down) -- NOT a portal
+                    // problem. Swallowing it here would spawn a bogus raw-M3U fallback source, so the
+                    // one add ends up creating two dead playlists. Propagate to honour cancellation.
+                    throw e
                 } catch (e: Exception) {
                     // A reachable portal that rejected the credentials is authoritative -- surface it
                     // instead of silently degrading to the lossy raw-M3U keyword path (which would
