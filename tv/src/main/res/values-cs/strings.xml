@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Opravdu chcete změnit jazyk?</string>
     <string name="language_confirm_action">Potvrdit</string>
     <string name="language_confirm_cancel">Zrušit</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmy</string>
     <string name="movies_genres">Žánry</string>
     <string name="movies_count_titles">%1$d titulů</string>
+    <string name="category_count_items">%1$d položek</string>
     <string name="movies_empty_genre">V tomto žánru zatím nejsou žádné filmy.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Zvuková stopa</string>
     <string name="player_subtitles">Titulky</string>
     <string name="player_minimize_to_corner">Minimalizovat do rohu</string>
-    <string name="player_picture_in_picture">Obraz v obraze</string>
+    <string name="player_mini_player">Mini přehrávač</string>
     <string name="player_up_next_action">Následuje</string>
     <string name="player_open_guide">Otevřít program</string>
     <string name="player_live_badge">Živě</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Žádný aktivní playlist</string>
     <string name="multiview_no_channels">Pro zobrazení více oken nejsou dostupné žádné živé kanály</string>
     <string name="multiview_audio_badge">Zvuk</string>
+    <string name="multiview_add_to">Přidat do Více oken</string>
+    <string name="multiview_add_channel">Přidat kanál</string>
+    <string name="multiview_added_toast">Přidáno do Více oken</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Přizpůsobit</string>
+    <string name="shell_multi_view_desc">Více obrazovek</string>
     <string name="shell_add_playlist_desc">Přidat playlist</string>
     <string name="nav_home">Domů</string>
     <string name="nav_live_tv">Živá TV</string>

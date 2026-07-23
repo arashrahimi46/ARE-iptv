@@ -118,6 +118,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Are you sure you want to change the language?</string>
     <string name="language_confirm_action">Confirm</string>
     <string name="language_confirm_cancel">Cancel</string>
@@ -279,6 +281,7 @@
     <string name="movies_title">Movies</string>
     <string name="movies_genres">Genres</string>
     <string name="movies_count_titles">%1$d titles</string>
+    <string name="category_count_items">%1$d items</string>
     <string name="movies_empty_genre">No movies in this genre yet.</string>
 
     <!-- Series -->
@@ -351,7 +354,7 @@
     <string name="player_audio_track">Audio track</string>
     <string name="player_subtitles">Subtitles</string>
     <string name="player_minimize_to_corner">Minimize to corner</string>
-    <string name="player_picture_in_picture">Picture in picture</string>
+    <string name="player_mini_player">Mini player</string>
     <string name="player_up_next_action">Up next</string>
     <string name="player_open_guide">Open guide</string>
     <string name="player_live_badge">Live</string>
@@ -383,9 +386,13 @@
     <string name="multiview_no_source">No active playlist</string>
     <string name="multiview_no_channels">No live channels available for multi-view</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_add_to">Add to multi-view</string>
+    <string name="multiview_add_channel">Add channel</string>
+    <string name="multiview_added_toast">Added to multi-view</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Customize</string>
+    <string name="shell_multi_view_desc">Multi-view</string>
     <string name="shell_add_playlist_desc">Add playlist</string>
     <string name="nav_home">Home</string>
     <string name="nav_live_tv">Live TV</string>

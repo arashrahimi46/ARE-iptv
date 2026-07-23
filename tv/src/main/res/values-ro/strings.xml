@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Sigur vrei să schimbi limba?</string>
     <string name="language_confirm_action">Confirmă</string>
     <string name="language_confirm_cancel">Anulează</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filme</string>
     <string name="movies_genres">Genuri</string>
     <string name="movies_count_titles">%1$d titluri</string>
+    <string name="category_count_items">%1$d elemente</string>
     <string name="movies_empty_genre">Niciun film în acest gen încă.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Pistă audio</string>
     <string name="player_subtitles">Subtitrări</string>
     <string name="player_minimize_to_corner">Minimizează în colț</string>
-    <string name="player_picture_in_picture">Imagine în imagine</string>
+    <string name="player_mini_player">Mini player</string>
     <string name="player_up_next_action">Urmează</string>
     <string name="player_open_guide">Deschide ghidul</string>
     <string name="player_live_badge">Live</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Nicio listă de redare activă</string>
     <string name="multiview_no_channels">Niciun canal live disponibil pentru vizualizare multiplă</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_add_to">Adaugă la Vizualizare multiplă</string>
+    <string name="multiview_add_channel">Adaugă canal</string>
+    <string name="multiview_added_toast">Adăugat la Vizualizare multiplă</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Personalizează</string>
+    <string name="shell_multi_view_desc">Vizualizare multiplă</string>
     <string name="shell_add_playlist_desc">Adaugă lista de redare</string>
     <string name="nav_home">Acasă</string>
     <string name="nav_live_tv">TV live</string>

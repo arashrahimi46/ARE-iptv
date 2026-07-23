@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Är du säker på att du vill byta språk?</string>
     <string name="language_confirm_action">Bekräfta</string>
     <string name="language_confirm_cancel">Avbryt</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmer</string>
     <string name="movies_genres">Genrer</string>
     <string name="movies_count_titles">%1$d titlar</string>
+    <string name="category_count_items">%1$d objekt</string>
     <string name="movies_empty_genre">Inga filmer i den här genren ännu.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Ljudspår</string>
     <string name="player_subtitles">Undertexter</string>
     <string name="player_minimize_to_corner">Minimera till hörnet</string>
-    <string name="player_picture_in_picture">Bild-i-bild</string>
+    <string name="player_mini_player">Minispelare</string>
     <string name="player_up_next_action">Nästa</string>
     <string name="player_open_guide">Öppna guide</string>
     <string name="player_live_badge">Live</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Ingen aktiv spellista</string>
     <string name="multiview_no_channels">Inga livekanaler tillgängliga för multivy</string>
     <string name="multiview_audio_badge">Ljud</string>
+    <string name="multiview_add_to">Lägg till i Multivy</string>
+    <string name="multiview_add_channel">Lägg till kanal</string>
+    <string name="multiview_added_toast">Tillagd i Multivy</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Anpassa</string>
+    <string name="shell_multi_view_desc">Flerskärmsvisning</string>
     <string name="shell_add_playlist_desc">Lägg till spellista</string>
     <string name="nav_home">Hem</string>
     <string name="nav_live_tv">Live-TV</string>

@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Biztosan meg szeretné változtatni a nyelvet?</string>
     <string name="language_confirm_action">Megerősítés</string>
     <string name="language_confirm_cancel">Mégse</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmek</string>
     <string name="movies_genres">Műfajok</string>
     <string name="movies_count_titles">%1$d cím</string>
+    <string name="category_count_items">%1$d elem</string>
     <string name="movies_empty_genre">Ebben a műfajban még nincsenek filmek.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Hangsáv</string>
     <string name="player_subtitles">Feliratok</string>
     <string name="player_minimize_to_corner">Kicsinyítés a sarokba</string>
-    <string name="player_picture_in_picture">Kép a képben</string>
+    <string name="player_mini_player">Mini lejátszó</string>
     <string name="player_up_next_action">Következik</string>
     <string name="player_open_guide">Műsorújság megnyitása</string>
     <string name="player_live_badge">Élő</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Nincs aktív lejátszási lista</string>
     <string name="multiview_no_channels">Nincs elérhető élő csatorna a többnézetes megjelenítéshez</string>
     <string name="multiview_audio_badge">Hang</string>
+    <string name="multiview_add_to">Hozzáadás a Többnézeteshez</string>
+    <string name="multiview_add_channel">Csatorna hozzáadása</string>
+    <string name="multiview_added_toast">Hozzáadva a Többnézeteshez</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Testreszabás</string>
+    <string name="shell_multi_view_desc">Osztott nézet</string>
     <string name="shell_add_playlist_desc">Lejátszási lista hozzáadása</string>
     <string name="nav_home">Kezdőlap</string>
     <string name="nav_live_tv">Élő TV</string>

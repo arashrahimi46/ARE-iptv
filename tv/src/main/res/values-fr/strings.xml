@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Êtes-vous sûr de vouloir changer la langue ?</string>
     <string name="language_confirm_action">Confirmer</string>
     <string name="language_confirm_cancel">Annuler</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Films</string>
     <string name="movies_genres">Genres</string>
     <string name="movies_count_titles">%1$d titres</string>
+    <string name="category_count_items">%1$d éléments</string>
     <string name="movies_empty_genre">Aucun film dans ce genre pour l\'instant.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Piste audio</string>
     <string name="player_subtitles">Sous-titres</string>
     <string name="player_minimize_to_corner">Réduire dans le coin</string>
-    <string name="player_picture_in_picture">Image dans l\'image</string>
+    <string name="player_mini_player">Mini-lecteur</string>
     <string name="player_up_next_action">À suivre</string>
     <string name="player_open_guide">Ouvrir le guide</string>
     <string name="player_live_badge">Direct</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Aucune playlist active</string>
     <string name="multiview_no_channels">Aucune chaîne en direct disponible pour le multi-écran</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_add_to">Ajouter au Multi-écran</string>
+    <string name="multiview_add_channel">Ajouter une chaîne</string>
+    <string name="multiview_added_toast">Ajouté au Multi-écran</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Personnaliser</string>
+    <string name="shell_multi_view_desc">Multi-vue</string>
     <string name="shell_add_playlist_desc">Ajouter une playlist</string>
     <string name="nav_home">Accueil</string>
     <string name="nav_live_tv">TV en direct</string>

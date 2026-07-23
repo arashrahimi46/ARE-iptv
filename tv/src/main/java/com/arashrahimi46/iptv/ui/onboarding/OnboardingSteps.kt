@@ -241,7 +241,7 @@ fun ConfirmStep(
                 .fillMaxWidth()
                 .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
                 .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.lg))
-                .padding(18.dp),
+                .padding(horizontal = 18.dp, vertical = 14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (state.isSubmitting) {
@@ -266,7 +266,7 @@ fun ConfirmStep(
                 Box(Modifier.weight(1f))
                 state.result?.let { AreBadge(stringResource(R.string.onboarding_confirm_channels_badge, it.channels), tone = AreBadgeTone.Catchup) }
             }
-            Box(Modifier.height(14.dp))
+            Box(Modifier.height(10.dp))
             if (state.isSubmitting) {
                 Text(
                     text = stringResource(R.string.onboarding_confirm_downloading),
@@ -292,7 +292,7 @@ fun ConfirmStep(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(text = key, style = AreIptvTheme.typography.caption, color = colors.textTertiary)

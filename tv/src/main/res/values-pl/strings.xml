@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Czy na pewno chcesz zmienić język?</string>
     <string name="language_confirm_action">Potwierdź</string>
     <string name="language_confirm_cancel">Anuluj</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmy</string>
     <string name="movies_genres">Gatunki</string>
     <string name="movies_count_titles">%1$d tytułów</string>
+    <string name="category_count_items">%1$d elementów</string>
     <string name="movies_empty_genre">Brak filmów w tym gatunku.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Ścieżka dźwiękowa</string>
     <string name="player_subtitles">Napisy</string>
     <string name="player_minimize_to_corner">Zminimalizuj do rogu</string>
-    <string name="player_picture_in_picture">Obraz w obrazie</string>
+    <string name="player_mini_player">Mini odtwarzacz</string>
     <string name="player_up_next_action">Następnie</string>
     <string name="player_open_guide">Otwórz program</string>
     <string name="player_live_badge">Na żywo</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Brak aktywnej playlisty</string>
     <string name="multiview_no_channels">Brak dostępnych kanałów na żywo do widoku wielokanałowego</string>
     <string name="multiview_audio_badge">Dźwięk</string>
+    <string name="multiview_add_to">Dodaj do widoku wielokanałowego</string>
+    <string name="multiview_add_channel">Dodaj kanał</string>
+    <string name="multiview_added_toast">Dodano do widoku wielokanałowego</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Dostosuj</string>
+    <string name="shell_multi_view_desc">Multiwidok</string>
     <string name="shell_add_playlist_desc">Dodaj playlistę</string>
     <string name="nav_home">Ekran główny</string>
     <string name="nav_live_tv">Telewizja na żywo</string>

@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -29,16 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
-/** Content kind, drives the folder icon/watermark (CategoryCard.jsx `kind`). */
-enum class AreCategoryKind(val icon: ImageVector, val defaultUnit: String) {
-    Live(Icons.Filled.LiveTv, "channels"),
-    Movies(Icons.Filled.Movie, "movies"),
-    Series(Icons.Filled.Theaters, "series"),
-    Guide(Icons.Filled.TableChart, "channels"),
-    Default(Icons.Filled.Folder, "items"),
+/** Content kind, drives the folder icon/watermark (CategoryCard.jsx `kind`) and the localized
+ * count-unit string ("%1$d channels" etc.) shown under the name. */
+enum class AreCategoryKind(val icon: ImageVector, @StringRes val countRes: Int) {
+    Live(Icons.Filled.LiveTv, R.string.live_count_channels),
+    Movies(Icons.Filled.Movie, R.string.movies_count_titles),
+    Series(Icons.Filled.Theaters, R.string.movies_count_titles),
+    Guide(Icons.Filled.TableChart, R.string.live_count_channels),
+    Default(Icons.Filled.Folder, R.string.category_count_items),
 }
 
 /**
@@ -111,7 +115,7 @@ fun AreCategoryCard(
                 )
                 if (count != null) {
                     Text(
-                        text = "$count ${kind.defaultUnit}",
+                        text = stringResource(kind.countRes, count),
                         style = AreIptvTheme.typography.caption,
                         color = colors.textSecondary,
                     )

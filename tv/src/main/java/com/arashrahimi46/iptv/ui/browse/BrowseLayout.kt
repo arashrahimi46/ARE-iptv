@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -135,11 +136,14 @@ fun <T : Any> BrowseLayout(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.width(280.dp),
+                // min (not fixed) width: matches the 280dp category column for short titles, but
+                // grows so a wide title (e.g. RTL "تلویزیون زنده") doesn't crush the on-air badge
+                // into a one-glyph-per-line strip.
+                modifier = Modifier.widthIn(min = 280.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary)
+                Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary, maxLines = 1)
                 titleAccessory?.invoke()
             }
             if (sectionTitle != null) {
@@ -181,6 +185,8 @@ fun <T : Any> BrowseLayout(
             LazyColumn(
                 modifier = Modifier.width(280.dp).fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
+                // Bottom room so the last row's focus ring/glow isn't clipped at the column edge.
+                contentPadding = PaddingValues(bottom = 24.dp),
             ) {
                 item {
                     Text(

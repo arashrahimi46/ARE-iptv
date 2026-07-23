@@ -97,20 +97,20 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 }
                 Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
-            Box(Modifier.height(10.dp))
+            Box(Modifier.height(8.dp))
             Text(text = stringResource(R.string.onboarding_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
-            Box(Modifier.height(6.dp))
+            Box(Modifier.height(4.dp))
             Text(
                 text = stringResource(R.string.onboarding_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
-            Box(Modifier.height(14.dp))
+            Box(Modifier.height(10.dp))
 
             val currentRoute = stepRoutes.getOrElse(currentStepIndex(navController)) { "source" }
             AreStepIndicator(steps = stepLabels, current = stepRoutes.indexOf(currentRoute).coerceAtLeast(0))
 
-            Box(Modifier.height(16.dp))
+            Box(Modifier.height(10.dp))
 
             // Flexes to fill the space between the pinned header and buttons; scrolls internally
             // only if a step's content is taller than that space (it never is on TV, hence the

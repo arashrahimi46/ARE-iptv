@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Tem a certeza de que pretende alterar o idioma?</string>
     <string name="language_confirm_action">Confirmar</string>
     <string name="language_confirm_cancel">Cancelar</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmes</string>
     <string name="movies_genres">Géneros</string>
     <string name="movies_count_titles">%1$d títulos</string>
+    <string name="category_count_items">%1$d itens</string>
     <string name="movies_empty_genre">Ainda não há filmes neste género.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Faixa de áudio</string>
     <string name="player_subtitles">Legendas</string>
     <string name="player_minimize_to_corner">Minimizar para o canto</string>
-    <string name="player_picture_in_picture">Imagem na imagem</string>
+    <string name="player_mini_player">Mini-leitor</string>
     <string name="player_up_next_action">A seguir</string>
     <string name="player_open_guide">Abrir guia</string>
     <string name="player_live_badge">Direto</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Nenhuma lista ativa</string>
     <string name="multiview_no_channels">Não há canais em direto disponíveis para vista múltipla</string>
     <string name="multiview_audio_badge">Áudio</string>
+    <string name="multiview_add_to">Adicionar à vista múltipla</string>
+    <string name="multiview_add_channel">Adicionar canal</string>
+    <string name="multiview_added_toast">Adicionado à vista múltipla</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Personalizar</string>
+    <string name="shell_multi_view_desc">Multi-ecrã</string>
     <string name="shell_add_playlist_desc">Adicionar lista</string>
     <string name="nav_home">Início</string>
     <string name="nav_live_tv">TV em direto</string>

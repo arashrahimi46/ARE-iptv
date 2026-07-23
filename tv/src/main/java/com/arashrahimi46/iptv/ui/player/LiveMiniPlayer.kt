@@ -39,10 +39,12 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -127,12 +129,21 @@ fun LiveMiniPlayerOverlay(
     // slot -- computed from the measured container rect + mini size, so the test stays stable even
     // after the mini has slid away (it never re-evaluates against its dodged position).
     val padPx = with(LocalDensity.current) { MINI_PADDING.toPx() }
+    // The mini's home is Alignment.BottomEnd, which mirrors to the bottom-LEFT in RTL. The
+    // obstruction test must check that same corner, so the home slot flips with layout direction --
+    // otherwise (RTL) it tested the far bottom-right corner and dodged the mini INTO focused content.
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     var containerRect by remember { mutableStateOf<Rect?>(null) }
     var miniSize by remember { mutableStateOf(IntSize.Zero) }
     val homeRect = containerRect?.takeIf { miniSize != IntSize.Zero }?.let { c ->
-        val right = c.right - padPx
         val bottom = c.bottom - padPx
-        Rect(right - miniSize.width, bottom - miniSize.height, right, bottom)
+        if (isRtl) {
+            val left = c.left + padPx
+            Rect(left, bottom - miniSize.height, left + miniSize.width, bottom)
+        } else {
+            val right = c.right - padPx
+            Rect(right - miniSize.width, bottom - miniSize.height, right, bottom)
+        }
     }
     val obstructed = focusedContentBounds != null && homeRect != null && homeRect.overlaps(focusedContentBounds)
 

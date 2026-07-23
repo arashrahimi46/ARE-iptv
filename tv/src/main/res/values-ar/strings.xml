@@ -1,0 +1,429 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">رجوع</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_continue">متابعة</string>
+    <string name="action_retry">إعادة المحاولة</string>
+    <string name="action_close">إغلاق</string>
+    <string name="action_remove">إزالة</string>
+    <string name="action_clear">مسح</string>
+    <string name="action_connect">اتصال</string>
+    <string name="action_disconnect">قطع الاتصال</string>
+    <string name="action_sign_in">تسجيل الدخول</string>
+    <string name="action_sign_out">تسجيل الخروج</string>
+    <string name="action_search">بحث</string>
+    <string name="action_donate">تبرّع</string>
+    <string name="content_desc_account">الحساب</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">مغادرة ARE iptv؟</string>
+    <string name="shell_stay">البقاء</string>
+    <string name="shell_leave">مغادرة</string>
+    <string name="shell_leave_app_body">هل تريد الخروج من ARE iptv؟</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">المصدر</string>
+    <string name="onboarding_step_credentials">بيانات الدخول</string>
+    <string name="onboarding_step_epg">دليل البرامج</string>
+    <string name="onboarding_step_confirm">تأكيد</string>
+    <string name="onboarding_title">إضافة قائمة تشغيل</string>
+    <string name="onboarding_subtitle">أدخل اشتراك IPTV الخاص بك. لا يخزّن ARE iptv بيانات دخولك خارج الجهاز أبدًا.</string>
+    <string name="onboarding_skip_for_now">تخطٍ الآن</string>
+    <string name="onboarding_go_to_home">الذهاب إلى الرئيسية</string>
+    <string name="onboarding_error_generic">حدث خطأ ما</string>
+    <string name="onboarding_add_playlist">إضافة قائمة تشغيل</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">أدخل عنوان البوابة واسم المستخدم وكلمة المرور. الأفضل للبث المباشر وVOD مع دليل برامج تلقائي.</string>
+    <string name="onboarding_m3u_title">قائمة تشغيل M3U / URL</string>
+    <string name="onboarding_m3u_desc">الصق رابط M3U أو M3U-plus واحدًا. أضف عنوان XMLTV EPG بشكل منفصل إن كان لديك.</string>
+    <string name="onboarding_portal_name_label">اسم البوابة</string>
+    <string name="onboarding_portal_name_placeholder">غرفة المعيشة</string>
+    <string name="onboarding_server_url_label">عنوان الخادم</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">اسم المستخدم</string>
+    <string name="onboarding_password_label">كلمة المرور</string>
+    <string name="onboarding_m3u_url_label">عنوان قائمة تشغيل M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">مطابقة الدليل والشعارات تلقائيًا</string>
+    <string name="onboarding_epg_auto_desc">جلب بيانات الدليل وشعارات القنوات والملصقات تلقائيًا.</string>
+    <string name="onboarding_epg_url_label">عنوان XMLTV EPG (اختياري)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">معطّل أثناء تفعيل المطابقة التلقائية.</string>
+    <string name="onboarding_epg_custom_helper">قدّم مصدر الدليل الخاص بك.</string>
+    <string name="onboarding_confirm_adding">جارٍ إضافة قائمة التشغيل…</string>
+    <string name="onboarding_confirm_error_title">تعذّر إضافة قائمة التشغيل</string>
+    <string name="onboarding_confirm_added">تمت الإضافة</string>
+    <string name="onboarding_confirm_ready">جاهزة للإضافة</string>
+    <string name="onboarding_confirm_channels_badge">%1$d قناة</string>
+    <string name="onboarding_confirm_downloading">جارٍ تنزيل قنواتك واستيرادها. قد تستغرق قوائم التشغيل الكبيرة بعض الوقت — يرجى إبقاء التطبيق مفتوحًا.</string>
+    <string name="onboarding_confirm_row_portal">البوابة</string>
+    <string name="onboarding_confirm_default_portal_name">قائمة التشغيل الخاصة بي</string>
+    <string name="onboarding_confirm_row_source">المصدر</string>
+    <string name="onboarding_confirm_row_server">الخادم</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">دليل البرامج</string>
+    <string name="onboarding_confirm_auto_matched">مطابقة تلقائية</string>
+    <string name="onboarding_confirm_custom_xmltv">XMLTV مخصص</string>
+    <string name="onboarding_confirm_row_catalog">الفهرس</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d قناة · %2$d فيلم · %3$d مسلسل</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">الخصوصية والشروط</string>
+    <string name="privacy_subtitle">يرجى المراجعة والقبول قبل المتابعة.</string>
+    <string name="privacy_body">سياسة الخصوصية وشروط الخدمة لـ ARE iptv\n\nلا يجمع ARE iptv بيانات دخول قائمة تشغيلك أو يرسلها خارج الجهاز. بالمتابعة، فإنك توافق على استخدام هذا التطبيق فقط مع مصادر المحتوى المصرّح لك بالوصول إليها، وتقبل شروط الخدمة وسياسة الخصوصية بالكامل.</string>
+    <string name="privacy_accept_label">لقد قرأت سياسة الخصوصية وشروط الخدمة وأوافق عليها.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">اختر قائمة تشغيل</string>
+    <string name="sources_choose_subtitle">اختر أيّ قوائم التشغيل المُضافة تريد فتحها.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">إضافة قائمة تشغيل جديدة</string>
+    <string name="sources_delete_title">حذف قائمة التشغيل؟</string>
+    <string name="sources_delete_body">يؤدي هذا إلى حذف «%1$s» وكل ما فيها — القنوات والأفلام والمسلسلات والمفضّلة وسجل المشاهدة — نهائيًا من هذا الجهاز. لا يمكن التراجع عن ذلك.</string>
+    <string name="sources_delete_hint">اضغط مطوّلًا على زر OK فوق قائمة تشغيل لحذفها.</string>
+    <string name="action_delete">حذف</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">اختر لغتك</string>
+    <string name="language_select_subtitle">اختر اللغة التي تريد استخدامها في التطبيق بأكمله.</string>
+    <string name="language_picker_label">اللغة</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
+    <string name="language_confirm_title">هل أنت متأكد أنك تريد تغيير اللغة؟</string>
+    <string name="language_confirm_action">تأكيد</string>
+    <string name="language_confirm_cancel">إلغاء</string>
+
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_section_playlists">قوائم التشغيل والمزامنة</string>
+    <string name="settings_refresh_catalog">تحديث الفهرس</string>
+    <string name="settings_refresh_now">تحديث الآن</string>
+    <string name="settings_refreshing">جارٍ التحديث…</string>
+    <string name="settings_refresh_syncing">جارٍ المزامنة مع المزوّد…</string>
+    <string name="settings_refresh_success">تم التحديث: %1$d قناة، %2$d فيلم، %3$d مسلسل</string>
+    <string name="settings_refresh_no_playlist">لا توجد قائمة تشغيل نشطة للتحديث.</string>
+    <string name="settings_refresh_failed">فشل التحديث — تحقق من اتصالك وحاول مرة أخرى.</string>
+    <string name="settings_subs_connect_key_first">اربط مفتاح API أولًا.</string>
+    <string name="settings_refresh_stale">أقدم من أسبوعين — حدّث للحصول على قنوات وعناوين جديدة</string>
+    <string name="settings_never_refreshed">لم يتم التحديث مطلقًا</string>
+    <string name="settings_last_updated_days">آخر تحديث قبل %1$d يوم</string>
+    <string name="settings_last_updated_days_plural">آخر تحديث قبل %1$d يوم</string>
+    <string name="settings_last_updated_hours">آخر تحديث قبل %1$d ساعة</string>
+    <string name="settings_last_updated_hours_plural">آخر تحديث قبل %1$d ساعة</string>
+    <string name="settings_last_updated_mins">آخر تحديث قبل %1$d دقيقة</string>
+    <string name="settings_last_updated_now">تم التحديث للتو</string>
+    <!-- Provider (Xtream account) panel -->
+    <string name="settings_section_provider">المزوّد</string>
+    <string name="settings_provider_loading">حدّث لتحميل تفاصيل المزوّد</string>
+    <string name="settings_provider_status">الحالة</string>
+    <string name="settings_provider_expires">تنتهي في</string>
+    <string name="settings_provider_unlimited">غير محدود</string>
+    <string name="settings_provider_expired">منتهٍ</string>
+    <string name="settings_provider_expires_days">%1$s · باقٍ %2$d يوم</string>
+    <string name="settings_provider_expires_today">%1$s · ينتهي اليوم</string>
+    <string name="settings_provider_trial">نوع الحساب</string>
+    <string name="settings_provider_trial_value">تجريبي</string>
+    <string name="settings_provider_connections">الاتصالات</string>
+    <string name="settings_provider_connections_value">%1$d من %2$d قيد الاستخدام</string>
+    <string name="settings_provider_connections_max">%1$d كحد أقصى</string>
+    <string name="settings_provider_timezone">المنطقة الزمنية</string>
+    <string name="settings_provider_server_time">وقت الخادم</string>
+    <string name="settings_provider_server">الخادم</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_section_appearance">المظهر</string>
+    <string name="settings_dark_theme">السمة الداكنة</string>
+    <string name="settings_dark_theme_desc">يُنصح بها للمشاهدة المريحة.</string>
+    <string name="settings_accent_color">لون التمييز</string>
+    <string name="settings_accent_color_desc_dark">يُطبّق على السمة الداكنة. بدّل إلى الوضع الفاتح لضبط لون تمييز السمة الفاتحة.</string>
+    <string name="settings_accent_color_desc_light">يُطبّق على السمة الفاتحة. بدّل إلى الوضع الداكن لضبط لون تمييز السمة الداكنة.</string>
+    <string name="settings_reduce_motion">تقليل الحركة</string>
+    <string name="settings_reduce_motion_desc">رسوم تركيز أنعم.</string>
+    <string name="settings_list_view">عرض القائمة</string>
+    <string name="settings_list_view_desc">عرض القنوات والأفلام والمسلسلات كقائمة بدلًا من شبكة مربّعات.</string>
+    <string name="settings_section_language">اللغة</string>
+    <string name="settings_language_row_title">لغة التطبيق</string>
+    <string name="settings_language_row_desc">اختر اللغة المستخدمة في التطبيق بأكمله.</string>
+    <string name="settings_section_playback">التشغيل</string>
+    <string name="settings_hardware_decoding">فك التشفير بالعتاد</string>
+    <string name="settings_hardware_decoding_desc">يفضّل مفكّكات العتاد؛ ويعود إلى البرمجية عند الحاجة.</string>
+    <string name="settings_autoplay_next">تشغيل الحلقة التالية تلقائيًا</string>
+    <string name="settings_autoplay_next_desc">مجرد تفضيل حاليًا -- التقدّم التلقائي غير مفعّل بعد؛ اختر الحلقة التالية من صفحة التفاصيل.</string>
+    <string name="settings_mini_player_behavior">سلوك المشغّل المصغّر</string>
+    <string name="settings_mini_player_behavior_desc">عند التصفّح قرب المشغّل المصغّر المرسى: أزحه إلى الزاوية الخالية، أو أخفِه وصغّره.</string>
+    <string name="settings_mini_player_dodge">تفادٍ تلقائي</string>
+    <string name="settings_mini_player_fade">تلاشٍ وتصغير</string>
+    <string name="settings_section_parental">الرقابة الأبوية</string>
+    <string name="settings_lock_adult">قفل فئات البالغين</string>
+    <string name="settings_lock_adult_desc">بعد التفعيل، يتطلب إيقافه رمز PIN الخاص بك.</string>
+    <string name="settings_change_pin">تغيير رمز PIN</string>
+    <string name="settings_pin_loading">جارٍ التحميل…</string>
+    <string name="settings_pin_is_set">تم ضبط رمز PIN.</string>
+    <string name="settings_pin_not_set">لم يتم ضبط رمز PIN بعد.</string>
+    <string name="settings_change">تغيير</string>
+    <string name="settings_set_pin">ضبط رمز PIN</string>
+    <string name="settings_section_subtitles">الترجمات</string>
+    <string name="settings_subtitle_lang_title">اللغة المفضّلة</string>
+    <string name="settings_subtitle_lang_desc">تُحدّد مسبقًا عند البحث عن الترجمات عبر الإنترنت. لا يزال بإمكانك تغييرها لكل فيديو.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">جاهز -- البحث والتنزيل عبر الإنترنت مفعّلان.</string>
+    <string name="settings_opensubs_key_connected">تم ربط مفتاح API. سجّل الدخول أدناه أيضًا -- كلاهما مطلوب للترجمات عبر الإنترنت.</string>
+    <string name="settings_account">الحساب</string>
+    <string name="settings_account_signed_in">مسجّل الدخول باسم %1$s -- تنزيل الترجمات مفعّل.</string>
+    <string name="settings_signin_title">سجّل الدخول لتنزيل الترجمات</string>
+    <string name="settings_signin_desc">الخطوة الأخيرة -- كلٌّ من مفتاح API وتسجيل الدخول للحساب مطلوبان للترجمات عبر الإنترنت. سجّل الدخول باسم مستخدم وكلمة مرور opensubtitles.com؛ تستخدم التنزيلات حصتك اليومية. سنبقيك مسجّل الدخول.</string>
+    <string name="settings_placeholder_username">اسم المستخدم</string>
+    <string name="settings_placeholder_password">كلمة المرور</string>
+    <string name="settings_signing_in">جارٍ تسجيل الدخول…</string>
+    <string name="settings_opensubs_key_title">مفتاح API لـ OpenSubtitles</string>
+    <string name="settings_opensubs_key_desc">تحتاج الترجمات عبر الإنترنت إلى حساب مجاني على opensubtitles.com مع شيئين: مفتاح API هذا (للبحث) وتسجيل الدخول للحساب (للتنزيل). الخطوة 1 -- الصق مفتاح API؛ ستسجّل الدخول تاليًا. نتحقق منه قبل الحفظ.</string>
+    <string name="settings_placeholder_api_key">مفتاح API</string>
+    <string name="settings_checking">جارٍ التحقق…</string>
+    <string name="settings_section_metadata">معلومات الأفلام والمسلسلات</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">متصل -- تظهر تقييمات IMDb وRotten Tomatoes والقصة والطاقم في صفحة التفاصيل.</string>
+    <string name="settings_omdb_key_title">مفتاح API لـ OMDb</string>
+    <string name="settings_omdb_key_desc">الصق مفتاحًا مجانيًا من omdbapi.com لإثراء الأفلام والمسلسلات بتقييمات IMDb وRotten Tomatoes وملخّص وطاقم العمل. نتحقق منه قبل الحفظ.</string>
+    <string name="settings_section_about">حول</string>
+    <string name="settings_version_title">الإصدار</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">ادعم هذا التطبيق</string>
+    <string name="settings_support_desc">اشترِ لي قهوة إذا كان ARE iptv مفيدًا لك.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">اضبط رمز PIN من 4 أرقام</string>
+    <string name="pin_confirm_title">أكّد رمز PIN</string>
+    <string name="pin_enter_title">أدخل رمز PIN</string>
+    <string name="pin_lockout_message">محاولات خاطئة كثيرة -- حاول مرة أخرى بعد %1$d ثانية</string>
+    <string name="pin_mismatch_error">رمزا PIN غير متطابقين -- حاول مرة أخرى</string>
+    <string name="pin_incorrect_error">رمز PIN غير صحيح</string>
+    <string name="pin_checking">جارٍ التحقق…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">إضافة قسم</string>
+    <string name="home_remove_continue_watching_title">إزالة من «متابعة المشاهدة»؟</string>
+    <string name="home_remove_continue_watching_body">لن يظهر «%1$s» هنا بعد الآن. لن يتم حفظ موضعك.</string>
+    <string name="home_loading_catalog">جارٍ تحميل فهرسك…</string>
+    <string name="home_no_playlist_title">لا توجد قائمة تشغيل بعد</string>
+    <string name="home_no_playlist_body">أضف قائمة تشغيل من الشريط الجانبي لرؤية قنواتك وأفلامك ومسلسلاتك هنا.</string>
+    <string name="home_section_continue_watching">متابعة المشاهدة</string>
+    <string name="home_section_live_now">مباشر الآن</string>
+    <string name="home_section_categories">تصفّح حسب الفئة</string>
+    <string name="home_section_recommended">لك</string>
+    <string name="home_section_for_you">لك</string>
+    <string name="home_section_popular">شائع</string>
+    <string name="home_section_because_you_like">لأنك تحب %1$s</string>
+    <string name="home_section_movies">الأفلام</string>
+    <string name="home_section_series">المسلسلات</string>
+    <string name="home_add_section_dialog_title">إضافة قسم</string>
+    <string name="home_add_section_empty">كل فئة من قائمة تشغيلك مثبّتة بالفعل في الرئيسية.</string>
+    <string name="home_category_live">مباشر</string>
+    <string name="home_category_movie">فيلم</string>
+    <string name="home_category_series">مسلسل</string>
+    <string name="home_edit_grabbed_desc">تم الإمساك -- أعلى/أسفل للنقل، OK للإفلات</string>
+    <string name="home_edit_grab_desc">أمسك لإعادة الترتيب</string>
+    <string name="home_edit_show_section">إظهار القسم</string>
+    <string name="home_edit_hide_section">إخفاء القسم</string>
+    <string name="home_edit_remove_section">إزالة القسم</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">أضف قائمة تشغيل من الشريط الجانبي لرؤية دليل التلفزيون هنا.</string>
+    <string name="guide_title">دليل التلفزيون</string>
+    <string name="guide_epg_unavailable">مصدر EPG غير متاح -- يتم عرض القنوات دون بيانات البرامج.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">ركّز على برنامج لرؤية التفاصيل</string>
+    <string name="guide_live_badge">مباشر</string>
+    <string name="guide_catchup_available_desc">إعادة المشاهدة متاحة</string>
+    <string name="guide_day_yesterday">أمس</string>
+    <string name="guide_day_today">اليوم</string>
+    <string name="guide_day_tomorrow">غدًا</string>
+
+    <!-- Live -->
+    <string name="live_no_source">أضف قائمة تشغيل من الشريط الجانبي لرؤية القنوات المباشرة هنا.</string>
+    <string name="live_title">البث المباشر</string>
+    <string name="live_channel_groups">مجموعات القنوات</string>
+    <string name="live_count_channels">%1$d قناة</string>
+    <string name="live_empty_group">لا توجد قنوات في هذه المجموعة بعد.</string>
+    <string name="live_on_air_now">على الهواء الآن</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">أضف قائمة تشغيل من الشريط الجانبي لرؤية الأفلام هنا.</string>
+    <string name="movies_title">الأفلام</string>
+    <string name="movies_genres">الأنواع</string>
+    <string name="movies_count_titles">%1$d عنوان</string>
+    <string name="movies_empty_genre">لا توجد أفلام في هذا النوع بعد.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">أضف قائمة تشغيل من الشريط الجانبي لرؤية المسلسلات هنا.</string>
+    <string name="series_title">المسلسلات</string>
+    <string name="series_empty_genre">لا توجد مسلسلات في هذا النوع بعد.</string>
+    <string name="series_episode_count">%1$d حلقة</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">أضف قائمة تشغيل من الشريط الجانبي، ثم أضف القنوات أو العناوين إلى المفضّلة لرؤيتها هنا.</string>
+    <string name="favorites_title">المفضّلة</string>
+    <string name="favorites_tab_channels">القنوات</string>
+    <string name="favorites_tab_movies">الأفلام</string>
+    <string name="favorites_tab_series">المسلسلات</string>
+    <string name="favorites_empty_channels">لا توجد قنوات مفضّلة بعد -- اضغط القلب على مربّع قناة لإضافتها.</string>
+    <string name="favorites_empty_movies">لا توجد أفلام مفضّلة بعد -- اضغط القلب على مربّع فيلم لإضافته.</string>
+    <string name="favorites_empty_series">لا توجد مسلسلات مفضّلة بعد -- اضغط القلب على مربّع مسلسل لإضافته.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">أضف قائمة تشغيل من الشريط الجانبي للبحث في فهرسك.</string>
+    <string name="search_title">بحث</string>
+    <string name="search_placeholder">ابحث في القنوات والأفلام والمسلسلات…</string>
+    <string name="search_scope_all">الكل</string>
+    <string name="search_scope_live">البث المباشر</string>
+    <string name="search_scope_movies">الأفلام</string>
+    <string name="search_scope_series">المسلسلات</string>
+    <string name="search_category_label">الفئة: %1$s</string>
+    <string name="search_type_to_search">اكتب للبحث في فهرسك.</string>
+    <string name="search_min_chars">اكتب %1$d أحرف على الأقل للبحث.</string>
+    <string name="search_no_results">لا نتائج لـ «%1$s».</string>
+    <string name="search_section_live">البث المباشر</string>
+    <string name="search_section_titles">الأفلام والمسلسلات</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">جارٍ التحميل…</string>
+    <string name="detail_not_found">العنوان غير موجود</string>
+    <string name="detail_play">تشغيل</string>
+    <string name="detail_play_episode">تشغيل الموسم %1$d · الحلقة %2$d</string>
+    <string name="detail_add_to_favorites">إضافة إلى المفضّلة</string>
+    <string name="detail_remove_from_favorites">إزالة من المفضّلة</string>
+    <string name="detail_storyline">القصة</string>
+    <string name="detail_cast_label">الطاقم:</string>
+    <string name="detail_director_label">المخرج:</string>
+    <string name="detail_episodes_header">الحلقات</string>
+    <string name="detail_episodes_header_seasons">الحلقات · %1$d موسم · %2$d إجمالًا</string>
+    <string name="detail_episodes_header_total">الحلقات · %1$d إجمالًا</string>
+    <string name="detail_season_label">الموسم %1$d</string>
+    <string name="detail_season_episode_count">الموسم %1$s · %2$d حلقة</string>
+    <string name="detail_m3u_no_episodes">لا تحتوي مدخلة قائمة التشغيل هذه على بيانات مواسم/حلقات -- استخدم زر التشغيل بالأعلى لمشاهدتها كعنصر واحد.</string>
+    <string name="detail_episodes_load_error">تعذّر تحميل الحلقات: %1$s</string>
+    <string name="detail_episodes_loading">جارٍ تحميل الحلقات…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">المحتوى غير موجود</string>
+    <string name="player_playback_failed">فشل التشغيل</string>
+    <string name="player_buffering">جارٍ التخزين المؤقت…</string>
+    <string name="player_up_next">التالي</string>
+    <string name="player_up_next_channel">التالي -- %1$s</string>
+    <string name="player_no_programme_data">لا توجد بيانات برامج</string>
+    <string name="player_previous_channel">القناة السابقة</string>
+    <string name="player_next_channel">القناة التالية</string>
+    <string name="player_previous_episode">الحلقة السابقة</string>
+    <string name="player_next_episode">الحلقة التالية</string>
+    <string name="player_back_10_min">10 دقائق للخلف</string>
+    <string name="player_forward_10_min">10 دقائق للأمام</string>
+    <string name="player_rewind">إرجاع</string>
+    <string name="player_pause">إيقاف مؤقت</string>
+    <string name="player_play">تشغيل</string>
+    <string name="player_fast_forward">تقديم سريع</string>
+    <string name="player_audio_track">المسار الصوتي</string>
+    <string name="player_subtitles">الترجمات</string>
+    <string name="player_minimize_to_corner">تصغير إلى الزاوية</string>
+    <string name="player_mini_player">المشغّل المصغّر</string>
+    <string name="player_up_next_action">التالي</string>
+    <string name="player_open_guide">فتح الدليل</string>
+    <string name="player_live_badge">مباشر</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">إيقاف</string>
+    <string name="subtitle_none_in_stream">لا توجد ترجمات في هذا البث.</string>
+    <string name="subtitle_search_online">بحث عبر الإنترنت…</string>
+    <string name="subtitle_selected">محدّد</string>
+    <string name="subtitle_picker_title">الترجمات</string>
+    <string name="subtitle_search_title">البحث عن ترجمات عبر الإنترنت</string>
+    <string name="subtitle_search_placeholder">العنوان</string>
+    <string name="subtitle_searching">جارٍ البحث…</string>
+    <string name="subtitle_search_action">بحث</string>
+    <string name="subtitle_status_searching">جارٍ البحث في OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">جارٍ تنزيل الترجمة…</string>
+    <string name="subtitle_status_no_matches">لا تطابقات -- جرّب عنوانًا أو لغة مختلفة.</string>
+    <string name="subtitle_default_label">ترجمة %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">إيقاف المشغّل المصغّر؟</string>
+    <string name="mini_player_stop_body">إيقاف تشغيل «%1$s» وإغلاق المشغّل المصغّر؟</string>
+    <string name="mini_player_stop">إيقاف</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">عرض متعدد</string>
+    <string name="multiview_4up">4 معًا</string>
+    <string name="multiview_2up">2 معًا</string>
+    <string name="multiview_no_source">لا توجد قائمة تشغيل نشطة</string>
+    <string name="multiview_no_channels">لا توجد قنوات مباشرة متاحة للعرض المتعدد</string>
+    <string name="multiview_audio_badge">الصوت</string>
+    <string name="multiview_add_to">إضافة إلى العرض المتعدد</string>
+    <string name="multiview_add_channel">إضافة قناة</string>
+    <string name="multiview_added_toast">تمت الإضافة إلى العرض المتعدد</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">تخصيص</string>
+    <string name="shell_multi_view_desc">عرض متعدد</string>
+    <string name="shell_add_playlist_desc">إضافة قائمة تشغيل</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_live_tv">البث المباشر</string>
+    <string name="nav_tv_guide">دليل التلفزيون</string>
+    <string name="nav_movies">الأفلام</string>
+    <string name="nav_series">المسلسلات</string>
+    <string name="nav_search">بحث</string>
+    <string name="nav_favorites">المفضّلة</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">الفئات</string>
+    <string name="browse_empty_default">لا توجد عناصر في هذه الفئة بعد.</string>
+    <string name="browse_load_error">تعذّر التحميل — حاول مرة أخرى</string>
+    <string name="browse_pin_dialog_pinned_body">إزالة هذه الفئة من أعلى القائمة.</string>
+    <string name="browse_pin_dialog_unpinned_body">تثبيت هذه الفئة في أعلى القائمة.</string>
+    <string name="browse_unpin">إلغاء التثبيت</string>
+    <string name="browse_pin">تثبيت</string>
+    <string name="browse_category_pinned_desc">مثبّت</string>
+    <string name="browse_see_all">عرض الكل  ›</string>
+    <string name="browse_all_channels">كل القنوات</string>
+    <string name="browse_all_movies">كل الأفلام</string>
+    <string name="browse_all_series">كل المسلسلات</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">مباشر</string>
+    <string name="badge_catchup">إعادة</string>
+    <string name="badge_smart">ذكي</string>
+    <string name="health_stable">مستقر</string>
+    <string name="health_moderate">متوسط</string>
+    <string name="health_poor">ضعيف</string>
+    <string name="continue_card_resume_desc">استئناف</string>
+    <string name="channel_tile_now">الآن · %1$s</string>
+    <string name="channel_tile_next">التالي · %1$s</string>
+</resources>

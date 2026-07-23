@@ -1,0 +1,430 @@
+<resources>
+    <string name="app_name">iptv</string>
+    <string name="brand_name">ARE iptv</string>
+
+    <!-- Common -->
+    <string name="action_back">بازگشت</string>
+    <string name="action_cancel">انصراف</string>
+    <string name="action_continue">ادامه</string>
+    <string name="action_retry">تلاش دوباره</string>
+    <string name="action_close">بستن</string>
+    <string name="action_remove">حذف</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_connect">اتصال</string>
+    <string name="action_disconnect">قطع اتصال</string>
+    <string name="action_sign_in">ورود</string>
+    <string name="action_sign_out">خروج</string>
+    <string name="action_search">جستجو</string>
+    <string name="action_donate">حمایت مالی</string>
+    <string name="content_desc_account">حساب کاربری</string>
+
+    <!-- Shell -->
+    <string name="shell_leave_app_title">از ARE iptv خارج می‌شوید؟</string>
+    <string name="shell_stay">ماندن</string>
+    <string name="shell_leave">خروج</string>
+    <string name="shell_leave_app_body">می‌خواهید از ARE iptv خارج شوید؟</string>
+
+    <!-- Splash -->
+    <string name="splash_logo_content_description">ARE iptv</string>
+
+    <!-- Onboarding flow -->
+    <string name="onboarding_step_source">منبع</string>
+    <string name="onboarding_step_credentials">اطلاعات ورود</string>
+    <string name="onboarding_step_epg">راهنمای برنامه</string>
+    <string name="onboarding_step_confirm">تأیید</string>
+    <string name="onboarding_title">افزودن پلی‌لیست</string>
+    <string name="onboarding_subtitle">اشتراک IPTV خودتان را وارد کنید. ARE iptv هرگز اطلاعات ورود شما را خارج از دستگاه ذخیره نمی‌کند.</string>
+    <string name="onboarding_skip_for_now">فعلاً رد شود</string>
+    <string name="onboarding_go_to_home">رفتن به خانه</string>
+    <string name="onboarding_error_generic">مشکلی پیش آمد</string>
+    <string name="onboarding_add_playlist">افزودن پلی‌لیست</string>
+
+    <!-- Onboarding steps -->
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">نشانی پورتال، نام کاربری و رمز عبور خود را وارد کنید. بهترین گزینه برای تلویزیون زنده و VOD همراه با راهنمای برنامهٔ خودکار.</string>
+    <string name="onboarding_m3u_title">پلی‌لیست M3U / URL</string>
+    <string name="onboarding_m3u_desc">یک لینک M3U یا M3U-plus را وارد کنید. اگر نشانی XMLTV EPG دارید، آن را جداگانه اضافه کنید.</string>
+    <string name="onboarding_portal_name_label">نام پورتال</string>
+    <string name="onboarding_portal_name_placeholder">اتاق نشیمن</string>
+    <string name="onboarding_server_url_label">نشانی سرور</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">نام کاربری</string>
+    <string name="onboarding_password_label">رمز عبور</string>
+    <string name="onboarding_m3u_url_label">نشانی پلی‌لیست M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_auto_title">تطبیق خودکار راهنما و لوگوها</string>
+    <string name="onboarding_epg_auto_desc">داده‌های راهنما، لوگوی کانال‌ها و پوسترها را به‌صورت خودکار دریافت کنید.</string>
+    <string name="onboarding_epg_url_label">نشانی XMLTV EPG (اختیاری)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_epg_disabled_helper">تا زمانی که تطبیق خودکار روشن است غیرفعال است.</string>
+    <string name="onboarding_epg_custom_helper">منبع راهنمای خودتان را وارد کنید.</string>
+    <string name="onboarding_confirm_adding">در حال افزودن پلی‌لیست…</string>
+    <string name="onboarding_confirm_error_title">افزودن پلی‌لیست ممکن نشد</string>
+    <string name="onboarding_confirm_added">افزوده شد</string>
+    <string name="onboarding_confirm_ready">آمادهٔ افزودن</string>
+    <string name="onboarding_confirm_channels_badge">%1$d کانال</string>
+    <string name="onboarding_confirm_downloading">در حال دانلود و وارد کردن کانال‌های شما. پلی‌لیست‌های بزرگ ممکن است کمی طول بکشند — لطفاً برنامه را باز نگه دارید.</string>
+    <string name="onboarding_confirm_row_portal">پورتال</string>
+    <string name="onboarding_confirm_default_portal_name">پلی‌لیست من</string>
+    <string name="onboarding_confirm_row_source">منبع</string>
+    <string name="onboarding_confirm_row_server">سرور</string>
+    <string name="onboarding_confirm_dash">–</string>
+    <string name="onboarding_confirm_row_epg">راهنمای برنامه</string>
+    <string name="onboarding_confirm_auto_matched">تطبیق خودکار</string>
+    <string name="onboarding_confirm_custom_xmltv">XMLTV سفارشی</string>
+    <string name="onboarding_confirm_row_catalog">فهرست محتوا</string>
+    <string name="onboarding_confirm_catalog_summary">%1$d کانال · %2$d فیلم · %3$d سریال</string>
+
+    <!-- Privacy & Terms -->
+    <string name="privacy_title">حریم خصوصی و شرایط</string>
+    <string name="privacy_subtitle">لطفاً پیش از ادامه، بررسی و تأیید کنید.</string>
+    <string name="privacy_body">سیاست حریم خصوصی و شرایط استفاده از ARE iptv\n\nARE iptv اطلاعات ورود پلی‌لیست شما را خارج از دستگاه جمع‌آوری یا ارسال نمی‌کند. با ادامه دادن، می‌پذیرید که از این برنامه تنها با منابع محتوایی که مجاز به دسترسی به آن‌ها هستید استفاده کنید و شرایط استفاده و سیاست حریم خصوصی ما را به‌طور کامل می‌پذیرید.</string>
+    <string name="privacy_accept_label">سیاست حریم خصوصی و شرایط استفاده را خوانده‌ام و می‌پذیرم.</string>
+
+    <!-- Select source -->
+    <string name="sources_choose_title">یک پلی‌لیست انتخاب کنید</string>
+    <string name="sources_choose_subtitle">انتخاب کنید کدام پلی‌لیست افزوده‌شده باز شود.</string>
+    <string name="sources_type_xtream">Xtream</string>
+    <string name="sources_type_m3u">M3U</string>
+    <string name="sources_add_new_playlist">افزودن پلی‌لیست جدید</string>
+    <string name="sources_delete_title">پلی‌لیست حذف شود؟</string>
+    <string name="sources_delete_body">این کار «%1$s» و همهٔ محتوای آن — کانال‌ها، فیلم‌ها، سریال‌ها، علاقه‌مندی‌ها و تاریخچهٔ تماشا — را برای همیشه از این دستگاه حذف می‌کند. این عمل قابل بازگشت نیست.</string>
+    <string name="sources_delete_hint">برای حذف یک پلی‌لیست، دکمهٔ OK را روی آن نگه دارید.</string>
+    <string name="action_delete">حذف</string>
+
+    <!-- Language selector / first run -->
+    <string name="language_select_title">زبان خود را انتخاب کنید</string>
+    <string name="language_select_subtitle">زبانی که می‌خواهید در سراسر برنامه استفاده شود را انتخاب کنید.</string>
+    <string name="language_picker_label">زبان</string>
+    <string name="language_name_en">English</string>
+    <string name="language_name_es">Español</string>
+    <string name="language_name_fr">Français</string>
+    <string name="language_name_de">Deutsch</string>
+    <string name="language_name_it">Italiano</string>
+    <string name="language_name_pt_br">Português (Brasil)</string>
+    <string name="language_name_pt_pt">Português (Portugal)</string>
+    <string name="language_name_ru">Русский</string>
+    <string name="language_name_tr">Türkçe</string>
+    <string name="language_name_az">Azərbaycan</string>
+    <string name="language_name_pl">Polski</string>
+    <string name="language_name_uk">Українська</string>
+    <string name="language_name_nl">Nederlands</string>
+    <string name="language_name_ro">Română</string>
+    <string name="language_name_sv">Svenska</string>
+    <string name="language_name_da">Dansk</string>
+    <string name="language_name_nb">Norsk</string>
+    <string name="language_name_fi">Suomi</string>
+    <string name="language_name_cs">Čeština</string>
+    <string name="language_name_el">Ελληνικά</string>
+    <string name="language_name_hu">Magyar</string>
+    <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
+    <string name="language_confirm_title">آیا مطمئن هستید که می‌خواهید زبان را تغییر دهید؟</string>
+    <string name="language_confirm_action">تأیید</string>
+    <string name="language_confirm_cancel">انصراف</string>
+
+    <!-- Settings -->
+    <string name="settings_title">تنظیمات</string>
+    <string name="settings_section_playlists">پلی‌لیست‌ها و همگام‌سازی</string>
+    <string name="settings_refresh_catalog">به‌روزرسانی فهرست</string>
+    <string name="settings_refresh_now">اکنون به‌روزرسانی کن</string>
+    <string name="settings_refreshing">در حال به‌روزرسانی…</string>
+    <string name="settings_refresh_syncing">در حال همگام‌سازی با ارائه‌دهنده…</string>
+    <string name="settings_refresh_success">به‌روزرسانی شد: %1$d کانال، %2$d فیلم، %3$d سریال</string>
+    <string name="settings_refresh_no_playlist">پلی‌لیست فعالی برای به‌روزرسانی وجود ندارد.</string>
+    <string name="settings_refresh_failed">به‌روزرسانی ناموفق بود — اتصال خود را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="settings_subs_connect_key_first">ابتدا کلید API خود را متصل کنید.</string>
+    <string name="settings_refresh_stale">بیش از 2 هفته قدیمی است — برای دریافت کانال‌ها و عناوین جدید به‌روزرسانی کنید</string>
+    <string name="settings_never_refreshed">هرگز به‌روزرسانی نشده</string>
+    <string name="settings_last_updated_days">%1$d روز پیش به‌روزرسانی شد</string>
+    <string name="settings_last_updated_days_plural">%1$d روز پیش به‌روزرسانی شد</string>
+    <string name="settings_last_updated_hours">%1$d ساعت پیش به‌روزرسانی شد</string>
+    <string name="settings_last_updated_hours_plural">%1$d ساعت پیش به‌روزرسانی شد</string>
+    <string name="settings_last_updated_mins">%1$d دقیقه پیش به‌روزرسانی شد</string>
+    <string name="settings_last_updated_now">همین الان به‌روزرسانی شد</string>
+    <!-- Provider (Xtream account) panel -->
+    <string name="settings_section_provider">ارائه‌دهنده</string>
+    <string name="settings_provider_loading">برای بارگذاری جزئیات ارائه‌دهنده به‌روزرسانی کنید</string>
+    <string name="settings_provider_status">وضعیت</string>
+    <string name="settings_provider_expires">انقضا</string>
+    <string name="settings_provider_unlimited">نامحدود</string>
+    <string name="settings_provider_expired">منقضی‌شده</string>
+    <string name="settings_provider_expires_days">%1$s · %2$d روز باقی‌مانده</string>
+    <string name="settings_provider_expires_today">%1$s · امروز منقضی می‌شود</string>
+    <string name="settings_provider_trial">نوع حساب</string>
+    <string name="settings_provider_trial_value">آزمایشی</string>
+    <string name="settings_provider_connections">اتصال‌ها</string>
+    <string name="settings_provider_connections_value">%1$d از %2$d در حال استفاده</string>
+    <string name="settings_provider_connections_max">حداکثر %1$d</string>
+    <string name="settings_provider_timezone">منطقهٔ زمانی</string>
+    <string name="settings_provider_server_time">زمان سرور</string>
+    <string name="settings_provider_server">سرور</string>
+    <string name="settings_provider_unknown">—</string>
+    <string name="settings_section_appearance">ظاهر</string>
+    <string name="settings_dark_theme">تم تیره</string>
+    <string name="settings_dark_theme_desc">برای تماشای راحت توصیه می‌شود.</string>
+    <string name="settings_accent_color">رنگ تأکید</string>
+    <string name="settings_accent_color_desc_dark">روی تم تیره اعمال می‌شود. برای تنظیم رنگ تأکید تم روشن، به حالت روشن بروید.</string>
+    <string name="settings_accent_color_desc_light">روی تم روشن اعمال می‌شود. برای تنظیم رنگ تأکید تم تیره، به حالت تیره بروید.</string>
+    <string name="settings_reduce_motion">کاهش حرکت</string>
+    <string name="settings_reduce_motion_desc">انیمیشن‌های فوکوس ملایم‌تر.</string>
+    <string name="settings_list_view">نمای فهرستی</string>
+    <string name="settings_list_view_desc">کانال‌ها، فیلم‌ها و سریال‌ها را به‌جای شبکهٔ کاشی‌ای به‌صورت فهرست نمایش بده.</string>
+    <string name="settings_section_language">زبان</string>
+    <string name="settings_language_row_title">زبان برنامه</string>
+    <string name="settings_language_row_desc">زبان مورد استفاده در سراسر برنامه را انتخاب کنید.</string>
+    <string name="settings_section_playback">پخش</string>
+    <string name="settings_hardware_decoding">رمزگشایی سخت‌افزاری</string>
+    <string name="settings_hardware_decoding_desc">رمزگشاهای سخت‌افزاری در اولویت‌اند؛ در صورت نیاز به نرم‌افزاری برمی‌گردد.</string>
+    <string name="settings_autoplay_next">پخش خودکار قسمت بعد</string>
+    <string name="settings_autoplay_next_desc">فعلاً فقط یک ترجیح است -- پیشروی خودکار هنوز پیاده‌سازی نشده؛ قسمت بعدی را از صفحهٔ جزئیات انتخاب کنید.</string>
+    <string name="settings_mini_player_behavior">رفتار پخش‌کنندهٔ کوچک</string>
+    <string name="settings_mini_player_behavior_desc">وقتی نزدیک پخش‌کنندهٔ کوچک مرور می‌کنید: آن را به گوشهٔ خالی بلغزانید یا محو و کوچک کنید.</string>
+    <string name="settings_mini_player_dodge">کنار رفتن خودکار</string>
+    <string name="settings_mini_player_fade">محو و کوچک شدن</string>
+    <string name="settings_section_parental">کنترل والدین</string>
+    <string name="settings_lock_adult">قفل دسته‌های بزرگسال</string>
+    <string name="settings_lock_adult_desc">پس از روشن شدن، خاموش کردن آن نیازمند PIN شماست.</string>
+    <string name="settings_change_pin">تغییر PIN</string>
+    <string name="settings_pin_loading">در حال بارگذاری…</string>
+    <string name="settings_pin_is_set">یک PIN تنظیم شده است.</string>
+    <string name="settings_pin_not_set">هنوز PINی تنظیم نشده است.</string>
+    <string name="settings_change">تغییر</string>
+    <string name="settings_set_pin">تنظیم PIN</string>
+    <string name="settings_section_subtitles">زیرنویس‌ها</string>
+    <string name="settings_subtitle_lang_title">زبان ترجیحی</string>
+    <string name="settings_subtitle_lang_desc">هنگام جستجوی آنلاین زیرنویس از پیش انتخاب می‌شود. همچنان می‌توانید برای هر ویدیو تغییرش دهید.</string>
+    <string name="settings_opensubs_title">OpenSubtitles</string>
+    <string name="settings_opensubs_ready">آماده -- جستجو و دانلود آنلاین فعال است.</string>
+    <string name="settings_opensubs_key_connected">کلید API متصل شد. در زیر هم وارد شوید -- هر دو برای زیرنویس آنلاین لازم‌اند.</string>
+    <string name="settings_account">حساب کاربری</string>
+    <string name="settings_account_signed_in">با نام %1$s وارد شده‌اید -- دانلود زیرنویس فعال است.</string>
+    <string name="settings_signin_title">برای دانلود زیرنویس وارد شوید</string>
+    <string name="settings_signin_desc">مرحلهٔ آخر -- هم کلید API و هم ورود به حساب برای زیرنویس آنلاین لازم است. با نام کاربری و رمز عبور opensubtitles.com خود وارد شوید؛ دانلودها از سهمیهٔ روزانهٔ حساب شما استفاده می‌کنند. ما شما را وارد نگه می‌داریم.</string>
+    <string name="settings_placeholder_username">نام کاربری</string>
+    <string name="settings_placeholder_password">رمز عبور</string>
+    <string name="settings_signing_in">در حال ورود…</string>
+    <string name="settings_opensubs_key_title">کلید API اُپن‌ساب‌تایتلز</string>
+    <string name="settings_opensubs_key_desc">زیرنویس آنلاین به یک حساب رایگان opensubtitles.com با دو چیز نیاز دارد: این کلید API (برای جستجو) و ورود به حساب (برای دانلود). مرحلهٔ 1 -- کلید API را وارد کنید؛ در مرحلهٔ بعد وارد می‌شوید. پیش از ذخیره آن را اعتبارسنجی می‌کنیم.</string>
+    <string name="settings_placeholder_api_key">کلید API</string>
+    <string name="settings_checking">در حال بررسی…</string>
+    <string name="settings_section_metadata">اطلاعات فیلم و سریال</string>
+    <string name="settings_omdb_title">OMDb</string>
+    <string name="settings_omdb_connected">متصل شد -- رتبهٔ IMDb و Rotten Tomatoes، خلاصهٔ داستان و بازیگران در صفحهٔ جزئیات نمایش داده می‌شود.</string>
+    <string name="settings_omdb_key_title">کلید API OMDb</string>
+    <string name="settings_omdb_key_desc">یک کلید رایگان از omdbapi.com وارد کنید تا فیلم‌ها و سریال‌ها را با رتبهٔ IMDb و Rotten Tomatoes، خلاصهٔ داستان و بازیگران غنی کنید. پیش از ذخیره آن را اعتبارسنجی می‌کنیم.</string>
+    <string name="settings_section_about">درباره</string>
+    <string name="settings_version_title">نسخه</string>
+    <string name="settings_version_value">ARE iptv %1$s</string>
+    <string name="settings_support_title">از این برنامه حمایت کنید</string>
+    <string name="settings_support_desc">اگر ARE iptv برایتان مفید است، برایم یک قهوه بخرید.</string>
+
+    <!-- Parental PIN dialog -->
+    <string name="pin_set_title">یک PIN چهاررقمی تنظیم کنید</string>
+    <string name="pin_confirm_title">PIN خود را تأیید کنید</string>
+    <string name="pin_enter_title">PIN را وارد کنید</string>
+    <string name="pin_lockout_message">تلاش‌های نادرست زیاد بود -- %1$d ثانیهٔ دیگر دوباره تلاش کنید</string>
+    <string name="pin_mismatch_error">PINها مطابقت نداشتند -- دوباره تلاش کنید</string>
+    <string name="pin_incorrect_error">PIN نادرست</string>
+    <string name="pin_checking">در حال بررسی…</string>
+
+    <!-- Home -->
+    <string name="home_add_section">افزودن بخش</string>
+    <string name="home_remove_continue_watching_title">از «ادامهٔ تماشا» حذف شود؟</string>
+    <string name="home_remove_continue_watching_body">«%1$s» دیگر اینجا نمایش داده نمی‌شود. جای تماشای شما نگه داشته نمی‌شود.</string>
+    <string name="home_loading_catalog">در حال بارگذاری فهرست شما…</string>
+    <string name="home_no_playlist_title">هنوز پلی‌لیستی نیست</string>
+    <string name="home_no_playlist_body">از نوار کناری یک پلی‌لیست اضافه کنید تا کانال‌ها، فیلم‌ها و سریال‌های خود را اینجا ببینید.</string>
+    <string name="home_section_continue_watching">ادامهٔ تماشا</string>
+    <string name="home_section_live_now">اکنون زنده</string>
+    <string name="home_section_categories">مرور بر اساس دسته</string>
+    <string name="home_section_recommended">برای شما</string>
+    <string name="home_section_for_you">برای شما</string>
+    <string name="home_section_popular">محبوب</string>
+    <string name="home_section_because_you_like">چون %1$s را دوست دارید</string>
+    <string name="home_section_movies">فیلم‌ها</string>
+    <string name="home_section_series">سریال‌ها</string>
+    <string name="home_add_section_dialog_title">افزودن یک بخش</string>
+    <string name="home_add_section_empty">همهٔ دسته‌های پلی‌لیست شما همین حالا به خانه سنجاق شده‌اند.</string>
+    <string name="home_category_live">زنده</string>
+    <string name="home_category_movie">فیلم</string>
+    <string name="home_category_series">سریال</string>
+    <string name="home_edit_grabbed_desc">گرفته شد -- بالا/پایین برای جابه‌جایی، OK برای رها کردن</string>
+    <string name="home_edit_grab_desc">برای مرتب‌سازی بگیرید</string>
+    <string name="home_edit_show_section">نمایش بخش</string>
+    <string name="home_edit_hide_section">پنهان کردن بخش</string>
+    <string name="home_edit_remove_section">حذف بخش</string>
+
+    <!-- Guide -->
+    <string name="guide_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا راهنمای تلویزیون را اینجا ببینید.</string>
+    <string name="guide_title">راهنمای تلویزیون</string>
+    <string name="guide_epg_unavailable">منبع EPG در دسترس نیست -- کانال‌ها بدون داده‌های برنامه نمایش داده می‌شوند.</string>
+    <string name="guide_no_channel_placeholder">--</string>
+    <string name="guide_focus_hint">روی یک برنامه فوکوس کنید تا جزئیات را ببینید</string>
+    <string name="guide_live_badge">زنده</string>
+    <string name="guide_catchup_available_desc">بازپخش در دسترس</string>
+    <string name="guide_day_yesterday">دیروز</string>
+    <string name="guide_day_today">امروز</string>
+    <string name="guide_day_tomorrow">فردا</string>
+
+    <!-- Live -->
+    <string name="live_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا کانال‌های زنده را اینجا ببینید.</string>
+    <string name="live_title">تلویزیون زنده</string>
+    <string name="live_channel_groups">گروه‌های کانال</string>
+    <string name="live_count_channels">%1$d کانال</string>
+    <string name="live_empty_group">هنوز کانالی در این گروه نیست.</string>
+    <string name="live_on_air_now">اکنون روی آنتن</string>
+
+    <!-- Movies -->
+    <string name="movies_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا فیلم‌ها را اینجا ببینید.</string>
+    <string name="movies_title">فیلم‌ها</string>
+    <string name="movies_genres">ژانرها</string>
+    <string name="movies_count_titles">%1$d عنوان</string>
+    <string name="category_count_items">%1$d مورد</string>
+    <string name="movies_empty_genre">هنوز فیلمی در این ژانر نیست.</string>
+
+    <!-- Series -->
+    <string name="series_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا سریال‌ها را اینجا ببینید.</string>
+    <string name="series_title">سریال‌ها</string>
+    <string name="series_empty_genre">هنوز سریالی در این ژانر نیست.</string>
+    <string name="series_episode_count">%1$d قسمت</string>
+
+    <!-- Favorites -->
+    <string name="favorites_no_source">از نوار کناری یک پلی‌لیست اضافه کنید، سپس کانال‌ها یا عناوین را نشان کنید تا اینجا ببینید.</string>
+    <string name="favorites_title">علاقه‌مندی‌ها</string>
+    <string name="favorites_tab_channels">کانال‌ها</string>
+    <string name="favorites_tab_movies">فیلم‌ها</string>
+    <string name="favorites_tab_series">سریال‌ها</string>
+    <string name="favorites_empty_channels">هنوز کانال محبوبی نیست -- روی قلب یک کاشی کانال بزنید تا اضافه شود.</string>
+    <string name="favorites_empty_movies">هنوز فیلم محبوبی نیست -- روی قلب یک کاشی فیلم بزنید تا اضافه شود.</string>
+    <string name="favorites_empty_series">هنوز سریال محبوبی نیست -- روی قلب یک کاشی سریال بزنید تا اضافه شود.</string>
+
+    <!-- Search -->
+    <string name="search_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا فهرست خود را جستجو کنید.</string>
+    <string name="search_title">جستجو</string>
+    <string name="search_placeholder">جستجوی کانال‌ها، فیلم‌ها، سریال‌ها…</string>
+    <string name="search_scope_all">همه</string>
+    <string name="search_scope_live">تلویزیون زنده</string>
+    <string name="search_scope_movies">فیلم‌ها</string>
+    <string name="search_scope_series">سریال‌ها</string>
+    <string name="search_category_label">دسته: %1$s</string>
+    <string name="search_type_to_search">برای جستجوی فهرست خود تایپ کنید.</string>
+    <string name="search_min_chars">برای جستجو حداقل %1$d نویسه تایپ کنید.</string>
+    <string name="search_no_results">نتیجه‌ای برای «%1$s» یافت نشد.</string>
+    <string name="search_section_live">تلویزیون زنده</string>
+    <string name="search_section_titles">فیلم‌ها و سریال‌ها</string>
+
+    <!-- Detail -->
+    <string name="detail_loading">در حال بارگذاری…</string>
+    <string name="detail_not_found">عنوان یافت نشد</string>
+    <string name="detail_play">پخش</string>
+    <string name="detail_play_episode">پخش فصل %1$d · قسمت %2$d</string>
+    <string name="detail_add_to_favorites">افزودن به علاقه‌مندی‌ها</string>
+    <string name="detail_remove_from_favorites">حذف از علاقه‌مندی‌ها</string>
+    <string name="detail_storyline">خلاصهٔ داستان</string>
+    <string name="detail_cast_label">بازیگران:</string>
+    <string name="detail_director_label">کارگردان:</string>
+    <string name="detail_episodes_header">قسمت‌ها</string>
+    <string name="detail_episodes_header_seasons">قسمت‌ها · %1$d فصل · %2$d در مجموع</string>
+    <string name="detail_episodes_header_total">قسمت‌ها · %1$d در مجموع</string>
+    <string name="detail_season_label">فصل %1$d</string>
+    <string name="detail_season_episode_count">فصل %1$s · %2$d قسمت</string>
+    <string name="detail_m3u_no_episodes">این ورودی پلی‌لیست داده‌ای دربارهٔ فصل/قسمت ندارد -- برای تماشای آن به‌صورت یک مورد واحد از دکمهٔ پخش بالا استفاده کنید.</string>
+    <string name="detail_episodes_load_error">بارگذاری قسمت‌ها ممکن نشد: %1$s</string>
+    <string name="detail_episodes_loading">در حال بارگذاری قسمت‌ها…</string>
+
+    <!-- Player -->
+    <string name="player_content_not_found">محتوا یافت نشد</string>
+    <string name="player_playback_failed">پخش ناموفق بود</string>
+    <string name="player_buffering">در حال بافر…</string>
+    <string name="player_up_next">بعدی</string>
+    <string name="player_up_next_channel">بعدی -- %1$s</string>
+    <string name="player_no_programme_data">داده‌ای دربارهٔ برنامه نیست</string>
+    <string name="player_previous_channel">کانال قبلی</string>
+    <string name="player_next_channel">کانال بعدی</string>
+    <string name="player_previous_episode">قسمت قبلی</string>
+    <string name="player_next_episode">قسمت بعدی</string>
+    <string name="player_back_10_min">10 دقیقه عقب</string>
+    <string name="player_forward_10_min">10 دقیقه جلو</string>
+    <string name="player_rewind">عقب بردن</string>
+    <string name="player_pause">توقف</string>
+    <string name="player_play">پخش</string>
+    <string name="player_fast_forward">جلو بردن سریع</string>
+    <string name="player_audio_track">باند صوتی</string>
+    <string name="player_subtitles">زیرنویس‌ها</string>
+    <string name="player_minimize_to_corner">کوچک کردن به گوشه</string>
+    <string name="player_mini_player">پخش‌کنندهٔ کوچک</string>
+    <string name="player_up_next_action">بعدی</string>
+    <string name="player_open_guide">باز کردن راهنما</string>
+    <string name="player_live_badge">زنده</string>
+
+    <!-- Subtitle menu -->
+    <string name="subtitle_off">خاموش</string>
+    <string name="subtitle_none_in_stream">زیرنویسی در این پخش نیست.</string>
+    <string name="subtitle_search_online">جستجوی آنلاین…</string>
+    <string name="subtitle_selected">انتخاب‌شده</string>
+    <string name="subtitle_picker_title">زیرنویس‌ها</string>
+    <string name="subtitle_search_title">جستجوی آنلاین زیرنویس</string>
+    <string name="subtitle_search_placeholder">عنوان</string>
+    <string name="subtitle_searching">در حال جستجو…</string>
+    <string name="subtitle_search_action">جستجو</string>
+    <string name="subtitle_status_searching">در حال جستجوی OpenSubtitles…</string>
+    <string name="subtitle_status_downloading">در حال دانلود زیرنویس…</string>
+    <string name="subtitle_status_no_matches">مطابقتی نیست -- عنوان یا زبان دیگری را امتحان کنید.</string>
+    <string name="subtitle_default_label">زیرنویس %1$d</string>
+
+    <!-- Live mini player -->
+    <string name="mini_player_stop_title">پخش‌کنندهٔ کوچک متوقف شود؟</string>
+    <string name="mini_player_stop_body">پخش «%1$s» متوقف و پخش‌کنندهٔ کوچک بسته شود؟</string>
+    <string name="mini_player_stop">توقف</string>
+
+    <!-- MultiView -->
+    <string name="multiview_title">چند نمایی</string>
+    <string name="multiview_4up">4 تایی</string>
+    <string name="multiview_2up">2 تایی</string>
+    <string name="multiview_no_source">پلی‌لیست فعالی نیست</string>
+    <string name="multiview_no_channels">کانال زنده‌ای برای چند نمایی در دسترس نیست</string>
+    <string name="multiview_audio_badge">صدا</string>
+    <string name="multiview_add_to">افزودن به چند نمایی</string>
+    <string name="multiview_add_channel">افزودن کانال</string>
+    <string name="multiview_added_toast">به چند نمایی افزوده شد</string>
+
+    <!-- Shell / top bar / sidebar -->
+    <string name="shell_customize">سفارشی‌سازی</string>
+    <string name="shell_multi_view_desc">چند نمایی</string>
+    <string name="shell_add_playlist_desc">افزودن پلی‌لیست</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_live_tv">تلویزیون زنده</string>
+    <string name="nav_tv_guide">راهنمای تلویزیون</string>
+    <string name="nav_movies">فیلم‌ها</string>
+    <string name="nav_series">سریال‌ها</string>
+    <string name="nav_search">جستجو</string>
+    <string name="nav_favorites">علاقه‌مندی‌ها</string>
+    <string name="nav_settings">تنظیمات</string>
+
+    <!-- Browse layout (shared Live/Movies/Series) -->
+    <string name="browse_categories_header">دسته‌ها</string>
+    <string name="browse_empty_default">هنوز موردی در این دسته نیست.</string>
+    <string name="browse_load_error">بارگذاری ممکن نشد — دوباره تلاش کنید</string>
+    <string name="browse_pin_dialog_pinned_body">این دسته را از بالای فهرست حذف کنید.</string>
+    <string name="browse_pin_dialog_unpinned_body">این دسته را به بالای فهرست سنجاق کنید.</string>
+    <string name="browse_unpin">برداشتن سنجاق</string>
+    <string name="browse_pin">سنجاق</string>
+    <string name="browse_category_pinned_desc">سنجاق‌شده</string>
+    <string name="browse_see_all">مشاهدهٔ همه  ›</string>
+    <string name="browse_all_channels">همهٔ کانال‌ها</string>
+    <string name="browse_all_movies">همهٔ فیلم‌ها</string>
+    <string name="browse_all_series">همهٔ سریال‌ها</string>
+
+    <!-- Shared components -->
+    <string name="badge_live">زنده</string>
+    <string name="badge_catchup">بازپخش</string>
+    <string name="badge_smart">هوشمند</string>
+    <string name="health_stable">پایدار</string>
+    <string name="health_moderate">متوسط</string>
+    <string name="health_poor">ضعیف</string>
+    <string name="continue_card_resume_desc">ادامه</string>
+    <string name="channel_tile_now">اکنون · %1$s</string>
+    <string name="channel_tile_next">بعدی · %1$s</string>
+</resources>

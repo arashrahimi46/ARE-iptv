@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Dili dəyişmək istədiyinizə əminsiniz?</string>
     <string name="language_confirm_action">Təsdiq et</string>
     <string name="language_confirm_cancel">Ləğv et</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Filmlər</string>
     <string name="movies_genres">Janrlar</string>
     <string name="movies_count_titles">%1$d başlıq</string>
+    <string name="category_count_items">%1$d element</string>
     <string name="movies_empty_genre">Bu janrda hələ film yoxdur.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Səs cığırı</string>
     <string name="player_subtitles">Altyazılar</string>
     <string name="player_minimize_to_corner">Küncə kiçilt</string>
-    <string name="player_picture_in_picture">Şəkil içində şəkil</string>
+    <string name="player_mini_player">Mini pleyer</string>
     <string name="player_up_next_action">Növbəti</string>
     <string name="player_open_guide">Bələdçini aç</string>
     <string name="player_live_badge">Canlı</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Aktiv pleylist yoxdur</string>
     <string name="multiview_no_channels">Çoxlu görünüş üçün əlçatan canlı kanal yoxdur</string>
     <string name="multiview_audio_badge">Səs</string>
+    <string name="multiview_add_to">Çoxlu görünüşə əlavə et</string>
+    <string name="multiview_add_channel">Kanal əlavə et</string>
+    <string name="multiview_added_toast">Çoxlu görünüşə əlavə edildi</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Fərdiləşdir</string>
+    <string name="shell_multi_view_desc">Çoxekranlı görünüş</string>
     <string name="shell_add_playlist_desc">Pleylist əlavə et</string>
     <string name="nav_home">Ana səhifə</string>
     <string name="nav_live_tv">Canlı TV</string>

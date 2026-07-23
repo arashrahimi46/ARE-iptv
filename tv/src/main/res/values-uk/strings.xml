@@ -113,6 +113,8 @@
     <string name="language_name_el">Ελληνικά</string>
     <string name="language_name_hu">Magyar</string>
     <string name="language_name_bg">Български</string>
+    <string name="language_name_fa">فارسی</string>
+    <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Ви впевнені, що хочете змінити мову?</string>
     <string name="language_confirm_action">Підтвердити</string>
     <string name="language_confirm_cancel">Скасувати</string>
@@ -253,6 +255,7 @@
     <string name="movies_title">Фільми</string>
     <string name="movies_genres">Жанри</string>
     <string name="movies_count_titles">%1$d найменувань</string>
+    <string name="category_count_items">%1$d елементів</string>
     <string name="movies_empty_genre">У цьому жанрі поки немає фільмів.</string>
 
     <!-- Series -->
@@ -325,7 +328,7 @@
     <string name="player_audio_track">Аудіодоріжка</string>
     <string name="player_subtitles">Субтитри</string>
     <string name="player_minimize_to_corner">Згорнути в кут</string>
-    <string name="player_picture_in_picture">Картинка в картинці</string>
+    <string name="player_mini_player">Міні-плеєр</string>
     <string name="player_up_next_action">Далі</string>
     <string name="player_open_guide">Відкрити телегід</string>
     <string name="player_live_badge">Прямий ефір</string>
@@ -357,9 +360,13 @@
     <string name="multiview_no_source">Немає активного плейлиста</string>
     <string name="multiview_no_channels">Немає прямих каналів для мультиперегляду</string>
     <string name="multiview_audio_badge">Звук</string>
+    <string name="multiview_add_to">Додати до Мультиперегляду</string>
+    <string name="multiview_add_channel">Додати канал</string>
+    <string name="multiview_added_toast">Додано до Мультиперегляду</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Налаштувати</string>
+    <string name="shell_multi_view_desc">Мультиекран</string>
     <string name="shell_add_playlist_desc">Додати плейлист</string>
     <string name="nav_home">Головна</string>
     <string name="nav_live_tv">Прямий ефір</string>
