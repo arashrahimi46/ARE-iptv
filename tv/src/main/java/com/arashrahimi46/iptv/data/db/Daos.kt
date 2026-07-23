@@ -51,6 +51,10 @@ interface PlaylistSourceDao {
     @Query("UPDATE playlist_sources SET lastRefreshedAtMs = :ts WHERE id = :id")
     suspend fun setLastRefreshed(id: Long, ts: Long)
 
+    /** Store the provider account/server metadata JSON captured on the latest auth (Provider panel). */
+    @Query("UPDATE playlist_sources SET accountInfoJson = :json WHERE id = :id")
+    suspend fun setAccountInfo(id: Long, json: String?)
+
     @Query("SELECT * FROM playlist_sources WHERE id = :id")
     suspend fun getById(id: Long): PlaylistSource?
 

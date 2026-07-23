@@ -30,6 +30,12 @@ data class PlaylistSource(
      * rows imported before this column existed (they read as "never refreshed" -> stale badge until
      * the first refresh). Drives the Settings "refresh overdue" badge and the "Last updated" label. */
     val lastRefreshedAtMs: Long? = null,
+    /** Xtream only: JSON blob of the provider account/server metadata (status, expiry, connection
+     * limits, timezone…) captured from the auth response on import + each refresh, shown in the
+     * Settings "Provider" panel. Null for M3U sources and for rows imported before this existed
+     * (they read as "no details" until the next refresh). See
+     * [com.arashrahimi46.iptv.data.parser.XtreamAccountInfo]. */
+    val accountInfoJson: String? = null,
 )
 
 /** A genre/group, tagged by which catalog it filters (mirrors CategoryRow/CategoryCard `kind`). */

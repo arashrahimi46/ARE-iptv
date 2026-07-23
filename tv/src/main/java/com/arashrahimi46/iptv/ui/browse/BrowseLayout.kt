@@ -147,6 +147,9 @@ fun <T : Any> BrowseLayout(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
+                    // Center the smaller count against the title -- FlowRow top-aligns items by
+                    // default, which floated "N channels" above the title's cap height.
+                    itemVerticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                     if (sectionCountLabel != null) {

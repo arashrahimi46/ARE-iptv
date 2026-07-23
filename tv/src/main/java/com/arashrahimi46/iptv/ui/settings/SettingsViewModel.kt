@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.parser.OmdbClient
+import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
 import com.arashrahimi46.iptv.data.parser.OpenSubtitlesClient
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
@@ -198,6 +200,22 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         flowState(
             settings.activeSourceId.flatMapLatest { id ->
                 if (id == null) flowOf(null) else playlists.observeSource(id)
+            },
+            null,
+        )
+
+    /** Parsed Xtream provider metadata for the active source (Provider panel); null for M3U sources
+     *  and Xtream rows not yet refreshed since this feature shipped. Snapshot as of the last refresh. */
+    val providerInfo: StateFlow<XtreamAccountInfo?> =
+        flowState(
+            settings.activeSourceId.flatMapLatest { id ->
+                if (id == null) {
+                    flowOf(null)
+                } else {
+                    playlists.observeSource(id).map { src ->
+                        if (src?.type == SourceType.XTREAM) XtreamAccountInfo.fromJson(src.accountInfoJson) else null
+                    }
+                }
             },
             null,
         )

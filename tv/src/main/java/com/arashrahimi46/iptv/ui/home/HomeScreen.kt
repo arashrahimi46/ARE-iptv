@@ -35,6 +35,8 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.round
 import kotlinx.coroutines.delay
@@ -279,26 +281,38 @@ fun HomeScreen(
     }
 
     removeTarget?.let { target ->
-        AreDialog(
-            onDismiss = { removeTarget = null },
-            title = stringResource(R.string.home_remove_continue_watching_title),
-            actions = {
-                AreButton(stringResource(R.string.action_cancel), onClick = { removeTarget = null }, variant = AreButtonVariant.Ghost)
-                AreButton(
-                    stringResource(R.string.action_remove),
-                    onClick = {
-                        viewModel.removeContinueWatching(target)
-                        removeTarget = null
-                    },
-                    variant = AreButtonVariant.Danger,
-                )
-            },
+        // Rendered in a real Dialog WINDOW (not inline) so it traps D-pad focus -- an inline
+        // overlay let focus leak to the tiles behind it (they stayed selectable) and the modal's
+        // own buttons never received focus. Same pattern as HomeAddSectionDialog / the shell exit
+        // dialog. Focus lands on Remove so the modal is immediately actionable.
+        val removeFocus = remember { FocusRequester() }
+        Dialog(
+            onDismissRequest = { removeTarget = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
         ) {
-            Text(
-                text = stringResource(R.string.home_remove_continue_watching_body, target.title),
-                style = AreIptvTheme.typography.body,
-                color = AreIptvTheme.colors.textSecondary,
-            )
+            LaunchedEffect(Unit) { runCatching { removeFocus.requestFocus() } }
+            AreDialog(
+                onDismiss = { removeTarget = null },
+                title = stringResource(R.string.home_remove_continue_watching_title),
+                actions = {
+                    AreButton(stringResource(R.string.action_cancel), onClick = { removeTarget = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(
+                        stringResource(R.string.action_remove),
+                        onClick = {
+                            viewModel.removeContinueWatching(target)
+                            removeTarget = null
+                        },
+                        variant = AreButtonVariant.Danger,
+                        modifier = Modifier.focusRequester(removeFocus),
+                    )
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.home_remove_continue_watching_body, target.title),
+                    style = AreIptvTheme.typography.body,
+                    color = AreIptvTheme.colors.textSecondary,
+                )
+            }
         }
     }
     }

@@ -552,7 +552,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         epgUrl: String?,
     ): ImportSummary = withContext(Dispatchers.IO) {
         val xtream = XtreamClient(host, username, password)
-        xtream.authenticate()
+        val account = xtream.authenticate()
 
         val liveCategories = xtream.getLiveCategories()
         val vodCategories = xtream.getVodCategories()
@@ -567,6 +567,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             url = host,
             epgUrl = epgUrl,
             lastRefreshedAtMs = System.currentTimeMillis(),
+            accountInfoJson = account.toJson(),
         )
         val sourceId = db.playlistSourceDao().insert(source)
         // Credentials never touch the Room row -- encrypted-at-rest, keyed by the id Room
@@ -659,7 +660,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         // (ip-limit / connection cap) any of these throws, and we abort before touching a single
         // existing row -- a failed refresh must never degrade a working catalog.
         val xtream = XtreamClient(source.url, username, password)
-        xtream.authenticate()
+        val account = xtream.authenticate()
         val liveCategories = xtream.getLiveCategories()
         val vodCategories = xtream.getVodCategories()
         val seriesCategories = xtream.getSeriesCategories()
@@ -724,6 +725,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
             db.categoryDao().deleteForSource(sourceId)
             db.categoryDao().upsertAll(categories)
             db.playlistSourceDao().setLastRefreshed(sourceId, System.currentTimeMillis())
+            // Refresh the Provider panel's account snapshot (incl. the point-in-time active-cons count).
+            db.playlistSourceDao().setAccountInfo(sourceId, account.toJson())
         }
 
         ImportSummary(channels = channels.size, movies = movies.size, series = series.size)

@@ -1,6 +1,8 @@
 package com.arashrahimi46.iptv.ui.guide
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -148,9 +150,11 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
         // claims exactly the height left over after the header rows/chips/info-bar -- the real
         // bounded height the LazyColumn below needs to be a valid lazy layout.
         Column(modifier = Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
-            Row(modifier = Modifier.horizontalScroll(scrollState)) {
-                TimelineHeader(windowStartMs = state.windowStartMs, windowEndMs = state.windowEndMs, zone = zone)
-            }
+            // Channel column is PINNED (drawn outside the shared horizontalScroll) on both the
+            // timeline header and every row, so the channel you're browsing stays visible no
+            // matter how far right you scroll through its programmes. Only the programme lane
+            // (weight(1f) + horizontalScroll) moves, keeping header + rows in lockstep.
+            TimelineHeader(windowStartMs = state.windowStartMs, windowEndMs = state.windowEndMs, zone = zone, scrollState = scrollState)
             Box(Modifier.height(8.dp))
             // P0.2: was a plain Column.forEach that eagerly composed every channel row for
             // the whole ~6h window regardless of what's on screen -- with large catalogs
@@ -160,12 +164,15 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
             LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.rows, key = { it.channel.id }) { row ->
                     Row(
-                        modifier = Modifier.horizontalScroll(scrollState),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         ChannelHeaderCell(name = row.channel.name, number = row.channel.number)
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            modifier = Modifier.weight(1f).horizontalScroll(scrollState),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
                             row.slots.forEach { slot ->
                                 val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
                                 val focusRequester = rememberPlaybackFocusRequester(
@@ -201,19 +208,27 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
 }
 
 @Composable
-private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId) {
-    Row {
+private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId, scrollState: ScrollState) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        // Fixed spacer over the pinned channel column -- keeps the first time mark aligned
+        // to where the programme lane begins (the rail's own styling names it as channels).
         Box(Modifier.width(AreIptvTheme.spacing.guideChannelWidth))
-        var mark = windowStartMs
-        while (mark < windowEndMs) {
-            Box(Modifier.width(DpPerMinute * 30)) {
-                Text(
-                    text = Instant.ofEpochMilli(mark).atZone(zone).format(TimeFormatter),
-                    style = AreIptvTheme.typography.mono,
-                    color = AreIptvTheme.colors.textTertiary,
-                )
+        // Only the time marks scroll -- shares scrollState with the rows below.
+        Row(modifier = Modifier.weight(1f).horizontalScroll(scrollState)) {
+            var mark = windowStartMs
+            while (mark < windowEndMs) {
+                Box(Modifier.width(DpPerMinute * 30)) {
+                    Text(
+                        text = Instant.ofEpochMilli(mark).atZone(zone).format(TimeFormatter),
+                        style = AreIptvTheme.typography.mono,
+                        color = AreIptvTheme.colors.textTertiary,
+                    )
+                }
+                mark += 30 * 60_000L
             }
-            mark += 30 * 60_000L
         }
     }
 }
@@ -221,16 +236,29 @@ private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId)
 @Composable
 private fun ChannelHeaderCell(name: String, number: String?) {
     val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
     Row(
         modifier = Modifier
             .width(AreIptvTheme.spacing.guideChannelWidth)
             .height(AreIptvTheme.spacing.guideRowHeight)
-            .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.sm))
+            // surface2 + a defined border deliberately set the pinned rail apart from the
+            // programme cells (surface1) beside it -- and give the rail a visible edge on the
+            // near-white light-theme background, where a borderless white-on-white cell vanished.
+            .background(colors.surface2, shape)
+            .border(1.dp, colors.borderDefault, shape)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Column {
+        // Channel initials tile -- the same identity cue the focused-info bar uses, so the
+        // left rail reads unmistakably as "a channel" rather than another programme block.
+        Box(
+            modifier = Modifier.size(36.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.xs)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = name.take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
+        }
+        Column(modifier = Modifier.weight(1f)) {
             if (number != null) {
                 Text(text = number, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
             }

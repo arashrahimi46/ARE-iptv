@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.InputStream
 import java.util.concurrent.TimeUnit
+import java.util.zip.GZIPInputStream
 
 /** Safe chunk size for `IN (...)` binds -- under SQLite's historical 999 host-parameter limit. */
 private const val SQLITE_MAX_VARIABLES = 900
@@ -242,7 +244,27 @@ class EpgRepository(context: Context) {
         val request = Request.Builder().url(url).build()
         httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw IllegalStateException("Server returned HTTP ${response.code}")
-            return response.body?.string() ?: throw IllegalStateException("Empty response body")
+            val body = response.body ?: throw IllegalStateException("Empty response body")
+            return decodeMaybeGzip(body.byteStream())
         }
     }
+}
+
+/**
+ * Reads [input] to a UTF-8 String, transparently inflating it when the payload is gzipped.
+ * Almost the entire open-source XMLTV ecosystem (epgshare01, and the guides that iptv-org /
+ * Free-TV playlists point to via `url-tvg`) is served as a gzipped `.xml.gz` *file body* --
+ * OkHttp only inflates transport-level `Content-Encoding: gzip`, never a gzipped payload, so
+ * without this every such guide parsed to nothing and the Guide showed "no programme data".
+ * Sniffs the two-byte gzip magic (0x1f 0x8b) rather than trusting the URL/extension, since some
+ * hosts serve gzip without a `.gz` suffix and vice versa. Top-level + `internal` so it's unit-
+ * testable without standing up OkHttp.
+ */
+internal fun decodeMaybeGzip(input: InputStream): String {
+    val buffered = input.buffered()
+    buffered.mark(2)
+    val isGzip = buffered.read() == 0x1f && buffered.read() == 0x8b
+    buffered.reset()
+    val stream: InputStream = if (isGzip) GZIPInputStream(buffered) else buffered
+    return stream.reader(Charsets.UTF_8).use { it.readText() }
 }

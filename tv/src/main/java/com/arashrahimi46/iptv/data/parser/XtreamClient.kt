@@ -36,6 +36,73 @@ data class XtreamVodInfo(
 )
 
 /**
+ * Account + server metadata Xtream returns for free in the bare `player_api.php` response
+ * (`user_info` / `server_info` blocks) -- captured during [XtreamClient.authenticate] and surfaced
+ * in the Settings "Provider" panel. Every field is nullable because providers omit or misreport
+ * many of them; [expiresAtMs] `null` means unlimited/never, [activeConnections] is a point-in-time
+ * snapshot (only as fresh as the last catalog refresh). Persisted as a JSON blob on the source row
+ * ([toJson]/[fromJson]) rather than as typed columns -- it's display-only and never queried.
+ */
+data class XtreamAccountInfo(
+    val status: String? = null,
+    val expiresAtMs: Long? = null,
+    val isTrial: Boolean = false,
+    val maxConnections: Int? = null,
+    val activeConnections: Int? = null,
+    val timezone: String? = null,
+    val serverTime: String? = null,
+    val host: String? = null,
+    val port: String? = null,
+) {
+    fun toJson(): String = JSONObject().apply {
+        put("status", status ?: JSONObject.NULL)
+        put("expiresAtMs", expiresAtMs ?: JSONObject.NULL)
+        put("isTrial", isTrial)
+        put("maxConnections", maxConnections ?: JSONObject.NULL)
+        put("activeConnections", activeConnections ?: JSONObject.NULL)
+        put("timezone", timezone ?: JSONObject.NULL)
+        put("serverTime", serverTime ?: JSONObject.NULL)
+        put("host", host ?: JSONObject.NULL)
+        put("port", port ?: JSONObject.NULL)
+    }.toString()
+
+    companion object {
+        /** Parse the `user_info` + `server_info` blocks straight off the auth response. */
+        fun fromApi(userInfo: JSONObject, serverInfo: JSONObject?): XtreamAccountInfo {
+            val expSeconds = userInfo.optStringOrNull("exp_date")?.toLongOrNull()?.takeIf { it > 0 }
+            return XtreamAccountInfo(
+                status = userInfo.optStringOrNull("status"),
+                expiresAtMs = expSeconds?.let { it * 1000 },
+                isTrial = userInfo.optStringOrNull("is_trial") == "1",
+                maxConnections = userInfo.optStringOrNull("max_connections")?.toIntOrNull(),
+                activeConnections = userInfo.optStringOrNull("active_cons")?.toIntOrNull(),
+                timezone = serverInfo?.optStringOrNull("timezone"),
+                serverTime = serverInfo?.optStringOrNull("time_now"),
+                host = serverInfo?.optStringOrNull("url"),
+                port = serverInfo?.optStringOrNull("port"),
+            )
+        }
+
+        /** Rehydrate from the JSON blob stored on the source row; null/garbage -> null. */
+        fun fromJson(raw: String?): XtreamAccountInfo? {
+            if (raw.isNullOrBlank()) return null
+            val json = runCatching { JSONObject(raw) }.getOrNull() ?: return null
+            return XtreamAccountInfo(
+                status = json.optStringOrNull("status"),
+                expiresAtMs = if (json.isNull("expiresAtMs")) null else json.optLong("expiresAtMs").takeIf { it > 0 },
+                isTrial = json.optBoolean("isTrial", false),
+                maxConnections = if (json.isNull("maxConnections")) null else json.optInt("maxConnections"),
+                activeConnections = if (json.isNull("activeConnections")) null else json.optInt("activeConnections"),
+                timezone = json.optStringOrNull("timezone"),
+                serverTime = json.optStringOrNull("serverTime"),
+                host = json.optStringOrNull("host"),
+                port = json.optStringOrNull("port"),
+            )
+        }
+    }
+}
+
+/**
  * Thrown for unreachable portals, HTTP errors, or a body that isn't the JSON shape Xtream returns.
  * [isAuthError] is set when the portal was reached but rejected the credentials (auth==0, or a
  * 401/403-shaped HTTP response) -- an authoritative failure the caller must surface rather than
@@ -85,16 +152,18 @@ class XtreamClient(
         }
     }
 
-    /** Validates credentials and reachability by hitting the bare `player_api.php` auth endpoint. */
-    suspend fun authenticate() {
+    /** Validates credentials and reachability by hitting the bare `player_api.php` auth endpoint, and
+     *  returns the account/server metadata that same response carries (for the Settings Provider panel). */
+    suspend fun authenticate(): XtreamAccountInfo {
         val body = fetch("")
         val json = runCatching { JSONObject(body) }.getOrElse {
             throw XtreamException("Unexpected response from server -- check the server URL")
         }
-        val auth = json.optJSONObject("user_info")
-        if (auth == null || auth.optInt("auth", 0) != 1) {
+        val userInfo = json.optJSONObject("user_info")
+        if (userInfo == null || userInfo.optInt("auth", 0) != 1) {
             throw XtreamException("Invalid username or password", isAuthError = true)
         }
+        return XtreamAccountInfo.fromApi(userInfo, json.optJSONObject("server_info"))
     }
 
     suspend fun getLiveCategories(): List<XtreamCategory> = parseCategories(fetch("get_live_categories"))

@@ -55,7 +55,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Favorite::class,
         ContinueWatchingEntry::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -204,13 +204,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v7 -> v8: Provider account panel. Adds nullable `playlist_sources.accountInfoJson` -- the
+         * JSON blob of Xtream account/server metadata (status, expiry, connection limits, timezone…)
+         * captured from the auth response, shown in Settings. Plain non-destructive ADD COLUMN;
+         * existing sources keep everything and read as "no details" until their next refresh.
+         */
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `playlist_sources` ADD COLUMN `accountInfoJson` TEXT")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build().also { instance = it }
             }
     }

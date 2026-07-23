@@ -71,6 +71,11 @@ fun AreGuideCell(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
+        // Edge on every programme cell so they read as distinct blocks on the near-white
+        // light-theme surface (borderless white-on-white merged into one flat sheet); the
+        // now-playing cell keeps its accent-tinted fill + accent edge bar and takes a matching
+        // accent border so the "on now" block stays the clear focal point.
+        borderColor = if (now) colors.accent else colors.borderDefault,
     ) { _, _ ->
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
             if (now) {

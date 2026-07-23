@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +46,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.focusGroup
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -60,6 +62,8 @@ import android.content.Intent
 import android.net.Uri
 import com.arashrahimi46.iptv.BuildConfig
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.data.model.SourceType
+import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
@@ -152,6 +156,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     var omdbKeyInput by remember { mutableStateOf("") }
 
     val activeSource by viewModel.activeSource.collectAsState()
+    val providerInfo by viewModel.providerInfo.collectAsState()
     val refreshState by viewModel.refreshState.collectAsState()
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
@@ -210,6 +215,15 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
+        }
+
+        // Provider (Xtream account) panel -- only for Xtream sources; M3U playlists carry no account.
+        if (activeSource?.type == SourceType.XTREAM) {
+            item {
+                SettingsSection(title = stringResource(R.string.settings_section_provider)) {
+                    ProviderPanel(info = providerInfo)
+                }
+            }
         }
 
         item {
@@ -392,6 +406,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                             onValueChange = { subsUserInput = it },
                             placeholder = stringResource(R.string.settings_placeholder_username),
                             icon = Icons.Filled.Person,
+                            activateOnClick = true,
                         )
                         Box(Modifier.padding(top = 10.dp))
                         AreTextField(
@@ -401,6 +416,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                             masked = true,
                             icon = Icons.Filled.Lock,
                             error = loginError,
+                            activateOnClick = true,
                         )
                         Box(Modifier.padding(top = 12.dp))
                         AreButton(
@@ -431,6 +447,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         mono = true,
                         icon = Icons.Filled.VpnKey,
                         error = errorMsg,
+                        activateOnClick = true,
                     )
                     Box(Modifier.padding(top = 12.dp))
                     AreButton(
@@ -482,6 +499,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         mono = true,
                         icon = Icons.Filled.VpnKey,
                         error = omdbError,
+                        activateOnClick = true,
                     )
                     Box(Modifier.padding(top = 12.dp))
                     AreButton(
@@ -681,6 +699,98 @@ private fun SettingsSection(title: String, content: @Composable () -> Unit) {
             content()
         }
     }
+}
+
+/**
+ * Read-only key/value list of the active Xtream provider's account/server metadata (Provider panel).
+ * Purely informational -- no focusable controls. Every value is a snapshot from the last catalog
+ * refresh (the "in use" connection count especially, which the provider reports point-in-time).
+ * Fields a provider omits or misreports collapse to a dash or are hidden entirely.
+ */
+@Composable
+private fun ProviderPanel(info: XtreamAccountInfo?) {
+    val colors = AreIptvTheme.colors
+    if (info == null) {
+        Text(
+            text = stringResource(R.string.settings_provider_loading),
+            style = AreIptvTheme.typography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+        )
+        return
+    }
+    val dash = stringResource(R.string.settings_provider_unknown)
+    Column {
+        val status = info.status?.replaceFirstChar { it.uppercase() }
+        val statusColor = when (status?.lowercase()) {
+            "active" -> colors.success
+            "expired", "banned", "disabled" -> colors.danger
+            else -> colors.textPrimary
+        }
+        ProviderInfoRow(stringResource(R.string.settings_provider_status), status ?: dash, statusColor)
+        ProviderInfoRow(stringResource(R.string.settings_provider_expires), expiryText(info.expiresAtMs), expiryColor(info.expiresAtMs))
+        // Trial is surfaced only when true -- a "No" row would be noise.
+        if (info.isTrial) {
+            ProviderInfoRow(stringResource(R.string.settings_provider_trial), stringResource(R.string.settings_provider_trial_value), colors.warning)
+        }
+        connectionsText(info.maxConnections, info.activeConnections)?.let {
+            ProviderInfoRow(stringResource(R.string.settings_provider_connections), it)
+        }
+        info.timezone?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_timezone), it) }
+        info.serverTime?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server_time), it) }
+        serverText(info.host, info.port)?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server), it) }
+    }
+}
+
+@Composable
+private fun ProviderInfoRow(label: String, value: String, valueColor: Color? = null) {
+    val colors = AreIptvTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(text = label, style = AreIptvTheme.typography.label, color = colors.textSecondary, modifier = Modifier.width(150.dp))
+        Text(text = value, style = AreIptvTheme.typography.label, color = valueColor ?: colors.textPrimary, modifier = Modifier.weight(1f))
+    }
+}
+
+/** Absolute expiry date + a "N days left" countdown; null == unlimited, past == expired. */
+@Composable
+private fun expiryText(expiresAtMs: Long?): String {
+    if (expiresAtMs == null) return stringResource(R.string.settings_provider_unlimited)
+    val date = java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.getDefault()).format(java.util.Date(expiresAtMs))
+    val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
+    return when {
+        daysLeft < 0 -> stringResource(R.string.settings_provider_expired)
+        daysLeft == 0L -> stringResource(R.string.settings_provider_expires_today, date)
+        else -> stringResource(R.string.settings_provider_expires_days, date, daysLeft)
+    }
+}
+
+@Composable
+private fun expiryColor(expiresAtMs: Long?): Color {
+    val colors = AreIptvTheme.colors
+    if (expiresAtMs == null) return colors.textPrimary
+    val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
+    return when {
+        daysLeft < 0 -> colors.danger
+        daysLeft <= 7 -> colors.warning
+        else -> colors.textPrimary
+    }
+}
+
+/** "X of Y in use" when both are known, "Y max" when only the cap is, null when neither is. */
+@Composable
+private fun connectionsText(max: Int?, active: Int?): String? = when {
+    max != null && active != null -> stringResource(R.string.settings_provider_connections_value, active, max)
+    max != null -> stringResource(R.string.settings_provider_connections_max, max)
+    else -> null
+}
+
+private fun serverText(host: String?, port: String?): String? {
+    val h = host?.takeIf { it.isNotBlank() } ?: return null
+    return if (!port.isNullOrBlank()) "$h:$port" else h
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
