@@ -28,6 +28,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -138,19 +139,25 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         ) {
                             row.forEachIndexed { colIdx, channel ->
                                 val index = rowIdx * 2 + colIdx
-                                if (channel != null) {
-                                    MultiViewPane(
-                                        channel = channel,
-                                        active = index == state.activeIndex,
-                                        onClick = { viewModel.setActive(index) },
-                                        onRemove = { viewModel.removeChannel(channel.id) },
-                                        modifier = Modifier.weight(1f).fillMaxSize(),
-                                    )
-                                } else {
-                                    EmptyPaneSlot(
-                                        onClick = { pickerOpen = true },
-                                        modifier = Modifier.weight(1f).fillMaxSize(),
-                                    )
+                                // key by channel id so a slot whose channel changes (e.g. after a
+                                // delete shifts the list) gets a FRESH pane -- its own ExoPlayer +
+                                // PlayerView -- instead of Compose reusing the previous channel's
+                                // pane in place (which left the old video under the new label).
+                                key(channel?.id ?: "empty-$index") {
+                                    if (channel != null) {
+                                        MultiViewPane(
+                                            channel = channel,
+                                            active = index == state.activeIndex,
+                                            onClick = { viewModel.setActive(index) },
+                                            onRemove = { viewModel.removeChannel(channel.id) },
+                                            modifier = Modifier.weight(1f).fillMaxSize(),
+                                        )
+                                    } else {
+                                        EmptyPaneSlot(
+                                            onClick = { pickerOpen = true },
+                                            modifier = Modifier.weight(1f).fillMaxSize(),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -400,6 +407,10 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
                         player = exoPlayer
                     }
                 },
+                // Reattach whenever a new ExoPlayer instance is built (retry/fallback swaps the
+                // player while the PlayerView stays). Without this the view keeps rendering the
+                // old, now-released player -- a stale/frozen frame under the current label.
+                update = { it.player = exoPlayer },
             )
             Box(
                 modifier = Modifier
