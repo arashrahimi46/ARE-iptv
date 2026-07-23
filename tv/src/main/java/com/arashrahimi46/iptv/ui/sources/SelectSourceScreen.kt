@@ -63,19 +63,18 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     // Non-null while the hold-OK delete confirmation is open for that playlist.
     var pendingDelete by remember { mutableStateOf<PlaylistSource?>(null) }
 
-    // verticalScroll + contentAlignment.Center on the Box: a Box centers a child shorter than the
-    // viewport (so the block sits mid-screen, never top-clipped) and, once the playlist list makes
-    // the content taller than the viewport, the scroll kicks in and the top stays reachable.
-    Box(
+    // Two-pane landscape layout: a fixed header on the left, the playlist list scrolling on the
+    // right. Keeping the header out of the scroll path means a long list can never push the brand
+    // and title off the top of the screen (the old single-column scroll clipped them on focus).
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(colors.bgBase)
-            .verticalScroll(rememberScrollState()),
-        contentAlignment = Alignment.Center,
+            .padding(horizontal = 56.dp, vertical = 48.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(48.dp),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 40.dp, vertical = 56.dp),
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Box(
                     modifier = Modifier
@@ -103,35 +102,40 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                     color = colors.textTertiary,
                 )
             }
-            Box(Modifier.height(36.dp))
+        }
 
-            Column(
-                modifier = Modifier.widthIn(max = 560.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                sources.forEachIndexed { index, source ->
-                    val label = "${source.name}  ·  ${if (source.type == SourceType.XTREAM) xtreamLabel else m3uLabel}"
-                    AreButton(
-                        text = label,
-                        onClick = { viewModel.select(source.id, onSelected) },
-                        variant = AreButtonVariant.Secondary,
-                        size = AreButtonSize.Large,
-                        full = true,
-                        onLongClick = { pendingDelete = source },
-                        modifier = if (index == 0) Modifier.focusRequester(firstItemFocus) else Modifier,
-                    )
-                }
-
-                Box(Modifier.height(8.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .widthIn(max = 560.dp)
+                .verticalScroll(rememberScrollState())
+                // Inset the content within the scroll's clip bounds so the first/last item's focus
+                // ring and glow have room to draw instead of being clipped at the top/side edges.
+                .padding(vertical = 16.dp, horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            sources.forEachIndexed { index, source ->
+                val label = "${source.name}  ·  ${if (source.type == SourceType.XTREAM) xtreamLabel else m3uLabel}"
                 AreButton(
-                    text = stringResource(R.string.sources_add_new_playlist),
-                    onClick = onAddNew,
-                    variant = AreButtonVariant.Ghost,
+                    text = label,
+                    onClick = { viewModel.select(source.id, onSelected) },
+                    variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Large,
                     full = true,
-                    modifier = if (sources.isEmpty()) Modifier.focusRequester(firstItemFocus) else Modifier,
+                    onLongClick = { pendingDelete = source },
+                    modifier = if (index == 0) Modifier.focusRequester(firstItemFocus) else Modifier,
                 )
             }
+
+            Box(Modifier.height(8.dp))
+            AreButton(
+                text = stringResource(R.string.sources_add_new_playlist),
+                onClick = onAddNew,
+                variant = AreButtonVariant.Ghost,
+                size = AreButtonSize.Large,
+                full = true,
+                modifier = if (sources.isEmpty()) Modifier.focusRequester(firstItemFocus) else Modifier,
+            )
         }
     }
 

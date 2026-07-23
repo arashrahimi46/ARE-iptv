@@ -236,10 +236,12 @@ fun LivePlayerScreen(
     //    panel (focus moves inside); Back = leave the player.
     //  - panel OPEN: Left/Right/OK operate the controls; Up/Down still switch channel
     //    (they bubble up from the single control row); Back closes the panel.
-    // On a channel switch the panel also "flashes" info then auto-hides, but only while
+    // On a channel switch the panel "flashes" info then auto-hides, but only while
     // focus is still on the video (panelFocused == false) -- never while the user is
-    // actively navigating inside it.
-    var controlsVisible by remember { mutableStateOf(true) }
+    // actively navigating inside it. Starts HIDDEN on first open: the player begins
+    // fullscreen and the HUD appears only once the user presses something (Up/Down/OK/
+    // Left/Right all reveal it), rather than flashing unprompted on every entry.
+    var controlsVisible by remember { mutableStateOf(false) }
     var panelFocused by remember { mutableStateOf(false) }
     var interactionTick by remember { mutableStateOf(0) }
     // VOD scrub: the blue progress bar is a focusable control (movies/series only). The outer key
