@@ -21,6 +21,14 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Iptv">
+
+        <!-- Sentry crash/ANR reporting. The DSN is a public client ingest key (safe to ship in the
+             APK by design). auto-init is off so IptvApp.onCreate can tag release/environment via
+             SentryAndroid.init; the SDK still reads this DSN from here. -->
+        <meta-data android:name="io.sentry.dsn"
+            android:value="https://9bb62839f8142cbc73cb39fe4185ff4c@o298398.ingest.us.sentry.io/4511785384869888" />
+        <meta-data android:name="io.sentry.auto-init" android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

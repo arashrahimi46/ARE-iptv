@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv
 
 import android.app.Application
+import io.sentry.android.core.SentryAndroid
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -32,6 +33,20 @@ class IptvApp : Application(), ImageLoaderFactory {
      */
     override fun onCreate() {
         super.onCreate()
+
+        // Sentry: DSN comes from the manifest; here we tag the build so issues group by release and
+        // debug crashes stay filterable from real ones. Captures unhandled crashes + ANRs by default.
+        SentryAndroid.init(this) { options ->
+            options.environment = if (BuildConfig.DEBUG) "debug" else "production"
+            // Log envelope traffic to logcat on debug builds only, so setup/wiring is verifiable.
+            options.isDebug = BuildConfig.DEBUG
+            options.release = "${BuildConfig.APPLICATION_ID}@${BuildConfig.VERSION_NAME}"
+            // Sample a fifth of transactions for performance monitoring without flooding the quota.
+            options.tracesSampleRate = 0.2
+            // TV app: attaching screenshots to events is heavy and rarely useful on a 10-foot UI.
+            options.isAttachScreenshot = false
+        }
+
         val crashReason = getString(R.string.recording_reason_crash)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
