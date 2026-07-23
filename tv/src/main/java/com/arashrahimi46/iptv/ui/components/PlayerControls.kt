@@ -3,6 +3,8 @@ package com.arashrahimi46.iptv.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,12 +51,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.Ink950
+import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
 /**
  * PlayerControls — glass transport HUD overlaid on live video / VOD
@@ -310,7 +317,10 @@ fun ArePlayerControls(
                         },
                     )
                 } else {
-                    StaticGlyph(Icons.Filled.FiberManualRecord, stringResource(R.string.recording_not_supported))
+                    // Not recordable (non-.ts / HLS-only source). Unlike other dimmed placeholders
+                    // this one is focusable, so landing on it reveals a hint explaining WHY -- users
+                    // otherwise read the dimmed dot as a bug (see report).
+                    DisabledHintGlyph(Icons.Filled.FiberManualRecord, stringResource(R.string.recording_not_supported))
                 }
                 // Live: a real button that minimizes to the in-app corner mini-player. Dimmed
                 // placeholder only when the controller isn't ready (onPictureInPicture == null).
@@ -341,6 +351,43 @@ private fun StaticGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, c
     val colors = AreIptvTheme.colors
     Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
         Icon(icon, contentDescription = contentDescription, tint = colors.textTertiary, modifier = Modifier.size(24.dp))
+    }
+}
+
+/** A dimmed but FOCUSABLE glyph that pops a one-line [hint] above itself while focused. For an
+ * affordance that's disabled for a real reason the user should understand (vs. not-built-yet), so
+ * D-pad landing on it explains the "why" instead of reading as a broken control. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun DisabledHintGlyph(icon: androidx.compose.ui.graphics.vector.ImageVector, hint: String) {
+    val colors = AreIptvTheme.colors
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    Box(contentAlignment = Alignment.Center) {
+        TvFocusable(
+            onClick = {},
+            interactionSource = interaction,
+            modifier = Modifier.size(52.dp),
+            shape = CircleShape,
+        ) { _, _ ->
+            Box(Modifier.fillMaxHeight().fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = hint, tint = colors.textTertiary, modifier = Modifier.size(24.dp))
+            }
+        }
+        if (focused) {
+            // Tooltip lifted above the button (offset in px; the glyph is 52dp tall).
+            Popup(alignment = Alignment.TopCenter, offset = IntOffset(0, -150)) {
+                Box(
+                    modifier = Modifier
+                        .background(Ink950.copy(alpha = 0.94f), RoundedCornerShape(AreIptvTheme.radius.md))
+                        .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.md))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                        .widthIn(max = 320.dp),
+                ) {
+                    Text(text = hint, style = AreIptvTheme.typography.caption, color = Color.White)
+                }
+            }
+        }
     }
 }
 
