@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Lähetä palautetta</string>
     <string name="settings_feedback_desc">Kerro, mitä voimme parantaa — se vie vain hetken.</string>
     <string name="settings_feedback_action">Anna palautetta</string>
+    <string name="settings_analytics_title">Käyttötilastot</string>
+    <string name="settings_analytics_desc">Jaa anonyymejä käyttötilastoja, jotta voimme parantaa sovellusta. Henkilötietoja ei kerätä.</string>
     <string name="feedback_title">Lähetä palautetta</string>
     <string name="feedback_subtitle">Palautteesi ohjaa sitä, mitä rakennamme seuraavaksi. Kiitos avustasi.</string>
     <string name="feedback_rating_label">Miten arvioisit sovelluksen?</string>

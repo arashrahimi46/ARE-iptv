@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Send feedback</string>
     <string name="settings_feedback_desc">Fortæl os, hvad vi kan forbedre — det tager et par sekunder.</string>
     <string name="settings_feedback_action">Giv feedback</string>
+    <string name="settings_analytics_title">Brugsstatistik</string>
+    <string name="settings_analytics_desc">Del anonym brugsstatistik for at hjælpe os med at forbedre appen. Der indsamles ingen personlige oplysninger.</string>
     <string name="feedback_title">Send feedback</string>
     <string name="feedback_subtitle">Din feedback former det, vi bygger næste gang. Tak for hjælpen.</string>
     <string name="feedback_rating_label">Hvordan vil du bedømme appen?</string>

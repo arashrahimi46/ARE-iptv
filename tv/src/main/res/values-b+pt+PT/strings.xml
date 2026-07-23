@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Enviar feedback</string>
     <string name="settings_feedback_desc">Diga-nos o que melhorar — demora apenas alguns segundos.</string>
     <string name="settings_feedback_action">Dar feedback</string>
+    <string name="settings_analytics_title">Análise de utilização</string>
+    <string name="settings_analytics_desc">Partilhe estatísticas de utilização anónimas para nos ajudar a melhorar a aplicação. Não são recolhidos dados pessoais.</string>
     <string name="feedback_title">Enviar feedback</string>
     <string name="feedback_subtitle">O seu feedback molda o que vamos criar a seguir. Obrigado pela ajuda.</string>
     <string name="feedback_rating_label">Como avaliaria a aplicação?</string>

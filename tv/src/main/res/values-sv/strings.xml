@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Skicka feedback</string>
     <string name="settings_feedback_desc">Berätta vad vi kan förbättra — det tar bara några sekunder.</string>
     <string name="settings_feedback_action">Ge feedback</string>
+    <string name="settings_analytics_title">Användningsstatistik</string>
+    <string name="settings_analytics_desc">Dela anonym användningsstatistik för att hjälpa oss att förbättra appen. Inga personuppgifter samlas in.</string>
     <string name="feedback_title">Skicka feedback</string>
     <string name="feedback_subtitle">Din feedback formar vad vi bygger härnäst. Tack för hjälpen.</string>
     <string name="feedback_rating_label">Hur skulle du betygsätta appen?</string>

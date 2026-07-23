@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.HighQuality
@@ -133,6 +134,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val isHardwareDecoding by viewModel.isHardwareDecoding.collectAsState()
     val isAutoplayNextEpisode by viewModel.isAutoplayNextEpisode.collectAsState()
     val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
+    val isAnalyticsEnabled by viewModel.isAnalyticsEnabled.collectAsState()
     val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
     val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
     // null = the PIN state hasn't loaded from DataStore yet. Until it resolves the PIN row and
@@ -561,6 +563,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Small,
                 )
+            }
+            SettingsRow(
+                icon = Icons.Filled.Analytics,
+                title = stringResource(R.string.settings_analytics_title),
+                desc = stringResource(R.string.settings_analytics_desc),
+            ) {
+                AreSwitch(checked = isAnalyticsEnabled, onCheckedChange = viewModel::setAnalyticsEnabled)
             }
         }
         }

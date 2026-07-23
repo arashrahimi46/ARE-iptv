@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Αποστολή σχολίων</string>
     <string name="settings_feedback_desc">Πείτε μας τι να βελτιώσουμε — παίρνει μόνο λίγα δευτερόλεπτα.</string>
     <string name="settings_feedback_action">Αφήστε σχόλια</string>
+    <string name="settings_analytics_title">Στατιστικά χρήσης</string>
+    <string name="settings_analytics_desc">Μοιραστείτε ανώνυμα στατιστικά χρήσης για να μας βοηθήσετε να βελτιώσουμε την εφαρμογή. Δεν συλλέγονται προσωπικά δεδομένα.</string>
     <string name="feedback_title">Αποστολή σχολίων</string>
     <string name="feedback_subtitle">Τα σχόλιά σας διαμορφώνουν αυτό που θα φτιάξουμε στη συνέχεια. Ευχαριστούμε για τη βοήθεια.</string>
     <string name="feedback_rating_label">Πώς θα βαθμολογούσατε την εφαρμογή;</string>

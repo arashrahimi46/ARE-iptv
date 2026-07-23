@@ -2,7 +2,10 @@ package com.arashrahimi46.iptv
 
 import android.app.Application
 import io.sentry.android.core.SentryAndroid
+import com.arashrahimi46.iptv.analytics.Analytics
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import coil.ImageLoader
+import kotlinx.coroutines.flow.first
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
@@ -47,8 +50,13 @@ class IptvApp : Application(), ImageLoaderFactory {
             options.isAttachScreenshot = false
         }
 
+        // Product analytics: dormant until google-services.json is added (see Analytics doc). Seed
+        // collection from the persisted opt-out before any screen/play event can fire.
+        Analytics.init(this, enabledInitially = true)
+
         val crashReason = getString(R.string.recording_reason_crash)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            runCatching { Analytics.setEnabled(UserSettings(this@IptvApp).isAnalyticsEnabled.first()) }
             runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
         }
     }

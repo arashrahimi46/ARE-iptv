@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Rəy göndərin</string>
     <string name="settings_feedback_desc">Nəyi yaxşılaşdırmağımızı bizə deyin — cəmi bir neçə saniyə çəkir.</string>
     <string name="settings_feedback_action">Rəy bildirin</string>
+    <string name="settings_analytics_title">İstifadə statistikası</string>
+    <string name="settings_analytics_desc">Tətbiqi təkmilləşdirməyimizə kömək etmək üçün anonim istifadə statistikasını paylaşın. Heç bir şəxsi məlumat toplanmır.</string>
     <string name="feedback_title">Rəy göndərin</string>
     <string name="feedback_subtitle">Rəyiniz növbəti addımlarımızı formalaşdırır. Kömək etdiyiniz üçün təşəkkürlər.</string>
     <string name="feedback_rating_label">Tətbiqi necə qiymətləndirərdiniz?</string>

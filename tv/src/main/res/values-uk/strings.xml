@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Надіслати відгук</string>
     <string name="settings_feedback_desc">Розкажіть, що покращити — це займе кілька секунд.</string>
     <string name="settings_feedback_action">Залишити відгук</string>
+    <string name="settings_analytics_title">Статистика використання</string>
+    <string name="settings_analytics_desc">Діліться анонімною статистикою використання, щоб допомогти нам покращити застосунок. Особисті дані не збираються.</string>
     <string name="feedback_title">Надіслати відгук</string>
     <string name="feedback_subtitle">Ваш відгук формує те, що ми створимо далі. Дякуємо за допомогу.</string>
     <string name="feedback_rating_label">Як би ви оцінили застосунок?</string>

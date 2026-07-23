@@ -258,6 +258,19 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                     )
                 }
             }
+            // Analytics: one play event per resolved media -- answers "which channels/titles get
+            // watched most". Coarse type bucket + name + category; no-ops when analytics is off.
+            if (media != null) {
+                val type = when (source) {
+                    is PlaybackSource.Channel -> "live"
+                    is PlaybackSource.Vod -> "vod"
+                    is PlaybackSource.Episode -> "episode"
+                    is PlaybackSource.LocalRecording -> "recording"
+                    is PlaybackSource.DirectStream -> "direct"
+                }
+                com.arashrahimi46.iptv.analytics.Analytics.logPlay(type, media.title, media.subtitle)
+            }
+
             // Resolve the favoritable target for whatever resolved: a channel favorites the channel;
             // a movie/series favorites the VOD title; an episode favorites its parent series.
             val (favoriteId, favoriteType) = if (media == null) {

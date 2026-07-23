@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Geri bildirim gönder</string>
     <string name="settings_feedback_desc">Neyi iyileştirmemiz gerektiğini söyleyin — yalnızca birkaç saniye sürer.</string>
     <string name="settings_feedback_action">Geri bildirimde bulun</string>
+    <string name="settings_analytics_title">Kullanım istatistikleri</string>
+    <string name="settings_analytics_desc">Uygulamayı geliştirmemize yardımcı olmak için anonim kullanım istatistiklerini paylaşın. Kişisel veri toplanmaz.</string>
     <string name="feedback_title">Geri bildirim gönder</string>
     <string name="feedback_subtitle">Geri bildiriminiz bundan sonra ne geliştireceğimizi şekillendirir. Yardımınız için teşekkürler.</string>
     <string name="feedback_rating_label">Uygulamayı nasıl değerlendirirsiniz?</string>

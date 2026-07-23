@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Feedback senden</string>
     <string name="settings_feedback_desc">Sagen Sie uns, was wir verbessern können — es dauert nur ein paar Sekunden.</string>
     <string name="settings_feedback_action">Feedback geben</string>
+    <string name="settings_analytics_title">Nutzungsstatistik</string>
+    <string name="settings_analytics_desc">Teile anonyme Nutzungsstatistiken, um uns bei der Verbesserung der App zu helfen. Es werden keine personenbezogenen Daten erfasst.</string>
     <string name="feedback_title">Feedback senden</string>
     <string name="feedback_subtitle">Ihr Feedback bestimmt, was wir als Nächstes entwickeln. Danke für Ihre Hilfe.</string>
     <string name="feedback_rating_label">Wie würden Sie die App bewerten?</string>

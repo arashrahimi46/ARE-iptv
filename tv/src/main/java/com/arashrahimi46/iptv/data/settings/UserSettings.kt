@@ -44,6 +44,7 @@ class UserSettings(private val context: Context) {
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
         val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
+        val ANALYTICS_ENABLED = booleanPreferencesKey("analytics_enabled")
         val OPENSUBS_CRED = stringPreferencesKey("opensubs_cred")
         val SUBTITLE_LANGUAGE = stringPreferencesKey("subtitle_language")
         val OPENSUBS_U = stringPreferencesKey("opensubs_u")
@@ -101,6 +102,10 @@ class UserSettings(private val context: Context) {
 
     /** First-run Privacy & Terms acceptance (Issue #11) -- false until the user explicitly accepts once. */
     val hasAcceptedTerms: Flow<Boolean> = context.dataStore.data.map { it[Keys.TERMS_ACCEPTED] ?: false }
+
+    /** Anonymous usage analytics (Firebase/GA4) opt-out; on by default, a Settings switch flips it.
+     * Read once at startup to seed [com.arashrahimi46.iptv.analytics.Analytics] collection state. */
+    val isAnalyticsEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.ANALYTICS_ENABLED] ?: true }
 
     /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
     val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
@@ -231,6 +236,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setTermsAccepted(accepted: Boolean) {
         context.dataStore.edit { it[Keys.TERMS_ACCEPTED] = accepted }
+    }
+
+    suspend fun setAnalyticsEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.ANALYTICS_ENABLED] = enabled }
     }
 
     suspend fun setHomeLayout(sections: List<HomeSection>) {

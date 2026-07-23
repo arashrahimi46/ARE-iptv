@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Изпратете отзив</string>
     <string name="settings_feedback_desc">Кажете ни какво да подобрим — отнема няколко секунди.</string>
     <string name="settings_feedback_action">Дайте отзив</string>
+    <string name="settings_analytics_title">Статистика на използването</string>
+    <string name="settings_analytics_desc">Споделяйте анонимна статистика за използване, за да ни помогнете да подобрим приложението. Не се събират лични данни.</string>
     <string name="feedback_title">Изпратете отзив</string>
     <string name="feedback_subtitle">Вашият отзив определя какво ще създадем след това. Благодарим за помощта.</string>
     <string name="feedback_rating_label">Как бихте оценили приложението?</string>

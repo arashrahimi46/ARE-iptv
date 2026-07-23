@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Visszajelzés küldése</string>
     <string name="settings_feedback_desc">Mondja el, mit javítsunk — csak pár másodperc.</string>
     <string name="settings_feedback_action">Visszajelzés adása</string>
+    <string name="settings_analytics_title">Használati statisztika</string>
+    <string name="settings_analytics_desc">Ossz meg anonim használati statisztikákat, hogy segíts nekünk fejleszteni az alkalmazást. Nem gyűjtünk személyes adatokat.</string>
     <string name="feedback_title">Visszajelzés küldése</string>
     <string name="feedback_subtitle">Visszajelzése alakítja, mit fejlesztünk legközelebb. Köszönjük a segítséget.</string>
     <string name="feedback_rating_label">Hogyan értékelné az alkalmazást?</string>

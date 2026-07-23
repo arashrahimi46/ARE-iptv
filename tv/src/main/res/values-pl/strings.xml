@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Wyślij opinię</string>
     <string name="settings_feedback_desc">Powiedz nam, co ulepszyć — to zajmie kilka sekund.</string>
     <string name="settings_feedback_action">Prześlij opinię</string>
+    <string name="settings_analytics_title">Statystyki użytkowania</string>
+    <string name="settings_analytics_desc">Udostępniaj anonimowe statystyki użytkowania, aby pomóc nam ulepszać aplikację. Nie zbieramy żadnych danych osobowych.</string>
     <string name="feedback_title">Wyślij opinię</string>
     <string name="feedback_subtitle">Twoja opinia kształtuje to, co stworzymy dalej. Dziękujemy za pomoc.</string>
     <string name="feedback_rating_label">Jak oceniasz aplikację?</string>

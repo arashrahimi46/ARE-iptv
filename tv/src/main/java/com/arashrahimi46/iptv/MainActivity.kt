@@ -359,6 +359,8 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     val backStackEntry by innerNav.currentBackStackEntryAsState()
     // Route pattern -> base id (e.g. "search?category={category}" -> "search").
     val activeNav = (backStackEntry?.destination?.route ?: "home").substringBefore("?")
+    // Analytics: log the tab the user landed on -- answers "which part of the app they go to".
+    LaunchedEffect(activeNav) { com.arashrahimi46.iptv.analytics.Analytics.logScreen(activeNav) }
     val context = LocalContext.current
     val activity = context as? Activity
     var showExitDialog by remember { mutableStateOf(false) }

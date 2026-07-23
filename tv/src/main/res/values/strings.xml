@@ -222,6 +222,8 @@
     <string name="settings_feedback_title">Send feedback</string>
     <string name="settings_feedback_desc">Tell us what to improve — it takes a few seconds.</string>
     <string name="settings_feedback_action">Give feedback</string>
+    <string name="settings_analytics_title">Usage analytics</string>
+    <string name="settings_analytics_desc">Share anonymous usage stats to help us improve the app. No personal data is collected.</string>
 
     <!-- Feedback dialog -->
     <string name="feedback_title">Send feedback</string>

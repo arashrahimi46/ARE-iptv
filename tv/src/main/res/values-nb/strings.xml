@@ -196,6 +196,8 @@
     <string name="settings_feedback_title">Send tilbakemelding</string>
     <string name="settings_feedback_desc">Fortell oss hva vi kan forbedre — det tar noen sekunder.</string>
     <string name="settings_feedback_action">Gi tilbakemelding</string>
+    <string name="settings_analytics_title">Bruksstatistikk</string>
+    <string name="settings_analytics_desc">Del anonym bruksstatistikk for å hjelpe oss med å forbedre appen. Ingen personopplysninger samles inn.</string>
     <string name="feedback_title">Send tilbakemelding</string>
     <string name="feedback_subtitle">Tilbakemeldingen din former det vi bygger videre. Takk for hjelpen.</string>
     <string name="feedback_rating_label">Hvordan vil du vurdere appen?</string>
