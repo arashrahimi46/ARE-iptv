@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Lascia un feedback</string>
     <string name="settings_analytics_title">Statistiche di utilizzo</string>
     <string name="settings_analytics_desc">Condividi statistiche di utilizzo anonime per aiutarci a migliorare l\'app. Non vengono raccolti dati personali.</string>
+    <string name="settings_recording_indicator_title">Indicatore di registrazione</string>
+    <string name="settings_recording_indicator_desc">Mostra un badge REC lampeggiante nel lettore durante una registrazione.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Riconnessione…</string>
     <string name="feedback_title">Invia un feedback</string>
     <string name="feedback_subtitle">Il tuo feedback plasma ciò che creeremo dopo. Grazie per l\'aiuto.</string>
     <string name="feedback_rating_label">Come valuteresti l\'app?</string>

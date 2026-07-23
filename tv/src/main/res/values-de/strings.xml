@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Feedback geben</string>
     <string name="settings_analytics_title">Nutzungsstatistik</string>
     <string name="settings_analytics_desc">Teile anonyme Nutzungsstatistiken, um uns bei der Verbesserung der App zu helfen. Es werden keine personenbezogenen Daten erfasst.</string>
+    <string name="settings_recording_indicator_title">Aufnahmeanzeige</string>
+    <string name="settings_recording_indicator_desc">Ein pulsierendes REC-Symbol im Player anzeigen, während eine Aufnahme läuft.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Verbindung wird wiederhergestellt…</string>
     <string name="feedback_title">Feedback senden</string>
     <string name="feedback_subtitle">Ihr Feedback bestimmt, was wir als Nächstes entwickeln. Danke für Ihre Hilfe.</string>
     <string name="feedback_rating_label">Wie würden Sie die App bewerten?</string>

@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Dar tu opinión</string>
     <string name="settings_analytics_title">Estadísticas de uso</string>
     <string name="settings_analytics_desc">Comparte estadísticas de uso anónimas para ayudarnos a mejorar la app. No se recopilan datos personales.</string>
+    <string name="settings_recording_indicator_title">Indicador de grabación</string>
+    <string name="settings_recording_indicator_desc">Muestra una insignia REC parpadeante en el reproductor mientras se graba.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Reconectando…</string>
     <string name="feedback_title">Enviar comentarios</string>
     <string name="feedback_subtitle">Tus comentarios definen lo que crearemos a continuación. Gracias por ayudar.</string>
     <string name="feedback_rating_label">¿Cómo valorarías la aplicación?</string>

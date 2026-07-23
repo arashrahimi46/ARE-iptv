@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Оставить отзыв</string>
     <string name="settings_analytics_title">Статистика использования</string>
     <string name="settings_analytics_desc">Делитесь анонимной статистикой использования, чтобы помочь нам улучшить приложение. Личные данные не собираются.</string>
+    <string name="settings_recording_indicator_title">Индикатор записи</string>
+    <string name="settings_recording_indicator_desc">Показывать пульсирующий значок REC в плеере во время записи.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Переподключение…</string>
     <string name="feedback_title">Отправить отзыв</string>
     <string name="feedback_subtitle">Ваш отзыв определяет, что мы создадим дальше. Спасибо за помощь.</string>
     <string name="feedback_rating_label">Как бы вы оценили приложение?</string>

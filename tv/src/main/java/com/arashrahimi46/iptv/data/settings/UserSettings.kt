@@ -45,6 +45,7 @@ class UserSettings(private val context: Context) {
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
         val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
         val ANALYTICS_ENABLED = booleanPreferencesKey("analytics_enabled")
+        val RECORDING_INDICATOR = booleanPreferencesKey("recording_indicator")
         val OPENSUBS_CRED = stringPreferencesKey("opensubs_cred")
         val SUBTITLE_LANGUAGE = stringPreferencesKey("subtitle_language")
         val OPENSUBS_U = stringPreferencesKey("opensubs_u")
@@ -106,6 +107,10 @@ class UserSettings(private val context: Context) {
     /** Anonymous usage analytics (Firebase/GA4) opt-out; on by default, a Settings switch flips it.
      * Read once at startup to seed [com.arashrahimi46.iptv.analytics.Analytics] collection state. */
     val isAnalyticsEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.ANALYTICS_ENABLED] ?: true }
+
+    /** Show the pulsing "REC" badge in the player HUD while recording; on by default (see
+     * [com.arashrahimi46.iptv.ui.components.RecordingIndicator]). */
+    val isRecordingIndicatorEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.RECORDING_INDICATOR] ?: true }
 
     /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
     val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
@@ -240,6 +245,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setAnalyticsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[Keys.ANALYTICS_ENABLED] = enabled }
+    }
+
+    suspend fun setRecordingIndicatorEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.RECORDING_INDICATOR] = enabled }
     }
 
     suspend fun setHomeLayout(sections: List<HomeSection>) {

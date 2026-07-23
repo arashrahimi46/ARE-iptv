@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Feedback geven</string>
     <string name="settings_analytics_title">Gebruiksstatistieken</string>
     <string name="settings_analytics_desc">Deel anonieme gebruiksstatistieken om ons te helpen de app te verbeteren. Er worden geen persoonlijke gegevens verzameld.</string>
+    <string name="settings_recording_indicator_title">Opname-indicator</string>
+    <string name="settings_recording_indicator_desc">Toon een pulserende REC-badge in de speler tijdens een opname.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Opnieuw verbinden…</string>
     <string name="feedback_title">Feedback verzenden</string>
     <string name="feedback_subtitle">Jouw feedback bepaalt wat we hierna maken. Bedankt voor je hulp.</string>
     <string name="feedback_rating_label">Hoe zou je de app beoordelen?</string>

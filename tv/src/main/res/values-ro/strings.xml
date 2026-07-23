@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Oferă feedback</string>
     <string name="settings_analytics_title">Statistici de utilizare</string>
     <string name="settings_analytics_desc">Partajează statistici de utilizare anonime pentru a ne ajuta să îmbunătățim aplicația. Nu se colectează date personale.</string>
+    <string name="settings_recording_indicator_title">Indicator de înregistrare</string>
+    <string name="settings_recording_indicator_desc">Afișează o insignă REC pulsatorie în player în timpul unei înregistrări.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Reconectare…</string>
     <string name="feedback_title">Trimite feedback</string>
     <string name="feedback_subtitle">Feedbackul tău modelează ce vom construi în continuare. Mulțumim pentru ajutor.</string>
     <string name="feedback_rating_label">Cum ai evalua aplicația?</string>

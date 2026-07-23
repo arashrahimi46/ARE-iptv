@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Giv feedback</string>
     <string name="settings_analytics_title">Brugsstatistik</string>
     <string name="settings_analytics_desc">Del anonym brugsstatistik for at hjælpe os med at forbedre appen. Der indsamles ingen personlige oplysninger.</string>
+    <string name="settings_recording_indicator_title">Optageindikator</string>
+    <string name="settings_recording_indicator_desc">Vis et pulserende REC-mærke i afspilleren, mens der optages.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Genopretter forbindelse…</string>
     <string name="feedback_title">Send feedback</string>
     <string name="feedback_subtitle">Din feedback former det, vi bygger næste gang. Tak for hjælpen.</string>
     <string name="feedback_rating_label">Hvordan vil du bedømme appen?</string>

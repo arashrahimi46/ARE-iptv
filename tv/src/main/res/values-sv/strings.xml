@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Ge feedback</string>
     <string name="settings_analytics_title">Användningsstatistik</string>
     <string name="settings_analytics_desc">Dela anonym användningsstatistik för att hjälpa oss att förbättra appen. Inga personuppgifter samlas in.</string>
+    <string name="settings_recording_indicator_title">Inspelningsindikator</string>
+    <string name="settings_recording_indicator_desc">Visa ett pulserande REC-märke i spelaren under en inspelning.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Återansluter…</string>
     <string name="feedback_title">Skicka feedback</string>
     <string name="feedback_subtitle">Din feedback formar vad vi bygger härnäst. Tack för hjälpen.</string>
     <string name="feedback_rating_label">Hur skulle du betygsätta appen?</string>

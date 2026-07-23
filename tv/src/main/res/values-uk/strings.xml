@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Залишити відгук</string>
     <string name="settings_analytics_title">Статистика використання</string>
     <string name="settings_analytics_desc">Діліться анонімною статистикою використання, щоб допомогти нам покращити застосунок. Особисті дані не збираються.</string>
+    <string name="settings_recording_indicator_title">Індикатор запису</string>
+    <string name="settings_recording_indicator_desc">Показувати пульсуючий значок REC у плеєрі під час запису.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Повторне підключення…</string>
     <string name="feedback_title">Надіслати відгук</string>
     <string name="feedback_subtitle">Ваш відгук формує те, що ми створимо далі. Дякуємо за допомогу.</string>
     <string name="feedback_rating_label">Як би ви оцінили застосунок?</string>

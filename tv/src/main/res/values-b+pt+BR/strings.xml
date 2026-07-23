@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Dar feedback</string>
     <string name="settings_analytics_title">Análise de uso</string>
     <string name="settings_analytics_desc">Compartilhe estatísticas de uso anônimas para nos ajudar a melhorar o app. Nenhum dado pessoal é coletado.</string>
+    <string name="settings_recording_indicator_title">Indicador de gravação</string>
+    <string name="settings_recording_indicator_desc">Mostrar um selo REC pulsante no player durante uma gravação.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Reconectando…</string>
     <string name="feedback_title">Enviar feedback</string>
     <string name="feedback_subtitle">Seu feedback molda o que vamos criar a seguir. Obrigado pela ajuda.</string>
     <string name="feedback_rating_label">Como você avaliaria o app?</string>

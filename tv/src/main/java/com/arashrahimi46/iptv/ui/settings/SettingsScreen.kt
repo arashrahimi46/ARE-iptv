@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -135,6 +136,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val isAutoplayNextEpisode by viewModel.isAutoplayNextEpisode.collectAsState()
     val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
     val isAnalyticsEnabled by viewModel.isAnalyticsEnabled.collectAsState()
+    val isRecordingIndicatorEnabled by viewModel.isRecordingIndicatorEnabled.collectAsState()
     val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
     val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
     // null = the PIN state hasn't loaded from DataStore yet. Until it resolves the PIN row and
@@ -311,6 +313,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                         )
                     }
                 }
+            }
+            SettingsRow(
+                icon = Icons.Filled.FiberManualRecord,
+                title = stringResource(R.string.settings_recording_indicator_title),
+                desc = stringResource(R.string.settings_recording_indicator_desc),
+            ) {
+                AreSwitch(checked = isRecordingIndicatorEnabled, onCheckedChange = viewModel::setRecordingIndicatorEnabled)
             }
         }
         }

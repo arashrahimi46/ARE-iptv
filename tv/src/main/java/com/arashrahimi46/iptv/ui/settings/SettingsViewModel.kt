@@ -82,6 +82,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
     val isAnalyticsEnabled: StateFlow<Boolean> = flowState(settings.isAnalyticsEnabled, true)
+    val isRecordingIndicatorEnabled: StateFlow<Boolean> = flowState(settings.isRecordingIndicatorEnabled, true)
     /** Nullable so "not yet loaded" (null) is distinct from "loaded, no PIN set" (false) --
      * the Settings screen gates the PIN row / lock toggle until this resolves so a fast tap
      * during the initial async DataStore read can't route to a no-verify PIN-set flow. */
@@ -129,6 +130,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setMiniPlayerBehavior(choice: MiniPlayerBehavior) = viewModelScope.launch { settings.setMiniPlayerBehavior(choice) }
 
     fun setBrowseListMode(enabled: Boolean) = viewModelScope.launch { settings.setBrowseListMode(enabled) }
+
+    fun setRecordingIndicatorEnabled(enabled: Boolean) = viewModelScope.launch { settings.setRecordingIndicatorEnabled(enabled) }
 
     /** Persist the analytics opt-out AND flip live collection so it takes effect without a restart. */
     fun setAnalyticsEnabled(enabled: Boolean) = viewModelScope.launch {

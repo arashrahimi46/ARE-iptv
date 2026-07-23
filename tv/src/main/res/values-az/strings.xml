@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Rəy bildirin</string>
     <string name="settings_analytics_title">İstifadə statistikası</string>
     <string name="settings_analytics_desc">Tətbiqi təkmilləşdirməyimizə kömək etmək üçün anonim istifadə statistikasını paylaşın. Heç bir şəxsi məlumat toplanmır.</string>
+    <string name="settings_recording_indicator_title">Yazı göstəricisi</string>
+    <string name="settings_recording_indicator_desc">Yazı gedərkən pleyerdə yanıb-sönən REC nişanı göstərin.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Yenidən qoşulur…</string>
     <string name="feedback_title">Rəy göndərin</string>
     <string name="feedback_subtitle">Rəyiniz növbəti addımlarımızı formalaşdırır. Kömək etdiyiniz üçün təşəkkürlər.</string>
     <string name="feedback_rating_label">Tətbiqi necə qiymətləndirərdiniz?</string>

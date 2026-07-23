@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Prześlij opinię</string>
     <string name="settings_analytics_title">Statystyki użytkowania</string>
     <string name="settings_analytics_desc">Udostępniaj anonimowe statystyki użytkowania, aby pomóc nam ulepszać aplikację. Nie zbieramy żadnych danych osobowych.</string>
+    <string name="settings_recording_indicator_title">Wskaźnik nagrywania</string>
+    <string name="settings_recording_indicator_desc">Pokazuj pulsującą plakietkę REC w odtwarzaczu podczas nagrywania.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Ponowne łączenie…</string>
     <string name="feedback_title">Wyślij opinię</string>
     <string name="feedback_subtitle">Twoja opinia kształtuje to, co stworzymy dalej. Dziękujemy za pomoc.</string>
     <string name="feedback_rating_label">Jak oceniasz aplikację?</string>

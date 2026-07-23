@@ -198,6 +198,10 @@
     <string name="settings_feedback_action">Zanechat zpětnou vazbu</string>
     <string name="settings_analytics_title">Statistiky používání</string>
     <string name="settings_analytics_desc">Sdílejte anonymní statistiky používání a pomozte nám vylepšit aplikaci. Nesbíráme žádné osobní údaje.</string>
+    <string name="settings_recording_indicator_title">Indikátor nahrávání</string>
+    <string name="settings_recording_indicator_desc">Zobrazovat pulzující odznak REC v přehrávači během nahrávání.</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">Opětovné připojování…</string>
     <string name="feedback_title">Odeslat zpětnou vazbu</string>
     <string name="feedback_subtitle">Vaše zpětná vazba utváří to, co vytvoříme dál. Děkujeme za pomoc.</string>
     <string name="feedback_rating_label">Jak byste aplikaci ohodnotili?</string>
