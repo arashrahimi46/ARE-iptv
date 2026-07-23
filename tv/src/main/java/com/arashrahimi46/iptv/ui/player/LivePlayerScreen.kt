@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.runtime.Composable
@@ -49,6 +49,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
@@ -762,7 +763,7 @@ fun LivePlayerScreen(
                 AnimatedVisibility(visible = controlsVisible, enter = fadeIn(), exit = fadeOut()) {
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     AreIconButton(
-                        icon = Icons.Filled.ArrowBack,
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.action_back),
                         onClick = handleBack,
                         variant = AreIconButtonVariant.Glass,
@@ -846,6 +847,15 @@ fun LivePlayerScreen(
                         onOpenGuide = onOpenGuide,
                         onUpNext = { showUpNext = true },
                         onMultiView = onMultiView,
+                        // Add-to-multi-view: live channels only (movies/series don't belong there).
+                        onAddToMultiView = if (media.isLive && state.currentChannelId != null) {
+                            {
+                                viewModel.addCurrentChannelToMultiView()
+                                Toast.makeText(context, context.getString(R.string.multiview_added_toast), Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            null
+                        },
                         isFavorite = state.isFavorite,
                         onToggleFavorite = if (state.favoriteContentType != null) {
                             { viewModel.toggleFavorite() }
@@ -1046,7 +1056,7 @@ private fun PlayerErrorState(
         Box(Modifier.padding(top = 20.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AreIconButton(
-                icon = Icons.Filled.ArrowBack,
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.action_back),
                 onClick = onBack,
                 variant = AreIconButtonVariant.Solid,

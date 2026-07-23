@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ViewColumn
 import androidx.compose.runtime.Composable
@@ -31,15 +36,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
@@ -47,10 +55,12 @@ import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
+import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.player.StreamRetryPolicy
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
@@ -58,21 +68,22 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import kotlinx.coroutines.delay
 
 /**
- * MultiView -- 2-up/4-up simultaneous live streams, one active (audio) pane
- * (MultiView.jsx). Full-bleed overlay, own NavHost destination outside
- * [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell], reachable from the app
- * shell's top-bar multi-view button and the in-player transport HUD's
- * multi-view button (both previously wired as no-ops -- see report).
+ * MultiView -- 2-up/4-up simultaneous live streams, one active (audio) pane.
+ * The panes are a curated, persistent list of live channels the user explicitly
+ * added (from the live player's "add to multi-view", or an empty slot's "+"
+ * picker here); never an auto-filled catalog slice. Own NavHost destination
+ * outside [com.arashrahimi46.iptv.ui.shell.AreIptvAppShell].
  *
- * Each pane is a real Media3/ExoPlayer instance (never the design source's
- * static mock panes): all panes play simultaneously, only the active pane's
- * audio is unmuted, tapping/selecting a pane makes it active.
+ * Each filled pane is a real Media3/ExoPlayer instance: all panes play
+ * simultaneously, only the active pane's audio is unmuted. OK on a pane makes it
+ * active (audio); long-press removes it from multi-view.
  */
 @Composable
 fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: MultiViewViewModel = viewModel(factory = MultiViewViewModel.factory(context.applicationContext as android.app.Application))
     val state by viewModel.uiState.collectAsState()
+    var pickerOpen by remember { mutableStateOf(false) }
 
     BackHandler(onBack = onBack)
 
@@ -83,7 +94,7 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
-                AreIconButton(Icons.Filled.ArrowBack, stringResource(R.string.action_back), onClick = onBack, variant = AreIconButtonVariant.Glass)
+                AreIconButton(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.action_back), onClick = onBack, variant = AreIconButtonVariant.Glass)
                 Text(text = stringResource(R.string.multiview_title), style = AreIptvTheme.typography.h2, color = Color.White)
                 Box(Modifier.weight(1f))
                 AreChip(
@@ -100,38 +111,132 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 )
             }
 
-            val panes = state.panes
-            if (!state.hasSource || panes.isEmpty()) {
+            if (!state.hasSource) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = if (!state.hasSource) stringResource(R.string.multiview_no_source) else stringResource(R.string.multiview_no_channels),
+                        text = stringResource(R.string.multiview_no_source),
                         style = AreIptvTheme.typography.body,
                         color = AreIptvTheme.colors.textSecondary,
                     )
                 }
             } else {
+                // Always render exactly [paneCount] slots -- a slot with no curated channel yet
+                // shows a "+" placeholder that opens the picker, so the grid is never blank and
+                // there's always a way in. Slot index = audio/active index target.
+                val slots: List<Channel?> = List(state.paneCount) { state.panes.getOrNull(it) }
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 28.dp, vertical = 0.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxSize().padding(start = 28.dp, end = 28.dp, bottom = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    val rows = panes.chunked(2)
-                    rows.forEach { row ->
+                    slots.chunked(2).forEachIndexed { rowIdx, row ->
                         Row(
-                            modifier = Modifier.weight(1f).padding(bottom = 18.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
-                            row.forEach { channel ->
-                                val index = panes.indexOf(channel)
-                                MultiViewPane(
-                                    channel = channel,
-                                    active = index == state.activeIndex,
-                                    onClick = { viewModel.setActive(index) },
-                                    modifier = Modifier.weight(1f).fillMaxSize(),
-                                )
+                            row.forEachIndexed { colIdx, channel ->
+                                val index = rowIdx * 2 + colIdx
+                                if (channel != null) {
+                                    MultiViewPane(
+                                        channel = channel,
+                                        active = index == state.activeIndex,
+                                        onClick = { viewModel.setActive(index) },
+                                        onRemove = { viewModel.removeChannel(channel.id) },
+                                        modifier = Modifier.weight(1f).fillMaxSize(),
+                                    )
+                                } else {
+                                    EmptyPaneSlot(
+                                        onClick = { pickerOpen = true },
+                                        modifier = Modifier.weight(1f).fillMaxSize(),
+                                    )
+                                }
                             }
-                            // A lone odd-one-out pane (e.g. 3rd of 4 when only 3 channels exist)
-                            // still gets an even split rather than stretching to fill the row alone.
-                            if (row.size == 1) Box(Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
+
+        if (pickerOpen) {
+            ChannelPickerDialog(
+                candidates = state.pickerCandidates,
+                onPick = { viewModel.addChannel(it); pickerOpen = false },
+                onDismiss = { pickerOpen = false },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun EmptyPaneSlot(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    TvFocusable(
+        onClick = onClick,
+        modifier = modifier,
+        shape = shape,
+        glowColor = colors.accent,
+        backgroundColor = colors.surface1,
+        borderColor = colors.borderDefault,
+        disableScale = true,
+    ) { _, _ ->
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = null, tint = colors.textSecondary, modifier = Modifier.size(40.dp))
+            Box(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.multiview_add_channel),
+                style = AreIptvTheme.typography.body,
+                color = colors.textSecondary,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChannelPickerDialog(candidates: List<Channel>, onPick: (Channel) -> Unit, onDismiss: () -> Unit) {
+    val colors = AreIptvTheme.colors
+    var query by remember { mutableStateOf("") }
+    val filtered = remember(query, candidates) {
+        if (query.isBlank()) candidates else candidates.filter { it.name.contains(query.trim(), ignoreCase = true) }
+    }
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = stringResource(R.string.multiview_add_to),
+            width = 560.dp,
+        ) {
+            // activateOnClick: on TV the channel list is the primary content -- an auto-popping IME
+            // would bury it. The field is a focusable row; OK opens the keyboard, D-pad-down drops
+            // straight into the list.
+            AreTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = stringResource(R.string.action_search),
+                activateOnClick = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Box(Modifier.height(12.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(filtered, key = { it.id }) { channel ->
+                    TvFocusable(
+                        onClick = { onPick(channel) },
+                        modifier = Modifier.fillMaxWidth(),
+                        glowColor = colors.accent,
+                        backgroundColor = colors.surface1,
+                        borderColor = colors.borderDefault,
+                    ) { _, _ ->
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                            Text(channel.name, style = AreIptvTheme.typography.body, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            if (channel.categoryName != null) {
+                                Text(channel.categoryName, style = AreIptvTheme.typography.caption, color = colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
                         }
                     }
                 }
@@ -141,7 +246,7 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit, onRemove: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val colors = AreIptvTheme.colors
     // P0.1: the pane was previously a dead end on failure -- a static red dot, no recovery.
@@ -220,14 +325,16 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
     }
 
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
-    // Fill the grid cell (which is already sized by the row/column weights) instead of
-    // forcing a 16:9 aspect ratio -- the 16:9 height exceeded the cell height and made
-    // panes overflow and OVERLAP each other. The PlayerView letterboxes the video inside.
+    // Fill the grid cell (already sized by the row/column weights). disableScale: these big panes
+    // sit in a tight 2x2 grid, so a 6% focus-scale grew them into their neighbours (the reported
+    // clipping) -- the ring + glow alone are the focus indicator here. Long-press removes the pane.
     TvFocusable(
         onClick = onClick,
+        onLongClick = onRemove,
         modifier = modifier,
         shape = shape,
         glowColor = colors.accent,
+        disableScale = true,
     ) { _, _ ->
         Box(
             Modifier

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddToQueue
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
@@ -30,10 +31,13 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -85,6 +89,9 @@ fun ArePlayerControls(
     // Multi-view is temporarily disabled (feature not ready) -- the param stays so the button
     // can be re-enabled later without re-plumbing; it is simply not rendered for now.
     onMultiView: () -> Unit = {},
+    /** Adds the current live channel to the multi-view list. Null for VOD (movies/series have no
+     * place in multi-view) -- the button is then not rendered. */
+    onAddToMultiView: (() -> Unit)? = null,
     /** Favorite state of whatever is playing; null hides the favorite affordance entirely. */
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
@@ -108,6 +115,10 @@ fun ArePlayerControls(
 ) {
     val colors = AreIptvTheme.colors
 
+    // The transport HUD stays LTR in every locale: rewind/play/fast-forward and the seek bar are
+    // media-transport conventions, not reading-order layout, so mirroring them (RTL locales) reads
+    // wrong. Pin the whole control surface to LTR; subtitle/title TEXT still shapes RTL via bidi.
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -274,7 +285,11 @@ fun ArePlayerControls(
                 if (onPictureInPicture != null) {
                     AreIconButton(Icons.Filled.PictureInPicture, stringResource(R.string.player_minimize_to_corner), onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
                 } else {
-                    StaticGlyph(Icons.Filled.PictureInPicture, stringResource(R.string.player_picture_in_picture))
+                    StaticGlyph(Icons.Filled.PictureInPicture, stringResource(R.string.player_mini_player))
+                }
+                // Add this live channel to multi-view (live-only -- movies/series have no place there).
+                if (onAddToMultiView != null) {
+                    AreIconButton(Icons.Filled.AddToQueue, stringResource(R.string.multiview_add_to), onClick = onAddToMultiView, variant = AreIconButtonVariant.Glass)
                 }
                 // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
                 // guide" (which leaves the player for the full multi-channel TV Guide).
@@ -282,6 +297,7 @@ fun ArePlayerControls(
                 AreIconButton(Icons.Filled.GridView, stringResource(R.string.player_open_guide), onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
             }
         }
+    }
     }
 }
 

@@ -56,6 +56,9 @@ class UserSettings(private val context: Context) {
         val LANGUAGE_CHOSEN = booleanPreferencesKey("language_chosen")
         /** Pinned category names, namespaced per browse screen (see [pinnedCategoriesKey]). */
         fun pinnedCategoriesKey(namespace: String) = stringSetPreferencesKey("pinned_categories_$namespace")
+
+        /** Curated multi-view channel ids, per source (see [multiViewChannelIds]). */
+        fun multiViewChannelsKey(sourceId: Long) = stringPreferencesKey("multiview_channels_$sourceId")
     }
 
     val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
@@ -259,4 +262,33 @@ class UserSettings(private val context: Context) {
             prefs[key] = if (name in current) current - name else current + name
         }
     }
+
+    /**
+     * Multi-view is a curated, persistent list of live channels the user explicitly added --
+     * per source, in insertion order (oldest first) so a full list evicts FIFO. Stored as a CSV
+     * of channel ids; see [com.arashrahimi46.iptv.ui.multiview.MultiViewViewModel].
+     */
+    fun multiViewChannelIds(sourceId: Long): Flow<List<Long>> =
+        context.dataStore.data.map { it[Keys.multiViewChannelsKey(sourceId)].parseIdCsv() }
+
+    /** Append [channelId] (no duplicates); when already at [max], evict the oldest (FIFO). */
+    suspend fun addMultiViewChannel(sourceId: Long, channelId: Long, max: Int) {
+        context.dataStore.edit { prefs ->
+            val key = Keys.multiViewChannelsKey(sourceId)
+            val current = prefs[key].parseIdCsv()
+            if (channelId in current) return@edit
+            val next = (current + channelId).let { if (it.size > max) it.takeLast(max) else it }
+            prefs[key] = next.joinToString(",")
+        }
+    }
+
+    suspend fun removeMultiViewChannel(sourceId: Long, channelId: Long) {
+        context.dataStore.edit { prefs ->
+            val key = Keys.multiViewChannelsKey(sourceId)
+            prefs[key] = prefs[key].parseIdCsv().filterNot { it == channelId }.joinToString(",")
+        }
+    }
 }
+
+private fun String?.parseIdCsv(): List<Long> =
+    this?.split(',')?.mapNotNull(String::toLongOrNull) ?: emptyList()

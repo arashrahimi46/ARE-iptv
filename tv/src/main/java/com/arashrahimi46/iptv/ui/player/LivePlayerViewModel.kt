@@ -11,6 +11,8 @@ import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
+import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.multiview.MultiViewViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -103,6 +105,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     private val epgRepository = EpgRepository(app)
     private val favoritesRepository = FavoritesRepository(app)
     private val continueWatchingRepository = ContinueWatchingRepository(app)
+    private val settings = UserSettings(app)
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
@@ -137,6 +140,16 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     }
 
     /** Favorite/unfavorite whatever is currently playing (channel, movie, or the episode's series). */
+    /** Adds the currently-playing live channel to the curated multi-view list (scoped to its
+     * source), evicting the oldest when the list is already full. No-op for VOD (no channel id). */
+    fun addCurrentChannelToMultiView() {
+        val channelId = _uiState.value.currentChannelId ?: return
+        viewModelScope.launch {
+            val channel = db.channelDao().getById(channelId) ?: return@launch
+            settings.addMultiViewChannel(channel.sourceId, channelId, MultiViewViewModel.MAX_CHANNELS)
+        }
+    }
+
     fun toggleFavorite() {
         val id = _uiState.value.favoriteTargetId ?: return
         val type = _uiState.value.favoriteContentType ?: return

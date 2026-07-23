@@ -18,24 +18,27 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 data class MultiViewUiState(
     val hasSource: Boolean = false,
-    /** Real [Channel] rows, favorited channels first, from Room -- never mocked panes. */
+    /** The channels the user has curated into multi-view, oldest-added first -- never mocked
+     * panes, never an auto-filled catalog slice. Empty until the user adds some. */
     val channels: List<Channel> = emptyList(),
+    /** Live channels offered in the "+" slot picker (favorites floated first). */
+    val pickerCandidates: List<Channel> = emptyList(),
     val paneCount: Int = 4,
     val activeIndex: Int = 0,
 ) {
-    /** The panes actually rendered -- [channels] truncated to [paneCount], clamping [activeIndex] within range. */
+    /** Curated channels truncated to [paneCount] -- the panes actually rendered. */
     val panes: List<Channel> get() = channels.take(paneCount)
 }
 
 /**
- * Phase 5 -- MultiView.jsx: 2-up/4-up simultaneous live streams, one active
- * (audio) pane. Sources real [Channel] rows for the active playlist (Room via
- * [PlaylistRepository]), favorited channels first since those are the ones a
- * user is most likely to want to watch side-by-side, padded with the rest of
- * the live catalog -- never the design source's hardcoded mock panes.
+ * MultiView -- a curated, persistent list of live channels the user explicitly adds (from the
+ * live player's "add to multi-view" action, or the "+" slot picker here), scoped to the active
+ * source and stored via [UserSettings.multiViewChannelIds]. Up to [MAX_CHANNELS] channels; adding
+ * a fresh one when full evicts the oldest (FIFO). OK on a pane sets audio; long-press removes.
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class MultiViewViewModel(app: Application) : AndroidViewModel(app) {
@@ -46,25 +49,42 @@ class MultiViewViewModel(app: Application) : AndroidViewModel(app) {
     private val _uiState = MutableStateFlow(MultiViewUiState())
     val uiState: StateFlow<MultiViewUiState> = _uiState.asStateFlow()
 
+    /** Latest active source id, held so add/remove can scope their writes without re-querying. */
+    private var activeSourceId: Long? = null
+
     init {
         settings.activeSourceId
             .flatMapLatest { sourceId ->
+                activeSourceId = sourceId
                 if (sourceId == null) {
-                    flowOf<List<Channel>?>(null)
+                    flowOf(null)
                 } else {
-                    // Bounded channel picker (favorites floated to the top) -- never the whole
-                    // catalog, which OOM'd on large sources.
-                    combine(repository.topChannels(sourceId, MULTIVIEW_CHANNEL_LIMIT), favoritesRepository.favoriteChannelIds) { channels, favoriteIds ->
-                        channels.sortedByDescending { it.id in favoriteIds }
+                    // The curated id list (persisted, ordered) resolved to rows, alongside a
+                    // bounded picker of live channels (favorites first) for the "+" slots.
+                    combine(
+                        settings.multiViewChannelIds(sourceId),
+                        repository.topChannels(sourceId, PICKER_LIMIT),
+                        favoritesRepository.favoriteChannelIds,
+                    ) { ids, top, favoriteIds ->
+                        val byId = repository.channelsByIds(ids).associateBy { it.id }
+                        val curated = ids.mapNotNull { byId[it] }        // preserve insertion order
+                        val picker = top.sortedByDescending { it.id in favoriteIds }
+                        curated to picker
                     }
                 }
             }
-            .onEach { channels ->
+            .onEach { resolved ->
                 val previous = _uiState.value
-                _uiState.value = if (channels == null) {
-                    MultiViewUiState(hasSource = false)
+                _uiState.value = if (resolved == null) {
+                    MultiViewUiState(hasSource = false, paneCount = previous.paneCount)
                 } else {
-                    previous.copy(hasSource = true, channels = channels, activeIndex = previous.activeIndex.coerceIn(0, (previous.paneCount - 1).coerceAtLeast(0)))
+                    val (curated, picker) = resolved
+                    previous.copy(
+                        hasSource = true,
+                        channels = curated,
+                        pickerCandidates = picker,
+                        activeIndex = previous.activeIndex.coerceIn(0, (previous.paneCount - 1).coerceAtLeast(0)),
+                    )
                 }
             }
             .launchIn(viewModelScope)
@@ -78,10 +98,23 @@ class MultiViewViewModel(app: Application) : AndroidViewModel(app) {
         _uiState.value = _uiState.value.copy(activeIndex = index)
     }
 
+    fun addChannel(channel: Channel) {
+        val sourceId = activeSourceId ?: return
+        viewModelScope.launch { settings.addMultiViewChannel(sourceId, channel.id, MAX_CHANNELS) }
+    }
+
+    fun removeChannel(channelId: Long) {
+        val sourceId = activeSourceId ?: return
+        viewModelScope.launch { settings.removeMultiViewChannel(sourceId, channelId) }
+    }
+
     companion object {
-        /** Bounded picker size -- multi-view only ever shows a handful of panes; a full 100k+
-         * channel list would OOM and is pointless to scroll here. */
-        private const val MULTIVIEW_CHANNEL_LIMIT = 500
+        /** Hard cap on curated channels == the densest layout (4-up); a full list evicts FIFO. */
+        const val MAX_CHANNELS = 4
+
+        /** Bounded "+" slot picker size -- a full 100k+ channel list would OOM and is pointless
+         * to scroll here; the picker is for quickly grabbing a favourite/top live channel. */
+        private const val PICKER_LIMIT = 500
 
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

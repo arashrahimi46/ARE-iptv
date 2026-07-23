@@ -405,7 +405,9 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             AreTopBar(
                 onMultiView = { rootNav.navigate("multiview") },
                 onSearch = { if (activeNav != "search") innerNav.selectTab("search") },
-                onAddPlaylist = { rootNav.navigate("onboarding") },
+                // Show the existing-playlists picker first (which itself has an "add new" ->
+                // onboarding action), rather than jumping straight into onboarding.
+                onAddPlaylist = { rootNav.navigate("sources") },
                 onCustomize = if (activeNav == "home") ({ homeEditMode = !homeEditMode }) else null,
                 customizeActive = homeEditMode,
             )

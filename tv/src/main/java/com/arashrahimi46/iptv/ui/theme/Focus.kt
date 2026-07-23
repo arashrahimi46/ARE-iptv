@@ -275,13 +275,16 @@ fun TvFocusable(
     enabled: Boolean = true,
     /** Long-press (hold OK ~[LONG_PRESS_MS]) handler; when null the control has short-press only. */
     onLongClick: (() -> Unit)? = null,
+    /** Suppress the focus scale-up (ring + glow still track focus). For large tiles -- e.g. the
+     *  multi-view video panes -- whose 6% growth would overlap tightly-packed neighbours. */
+    disableScale: Boolean = false,
     content: @Composable BoxScope.(focused: Boolean, pressed: Boolean) -> Unit,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()
     Box(
         modifier = modifier
-            .tvFocusable(interactionSource, shape, glowColor)
+            .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
             .background(backgroundColor, shape)
             .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
             .combinedClickable(
