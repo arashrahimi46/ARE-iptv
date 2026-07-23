@@ -15,7 +15,7 @@
     <string name="action_sign_in">Zaloguj się</string>
     <string name="action_sign_out">Wyloguj się</string>
     <string name="action_search">Szukaj</string>
-    <string name="action_donate">Wesprzyj</string>
+    <string name="action_buy_coffee">Postaw mi kawę</string>
     <string name="content_desc_account">Konto</string>
 
     <!-- Shell -->

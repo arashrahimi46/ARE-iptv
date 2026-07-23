@@ -15,7 +15,7 @@
     <string name="action_sign_in">Oturum aç</string>
     <string name="action_sign_out">Oturumu kapat</string>
     <string name="action_search">Ara</string>
-    <string name="action_donate">Bağış yap</string>
+    <string name="action_buy_coffee">Bana bir kahve ısmarla</string>
     <string name="content_desc_account">Hesap</string>
 
     <!-- Shell -->

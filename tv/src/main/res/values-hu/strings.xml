@@ -15,7 +15,7 @@
     <string name="action_sign_in">Bejelentkezés</string>
     <string name="action_sign_out">Kijelentkezés</string>
     <string name="action_search">Keresés</string>
-    <string name="action_donate">Támogatás</string>
+    <string name="action_buy_coffee">Fizess nekem egy kávét</string>
     <string name="content_desc_account">Fiók</string>
 
     <!-- Shell -->

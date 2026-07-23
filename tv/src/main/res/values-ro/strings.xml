@@ -15,7 +15,7 @@
     <string name="action_sign_in">Autentificare</string>
     <string name="action_sign_out">Deconectare</string>
     <string name="action_search">Caută</string>
-    <string name="action_donate">Donează</string>
+    <string name="action_buy_coffee">Fă-mi cinste cu o cafea</string>
     <string name="content_desc_account">Cont</string>
 
     <!-- Shell -->

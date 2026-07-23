@@ -15,7 +15,7 @@
     <string name="action_sign_in">Přihlásit se</string>
     <string name="action_sign_out">Odhlásit se</string>
     <string name="action_search">Hledat</string>
-    <string name="action_donate">Přispět</string>
+    <string name="action_buy_coffee">Kup mi kávu</string>
     <string name="content_desc_account">Účet</string>
 
     <!-- Shell -->

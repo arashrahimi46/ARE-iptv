@@ -15,7 +15,7 @@
     <string name="action_sign_in">Kirjaudu sisään</string>
     <string name="action_sign_out">Kirjaudu ulos</string>
     <string name="action_search">Hae</string>
-    <string name="action_donate">Lahjoita</string>
+    <string name="action_buy_coffee">Osta minulle kahvi</string>
     <string name="content_desc_account">Tili</string>
 
     <!-- Shell -->

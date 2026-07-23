@@ -15,7 +15,7 @@
     <string name="action_sign_in">Войти</string>
     <string name="action_sign_out">Выйти</string>
     <string name="action_search">Поиск</string>
-    <string name="action_donate">Поддержать</string>
+    <string name="action_buy_coffee">Купи мне кофе</string>
     <string name="content_desc_account">Аккаунт</string>
 
     <!-- Shell -->

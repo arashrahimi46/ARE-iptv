@@ -551,10 +551,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 desc = stringResource(R.string.settings_support_desc),
             ) {
                 AreButton(
-                    text = stringResource(R.string.action_donate),
+                    text = stringResource(R.string.action_buy_coffee),
                     onClick = {
-                        // PLACEHOLDER URL -- needs a real donation link from product.
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://paypal.me/change-me"))
+                        // PLACEHOLDER URL -- set the real Buy Me a Coffee page (buymeacoffee.com/<name>).
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/change-me"))
                         context.startActivity(intent)
                     },
                     variant = AreButtonVariant.Secondary,

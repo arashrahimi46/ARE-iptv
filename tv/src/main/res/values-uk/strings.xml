@@ -15,7 +15,7 @@
     <string name="action_sign_in">Увійти</string>
     <string name="action_sign_out">Вийти</string>
     <string name="action_search">Пошук</string>
-    <string name="action_donate">Підтримати</string>
+    <string name="action_buy_coffee">Купи мені каву</string>
     <string name="content_desc_account">Обліковий запис</string>
 
     <!-- Shell -->

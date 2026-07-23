@@ -15,7 +15,7 @@
     <string name="action_sign_in">Σύνδεση</string>
     <string name="action_sign_out">Αποσύνδεση</string>
     <string name="action_search">Αναζήτηση</string>
-    <string name="action_donate">Δωρεά</string>
+    <string name="action_buy_coffee">Κέρασέ με έναν καφέ</string>
     <string name="content_desc_account">Λογαριασμός</string>
 
     <!-- Shell -->

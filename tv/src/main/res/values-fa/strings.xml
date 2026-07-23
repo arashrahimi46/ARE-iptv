@@ -15,7 +15,7 @@
     <string name="action_sign_in">ورود</string>
     <string name="action_sign_out">خروج</string>
     <string name="action_search">جستجو</string>
-    <string name="action_donate">حمایت مالی</string>
+    <string name="action_buy_coffee">یه قهوه مهمونم کن</string>
     <string name="content_desc_account">حساب کاربری</string>
 
     <!-- Shell -->
@@ -468,4 +468,36 @@
     <string name="recordings_missing">فایل دیگر روی درایو نیست</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d بخش</string>
+    <string name="feedback_cat_favorites">علاقه‌مندی‌ها</string>
+    <string name="feedback_cat_guide">راهنمای برنامه‌ها</string>
+    <string name="feedback_cat_layout">چیدمان</string>
+    <string name="feedback_cat_missing">قابلیت ناموجود</string>
+    <string name="feedback_cat_other">سایر</string>
+    <string name="feedback_cat_playback">پخش</string>
+    <string name="feedback_category_label">درباره چیست؟</string>
+    <string name="feedback_error">در حال حاضر ارسال نشد. لطفاً اتصال خود را بررسی کرده و دوباره تلاش کنید.</string>
+    <string name="feedback_message_label">چیزی برای افزودن دارید؟ (اختیاری)</string>
+    <string name="feedback_message_placeholder">بیشتر برایمان بگویید…</string>
+    <string name="feedback_qr_desc">این کد را با گوشی خود اسکن کنید تا فرم بازخورد باز شود و با صفحه‌کلید واقعی تایپ کنید.</string>
+    <string name="feedback_qr_title">می‌خواهید بیشتر بنویسید؟</string>
+    <string name="feedback_rating_label">برنامه را چگونه ارزیابی می‌کنید؟</string>
+    <string name="feedback_send">ارسال</string>
+    <string name="feedback_sending">در حال ارسال…</string>
+    <string name="feedback_star_cd">%1$d ستاره</string>
+    <string name="feedback_subtitle">بازخورد شما تعیین می‌کند بعد چه چیزی بسازیم. ممنون که کمک می‌کنید.</string>
+    <string name="feedback_thanks">متشکریم! بازخورد شما ارسال شد.</string>
+    <string name="feedback_title">ارسال بازخورد</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">در حال اتصال مجدد…</string>
+    <string name="recording_pick_volume_title">ضبط در</string>
+    <string name="recording_volume_free">%1$s آزاد</string>
+    <string name="recording_volume_internal">حافظه داخلی</string>
+    <string name="recording_volume_usb">درایو USB</string>
+    <string name="settings_analytics_desc">برای کمک به بهبود برنامه، آمار استفاده ناشناس را به اشتراک بگذارید. هیچ داده شخصی جمع‌آوری نمی‌شود.</string>
+    <string name="settings_analytics_title">آمار استفاده</string>
+    <string name="settings_feedback_action">ارسال بازخورد</string>
+    <string name="settings_feedback_desc">به ما بگویید چه چیزی را بهبود دهیم — فقط چند ثانیه طول می‌کشد.</string>
+    <string name="settings_feedback_title">ارسال بازخورد</string>
+    <string name="settings_recording_indicator_desc">نمایش نشان ضربان‌دار REC در پخش‌کننده هنگام ضبط.</string>
+    <string name="settings_recording_indicator_title">نشانگر ضبط</string>
 </resources>

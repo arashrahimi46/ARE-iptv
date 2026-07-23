@@ -15,7 +15,7 @@
     <string name="action_sign_in">Log ind</string>
     <string name="action_sign_out">Log ud</string>
     <string name="action_search">Søg</string>
-    <string name="action_donate">Doner</string>
+    <string name="action_buy_coffee">Køb mig en kaffe</string>
     <string name="content_desc_account">Konto</string>
 
     <!-- Shell -->

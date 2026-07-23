@@ -15,7 +15,7 @@
     <string name="action_sign_in">تسجيل الدخول</string>
     <string name="action_sign_out">تسجيل الخروج</string>
     <string name="action_search">بحث</string>
-    <string name="action_donate">تبرّع</string>
+    <string name="action_buy_coffee">اشترِ لي قهوة</string>
     <string name="content_desc_account">الحساب</string>
 
     <!-- Shell -->
@@ -467,4 +467,37 @@
     <string name="recordings_missing">الملف لم يعد على محرك الأقراص</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d أجزاء</string>
+    <string name="category_count_items">%1$d عنصر</string>
+    <string name="feedback_cat_favorites">المفضلة</string>
+    <string name="feedback_cat_guide">دليل القنوات</string>
+    <string name="feedback_cat_layout">التخطيط</string>
+    <string name="feedback_cat_missing">ميزة ناقصة</string>
+    <string name="feedback_cat_other">أخرى</string>
+    <string name="feedback_cat_playback">التشغيل</string>
+    <string name="feedback_category_label">ما موضوع الملاحظة؟</string>
+    <string name="feedback_error">تعذّر الإرسال الآن. يرجى التحقق من اتصالك والمحاولة مرة أخرى.</string>
+    <string name="feedback_message_label">هل تريد إضافة شيء؟ (اختياري)</string>
+    <string name="feedback_message_placeholder">أخبرنا بالمزيد…</string>
+    <string name="feedback_qr_desc">امسح هذا الرمز بهاتفك لفتح نموذج الملاحظات والكتابة بلوحة مفاتيح حقيقية.</string>
+    <string name="feedback_qr_title">هل تريد كتابة المزيد؟</string>
+    <string name="feedback_rating_label">كيف تقيّم التطبيق؟</string>
+    <string name="feedback_send">إرسال</string>
+    <string name="feedback_sending">جارٍ الإرسال…</string>
+    <string name="feedback_star_cd">%1$d نجوم</string>
+    <string name="feedback_subtitle">ملاحظاتك تحدد ما سنبنيه لاحقًا. شكرًا لمساعدتك.</string>
+    <string name="feedback_thanks">شكرًا لك! تم إرسال ملاحظاتك.</string>
+    <string name="feedback_title">إرسال ملاحظات</string>
+    <string name="player_recording_label">REC</string>
+    <string name="player_recording_reconnecting">جارٍ إعادة الاتصال…</string>
+    <string name="recording_pick_volume_title">التسجيل إلى</string>
+    <string name="recording_volume_free">%1$s متاح</string>
+    <string name="recording_volume_internal">التخزين الداخلي</string>
+    <string name="recording_volume_usb">محرك USB</string>
+    <string name="settings_analytics_desc">شارك إحصاءات استخدام مجهولة لمساعدتنا في تحسين التطبيق. لا يتم جمع أي بيانات شخصية.</string>
+    <string name="settings_analytics_title">تحليلات الاستخدام</string>
+    <string name="settings_feedback_action">إرسال ملاحظات</string>
+    <string name="settings_feedback_desc">أخبرنا بما يمكن تحسينه — لا يستغرق سوى بضع ثوانٍ.</string>
+    <string name="settings_feedback_title">إرسال ملاحظات</string>
+    <string name="settings_recording_indicator_desc">إظهار شارة REC نابضة في المشغّل أثناء التسجيل.</string>
+    <string name="settings_recording_indicator_title">مؤشر التسجيل</string>
 </resources>
