@@ -2,6 +2,7 @@ package com.arashrahimi46.iptv.ui.settings
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HighQuality
@@ -76,7 +78,9 @@ import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.language.localizedConfirmCopy
 import com.arashrahimi46.iptv.ui.player.SUBTITLE_LANGUAGES
+import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import kotlinx.coroutines.launch
 
 /**
@@ -123,6 +127,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val scope = rememberCoroutineScope()
 
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+    val activeAccent by viewModel.activeAccent.collectAsState()
     val isReducedMotion by viewModel.isReducedMotion.collectAsState()
     val isHardwareDecoding by viewModel.isHardwareDecoding.collectAsState()
     val isAutoplayNextEpisode by viewModel.isAutoplayNextEpisode.collectAsState()
@@ -235,6 +240,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             ) {
                 AreSwitch(checked = isDarkTheme, onCheckedChange = viewModel::setDarkTheme)
             }
+            // Accent picker edits the accent for whichever mode is currently active (per-mode: dark
+            // and light are stored independently). Switch the toggle above to set the other mode's.
+            AccentPickerBlock(
+                selected = activeAccent,
+                isDark = isDarkTheme,
+                onSelect = viewModel::setActiveAccent,
+            )
             SettingsRow(icon = Icons.Filled.Bolt, title = stringResource(R.string.settings_reduce_motion), desc = stringResource(R.string.settings_reduce_motion_desc)) {
                 AreSwitch(checked = isReducedMotion, onCheckedChange = viewModel::setReducedMotion)
             }
@@ -673,6 +685,82 @@ private fun SelectionChangeControl(current: String, onChange: () -> Unit) {
             variant = AreButtonVariant.Secondary,
             size = AreButtonSize.Small,
         )
+    }
+}
+
+/**
+ * Full-width accent-color picker inside the Appearance section: a labelled block with a row of
+ * preset swatches. Selecting one persists immediately for the active mode and recolors the whole
+ * app live (every component reads [AreIptvTheme.colors.accent] / focusRing). The description
+ * spells out the per-mode behaviour so the "why is there only one row" question answers itself.
+ */
+@Composable
+private fun AccentPickerBlock(selected: AccentPreset, isDark: Boolean, onSelect: (AccentPreset) -> Unit) {
+    val colors = AreIptvTheme.colors
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
+        Text(text = stringResource(R.string.settings_accent_color), style = AreIptvTheme.typography.label, color = colors.textPrimary)
+        Box(Modifier.padding(top = 4.dp))
+        Text(
+            text = stringResource(
+                if (isDark) R.string.settings_accent_color_desc_dark else R.string.settings_accent_color_desc_light,
+            ),
+            style = AreIptvTheme.typography.caption,
+            color = colors.textTertiary,
+        )
+        Box(Modifier.padding(top = 16.dp))
+        // Gaps clear the focused swatch's glow halo + focus scale (same reasoning as the subtitle chips).
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AccentPreset.entries.forEach { preset ->
+                AccentSwatch(
+                    preset = preset,
+                    isDark = isDark,
+                    selected = preset == selected,
+                    onSelect = { onSelect(preset) },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun AccentSwatch(preset: AccentPreset, isDark: Boolean, selected: Boolean, onSelect: () -> Unit) {
+    val colors = AreIptvTheme.colors
+    val swatchColor = preset.swatch(isDark)
+    val outerShape = RoundedCornerShape(AreIptvTheme.radius.md)
+    val fillShape = RoundedCornerShape(AreIptvTheme.radius.sm)
+    // The outer TvFocusable box carries the focus ring + glow + scale (glowColor = focusRing, the
+    // same accent ring used everywhere else). The colored fill is INSET (padding) so it never
+    // paints over that ring -- the earlier version filled the box edge-to-edge, hiding the focus
+    // indicator entirely, and a same-color glow made it worse. A focused swatch also gets a bright
+    // textPrimary ring right on the fill so it reads even against a same-hue accent ring.
+    TvFocusable(
+        onClick = onSelect,
+        modifier = Modifier.size(52.dp),
+        shape = outerShape,
+    ) { focused, _ ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp)
+                .background(swatchColor, fillShape)
+                .border(
+                    width = if (focused || selected) 2.dp else 1.dp,
+                    color = if (focused || selected) colors.textPrimary else colors.borderDefault,
+                    shape = fillShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Check tint uses the preset's own on-accent color, guaranteed readable on the fill.
+            if (selected) {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = preset.tokens(isDark).accentFg,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+        }
     }
 }
 

@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Utseende</string>
     <string name="settings_dark_theme">Mörkt tema</string>
     <string name="settings_dark_theme_desc">Rekommenderas för avslappnat tittande.</string>
+    <string name="settings_accent_color">Accentfärg</string>
+    <string name="settings_accent_color_desc_dark">Tillämpas på det mörka temat. Byt till ljust läge för att ställa in accentfärgen för det ljusa temat.</string>
+    <string name="settings_accent_color_desc_light">Tillämpas på det ljusa temat. Byt till mörkt läge för att ställa in accentfärgen för det mörka temat.</string>
     <string name="settings_reduce_motion">Minska rörelse</string>
     <string name="settings_reduce_motion_desc">Mjukare fokusanimationer.</string>
     <string name="settings_list_view">Listvy</string>

@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Görünüş</string>
     <string name="settings_dark_theme">Tünd tema</string>
     <string name="settings_dark_theme_desc">Rahat izləmə üçün tövsiyə olunur.</string>
+    <string name="settings_accent_color">Vurğu rəngi</string>
+    <string name="settings_accent_color_desc_dark">Tünd temaya tətbiq olunur. İşıqlı temanın vurğusunu təyin etmək üçün işıqlı rejimə keçin.</string>
+    <string name="settings_accent_color_desc_light">İşıqlı temaya tətbiq olunur. Tünd temanın vurğusunu təyin etmək üçün tünd rejimə keçin.</string>
     <string name="settings_reduce_motion">Hərəkəti azalt</string>
     <string name="settings_reduce_motion_desc">Daha yumşaq fokus animasiyaları.</string>
     <string name="settings_list_view">Siyahı görünüşü</string>

@@ -15,6 +15,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +70,12 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     val isDarkTheme: StateFlow<Boolean> = flowState(settings.isDarkTheme, true)
     val isReducedMotion: StateFlow<Boolean> = flowState(settings.isReducedMotion, false)
+
+    /** Accent preset for the currently active mode -- what the contextual settings row edits. */
+    val activeAccent: StateFlow<AccentPreset> = flowState(
+        settings.isDarkTheme.flatMapLatest { dark -> if (dark) settings.darkAccent else settings.lightAccent },
+        AccentPreset.BLUE,
+    )
     val isHardwareDecoding: StateFlow<Boolean> = flowState(settings.isHardwareDecoding, true)
     val isAutoplayNextEpisode: StateFlow<Boolean> = flowState(settings.isAutoplayNextEpisode, true)
     val miniPlayerBehavior: StateFlow<MiniPlayerBehavior> = flowState(settings.miniPlayerBehavior, MiniPlayerBehavior.DODGE)
@@ -110,6 +117,11 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     // thread's switch callback (jank/ANR on low-end boxes). Matches every other setter below.
     fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { settings.setDarkTheme(enabled) }
     fun setReducedMotion(enabled: Boolean) = viewModelScope.launch { settings.setReducedMotion(enabled) }
+
+    /** Writes the accent for the currently active mode (the other mode's accent is untouched). */
+    fun setActiveAccent(preset: AccentPreset) = viewModelScope.launch {
+        settings.setAccent(settings.isDarkTheme.first(), preset)
+    }
     fun setHardwareDecoding(enabled: Boolean) = viewModelScope.launch { settings.setHardwareDecoding(enabled) }
     fun setAutoplayNextEpisode(enabled: Boolean) = viewModelScope.launch { settings.setAutoplayNextEpisode(enabled) }
 

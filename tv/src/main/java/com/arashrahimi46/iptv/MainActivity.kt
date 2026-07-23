@@ -77,6 +77,7 @@ import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
 import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
+import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -148,6 +149,11 @@ fun AreIptvApp() {
     // SettingsScreen recomposes here immediately -- no restart, no separate "apply" step.
     val isDarkTheme by settings.isDarkTheme.collectAsState(initial = true)
     val isReducedMotion by settings.isReducedMotion.collectAsState(initial = false)
+    // Per-mode accent: dark and light are chosen independently in Settings, so pick the one that
+    // matches the active mode. Recomposes (and recolors the whole app) the moment either changes.
+    val darkAccent by settings.darkAccent.collectAsState(initial = AccentPreset.BLUE)
+    val lightAccent by settings.lightAccent.collectAsState(initial = AccentPreset.BLUE)
+    val accent = if (isDarkTheme) darkAccent else lightAccent
     // Issue #11: first-run Privacy & Terms acceptance gate. `null` distinguishes "DataStore
     // hasn't emitted yet" from a real false, same reasoning as UNKNOWN below for activeSourceId.
     val hasAcceptedTerms: Boolean? by settings.hasAcceptedTerms.collectAsState(initial = null)
@@ -162,7 +168,7 @@ fun AreIptvApp() {
     var showSplash by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) { delay(SPLASH_DURATION_MS); showSplash = false }
     if (showSplash) {
-        AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
+        AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
             AreSplashScreen()
         }
         return
@@ -187,7 +193,7 @@ fun AreIptvApp() {
         else -> "shell"
     }
 
-    AreIptvTheme(isDark = isDarkTheme, reducedMotion = isReducedMotion) {
+    AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("language") {
             LanguageSelectScreen(onDone = {

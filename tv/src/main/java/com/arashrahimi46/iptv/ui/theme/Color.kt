@@ -163,3 +163,123 @@ val AreIptvLightColors = AreIptvColors(
     focusRing = Blue600,
     violetText = Violet400,
 )
+
+// ---- Selectable accent presets ----
+// Each preset is a 5-shade ramp (300..700, Tailwind-style, matching the Blue ramp above).
+// Accent tokens for a theme mode are DERIVED from the ramp by [tokens] -- exactly how the
+// original blue accent picked shade 500 in dark / 600 in light -- so a preset needs no
+// per-mode hand-tuning. `onAccent` is the text/icon color that reads on a solid fill of it:
+// pure white for saturated hues, dark ink for the bright Amber/Cyan where white fails contrast.
+private val AccentWhite = Color(0xFFFFFFFF)
+
+private val Teal300 = Color(0xFF5EEAD4)
+private val Teal400 = Color(0xFF2DD4BF)
+private val Teal500 = Color(0xFF14B8A6)
+private val Teal600 = Color(0xFF0D9488)
+private val Teal700 = Color(0xFF0F766E)
+
+private val Violet300 = Color(0xFFC4B5FD)
+private val Violet600 = Color(0xFF7C3AED)
+private val Violet700 = Color(0xFF6D28D9)
+
+private val Emerald300 = Color(0xFF6EE7B7)
+private val Emerald400 = Color(0xFF34D399)
+private val Emerald500 = Color(0xFF10B981)
+private val Emerald600 = Color(0xFF059669)
+private val Emerald700 = Color(0xFF047857)
+
+private val AmberA300 = Color(0xFFFCD34D)
+private val AmberA400 = Color(0xFFFBBF24)
+private val AmberA500 = Color(0xFFF59E0B)
+private val AmberA600 = Color(0xFFD97706)
+private val AmberA700 = Color(0xFFB45309)
+
+private val Rose300 = Color(0xFFFDA4AF)
+private val Rose400 = Color(0xFFFB7185)
+private val Rose500 = Color(0xFFF43F5E)
+private val Rose600 = Color(0xFFE11D48)
+private val Rose700 = Color(0xFFBE123C)
+
+private val Cyan300 = Color(0xFF67E8F9)
+private val Cyan400 = Color(0xFF22D3EE)
+private val Cyan500 = Color(0xFF06B6D4)
+private val Cyan600 = Color(0xFF0891B2)
+private val Cyan700 = Color(0xFF0E7490)
+
+private val Slate300 = Color(0xFF94A3B8)
+private val Slate400 = Color(0xFF7C8AA0)
+private val Slate500 = Color(0xFF5A6779)
+private val Slate600 = Color(0xFF475569)
+private val Slate700 = Color(0xFF334155)
+
+/** The accent-related subset of [AreIptvColors], derived from an [AccentPreset] for one mode. */
+data class AccentTokens(
+    val accent: Color,
+    val accentHover: Color,
+    val accentPress: Color,
+    val accentWash: Color,
+    val accentFg: Color,
+    val focusRing: Color,
+)
+
+/**
+ * A user-selectable brand accent. [id] is the stable value persisted in DataStore.
+ * BLUE reproduces the app's original hardwired accent exactly (backward compatible).
+ */
+enum class AccentPreset(
+    val id: String,
+    private val s300: Color,
+    private val s400: Color,
+    private val s500: Color,
+    private val s600: Color,
+    private val s700: Color,
+    private val onAccent: Color,
+) {
+    BLUE("blue", Blue300, Blue400, Blue500, Blue600, Blue700, AccentWhite),
+    TEAL("teal", Teal300, Teal400, Teal500, Teal600, Teal700, AccentWhite),
+    VIOLET("violet", Violet300, Violet400, Violet500, Violet600, Violet700, AccentWhite),
+    EMERALD("emerald", Emerald300, Emerald400, Emerald500, Emerald600, Emerald700, AccentWhite),
+    AMBER("amber", AmberA300, AmberA400, AmberA500, AmberA600, AmberA700, Ink950),
+    ROSE("rose", Rose300, Rose400, Rose500, Rose600, Rose700, AccentWhite),
+    CYAN("cyan", Cyan300, Cyan400, Cyan500, Cyan600, Cyan700, Ink950),
+    SLATE("slate", Slate300, Slate400, Slate500, Slate600, Slate700, AccentWhite);
+
+    /** The swatch color shown in the settings picker -- the mode's resolved solid accent. */
+    fun swatch(isDark: Boolean): Color = if (isDark) s500 else s600
+
+    /** Derive the per-mode accent tokens, mirroring the original blue's shade choices. */
+    fun tokens(isDark: Boolean): AccentTokens = if (isDark) {
+        AccentTokens(
+            accent = s500,
+            accentHover = s400,
+            accentPress = s600,
+            accentWash = s500.copy(alpha = 0.14f),
+            accentFg = onAccent,
+            focusRing = s400,
+        )
+    } else {
+        AccentTokens(
+            accent = s600,
+            accentHover = s500,
+            accentPress = s700,
+            accentWash = s600.copy(alpha = 0.10f),
+            accentFg = onAccent,
+            focusRing = s600,
+        )
+    }
+
+    companion object {
+        /** Resolve a persisted [id] back to a preset, falling back to [BLUE] for unknown/null. */
+        fun fromId(id: String?): AccentPreset = entries.firstOrNull { it.id == id } ?: BLUE
+    }
+}
+
+/** Overlay an accent preset's tokens onto a base (neutral) palette for a mode. */
+fun AreIptvColors.withAccent(tokens: AccentTokens): AreIptvColors = copy(
+    accent = tokens.accent,
+    accentHover = tokens.accentHover,
+    accentPress = tokens.accentPress,
+    accentWash = tokens.accentWash,
+    accentFg = tokens.accentFg,
+    focusRing = tokens.focusRing,
+)

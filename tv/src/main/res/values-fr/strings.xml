@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Apparence</string>
     <string name="settings_dark_theme">Thème sombre</string>
     <string name="settings_dark_theme_desc">Recommandé pour un visionnage détendu.</string>
+    <string name="settings_accent_color">Couleur d\'accent</string>
+    <string name="settings_accent_color_desc_dark">Appliquée au thème sombre. Passez en mode clair pour définir la couleur d\'accent du thème clair.</string>
+    <string name="settings_accent_color_desc_light">Appliquée au thème clair. Passez en mode sombre pour définir la couleur d\'accent du thème sombre.</string>
     <string name="settings_reduce_motion">Réduire les animations</string>
     <string name="settings_reduce_motion_desc">Animations de focus plus douces.</string>
     <string name="settings_list_view">Vue en liste</string>

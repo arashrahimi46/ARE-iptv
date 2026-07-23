@@ -162,6 +162,9 @@
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_dark_theme">Dark theme</string>
     <string name="settings_dark_theme_desc">Recommended for lean-back viewing.</string>
+    <string name="settings_accent_color">Accent color</string>
+    <string name="settings_accent_color_desc_dark">Applied to the dark theme. Switch to light mode to set the light theme\'s accent.</string>
+    <string name="settings_accent_color_desc_light">Applied to the light theme. Switch to dark mode to set the dark theme\'s accent.</string>
     <string name="settings_reduce_motion">Reduce motion</string>
     <string name="settings_reduce_motion_desc">Softer focus animations.</string>
     <string name="settings_list_view">List view</string>

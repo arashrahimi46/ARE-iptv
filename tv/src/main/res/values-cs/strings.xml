@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Vzhled</string>
     <string name="settings_dark_theme">Tmavý motiv</string>
     <string name="settings_dark_theme_desc">Doporučeno pro pohodlné sledování.</string>
+    <string name="settings_accent_color">Barva zvýraznění</string>
+    <string name="settings_accent_color_desc_dark">Použije se na tmavý motiv. Přepnutím do světlého režimu nastavíte zvýraznění světlého motivu.</string>
+    <string name="settings_accent_color_desc_light">Použije se na světlý motiv. Přepnutím do tmavého režimu nastavíte zvýraznění tmavého motivu.</string>
     <string name="settings_reduce_motion">Omezit animace</string>
     <string name="settings_reduce_motion_desc">Jemnější animace zaostření.</string>
     <string name="settings_list_view">Zobrazení seznamu</string>

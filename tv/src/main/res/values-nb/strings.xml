@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Utseende</string>
     <string name="settings_dark_theme">Mørkt tema</string>
     <string name="settings_dark_theme_desc">Anbefalt for avslappet titting.</string>
+    <string name="settings_accent_color">Aksentfarge</string>
+    <string name="settings_accent_color_desc_dark">Brukes på det mørke temaet. Bytt til lys modus for å angi aksentfargen for det lyse temaet.</string>
+    <string name="settings_accent_color_desc_light">Brukes på det lyse temaet. Bytt til mørk modus for å angi aksentfargen for det mørke temaet.</string>
     <string name="settings_reduce_motion">Reduser bevegelse</string>
     <string name="settings_reduce_motion_desc">Mildere fokusanimasjoner.</string>
     <string name="settings_list_view">Listevisning</string>

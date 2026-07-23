@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Megjelenés</string>
     <string name="settings_dark_theme">Sötét téma</string>
     <string name="settings_dark_theme_desc">Kényelmes, hátradőlős nézéshez ajánlott.</string>
+    <string name="settings_accent_color">Kiemelőszín</string>
+    <string name="settings_accent_color_desc_dark">A sötét témára vonatkozik. Váltson világos módra a világos téma kiemelőszínének beállításához.</string>
+    <string name="settings_accent_color_desc_light">A világos témára vonatkozik. Váltson sötét módra a sötét téma kiemelőszínének beállításához.</string>
     <string name="settings_reduce_motion">Mozgás csökkentése</string>
     <string name="settings_reduce_motion_desc">Lágyabb fókuszanimációk.</string>
     <string name="settings_list_view">Listanézet</string>

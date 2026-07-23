@@ -42,6 +42,10 @@ object AreIptvTheme {
  *
  * @param isDark false switches every color token to the light ramp (single theme
  *   object, not a build variant — see tokens/colors.css `[data-theme="light"]`).
+ * @param accent the user-selected brand accent, overlaid onto the neutral base palette.
+ *   Defaults to [AccentPreset.BLUE], which reproduces the original hardwired accent exactly.
+ *   Backed by the real Settings accent picker (per-mode: dark and light are chosen
+ *   independently, resolved at the composition root in MainActivity).
  * @param reducedMotion drives [LocalReducedMotion] and collapses [AreIptvTheme.motion]
  *   to the reduced-motion token set. Backed by the real Settings "Reduce motion" toggle
  *   since Phase 4 (via [com.arashrahimi46.iptv.data.settings.UserSettings.isReducedMotion],
@@ -51,10 +55,12 @@ object AreIptvTheme {
 @Composable
 fun AreIptvTheme(
     isDark: Boolean = true,
+    accent: AccentPreset = AccentPreset.BLUE,
     reducedMotion: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colors = if (isDark) AreIptvDarkColors else AreIptvLightColors
+    val base = if (isDark) AreIptvDarkColors else AreIptvLightColors
+    val colors = base.withAccent(accent.tokens(isDark))
     val motion = if (reducedMotion) AreIptvMotionReduced else AreIptvMotionDefault
 
     val tvColorScheme = if (isDark) {

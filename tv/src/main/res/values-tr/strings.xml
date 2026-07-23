@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Görünüm</string>
     <string name="settings_dark_theme">Koyu tema</string>
     <string name="settings_dark_theme_desc">Rahat izleme için önerilir.</string>
+    <string name="settings_accent_color">Vurgu rengi</string>
+    <string name="settings_accent_color_desc_dark">Koyu temaya uygulanır. Açık temanın vurgusunu ayarlamak için açık moda geçin.</string>
+    <string name="settings_accent_color_desc_light">Açık temaya uygulanır. Koyu temanın vurgusunu ayarlamak için koyu moda geçin.</string>
     <string name="settings_reduce_motion">Hareketi azalt</string>
     <string name="settings_reduce_motion_desc">Daha yumuşak odak animasyonları.</string>
     <string name="settings_list_view">Liste görünümü</string>

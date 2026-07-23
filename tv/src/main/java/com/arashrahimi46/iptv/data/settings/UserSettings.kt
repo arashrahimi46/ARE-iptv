@@ -11,6 +11,7 @@ import com.arashrahimi46.iptv.ui.home.DEFAULT_HOME_LAYOUT
 import com.arashrahimi46.iptv.ui.home.HomeSection
 import com.arashrahimi46.iptv.ui.home.decodeHomeLayout
 import com.arashrahimi46.iptv.ui.home.encodeHomeLayout
+import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -30,6 +31,9 @@ class UserSettings(private val context: Context) {
     private object Keys {
         val ACTIVE_SOURCE_ID = longPreferencesKey("active_source_id")
         val DARK_THEME = booleanPreferencesKey("dark_theme")
+        /** Selected accent preset id per theme mode (see [AccentPreset]); independent choices. */
+        val ACCENT_DARK = stringPreferencesKey("accent_dark")
+        val ACCENT_LIGHT = stringPreferencesKey("accent_light")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val HARDWARE_DECODING = booleanPreferencesKey("hardware_decoding")
         val AUTOPLAY_NEXT_EPISODE = booleanPreferencesKey("autoplay_next_episode")
@@ -61,6 +65,12 @@ class UserSettings(private val context: Context) {
     val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { it[Keys.DARK_THEME] ?: true }
 
     val isReducedMotion: Flow<Boolean> = context.dataStore.data.map { it[Keys.REDUCED_MOTION] ?: false }
+
+    /** Accent preset chosen for dark mode; defaults to [AccentPreset.BLUE] (the original accent). */
+    val darkAccent: Flow<AccentPreset> = context.dataStore.data.map { AccentPreset.fromId(it[Keys.ACCENT_DARK]) }
+
+    /** Accent preset chosen for light mode; independent of [darkAccent], defaults to BLUE. */
+    val lightAccent: Flow<AccentPreset> = context.dataStore.data.map { AccentPreset.fromId(it[Keys.ACCENT_LIGHT]) }
 
     /** ExoPlayer decoder-fallback preference -- see [com.arashrahimi46.iptv.ui.player.LivePlayerScreen]'s `ExoPlayer.Builder`. */
     val isHardwareDecoding: Flow<Boolean> = context.dataStore.data.map { it[Keys.HARDWARE_DECODING] ?: true }
@@ -139,6 +149,11 @@ class UserSettings(private val context: Context) {
 
     suspend fun setReducedMotion(enabled: Boolean) {
         context.dataStore.edit { it[Keys.REDUCED_MOTION] = enabled }
+    }
+
+    /** Persists the accent preset for a single mode; the other mode's accent is untouched. */
+    suspend fun setAccent(isDark: Boolean, preset: AccentPreset) {
+        context.dataStore.edit { it[if (isDark) Keys.ACCENT_DARK else Keys.ACCENT_LIGHT] = preset.id }
     }
 
     suspend fun setHardwareDecoding(enabled: Boolean) {

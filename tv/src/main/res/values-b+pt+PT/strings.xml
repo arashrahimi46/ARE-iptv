@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Aspeto</string>
     <string name="settings_dark_theme">Tema escuro</string>
     <string name="settings_dark_theme_desc">Recomendado para visualização descontraída.</string>
+    <string name="settings_accent_color">Cor de destaque</string>
+    <string name="settings_accent_color_desc_dark">Aplicada ao tema escuro. Mude para o modo claro para definir o destaque do tema claro.</string>
+    <string name="settings_accent_color_desc_light">Aplicada ao tema claro. Mude para o modo escuro para definir o destaque do tema escuro.</string>
     <string name="settings_reduce_motion">Reduzir movimento</string>
     <string name="settings_reduce_motion_desc">Animações de foco mais suaves.</string>
     <string name="settings_list_view">Vista de lista</string>

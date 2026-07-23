@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Udseende</string>
     <string name="settings_dark_theme">Mørkt tema</string>
     <string name="settings_dark_theme_desc">Anbefales til afslappet visning.</string>
+    <string name="settings_accent_color">Accentfarve</string>
+    <string name="settings_accent_color_desc_dark">Anvendes på det mørke tema. Skift til lys tilstand for at indstille accenten for det lyse tema.</string>
+    <string name="settings_accent_color_desc_light">Anvendes på det lyse tema. Skift til mørk tilstand for at indstille accenten for det mørke tema.</string>
     <string name="settings_reduce_motion">Reducer bevægelse</string>
     <string name="settings_reduce_motion_desc">Blødere fokusanimationer.</string>
     <string name="settings_list_view">Listevisning</string>

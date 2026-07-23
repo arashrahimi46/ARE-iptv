@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Aspect</string>
     <string name="settings_dark_theme">Temă întunecată</string>
     <string name="settings_dark_theme_desc">Recomandată pentru vizionare relaxată.</string>
+    <string name="settings_accent_color">Culoare de accent</string>
+    <string name="settings_accent_color_desc_dark">Se aplică temei întunecate. Comută la modul luminos pentru a seta accentul temei luminoase.</string>
+    <string name="settings_accent_color_desc_light">Se aplică temei luminoase. Comută la modul întunecat pentru a seta accentul temei întunecate.</string>
     <string name="settings_reduce_motion">Redu mișcarea</string>
     <string name="settings_reduce_motion_desc">Animații de focalizare mai blânde.</string>
     <string name="settings_list_view">Vizualizare listă</string>

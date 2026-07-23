@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Оформлення</string>
     <string name="settings_dark_theme">Темна тема</string>
     <string name="settings_dark_theme_desc">Рекомендовано для розслабленого перегляду.</string>
+    <string name="settings_accent_color">Акцентний колір</string>
+    <string name="settings_accent_color_desc_dark">Застосовується до темної теми. Перемкніться на світлий режим, щоб задати акцент світлої теми.</string>
+    <string name="settings_accent_color_desc_light">Застосовується до світлої теми. Перемкніться на темний режим, щоб задати акцент темної теми.</string>
     <string name="settings_reduce_motion">Зменшити анімацію</string>
     <string name="settings_reduce_motion_desc">М’якші анімації фокуса.</string>
     <string name="settings_list_view">Списком</string>

@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Ulkoasu</string>
     <string name="settings_dark_theme">Tumma teema</string>
     <string name="settings_dark_theme_desc">Suositellaan rentoon katseluun.</string>
+    <string name="settings_accent_color">Korostusväri</string>
+    <string name="settings_accent_color_desc_dark">Käytetään tummassa teemassa. Vaihda vaaleaan tilaan asettaaksesi vaalean teeman korostusvärin.</string>
+    <string name="settings_accent_color_desc_light">Käytetään vaaleassa teemassa. Vaihda tummaan tilaan asettaaksesi tumman teeman korostusvärin.</string>
     <string name="settings_reduce_motion">Vähennä liikettä</string>
     <string name="settings_reduce_motion_desc">Pehmeämmät kohdistusanimaatiot.</string>
     <string name="settings_list_view">Luettelonäkymä</string>

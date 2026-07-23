@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Εμφάνιση</string>
     <string name="settings_dark_theme">Σκούρο θέμα</string>
     <string name="settings_dark_theme_desc">Συνιστάται για χαλαρή θέαση.</string>
+    <string name="settings_accent_color">Χρώμα τονισμού</string>
+    <string name="settings_accent_color_desc_dark">Εφαρμόζεται στο σκούρο θέμα. Μεταβείτε στη φωτεινή λειτουργία για να ορίσετε το χρώμα τονισμού του φωτεινού θέματος.</string>
+    <string name="settings_accent_color_desc_light">Εφαρμόζεται στο φωτεινό θέμα. Μεταβείτε στη σκούρα λειτουργία για να ορίσετε το χρώμα τονισμού του σκούρου θέματος.</string>
     <string name="settings_reduce_motion">Μείωση κίνησης</string>
     <string name="settings_reduce_motion_desc">Πιο απαλά εφέ εστίασης.</string>
     <string name="settings_list_view">Προβολή λίστας</string>

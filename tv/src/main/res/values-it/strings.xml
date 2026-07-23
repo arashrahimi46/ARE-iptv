@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Aspetto</string>
     <string name="settings_dark_theme">Tema scuro</string>
     <string name="settings_dark_theme_desc">Consigliato per la visione rilassata dal divano.</string>
+    <string name="settings_accent_color">Colore d\'accento</string>
+    <string name="settings_accent_color_desc_dark">Applicato al tema scuro. Passa alla modalità chiara per impostare il colore d\'accento del tema chiaro.</string>
+    <string name="settings_accent_color_desc_light">Applicato al tema chiaro. Passa alla modalità scura per impostare il colore d\'accento del tema scuro.</string>
     <string name="settings_reduce_motion">Riduci le animazioni</string>
     <string name="settings_reduce_motion_desc">Animazioni del focus più morbide.</string>
     <string name="settings_list_view">Vista elenco</string>

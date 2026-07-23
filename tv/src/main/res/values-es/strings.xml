@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Apariencia</string>
     <string name="settings_dark_theme">Tema oscuro</string>
     <string name="settings_dark_theme_desc">Recomendado para ver relajado desde el sofá.</string>
+    <string name="settings_accent_color">Color de acento</string>
+    <string name="settings_accent_color_desc_dark">Se aplica al tema oscuro. Cambia al modo claro para definir el acento del tema claro.</string>
+    <string name="settings_accent_color_desc_light">Se aplica al tema claro. Cambia al modo oscuro para definir el acento del tema oscuro.</string>
     <string name="settings_reduce_motion">Reducir movimiento</string>
     <string name="settings_reduce_motion_desc">Animaciones de enfoque más suaves.</string>
     <string name="settings_list_view">Vista de lista</string>

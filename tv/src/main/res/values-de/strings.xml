@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Erscheinungsbild</string>
     <string name="settings_dark_theme">Dunkles Design</string>
     <string name="settings_dark_theme_desc">Empfohlen für entspanntes Zurücklehn-Fernsehen.</string>
+    <string name="settings_accent_color">Akzentfarbe</string>
+    <string name="settings_accent_color_desc_dark">Wird auf das dunkle Design angewendet. Wechseln Sie in den hellen Modus, um die Akzentfarbe des hellen Designs festzulegen.</string>
+    <string name="settings_accent_color_desc_light">Wird auf das helle Design angewendet. Wechseln Sie in den dunklen Modus, um die Akzentfarbe des dunklen Designs festzulegen.</string>
     <string name="settings_reduce_motion">Bewegung reduzieren</string>
     <string name="settings_reduce_motion_desc">Sanftere Fokus-Animationen.</string>
     <string name="settings_list_view">Listenansicht</string>

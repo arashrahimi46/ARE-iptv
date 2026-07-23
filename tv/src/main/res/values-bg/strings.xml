@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Външен вид</string>
     <string name="settings_dark_theme">Тъмна тема</string>
     <string name="settings_dark_theme_desc">Препоръчва се за спокойно гледане.</string>
+    <string name="settings_accent_color">Акцентен цвят</string>
+    <string name="settings_accent_color_desc_dark">Прилага се към тъмната тема. Превключете към светъл режим, за да зададете акцента на светлата тема.</string>
+    <string name="settings_accent_color_desc_light">Прилага се към светлата тема. Превключете към тъмен режим, за да зададете акцента на тъмната тема.</string>
     <string name="settings_reduce_motion">Намали анимациите</string>
     <string name="settings_reduce_motion_desc">По-меки анимации при фокус.</string>
     <string name="settings_list_view">Изглед списък</string>

@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Weergave</string>
     <string name="settings_dark_theme">Donker thema</string>
     <string name="settings_dark_theme_desc">Aanbevolen voor ontspannen kijken.</string>
+    <string name="settings_accent_color">Accentkleur</string>
+    <string name="settings_accent_color_desc_dark">Wordt toegepast op het donkere thema. Schakel over naar de lichte modus om de accentkleur van het lichte thema in te stellen.</string>
+    <string name="settings_accent_color_desc_light">Wordt toegepast op het lichte thema. Schakel over naar de donkere modus om de accentkleur van het donkere thema in te stellen.</string>
     <string name="settings_reduce_motion">Beweging beperken</string>
     <string name="settings_reduce_motion_desc">Zachtere focusanimaties.</string>
     <string name="settings_list_view">Lijstweergave</string>

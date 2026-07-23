@@ -136,6 +136,9 @@
     <string name="settings_section_appearance">Wygląd</string>
     <string name="settings_dark_theme">Ciemny motyw</string>
     <string name="settings_dark_theme_desc">Zalecany do relaksującego oglądania.</string>
+    <string name="settings_accent_color">Kolor akcentu</string>
+    <string name="settings_accent_color_desc_dark">Stosowany do ciemnego motywu. Przełącz na tryb jasny, aby ustawić akcent jasnego motywu.</string>
+    <string name="settings_accent_color_desc_light">Stosowany do jasnego motywu. Przełącz na tryb ciemny, aby ustawić akcent ciemnego motywu.</string>
     <string name="settings_reduce_motion">Ogranicz animacje</string>
     <string name="settings_reduce_motion_desc">Łagodniejsze animacje fokusu.</string>
     <string name="settings_list_view">Widok listy</string>
