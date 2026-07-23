@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Schreiben auf dieses Laufwerk nicht möglich – wähle ein anderes</string>
     <string name="recording_error_low_space">Nicht genug freier Speicher auf diesem Laufwerk</string>
     <string name="recording_error_hls">Dieser Stream kann noch nicht aufgenommen werden</string>
+    <string name="recording_pick_volume_title">Aufnehmen auf</string>
+    <string name="recording_volume_internal">Interner Speicher</string>
+    <string name="recording_volume_usb">USB-Laufwerk</string>
+    <string name="recording_volume_free">%1$s frei</string>
     <string name="recording_reason_stream_lost">Stream verloren</string>
     <string name="recording_reason_disk_full">Speicher voll</string>
     <string name="recording_reason_drive_removed">Laufwerk entfernt</string>

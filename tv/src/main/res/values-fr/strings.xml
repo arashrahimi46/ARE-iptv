@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Impossible d\'écrire sur ce lecteur ; choisissez-en un autre</string>
     <string name="recording_error_low_space">Espace insuffisant sur ce lecteur</string>
     <string name="recording_error_hls">Ce flux ne peut pas encore être enregistré</string>
+    <string name="recording_pick_volume_title">Enregistrer sur</string>
+    <string name="recording_volume_internal">Stockage interne</string>
+    <string name="recording_volume_usb">Clé USB</string>
+    <string name="recording_volume_free">%1$s libre</string>
     <string name="recording_reason_stream_lost">Flux perdu</string>
     <string name="recording_reason_disk_full">Disque plein</string>
     <string name="recording_reason_drive_removed">Lecteur retiré</string>

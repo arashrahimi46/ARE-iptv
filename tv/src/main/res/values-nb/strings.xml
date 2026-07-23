@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Kan ikke skrive til den stasjonen; velg en annen</string>
     <string name="recording_error_low_space">Ikke nok ledig plass på den stasjonen</string>
     <string name="recording_error_hls">Denne strømmen kan ikke tas opp ennå</string>
+    <string name="recording_pick_volume_title">Ta opp til</string>
+    <string name="recording_volume_internal">Intern lagring</string>
+    <string name="recording_volume_usb">USB-stasjon</string>
+    <string name="recording_volume_free">%1$s ledig</string>
     <string name="recording_reason_stream_lost">Strøm mistet</string>
     <string name="recording_reason_disk_full">Disken er full</string>
     <string name="recording_reason_drive_removed">Stasjon fjernet</string>

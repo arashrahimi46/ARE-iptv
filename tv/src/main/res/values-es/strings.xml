@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">No se puede escribir en esa unidad; elige otra</string>
     <string name="recording_error_low_space">No hay espacio suficiente en esa unidad</string>
     <string name="recording_error_hls">Esta emisión aún no se puede grabar</string>
+    <string name="recording_pick_volume_title">Grabar en</string>
+    <string name="recording_volume_internal">Almacenamiento interno</string>
+    <string name="recording_volume_usb">Unidad USB</string>
+    <string name="recording_volume_free">%1$s libre</string>
     <string name="recording_reason_stream_lost">Señal perdida</string>
     <string name="recording_reason_disk_full">Disco lleno</string>
     <string name="recording_reason_drive_removed">Unidad extraída</string>

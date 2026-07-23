@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Не вдається записати на цей накопичувач; виберіть інший</string>
     <string name="recording_error_low_space">Недостатньо місця на цьому накопичувачі</string>
     <string name="recording_error_hls">Цей потік ще не можна записати</string>
+    <string name="recording_pick_volume_title">Запис на</string>
+    <string name="recording_volume_internal">Внутрішня пам\'ять</string>
+    <string name="recording_volume_usb">USB-накопичувач</string>
+    <string name="recording_volume_free">%1$s вільно</string>
     <string name="recording_reason_stream_lost">Потік втрачено</string>
     <string name="recording_reason_disk_full">Диск заповнено</string>
     <string name="recording_reason_drive_removed">Накопичувач вилучено</string>

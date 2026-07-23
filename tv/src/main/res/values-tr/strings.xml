@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">O sürücüye yazılamıyor; başka birini seçin</string>
     <string name="recording_error_low_space">O sürücüde yeterli boş alan yok</string>
     <string name="recording_error_hls">Bu yayın henüz kaydedilemiyor</string>
+    <string name="recording_pick_volume_title">Şuraya kaydet</string>
+    <string name="recording_volume_internal">Dahili depolama</string>
+    <string name="recording_volume_usb">USB sürücü</string>
+    <string name="recording_volume_free">%1$s boş</string>
     <string name="recording_reason_stream_lost">Yayın kesildi</string>
     <string name="recording_reason_disk_full">Disk dolu</string>
     <string name="recording_reason_drive_removed">Sürücü çıkarıldı</string>

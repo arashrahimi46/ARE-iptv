@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Impossibile scrivere su quell\'unità; scegline un\'altra</string>
     <string name="recording_error_low_space">Spazio insufficiente su quell\'unità</string>
     <string name="recording_error_hls">Questo flusso non può ancora essere registrato</string>
+    <string name="recording_pick_volume_title">Registra su</string>
+    <string name="recording_volume_internal">Memoria interna</string>
+    <string name="recording_volume_usb">Unità USB</string>
+    <string name="recording_volume_free">%1$s liberi</string>
     <string name="recording_reason_stream_lost">Flusso perso</string>
     <string name="recording_reason_disk_full">Disco pieno</string>
     <string name="recording_reason_drive_removed">Unità rimossa</string>

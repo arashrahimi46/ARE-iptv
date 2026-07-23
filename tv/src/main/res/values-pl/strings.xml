@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Nie można zapisać na tym dysku; wybierz inny</string>
     <string name="recording_error_low_space">Za mało wolnego miejsca na tym dysku</string>
     <string name="recording_error_hls">Tego strumienia nie można jeszcze nagrać</string>
+    <string name="recording_pick_volume_title">Nagrywaj do</string>
+    <string name="recording_volume_internal">Pamięć wewnętrzna</string>
+    <string name="recording_volume_usb">Dysk USB</string>
+    <string name="recording_volume_free">%1$s wolne</string>
     <string name="recording_reason_stream_lost">Utracono strumień</string>
     <string name="recording_reason_disk_full">Dysk pełny</string>
     <string name="recording_reason_drive_removed">Dysk odłączony</string>

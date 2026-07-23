@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Не удаётся записать на этот накопитель; выберите другой</string>
     <string name="recording_error_low_space">Недостаточно места на этом накопителе</string>
     <string name="recording_error_hls">Этот поток пока нельзя записать</string>
+    <string name="recording_pick_volume_title">Запись на</string>
+    <string name="recording_volume_internal">Внутренняя память</string>
+    <string name="recording_volume_usb">USB-накопитель</string>
+    <string name="recording_volume_free">%1$s свободно</string>
     <string name="recording_reason_stream_lost">Поток потерян</string>
     <string name="recording_reason_disk_full">Диск заполнен</string>
     <string name="recording_reason_drive_removed">Накопитель извлечён</string>

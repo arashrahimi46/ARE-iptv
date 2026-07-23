@@ -3,9 +3,6 @@ package com.arashrahimi46.iptv.ui.player
 import android.os.SystemClock
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -89,6 +86,7 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.ArePlayerControls
+import com.arashrahimi46.iptv.ui.components.RecordingIndicator
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -150,28 +148,32 @@ fun LivePlayerScreen(
     val recordingErrorLowSpace = stringResource(R.string.recording_error_low_space)
     val recordingErrorHls = stringResource(R.string.recording_error_hls)
     val recordingStartedToast = stringResource(R.string.recording_started_toast)
-    // SAF drive picker -- ask which drive every time (design §4). On pick, take a persistable
-    // permission and start; pre-flight failures surface as a toast (no ghost REC).
-    val recordDriveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        if (uri != null) {
-            runCatching {
-                context.contentResolver.takePersistableUriPermission(
-                    uri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                )
+    // Drive selection for recording. Android TV ships no SAF file picker (OPEN_DOCUMENT_TREE only
+    // resolves to a stub), so instead of the OS picker the user chooses among the app's own volumes
+    // (internal + any mounted USB/SD). Pre-flight failures surface as a toast (no ghost REC).
+    val onRecordResult: (com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult) -> Unit = { result ->
+        val msg = when (result) {
+            is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Started -> recordingStartedToast
+            is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Failed -> when (result.reason) {
+                com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.NOT_WRITABLE -> recordingErrorNotWritable
+                com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.LOW_SPACE -> recordingErrorLowSpace
+                com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.HLS_STREAM -> recordingErrorHls
+                com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.CREATE_FAILED -> recordingFailedGeneric
             }
-            viewModel.startRecording(uri) { result ->
-                val msg = when (result) {
-                    is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Started -> recordingStartedToast
-                    is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Failed -> when (result.reason) {
-                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.NOT_WRITABLE -> recordingErrorNotWritable
-                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.LOW_SPACE -> recordingErrorLowSpace
-                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.HLS_STREAM -> recordingErrorHls
-                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.CREATE_FAILED -> recordingFailedGeneric
-                    }
-                }
-                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-            }
+        }
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+    }
+    // Volumes to choose from when >1; null hides the picker. With only internal storage we skip the
+    // dialog and record straight there.
+    var recordVolumes by remember {
+        mutableStateOf<List<com.arashrahimi46.iptv.data.recording.RecordingStorage.Volume>?>(null)
+    }
+    val onRecordPressed: () -> Unit = {
+        val volumes = viewModel.availableVolumes()
+        if (volumes.size > 1) {
+            recordVolumes = volumes
+        } else {
+            volumes.firstOrNull()?.let { viewModel.startRecording(it.treeUri, onRecordResult) }
         }
     }
     // Surface a fault-driven stop (drive pulled / disk full / stream lost) as a toast so the user
@@ -183,6 +185,9 @@ fun LivePlayerScreen(
     }
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
+    // Always-on recording badge preference (default on) + reduced-motion for its pulse.
+    val showRecordingIndicator by settings.isRecordingIndicatorEnabled.collectAsState(initial = true)
+    val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
     // Online subtitles need BOTH the API key (search) and the account login (download). If either is
     // missing the feature is unusable, so the "Search online" entry is hidden until both are set.
@@ -972,7 +977,7 @@ fun LivePlayerScreen(
                                 ) {
                                     viewModel.stopRecording()
                                 } else {
-                                    recordDriveLauncher.launch(null)
+                                    onRecordPressed()
                                 }
                             }
                         } else {
@@ -985,6 +990,32 @@ fun LivePlayerScreen(
                     )
                 }
                 }
+            }
+
+            // Recording badge: OUTSIDE the auto-hiding HUD so it stays visible the whole time a
+            // recording runs (the user must never forget). Top-center avoids the back button (left)
+            // and stream-health chip (right). Hidden when the user turns the indicator off.
+            if (showRecordingIndicator &&
+                (recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Recording ||
+                    recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting)
+            ) {
+                RecordingIndicator(
+                    reconnecting = recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
+                    elapsedMs = recordingState.elapsedMs,
+                    reducedMotion = reducedMotion,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 24.dp),
+                )
+            }
+
+            recordVolumes?.let { volumes ->
+                RecordVolumeDialog(
+                    volumes = volumes,
+                    onPick = { volume ->
+                        recordVolumes = null
+                        viewModel.startRecording(volume.treeUri, onRecordResult)
+                    },
+                    onDismiss = { recordVolumes = null },
+                )
             }
 
             if (showSubtitles) {

@@ -333,6 +333,13 @@ Ships **English + 21 translated locales**. A missing translation silently falls 
   every index must still appear. Escape `'` as `\'`; XML-escape `&`/`<`/`>`.
 - Audit gaps: diff each `values-*/strings.xml`'s `name="…"` keys against `values/strings.xml`.
 
+## Xtream providers — NEVER curl the stream/playlist for probing
+
+- **Do NOT `curl`/`wget` the provider's stream, `.m3u8`, `.ts`, or `player_api` URLs to "test" them.**
+  Xtream servers rate-limit by IP: a stray non-player connection makes the provider **block any new
+  connection for several minutes**, which **stops the live stream inside the app**. Verify streams
+  on-device (ExoPlayer sends a player User-Agent and is what actually matters), never from the shell.
+
 ## TV UX conventions (do not regress)
 
 - **Focus:** every focusable composes `TvFocusable` / `Modifier.tvFocusable` (accent ring + glow).

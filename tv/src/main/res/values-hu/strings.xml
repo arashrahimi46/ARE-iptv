@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Nem lehet írni arra a meghajtóra; válasszon másikat</string>
     <string name="recording_error_low_space">Nincs elég szabad hely azon a meghajtón</string>
     <string name="recording_error_hls">Ez az adás még nem rögzíthető</string>
+    <string name="recording_pick_volume_title">Felvétel ide</string>
+    <string name="recording_volume_internal">Belső tárhely</string>
+    <string name="recording_volume_usb">USB-meghajtó</string>
+    <string name="recording_volume_free">%1$s szabad</string>
     <string name="recording_reason_stream_lost">Adás elveszett</string>
     <string name="recording_reason_disk_full">A lemez megtelt</string>
     <string name="recording_reason_drive_removed">Meghajtó eltávolítva</string>

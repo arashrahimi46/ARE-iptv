@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Bu diskə yazmaq mümkün deyil; başqasını seçin</string>
     <string name="recording_error_low_space">Bu diskdə kifayət qədər boş yer yoxdur</string>
     <string name="recording_error_hls">Bu yayım hələ qeyd edilə bilmir</string>
+    <string name="recording_pick_volume_title">Buraya qeyd et</string>
+    <string name="recording_volume_internal">Daxili yaddaş</string>
+    <string name="recording_volume_usb">USB disk</string>
+    <string name="recording_volume_free">%1$s boş</string>
     <string name="recording_reason_stream_lost">Yayım itdi</string>
     <string name="recording_reason_disk_full">Disk doludur</string>
     <string name="recording_reason_drive_removed">Disk çıxarıldı</string>

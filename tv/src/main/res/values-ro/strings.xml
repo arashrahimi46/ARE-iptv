@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Nu se poate scrie pe acea unitate; alege alta</string>
     <string name="recording_error_low_space">Spațiu insuficient pe acea unitate</string>
     <string name="recording_error_hls">Acest flux nu poate fi înregistrat încă</string>
+    <string name="recording_pick_volume_title">Înregistrează pe</string>
+    <string name="recording_volume_internal">Stocare internă</string>
+    <string name="recording_volume_usb">Unitate USB</string>
+    <string name="recording_volume_free">%1$s liberi</string>
     <string name="recording_reason_stream_lost">Flux pierdut</string>
     <string name="recording_reason_disk_full">Disc plin</string>
     <string name="recording_reason_drive_removed">Unitate scoasă</string>

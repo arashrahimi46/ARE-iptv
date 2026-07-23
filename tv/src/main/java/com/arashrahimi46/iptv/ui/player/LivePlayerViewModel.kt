@@ -383,6 +383,11 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
      * so pressing REC never leaves the user stuck on a broken stream. */
     private var pendingRecordOriginalUrl: String? = null
 
+    /** Picker-free storage destinations (internal + any mounted USB/SD) offered by the TV volume
+     * picker, since SAF's folder picker has no handler on Android TV. */
+    fun availableVolumes(): List<com.arashrahimi46.iptv.data.recording.RecordingStorage.Volume> =
+        recordingStorage.availableVolumes()
+
     /**
      * Begin recording the current live channel into [treeUri]. If the channel is playing an Xtream
      * HLS stream, playback is first switched to its `.ts` variant and capture is deferred until that

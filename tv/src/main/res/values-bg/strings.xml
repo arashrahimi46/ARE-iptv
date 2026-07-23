@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Не може да се пише на това устройство; изберете друго</string>
     <string name="recording_error_low_space">Няма достатъчно свободно място на устройството</string>
     <string name="recording_error_hls">Този поток все още не може да се записва</string>
+    <string name="recording_pick_volume_title">Запис в</string>
+    <string name="recording_volume_internal">Вътрешна памет</string>
+    <string name="recording_volume_usb">USB устройство</string>
+    <string name="recording_volume_free">%1$s свободни</string>
     <string name="recording_reason_stream_lost">Потокът е изгубен</string>
     <string name="recording_reason_disk_full">Дискът е пълен</string>
     <string name="recording_reason_drive_removed">Устройството е премахнато</string>

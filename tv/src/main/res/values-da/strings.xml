@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Kan ikke skrive til det drev; vælg et andet</string>
     <string name="recording_error_low_space">Ikke nok ledig plads på det drev</string>
     <string name="recording_error_hls">Dette stream kan ikke optages endnu</string>
+    <string name="recording_pick_volume_title">Optag til</string>
+    <string name="recording_volume_internal">Intern lagring</string>
+    <string name="recording_volume_usb">USB-drev</string>
+    <string name="recording_volume_free">%1$s ledig</string>
     <string name="recording_reason_stream_lost">Stream mistet</string>
     <string name="recording_reason_disk_full">Disken er fuld</string>
     <string name="recording_reason_drive_removed">Drev fjernet</string>

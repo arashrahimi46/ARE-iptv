@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Δεν είναι δυνατή η εγγραφή σε αυτόν τον δίσκο· επίλεξε άλλον</string>
     <string name="recording_error_low_space">Ανεπαρκής ελεύθερος χώρος σε αυτόν τον δίσκο</string>
     <string name="recording_error_hls">Αυτή η ροή δεν μπορεί να εγγραφεί ακόμη</string>
+    <string name="recording_pick_volume_title">Εγγραφή σε</string>
+    <string name="recording_volume_internal">Εσωτερικός χώρος αποθήκευσης</string>
+    <string name="recording_volume_usb">Μονάδα USB</string>
+    <string name="recording_volume_free">%1$s ελεύθερα</string>
     <string name="recording_reason_stream_lost">Η ροή χάθηκε</string>
     <string name="recording_reason_disk_full">Ο δίσκος γέμισε</string>
     <string name="recording_reason_drive_removed">Ο δίσκος αφαιρέθηκε</string>

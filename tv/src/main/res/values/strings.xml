@@ -466,6 +466,11 @@
     <string name="recording_error_not_writable">Can\'t write to that drive — pick another</string>
     <string name="recording_error_low_space">Not enough free space on that drive</string>
     <string name="recording_error_hls">This stream can\'t be recorded yet</string>
+    <!-- Drive picker -->
+    <string name="recording_pick_volume_title">Record to</string>
+    <string name="recording_volume_internal">Internal storage</string>
+    <string name="recording_volume_usb">USB drive</string>
+    <string name="recording_volume_free">%1$s free</string>
     <!-- Terminal reasons -->
     <string name="recording_reason_stream_lost">Stream lost</string>
     <string name="recording_reason_disk_full">Disk full</string>

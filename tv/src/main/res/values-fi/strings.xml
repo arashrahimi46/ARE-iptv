@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Asemalle ei voi kirjoittaa; valitse toinen</string>
     <string name="recording_error_low_space">Asemalla ei ole tarpeeksi tilaa</string>
     <string name="recording_error_hls">Tätä lähetystä ei voi vielä tallentaa</string>
+    <string name="recording_pick_volume_title">Tallenna kohteeseen</string>
+    <string name="recording_volume_internal">Sisäinen tallennustila</string>
+    <string name="recording_volume_usb">USB-asema</string>
+    <string name="recording_volume_free">%1$s vapaana</string>
     <string name="recording_reason_stream_lost">Lähetys menetetty</string>
     <string name="recording_reason_disk_full">Levy täynnä</string>
     <string name="recording_reason_drive_removed">Asema poistettu</string>

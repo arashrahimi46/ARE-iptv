@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Kan inte skriva till den enheten; välj en annan</string>
     <string name="recording_error_low_space">Inte tillräckligt med utrymme på den enheten</string>
     <string name="recording_error_hls">Den här strömmen kan inte spelas in ännu</string>
+    <string name="recording_pick_volume_title">Spela in till</string>
+    <string name="recording_volume_internal">Internt lagringsutrymme</string>
+    <string name="recording_volume_usb">USB-enhet</string>
+    <string name="recording_volume_free">%1$s ledigt</string>
     <string name="recording_reason_stream_lost">Strömmen förlorades</string>
     <string name="recording_reason_disk_full">Disken är full</string>
     <string name="recording_reason_drive_removed">Enhet borttagen</string>

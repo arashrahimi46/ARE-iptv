@@ -2,25 +2,55 @@ package com.arashrahimi46.iptv.data.recording
 
 import android.content.Context
 import android.net.Uri
+import android.os.StatFs
 import android.provider.DocumentsContract
 import android.system.Os
 import androidx.documentfile.provider.DocumentFile
+import java.io.File
+import java.io.FileOutputStream
 import java.io.OutputStream
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
- * SAF (Storage Access Framework) side of Live TV Recording V1: creating the human-findable file
- * layout on any user-picked drive, opening append/output streams, drive-identity + free-space
- * checks, pre-flight validation, and deletion. Everything is keyed by a persistable-permission
- * `treeUri` and SAF document ids -- never a `File` path -- so internal storage and any external USB
- * drive are handled identically. See docs/recording-v1-design.md §4.
+ * Storage side of Live TV Recording V1: creating the human-findable file layout on a drive, opening
+ * append/output streams, drive-identity + free-space checks, pre-flight validation, and deletion.
+ *
+ * Two drive kinds are handled identically by every method, keyed on the `treeUri` scheme:
+ * - **`content://` SAF tree** — a user-picked drive granted via `ACTION_OPEN_DOCUMENT_TREE`. Only
+ *   works where the platform ships DocumentsUI (phones, some boxes).
+ * - **`file://` app-specific volume** — the app's own dir on a mounted volume (internal / USB / SD),
+ *   from [availableVolumes]. Needs no picker and no permission, so it's the default on Android TV,
+ *   which ships **no** DocumentsUI (`ACTION_OPEN_DOCUMENT_TREE` there only resolves to a stub that
+ *   shows "You don't have an app that can do this"). See docs/recording-v1-design.md §4.
  */
 class RecordingStorage(private val context: Context) {
 
     /** A freshly-created recording file (or split part) on disk. */
     data class CreatedFile(val documentUri: Uri, val documentId: String, val displayName: String)
+
+    /** A picker-free storage destination: the app-specific dir on one mounted volume. */
+    data class Volume(val treeUri: Uri, val isInternal: Boolean, val freeBytes: Long?)
+
+    /**
+     * Storage destinations available without any file picker: the app-specific external dir on each
+     * mounted volume (index 0 = internal/primary, the rest = USB/SD sticks). This is what the TV
+     * volume picker offers, since SAF's `ACTION_OPEN_DOCUMENT_TREE` has no handler on Android TV.
+     */
+    fun availableVolumes(): List<Volume> =
+        context.getExternalFilesDirs(null).mapIndexedNotNull { index, dir ->
+            dir ?: return@mapIndexedNotNull null
+            val uri = Uri.fromFile(dir)
+            Volume(treeUri = uri, isInternal = index == 0, freeBytes = freeBytes(uri))
+        }
+
+    private fun isFileUri(uri: Uri): Boolean = uri.scheme == "file"
+
+    /** Root [DocumentFile] for [treeUri], resolved for either a SAF tree or a `file://` volume dir. */
+    private fun rootDir(treeUri: Uri): DocumentFile? =
+        if (isFileUri(treeUri)) treeUri.path?.let { DocumentFile.fromFile(File(it)) }
+        else DocumentFile.fromTreeUri(context, treeUri)
 
     /** Pre-flight outcome (design §6): either OK, or a terminal reason the REC dot never flips for. */
     sealed class Preflight {
@@ -36,7 +66,7 @@ class RecordingStorage(private val context: Context) {
      */
     fun preflight(treeUri: Uri, isHls: Boolean, estimatedBitrateBps: Long): Preflight {
         if (isHls) return Preflight.Failed(Preflight.Reason.HLS_STREAM)
-        val root = DocumentFile.fromTreeUri(context, treeUri)
+        val root = rootDir(treeUri)
         if (root == null || !root.canWrite()) return Preflight.Failed(Preflight.Reason.NOT_WRITABLE)
         // Test-write: create then delete a probe file. Catches providers that report canWrite() but
         // reject actual writes (some read-only mounts / revoked grants).
@@ -73,30 +103,37 @@ class RecordingStorage(private val context: Context) {
         val dir = recordingsDir(treeUri) ?: return null
         val name = buildDisplayName(channelName, programTitle, startedAtMs, part)
         val file = runCatching { dir.createFile(MIME_TS, name) }.getOrNull() ?: return null
-        val docId = runCatching { DocumentsContract.getDocumentId(file.uri) }.getOrNull() ?: return null
+        // File volumes have no SAF document id; the child's own uri string is the stable handle.
+        val docId = if (isFileUri(treeUri)) file.uri.toString()
+        else runCatching { DocumentsContract.getDocumentId(file.uri) }.getOrNull() ?: return null
         return CreatedFile(file.uri, docId, file.name ?: name)
     }
 
     /** Output stream for appending capture bytes to a created recording file. */
     fun openOutputStream(documentUri: Uri): OutputStream? =
-        runCatching { context.contentResolver.openOutputStream(documentUri, "wa") }.getOrNull()
+        if (isFileUri(documentUri)) documentUri.path?.let { runCatching { FileOutputStream(File(it), true) }.getOrNull() }
+        else runCatching { context.contentResolver.openOutputStream(documentUri, "wa") }.getOrNull()
 
     /** Rebuild a document URI from a saved tree + document id (for playback / deletion / probing). */
     fun documentUri(treeUri: Uri, documentId: String): Uri =
-        DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId)
+        if (isFileUri(treeUri)) Uri.parse(documentId)
+        else DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId)
 
     /** True when the recording's file is currently readable (drive mounted + file present). */
     fun documentExists(treeUri: Uri, documentId: String): Boolean =
-        runCatching { DocumentFile.fromSingleUri(context, documentUri(treeUri, documentId))?.exists() == true }
+        if (isFileUri(treeUri)) runCatching { documentUri(treeUri, documentId).path?.let { File(it).exists() } == true }.getOrDefault(false)
+        else runCatching { DocumentFile.fromSingleUri(context, documentUri(treeUri, documentId))?.exists() == true }
             .getOrDefault(false)
 
     /** True when the destination drive itself is currently mounted/readable (vs. the file just gone). */
     fun driveAvailable(treeUri: Uri): Boolean =
-        runCatching { DocumentFile.fromTreeUri(context, treeUri)?.canRead() == true }.getOrDefault(false)
+        if (isFileUri(treeUri)) runCatching { treeUri.path?.let { File(it).canWrite() } == true }.getOrDefault(false)
+        else runCatching { DocumentFile.fromTreeUri(context, treeUri)?.canRead() == true }.getOrDefault(false)
 
-    /** Free bytes on the drive backing [treeUri], via fstatvfs on the tree fd. Null when the provider
-     * doesn't support it (some cloud/network providers) -- callers treat null as "unknown, proceed". */
+    /** Free bytes on the drive backing [treeUri]. For file volumes via [StatFs]; for SAF via fstatvfs
+     * on the tree fd. Null when the provider doesn't support it -- callers treat null as "unknown, proceed". */
     fun freeBytes(treeUri: Uri): Long? {
+        if (isFileUri(treeUri)) return treeUri.path?.let { runCatching { StatFs(it).availableBytes }.getOrNull() }
         val treeDocId = runCatching { DocumentsContract.getTreeDocumentId(treeUri) }.getOrNull() ?: return null
         val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, treeDocId)
         return runCatching {
@@ -113,7 +150,16 @@ class RecordingStorage(private val context: Context) {
      * different stick" before trusting a saved treeUri, and to resolve UNAVAILABLE on remount.
      */
     fun volumeUuid(treeUri: Uri): String? =
-        runCatching { DocumentsContract.getTreeDocumentId(treeUri).substringBefore(':').ifBlank { null } }.getOrNull()
+        if (isFileUri(treeUri)) fileVolumeId(treeUri)
+        else runCatching { DocumentsContract.getTreeDocumentId(treeUri).substringBefore(':').ifBlank { null } }.getOrNull()
+
+    /** Volume id for a `file://` app dir: "primary" for internal (path under /emulated/), else the
+     * /storage/<id>/ segment (a USB stick's serial-ish id) -- mirrors SAF's tree-doc-id convention. */
+    private fun fileVolumeId(treeUri: Uri): String? {
+        val path = treeUri.path ?: return null
+        if (path.contains("/emulated/")) return "primary"
+        return Regex("/storage/([^/]+)/").find(path)?.groupValues?.getOrNull(1)?.ifBlank { null }
+    }
 
     /** Human-readable drive label for the "location badge" (e.g. "SanDisk USB" / "Internal storage").
      * Best-effort: providers rarely expose a friendly name, so fall back to the volume UUID. */
@@ -129,12 +175,13 @@ class RecordingStorage(private val context: Context) {
     /** Delete a recording's file (or first part). Returns whether it succeeded (false when the drive
      * is gone -- the caller then queues the delete for remount, per design §6). */
     fun deleteDocument(treeUri: Uri, documentId: String): Boolean =
-        runCatching { DocumentFile.fromSingleUri(context, documentUri(treeUri, documentId))?.delete() == true }
+        if (isFileUri(treeUri)) runCatching { documentUri(treeUri, documentId).path?.let { File(it).delete() } == true }.getOrDefault(false)
+        else runCatching { DocumentFile.fromSingleUri(context, documentUri(treeUri, documentId))?.delete() == true }
             .getOrDefault(false)
 
     /** Get-or-create `AreIPTV/Recordings/` under the picked tree. */
     private fun recordingsDir(treeUri: Uri): DocumentFile? {
-        val root = DocumentFile.fromTreeUri(context, treeUri) ?: return null
+        val root = rootDir(treeUri) ?: return null
         val app = root.findFile(APP_DIR)?.takeIf { it.isDirectory } ?: root.createDirectory(APP_DIR) ?: return null
         return app.findFile(REC_DIR)?.takeIf { it.isDirectory } ?: app.createDirectory(REC_DIR)
     }

@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Na tento disk nelze zapisovat; vyberte jiný</string>
     <string name="recording_error_low_space">Na tomto disku není dostatek místa</string>
     <string name="recording_error_hls">Tento stream zatím nelze nahrát</string>
+    <string name="recording_pick_volume_title">Nahrát do</string>
+    <string name="recording_volume_internal">Interní úložiště</string>
+    <string name="recording_volume_usb">USB disk</string>
+    <string name="recording_volume_free">%1$s volných</string>
     <string name="recording_reason_stream_lost">Stream ztracen</string>
     <string name="recording_reason_disk_full">Disk je plný</string>
     <string name="recording_reason_drive_removed">Disk odebrán</string>

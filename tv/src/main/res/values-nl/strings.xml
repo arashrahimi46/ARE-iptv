@@ -470,6 +470,10 @@
     <string name="recording_error_not_writable">Kan niet naar dat station schrijven; kies een ander</string>
     <string name="recording_error_low_space">Onvoldoende vrije ruimte op dat station</string>
     <string name="recording_error_hls">Deze stream kan nog niet worden opgenomen</string>
+    <string name="recording_pick_volume_title">Opnemen naar</string>
+    <string name="recording_volume_internal">Interne opslag</string>
+    <string name="recording_volume_usb">USB-station</string>
+    <string name="recording_volume_free">%1$s vrij</string>
     <string name="recording_reason_stream_lost">Stream verloren</string>
     <string name="recording_reason_disk_full">Schijf vol</string>
     <string name="recording_reason_drive_removed">Station verwijderd</string>
