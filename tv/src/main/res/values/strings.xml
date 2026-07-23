@@ -219,6 +219,30 @@
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Support this app</string>
     <string name="settings_support_desc">Buy me a coffee if ARE iptv is useful to you.</string>
+    <string name="settings_feedback_title">Send feedback</string>
+    <string name="settings_feedback_desc">Tell us what to improve — it takes a few seconds.</string>
+    <string name="settings_feedback_action">Give feedback</string>
+
+    <!-- Feedback dialog -->
+    <string name="feedback_title">Send feedback</string>
+    <string name="feedback_subtitle">Your feedback shapes what we build next. Thanks for helping.</string>
+    <string name="feedback_rating_label">How would you rate the app?</string>
+    <string name="feedback_star_cd">%1$d stars</string>
+    <string name="feedback_category_label">What is it about?</string>
+    <string name="feedback_message_label">Anything to add? (optional)</string>
+    <string name="feedback_message_placeholder">Tell us more…</string>
+    <string name="feedback_send">Send</string>
+    <string name="feedback_sending">Sending…</string>
+    <string name="feedback_thanks">Thank you! Your feedback has been sent.</string>
+    <string name="feedback_error">Couldn\'t send right now. Please check your connection and try again.</string>
+    <string name="feedback_qr_title">Want to write more?</string>
+    <string name="feedback_qr_desc">Scan this with your phone to open the feedback form and type on a real keyboard.</string>
+    <string name="feedback_cat_playback">Playback</string>
+    <string name="feedback_cat_guide">TV Guide</string>
+    <string name="feedback_cat_layout">Layout</string>
+    <string name="feedback_cat_favorites">Favorites</string>
+    <string name="feedback_cat_missing">Missing feature</string>
+    <string name="feedback_cat_other">Other</string>
 
     <!-- Parental PIN dialog -->
     <string name="pin_set_title">Set a 4-digit PIN</string>
@@ -427,4 +451,49 @@
     <string name="continue_card_resume_desc">Resume</string>
     <string name="channel_tile_now">Now · %1$s</string>
     <string name="channel_tile_next">Next · %1$s</string>
+
+    <!-- Live TV Recording (V1) -->
+    <string name="nav_recordings">Recordings</string>
+    <!-- Player HUD ● REC toggle -->
+    <string name="recording_start">Record</string>
+    <string name="recording_stop">Stop recording</string>
+    <string name="recording_not_supported">Recording not supported for this stream</string>
+    <string name="recording_started_toast">Recording started</string>
+    <string name="recording_stopped_reason">Recording stopped: %1$s</string>
+    <string name="recording_error_generic">Couldn\'t start recording</string>
+    <string name="recording_error_not_writable">Can\'t write to that drive — pick another</string>
+    <string name="recording_error_low_space">Not enough free space on that drive</string>
+    <string name="recording_error_hls">This stream can\'t be recorded yet</string>
+    <!-- Terminal reasons -->
+    <string name="recording_reason_stream_lost">Stream lost</string>
+    <string name="recording_reason_disk_full">Disk full</string>
+    <string name="recording_reason_drive_removed">Drive removed</string>
+    <string name="recording_reason_slow_disk">Slow drive — some data dropped</string>
+    <string name="recording_reason_crash">Recovered after an unexpected stop</string>
+    <!-- Recordings tab -->
+    <string name="recordings_title">Recordings</string>
+    <string name="recordings_empty">No recordings yet. Press ● REC while watching live TV.</string>
+    <string name="recordings_group_recording_now">Recording now</string>
+    <string name="recordings_group_completed">Completed</string>
+    <string name="recordings_group_interrupted">Interrupted</string>
+    <string name="recordings_group_unavailable">Unavailable</string>
+    <string name="recordings_play">Play</string>
+    <string name="recordings_delete">Delete</string>
+    <string name="recordings_delete_title">Delete recording?</string>
+    <string name="recordings_delete_body">This removes “%1$s” from your device.</string>
+    <string name="recordings_status_interrupted">Interrupted</string>
+    <string name="recordings_status_failed">Failed</string>
+    <string name="recordings_unavailable_reconnect">Reconnect %1$s to watch</string>
+    <string name="recordings_unavailable_generic">Reconnect the drive to watch</string>
+    <string name="recordings_missing">File no longer on the drive</string>
+    <string name="recordings_duration_approx">≈ %1$s</string>
+    <string name="recordings_parts">%1$d parts</string>
+    <string name="nav_streams">Streams</string>
+    <string name="streams_open">Open network stream</string>
+    <string name="streams_empty">No streams yet. Open a network stream to get started.</string>
+    <string name="streams_url_placeholder">http://server/stream.m3u8</string>
+    <string name="streams_url_helper">Paste a direct video link (HLS, DASH, MP4, RTSP…)</string>
+    <string name="streams_rename">Rename</string>
+    <string name="streams_save">Save</string>
+    <string name="streams_rename_placeholder">Enter a name</string>
 </resources>

@@ -196,16 +196,17 @@ fun AreChannelTile(
                         modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
                     )
                 }
-                if (now != null) {
-                    Text(
-                        text = stringResource(R.string.channel_tile_now, now),
-                        style = AreIptvTheme.typography.caption,
-                        color = colors.textSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = if (focused) Modifier.basicMarquee() else Modifier,
-                    )
-                }
+                // Always render the now line (empty when absent) so tiles with no current
+                // program stay the same height as tiles that have one -- matches how the
+                // `next` row below always reserves its height.
+                Text(
+                    text = if (now != null) stringResource(R.string.channel_tile_now, now) else "",
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = if (focused) Modifier.basicMarquee() else Modifier,
+                )
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text = if (next != null) stringResource(R.string.channel_tile_next, next) else "",

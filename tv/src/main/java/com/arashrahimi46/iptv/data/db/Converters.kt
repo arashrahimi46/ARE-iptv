@@ -2,6 +2,7 @@ package com.arashrahimi46.iptv.data.db
 
 import androidx.room.TypeConverter
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.model.RecordingStatus
 import com.arashrahimi46.iptv.data.model.SourceType
 
 class Converters {
@@ -16,4 +17,10 @@ class Converters {
 
     @TypeConverter
     fun toContentType(value: String): ContentType = ContentType.valueOf(value)
+
+    @TypeConverter
+    fun fromRecordingStatus(value: RecordingStatus): String = value.name
+
+    @TypeConverter
+    fun toRecordingStatus(value: String): RecordingStatus = RecordingStatus.valueOf(value)
 }

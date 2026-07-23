@@ -3,6 +3,9 @@ package com.arashrahimi46.iptv.ui.player
 import android.os.SystemClock
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -68,8 +71,12 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.TeeDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.video.VideoFrameMetadataListener
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -127,6 +134,53 @@ fun LivePlayerScreen(
     val state by viewModel.uiState.collectAsState()
     val upNext by viewModel.upNext.collectAsState()
     var showUpNext by remember { mutableStateOf(false) }
+
+    // Live TV Recording (V1): the capture tee feeds the recording sink alongside the screen. The
+    // sink no-ops until a recording starts, so this is wired unconditionally and costs nothing idle.
+    val recordingState by viewModel.recordingState.collectAsState()
+    val pendingRecord by viewModel.pendingRecord.collectAsState()
+    val recordingSink = viewModel.recordingSink
+    val mediaSourceFactory = remember(recordingSink) {
+        val upstream = DefaultDataSource.Factory(context)
+        val teeFactory = DataSource.Factory { TeeDataSource(upstream.createDataSource(), recordingSink) }
+        DefaultMediaSourceFactory(teeFactory)
+    }
+    val recordingFailedGeneric = stringResource(R.string.recording_error_generic)
+    val recordingErrorNotWritable = stringResource(R.string.recording_error_not_writable)
+    val recordingErrorLowSpace = stringResource(R.string.recording_error_low_space)
+    val recordingErrorHls = stringResource(R.string.recording_error_hls)
+    val recordingStartedToast = stringResource(R.string.recording_started_toast)
+    // SAF drive picker -- ask which drive every time (design §4). On pick, take a persistable
+    // permission and start; pre-flight failures surface as a toast (no ghost REC).
+    val recordDriveLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }
+            viewModel.startRecording(uri) { result ->
+                val msg = when (result) {
+                    is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Started -> recordingStartedToast
+                    is com.arashrahimi46.iptv.data.recording.RecordingSupervisor.StartResult.Failed -> when (result.reason) {
+                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.NOT_WRITABLE -> recordingErrorNotWritable
+                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.LOW_SPACE -> recordingErrorLowSpace
+                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.HLS_STREAM -> recordingErrorHls
+                        com.arashrahimi46.iptv.data.recording.RecordingSupervisor.FailReason.CREATE_FAILED -> recordingFailedGeneric
+                    }
+                }
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    // Surface a fault-driven stop (drive pulled / disk full / stream lost) as a toast so the user
+    // learns why capture ended -- the "red dot never lies" also means telling them when it stops.
+    LaunchedEffect(recordingState.stoppedReason) {
+        recordingState.stoppedReason?.let { reason ->
+            Toast.makeText(context, context.getString(R.string.recording_stopped_reason, reason), Toast.LENGTH_LONG).show()
+        }
+    }
     val settings = remember { UserSettings(context) }
     val hardwareDecoding by settings.isHardwareDecoding.collectAsState(initial = true)
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
@@ -417,6 +471,10 @@ fun LivePlayerScreen(
                         setEnableDecoderFallback(true)
                     }
                     ExoPlayer.Builder(context, renderersFactory)
+                        // Tee playback bytes to the recording sink (Live TV Recording V1). Media3's
+                        // built-in TeeDataSource copies every read byte to the sink; the sink no-ops
+                        // until a recording is active, so playback is untouched when idle.
+                        .setMediaSourceFactory(mediaSourceFactory)
                         // Request audio focus and route as media audio so sound actually plays
                         // (and ducks/pauses correctly around other apps) rather than being silent.
                         .setAudioAttributes(
@@ -565,6 +623,25 @@ fun LivePlayerScreen(
                 viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                 autoRetryAttempt++
                 retryCount++
+            }
+
+            // Option B recording handshake: once playback has switched to the Xtream `.ts` variant
+            // and is actually live (ready, not buffering), start the tee -- so the recorded file
+            // begins on a real TS byte instead of a torn-down HLS tail. If the `.ts` variant errors
+            // (server is HLS-only / off-air), revert to the original HLS stream so the user keeps
+            // watching. No-op when nothing is pending.
+            LaunchedEffect(exoPlayer, playing, isBuffering, pendingRecord, playerError) {
+                if (pendingRecord == null) return@LaunchedEffect
+                if (playerError != null) viewModel.abandonPendingRecording()
+                else if (playing && !isBuffering) viewModel.beginPendingRecording()
+            }
+            // Safety net: if the `.ts` variant never reaches a playing state (silent stall, no hard
+            // error), revert after a grace period rather than leaving playback stuck on it.
+            LaunchedEffect(pendingRecord) {
+                if (pendingRecord != null) {
+                    delay(15_000)
+                    viewModel.abandonPendingRecording()
+                }
             }
 
             // Real seek-bar/elapsed/buffered data (QA blocker: these were hardcoded
@@ -886,6 +963,24 @@ fun LivePlayerScreen(
                         // picker. Lit while an embedded track is active.
                         onSubtitles = { showSubtitles = true },
                         subtitlesActive = subtitleChoice is SubtitleTrack.Embedded,
+                        // ● REC (Live TV Recording V1): recordable live .ts channels only. Recording
+                        // stops in place; idle opens the drive picker. Non-.ts -> dimmed placeholder.
+                        onToggleRecord = if (viewModel.isCurrentStreamRecordable) {
+                            {
+                                if (recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Recording ||
+                                    recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting
+                                ) {
+                                    viewModel.stopRecording()
+                                } else {
+                                    recordDriveLauncher.launch(null)
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        recordingActive = recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Recording ||
+                            recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
+                        recordingReconnecting = recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
                         playPauseFocusRequester = hudFocusRequester,
                     )
                 }

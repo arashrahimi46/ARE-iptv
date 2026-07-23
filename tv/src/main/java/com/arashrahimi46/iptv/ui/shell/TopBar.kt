@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Splitscreen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +61,9 @@ fun AreTopBar(
         if (onCustomize != null) {
             AreIconButton(Icons.Filled.Edit, stringResource(R.string.shell_customize), onClick = onCustomize, variant = AreIconButtonVariant.Solid, active = customizeActive)
         }
-        // Multi-view action temporarily removed (feature not ready). onMultiView is kept on the
-        // signature so the button can be restored here without re-plumbing the shell.
+        // Multi-view: opens the multi-channel grid (route + screen already shipped). A free
+        // differentiator vs. paywalled rivals, so it gets a permanent entry point here.
+        AreIconButton(Icons.Filled.Splitscreen, stringResource(R.string.shell_multi_view_desc), onClick = onMultiView, variant = AreIconButtonVariant.Solid)
         AreIconButton(Icons.Filled.Search, stringResource(R.string.action_search), onClick = onSearch, variant = AreIconButtonVariant.Solid)
         // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
         // management UI, so this effectively adds/replaces the active source.)

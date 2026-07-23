@@ -67,10 +67,12 @@ import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
 import com.arashrahimi46.iptv.ui.onboarding.PrivacyTermsStep
 import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
 import com.arashrahimi46.iptv.ui.player.PlaybackSource
+import com.arashrahimi46.iptv.ui.recordings.RecordingsScreen
 import com.arashrahimi46.iptv.ui.search.SearchScreen
 import com.arashrahimi46.iptv.ui.series.SeriesScreen
 import com.arashrahimi46.iptv.ui.settings.SettingsScreen
 import com.arashrahimi46.iptv.ui.settings.isStale
+import com.arashrahimi46.iptv.ui.streams.StreamsScreen
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
@@ -313,6 +315,30 @@ fun AreIptvApp() {
                 },
             )
         }
+        composable(
+            route = "player/recording/{recordingId}",
+            arguments = listOf(navArgument("recordingId") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val recordingId = backStackEntry.arguments?.getLong("recordingId") ?: return@composable
+            LivePlayerScreen(
+                source = PlaybackSource.LocalRecording(recordingId),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = { navController.popBackStack() },
+            )
+        }
+        composable(
+            route = "player/direct/{streamId}",
+            arguments = listOf(navArgument("streamId") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val streamId = backStackEntry.arguments?.getLong("streamId") ?: return@composable
+            LivePlayerScreen(
+                source = PlaybackSource.DirectStream(streamId),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = { navController.popBackStack() },
+            )
+        }
         composable("multiview") {
             MultiViewScreen(onBack = { navController.popBackStack() })
         }
@@ -475,6 +501,18 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                     )
                 }
             }
+            composable("recordings") {
+                // Owns its own LazyColumn -> bounded height (FullSizeTab), like Settings.
+                FullSizeTab {
+                    RecordingsScreen(onPlay = { recordingId -> rootNav.navigate("player/recording/$recordingId") })
+                }
+            }
+            composable("streams") {
+                // Owns its own LazyVerticalGrid -> bounded height (FullSizeTab), like Recordings.
+                FullSizeTab {
+                    StreamsScreen(onStreamSelected = { streamId -> rootNav.navigate("player/direct/$streamId") })
+                }
+            }
             composable("settings") {
                 // Settings owns its own LazyColumn now (smoother scroll than an eager Column), so it
                 // needs a bounded height like the other lazy screens -- FullSizeTab, not ScrollableTab.
@@ -585,7 +623,7 @@ private fun NavHostController.selectTab(route: String) {
 }
 
 /** Routes that actually exist in the shell's inner NavHost. */
-private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "search", "favorites", "settings")
+private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "search", "favorites", "recordings", "streams", "settings")
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L

@@ -16,15 +16,18 @@ import kotlinx.coroutines.withContext
 class ContinueWatchingRepository(context: Context) {
     private val dao = AppDatabase.get(context).continueWatchingDao()
 
-    /** Persists (or replaces) the bookmark for exactly one of [vodTitleId]/[seriesEpisodeId]. */
-    suspend fun updateProgress(vodTitleId: Long?, seriesEpisodeId: Long?, positionMs: Long, durationMs: Long): Unit =
+    /** Persists (or replaces) the bookmark for exactly one of [vodTitleId]/[seriesEpisodeId]/[recordingId]. */
+    suspend fun updateProgress(vodTitleId: Long?, seriesEpisodeId: Long?, positionMs: Long, durationMs: Long, recordingId: Long? = null): Unit =
         withContext(Dispatchers.IO) {
-            val existing = vodTitleId?.let { dao.findByVod(it) } ?: seriesEpisodeId?.let { dao.findByEpisode(it) }
+            val existing = vodTitleId?.let { dao.findByVod(it) }
+                ?: seriesEpisodeId?.let { dao.findByEpisode(it) }
+                ?: recordingId?.let { dao.findByRecording(it) }
             dao.upsert(
                 ContinueWatchingEntry(
                     id = existing?.id ?: 0,
                     vodTitleId = vodTitleId,
                     seriesEpisodeId = seriesEpisodeId,
+                    recordingId = recordingId,
                     positionMs = positionMs,
                     durationMs = durationMs,
                     updatedAtMs = System.currentTimeMillis(),
@@ -35,14 +38,17 @@ class ContinueWatchingRepository(context: Context) {
 
     /** Clears the bookmark -- called once playback reaches "near the end" so a finished
      * title drops off the Continue Watching rail instead of resuming from its very end. */
-    suspend fun clear(vodTitleId: Long?, seriesEpisodeId: Long?): Unit = withContext(Dispatchers.IO) {
+    suspend fun clear(vodTitleId: Long?, seriesEpisodeId: Long?, recordingId: Long? = null): Unit = withContext(Dispatchers.IO) {
         vodTitleId?.let { dao.deleteByVod(it) }
         seriesEpisodeId?.let { dao.deleteByEpisode(it) }
+        recordingId?.let { dao.deleteByRecording(it) }
     }
 
-    /** Saved resume position for [vodTitleId]/[seriesEpisodeId], or 0 if there's no bookmark. */
-    suspend fun resumePositionFor(vodTitleId: Long?, seriesEpisodeId: Long?): Long = withContext(Dispatchers.IO) {
-        val entry = vodTitleId?.let { dao.findByVod(it) } ?: seriesEpisodeId?.let { dao.findByEpisode(it) }
+    /** Saved resume position for [vodTitleId]/[seriesEpisodeId]/[recordingId], or 0 if there's no bookmark. */
+    suspend fun resumePositionFor(vodTitleId: Long?, seriesEpisodeId: Long?, recordingId: Long? = null): Long = withContext(Dispatchers.IO) {
+        val entry = vodTitleId?.let { dao.findByVod(it) }
+            ?: seriesEpisodeId?.let { dao.findByEpisode(it) }
+            ?: recordingId?.let { dao.findByRecording(it) }
         entry?.positionMs ?: 0L
     }
 

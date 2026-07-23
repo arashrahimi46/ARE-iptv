@@ -883,7 +883,11 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 is java.net.SocketTimeoutException -> "The server took too long to respond -- check your connection and try again"
                 is java.net.ConnectException -> "Could not connect to the server -- it may be down"
                 is javax.net.ssl.SSLException -> "Secure connection failed -- check the playlist URL"
-                else -> "Could not fetch playlist: ${e.message}"
+                // Deliberately generic, unlike the branches above: e.message here can be an
+                // IllegalArgumentException from OkHttp's URL parser, which echoes the full
+                // offending URL back verbatim -- for M3U sources that URL can embed
+                // `user:pass@host` credentials in plaintext, so it must never reach UI state.
+                else -> "Could not fetch playlist -- check the playlist URL and try again"
             }
             throw IllegalStateException(message, e)
         }

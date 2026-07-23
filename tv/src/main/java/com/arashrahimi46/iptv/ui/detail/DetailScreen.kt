@@ -17,7 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -118,7 +118,7 @@ fun DetailScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = stringResource(R.string.detail_not_found), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                     Box(Modifier.padding(top = 16.dp))
-                    AreIconButton(Icons.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Solid)
+                    AreIconButton(Icons.AutoMirrored.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Solid)
                 }
             }
         } else {
@@ -130,7 +130,7 @@ fun DetailScreen(
             }
             Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
                 Box(Modifier.padding(24.dp, 24.dp, 24.dp, 0.dp)) {
-                    AreIconButton(Icons.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Glass)
+                    AreIconButton(Icons.AutoMirrored.Filled.ArrowBack, backDesc, onClick = onBack, variant = AreIconButtonVariant.Glass)
                 }
                 Row(
                     modifier = Modifier.padding(horizontal = AreIptvTheme.spacing.safeX, vertical = 40.dp),

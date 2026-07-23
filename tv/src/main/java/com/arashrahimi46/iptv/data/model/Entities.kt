@@ -179,4 +179,77 @@ data class ContinueWatchingEntry(
     val positionMs: Long,
     val durationMs: Long,
     val updatedAtMs: Long = System.currentTimeMillis(),
+    /** Set when this bookmark resumes a local [Recording] (Live TV Recording V1) rather than a
+     * VOD/episode -- lets a half-watched recording resume through the same player path. Null for
+     * ordinary VOD/series bookmarks. */
+    val recordingId: Long? = null,
 )
+
+/**
+ * Persisted lifecycle state of a [Recording]. RECORDING is the only live state; the rest are
+ * terminal (see [com.arashrahimi46.iptv.data.recording.RecordingSupervisor] for the state machine).
+ * UNAVAILABLE/MISSING are derived at read time from file/drive presence rather than stored (a row
+ * whose drive comes back reconciles automatically), but the enum carries them so the UI has one
+ * status type to render.
+ */
+enum class RecordingStatus { RECORDING, COMPLETED, INTERRUPTED, FAILED, UNAVAILABLE, MISSING }
+
+/**
+ * One captured live recording (Live TV Recording V1). The DB row is the source of truth; the file(s)
+ * on disk are payloads it points at via [storageTreeUri] + [documentId]. See the design spec at
+ * docs/recording-v1-design.md.
+ */
+@Entity(tableName = "recordings")
+data class Recording(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val channelId: Long,
+    val channelName: String,
+    /** Programme title from EPG at record time, if one was airing; else null. */
+    val programTitle: String? = null,
+    /** Wall-clock captured once when capture started. */
+    val startedAtMs: Long,
+    /** Null while RECORDING; a real value when clean; approximate (from bytes/bitrate) when INTERRUPTED. */
+    val durationMs: Long? = null,
+    val sizeBytes: Long = 0,
+    /** Running bitrate estimate (bytes*8/elapsed) -- feeds space math + duration approximation. */
+    val bitrateBps: Long? = null,
+    val status: RecordingStatus,
+    /** Human-readable terminal reason, e.g. "disk full", "drive removed", "stream lost". */
+    val statusReason: String? = null,
+    /** SAF tree the recording was written into (persistable-permission URI, not a File path). */
+    val storageTreeUri: String,
+    /** SAF document id of the file (or the first part for a split recording). */
+    val documentId: String,
+    /** >1 for a FAT32 4 GB auto-split recording (…part-001.ts, …part-002.ts, stitched at playback). */
+    val parts: Int = 1,
+    /** Volume UUID of the destination drive -- verified before trusting a saved [storageTreeUri]
+     * (same USB port, different stick), and used to resolve UNAVAILABLE on remount. */
+    val volumeUuid: String? = null,
+    /** Reserved: recordings of parental-locked channels play without PIN in V1 (§7 trade-off);
+     * this lets that be tightened later without a migration. */
+    val locked: Boolean = false,
+)
+
+/**
+ * A user-pasted direct video URL ("Open network stream", VLC-style) and its play history. Every
+ * URL played through the Streams tab is a row here -- the table IS the history. Replaying an
+ * existing URL bumps [lastPlayedAtMs] rather than inserting a duplicate (dedup by [url]); the
+ * list is shown newest-played-first. [name] is an optional user-chosen label; when null the UI
+ * derives one from the URL host (see [directStreamLabel]).
+ */
+@Entity(tableName = "direct_streams")
+data class DirectStream(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val url: String,
+    val name: String? = null,
+    val createdAtMs: Long = System.currentTimeMillis(),
+    val lastPlayedAtMs: Long = System.currentTimeMillis(),
+)
+
+/** Display label for a saved direct stream: the user's custom [DirectStream.name] if set, else the
+ *  URL's host (e.g. "example.com"), else the raw URL. Shared by the history box and the player title. */
+fun directStreamLabel(url: String, name: String?): String {
+    name?.trim()?.takeIf { it.isNotEmpty() }?.let { return it }
+    val host = runCatching { java.net.URI(url).host }.getOrNull()
+    return host?.takeIf { it.isNotBlank() } ?: url
+}

@@ -49,6 +49,8 @@ fun AreIconButton(
     size: AreIconButtonSize = AreIconButtonSize.Medium,
     active: Boolean = false,
     disabled: Boolean = false,
+    /** Overrides the glyph tint (e.g. a red REC dot) without changing the variant's background. */
+    contentTint: Color? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -63,7 +65,7 @@ fun AreIconButton(
         AreIconButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
     }
     val resolvedBackground = if (active) colors.accent else background
-    val resolvedContentColor = if (active) colors.accentFg else contentColor
+    val resolvedContentColor = contentTint ?: if (active) colors.accentFg else contentColor
 
     TvFocusable(
         onClick = onClick,

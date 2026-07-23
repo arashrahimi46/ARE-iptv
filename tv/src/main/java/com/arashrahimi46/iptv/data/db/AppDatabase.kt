@@ -10,9 +10,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
+import com.arashrahimi46.iptv.data.model.DirectStream
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.Recording
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
@@ -54,8 +56,10 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         EPGProgram::class,
         Favorite::class,
         ContinueWatchingEntry::class,
+        Recording::class,
+        DirectStream::class,
     ],
-    version = 8,
+    version = 10,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -68,6 +72,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun seriesEpisodeDao(): SeriesEpisodeDao
     abstract fun favoriteDao(): FavoriteDao
     abstract fun continueWatchingDao(): ContinueWatchingDao
+    abstract fun recordingDao(): RecordingDao
+    abstract fun directStreamDao(): DirectStreamDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null
@@ -92,7 +98,7 @@ abstract class AppDatabase : RoomDatabase() {
                         val username = usernameIndex.takeIf { it >= 0 && !cursor.isNull(it) }?.let(cursor::getString)
                         val password = passwordIndex.takeIf { it >= 0 && !cursor.isNull(it) }?.let(cursor::getString)
                         if (username != null && password != null) {
-                            credentials.save(cursor.getLong(idIndex), username, password)
+                            credentials.saveSync(cursor.getLong(idIndex), username, password)
                         }
                     }
                 }
@@ -216,13 +222,64 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v8 -> v9: Live TV Recording V1. Creates the `recordings` table and adds nullable
+         * `continue_watching.recordingId` so a half-watched recording resumes through the existing
+         * player path. Both are additive/non-destructive -- an existing catalog, favorites and
+         * continue-watching are untouched. The `recordings` CREATE mirrors Room's generated schema
+         * exactly (column order + types + no SQL defaults, since [Recording]'s defaults are Kotlin-side)
+         * or schema validation fails on first open.
+         */
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `continue_watching` ADD COLUMN `recordingId` INTEGER")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `recordings` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`channelId` INTEGER NOT NULL, " +
+                        "`channelName` TEXT NOT NULL, " +
+                        "`programTitle` TEXT, " +
+                        "`startedAtMs` INTEGER NOT NULL, " +
+                        "`durationMs` INTEGER, " +
+                        "`sizeBytes` INTEGER NOT NULL, " +
+                        "`bitrateBps` INTEGER, " +
+                        "`status` TEXT NOT NULL, " +
+                        "`statusReason` TEXT, " +
+                        "`storageTreeUri` TEXT NOT NULL, " +
+                        "`documentId` TEXT NOT NULL, " +
+                        "`parts` INTEGER NOT NULL, " +
+                        "`volumeUuid` TEXT, " +
+                        "`locked` INTEGER NOT NULL)",
+                )
+            }
+        }
+
+        /**
+         * v9 -> v10: "Open network stream" (VLC-style direct URLs). Creates the `direct_streams`
+         * table -- the play history behind the Streams tab. Purely additive/non-destructive; the
+         * CREATE mirrors Room's generated schema exactly (column order + types, no SQL defaults --
+         * [DirectStream]'s defaults are Kotlin-side) or schema validation fails on first open.
+         */
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `direct_streams` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`url` TEXT NOT NULL, " +
+                        "`name` TEXT, " +
+                        "`createdAtMs` INTEGER NOT NULL, " +
+                        "`lastPlayedAtMs` INTEGER NOT NULL)",
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                     .build().also { instance = it }
             }
     }

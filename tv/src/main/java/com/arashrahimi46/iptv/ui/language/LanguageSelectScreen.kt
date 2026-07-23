@@ -86,6 +86,8 @@ private fun deviceDefaultLanguageTag(): String {
         "fr" -> "fr"
         "de" -> "de"
         "it" -> "it"
+        "fa" -> "fa"
+        "ar" -> "ar"
         "pt" -> if (locale.country.equals("BR", ignoreCase = true)) "pt-BR" else "en"
         else -> "en"
     }

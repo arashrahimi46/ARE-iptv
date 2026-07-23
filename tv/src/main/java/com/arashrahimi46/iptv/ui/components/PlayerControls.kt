@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Pause
@@ -103,6 +104,13 @@ fun ArePlayerControls(
     onSubtitles: (() -> Unit)? = null,
     /** True when a subtitle track is currently active -- lights the CC button so the user can see subtitles are on. */
     subtitlesActive: Boolean = false,
+    /** Live TV Recording (V1): toggles record for the current channel. Null => the stream isn't
+     * recordable (non-`.ts`) -> a dimmed placeholder with a "not supported" hint. */
+    onToggleRecord: (() -> Unit)? = null,
+    /** True while a recording is capturing -- lights the REC dot red ("the red dot never lies"). */
+    recordingActive: Boolean = false,
+    /** True while capture is reconnecting after a stall -- amber dot instead of red. */
+    recordingReconnecting: Boolean = false,
     // When set, the play/pause button carries this requester so the screen can move
     // focus straight onto it when the panel is opened.
     playPauseFocusRequester: FocusRequester? = null,
@@ -164,15 +172,21 @@ fun ArePlayerControls(
                     )
                 }
             }
-            Text(
-                text = "$elapsed / $total",
-                style = AreIptvTheme.typography.mono,
-                color = colors.textSecondary,
-            )
+            // Live has no fixed duration -- an HLS DVR window reports a rolling "total" that reads
+            // as a meaningless 0:33 / 1:00 countdown. Only VOD (movies/series) shows the time label.
+            if (!live) {
+                Text(
+                    text = "$elapsed / $total",
+                    style = AreIptvTheme.typography.mono,
+                    color = colors.textSecondary,
+                )
+            }
         }
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
 
+        // The progress/seek bar is likewise VOD-only: for live there's nothing meaningful to fill.
+        if (!live) {
         // TimeShift / VOD seek bar. On VOD (seekBarFocusRequester != null) it's a focusable scrub
         // control: while focused the track thickens and a thumb rides the end of the blue fill so
         // the user sees exactly where a Left/Right seek will land.
@@ -228,6 +242,7 @@ fun ArePlayerControls(
         }
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
+        }
 
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             AreIconButton(Icons.Filled.FastRewind, stringResource(R.string.player_rewind), onClick = onRewind, variant = AreIconButtonVariant.Glass)
@@ -280,6 +295,23 @@ fun ArePlayerControls(
             // PiP + up-next + guide are live-only affordances -- movies/series have no EPG and
             // can't minimize to the corner mini, so drop all three entirely for VOD.
             if (live) {
+                // ● REC toggle (Live TV Recording V1). Red dot while capturing, amber while
+                // reconnecting, plain when idle+recordable; a dimmed placeholder for non-.ts streams.
+                if (onToggleRecord != null) {
+                    AreIconButton(
+                        Icons.Filled.FiberManualRecord,
+                        contentDescription = if (recordingActive) stringResource(R.string.recording_stop) else stringResource(R.string.recording_start),
+                        onClick = onToggleRecord,
+                        variant = AreIconButtonVariant.Glass,
+                        contentTint = when {
+                            recordingReconnecting -> colors.warning
+                            recordingActive -> colors.danger
+                            else -> null
+                        },
+                    )
+                } else {
+                    StaticGlyph(Icons.Filled.FiberManualRecord, stringResource(R.string.recording_not_supported))
+                }
                 // Live: a real button that minimizes to the in-app corner mini-player. Dimmed
                 // placeholder only when the controller isn't ready (onPictureInPicture == null).
                 if (onPictureInPicture != null) {

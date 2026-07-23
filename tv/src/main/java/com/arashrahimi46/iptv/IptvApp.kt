@@ -5,6 +5,11 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import com.arashrahimi46.iptv.data.repository.RecordingRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * App-wide Coil [ImageLoader] tuned for a set-top box driving a large catalog:
@@ -19,6 +24,20 @@ import coil.memory.MemoryCache
  *   of re-downloading and re-decoding.
  */
 class IptvApp : Application(), ImageLoaderFactory {
+
+    /**
+     * Live TV Recording (V1) launch-time reconciliation (design §6): any recording left RECORDING was
+     * orphaned by a crash / power loss -- finalize it INTERRUPTED so no ghost "recording" survives a
+     * restart. Runs once, off the main thread, on cold start.
+     */
+    override fun onCreate() {
+        super.onCreate()
+        val crashReason = getString(R.string.recording_reason_crash)
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
+        }
+    }
+
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
             .crossfade(false)

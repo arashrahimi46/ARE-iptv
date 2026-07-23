@@ -42,6 +42,21 @@ class CredentialsStore(context: Context) {
             .apply()
     }
 
+    /**
+     * Same as [save] but blocks until the write is durable on disk ([SharedPreferences.Editor.commit])
+     * instead of scheduling it asynchronously ([SharedPreferences.Editor.apply]). Used by
+     * [com.arashrahimi46.iptv.data.db.AppDatabase.migration1To2], which drops the plaintext
+     * `playlist_sources` columns immediately after this call -- with `apply()`, a process kill in
+     * that window could lose the encrypted write while the plaintext source is already gone,
+     * destroying the credential irrecoverably.
+     */
+    fun saveSync(sourceId: Long, username: String, password: String) {
+        prefs.edit()
+            .putString(usernameKey(sourceId), username)
+            .putString(passwordKey(sourceId), password)
+            .commit()
+    }
+
     fun username(sourceId: Long): String? = prefs.getString(usernameKey(sourceId), null)
 
     fun password(sourceId: Long): String? = prefs.getString(passwordKey(sourceId), null)

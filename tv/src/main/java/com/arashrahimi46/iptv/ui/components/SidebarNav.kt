@@ -25,12 +25,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material.icons.filled.Theaters
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +69,8 @@ val DefaultSidebarNavItems = listOf(
     SidebarNavItem("series", R.string.nav_series, Icons.Filled.Theaters),
     SidebarNavItem("search", R.string.nav_search, Icons.Filled.Search),
     SidebarNavItem("favorites", R.string.nav_favorites, Icons.Filled.Favorite),
+    SidebarNavItem("recordings", R.string.nav_recordings, Icons.Filled.VideoLibrary),
+    SidebarNavItem("streams", R.string.nav_streams, Icons.Filled.Link),
     SidebarNavItem("settings", R.string.nav_settings, Icons.Filled.Settings),
 )
 

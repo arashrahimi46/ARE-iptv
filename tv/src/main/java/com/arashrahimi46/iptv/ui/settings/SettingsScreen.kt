@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -165,6 +166,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val refreshState by viewModel.refreshState.collectAsState()
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
+    var showFeedback by remember { mutableStateOf(false) }
 
     // Settings owns a LazyColumn so only the on-screen sections compose/draw -- far smoother scroll
     // than the old single eager Column that laid out every section (incl. the long subtitle-chip row
@@ -548,7 +550,26 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     size = AreButtonSize.Small,
                 )
             }
+            SettingsRow(
+                icon = Icons.Filled.Feedback,
+                title = stringResource(R.string.settings_feedback_title),
+                desc = stringResource(R.string.settings_feedback_desc),
+            ) {
+                AreButton(
+                    text = stringResource(R.string.settings_feedback_action),
+                    onClick = { showFeedback = true },
+                    variant = AreButtonVariant.Secondary,
+                    size = AreButtonSize.Small,
+                )
+            }
         }
+        }
+    }
+
+    // Feedback modal — rendered in a real Dialog window so D-pad focus is trapped (TV convention).
+    if (showFeedback) {
+        Dialog(onDismissRequest = { showFeedback = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            FeedbackDialog(onDismiss = { showFeedback = false })
         }
     }
 

@@ -314,8 +314,13 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             .onEach { _nowPlayingTitles.value = it }
             .launchIn(viewModelScope)
 
-        continueWatchingRepository.observeRecent(CONTINUE_WATCHING_LIMIT)
-            .mapLatest { entries -> resolveContinueWatching(entries) }
+        // Scope the rail to the active source: bookmarks from other playlists still live in the DB
+        // (rows are only purged when a source is deleted, not when switched), so filter them out.
+        combine(
+            settings.activeSourceId,
+            continueWatchingRepository.observeRecent(CONTINUE_WATCHING_LIMIT),
+        ) { sourceId, entries -> sourceId to entries }
+            .mapLatest { (sourceId, entries) -> resolveContinueWatching(entries, sourceId) }
             .onEach { _uiState.value = _uiState.value.copy(continueWatching = it) }
             .launchIn(viewModelScope)
     }
@@ -332,12 +337,16 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      * via the episode's [com.arashrahimi46.iptv.data.model.SeriesEpisode.seriesTitleId] for a
      * series) -- an entry whose title/episode has since been removed from the catalog is
      * dropped rather than shown with blank text. */
-    private suspend fun resolveContinueWatching(entries: List<ContinueWatchingEntry>): List<HomeContinueWatchingItem> {
+    private suspend fun resolveContinueWatching(entries: List<ContinueWatchingEntry>, activeSourceId: Long?): List<HomeContinueWatchingItem> {
         val vodIds = entries.mapNotNull { it.vodTitleId }
         val episodeIds = entries.mapNotNull { it.seriesEpisodeId }
         val episodesById = episodeIds.mapNotNull { db.seriesEpisodeDao().getById(it) }.associateBy { it.id }
         val seriesIds = (vodIds + episodesById.values.map { it.seriesTitleId }).distinct()
-        val titlesById = repository.titlesByIds(seriesIds).associateBy { it.id }
+        // Only titles belonging to the active source resolve -- an entry whose title lives in
+        // another (still-installed) playlist is dropped so the rail matches the current source.
+        val titlesById = repository.titlesByIds(seriesIds)
+            .filter { it.sourceId == activeSourceId }
+            .associateBy { it.id }
 
         return entries.mapNotNull { entry ->
             val progress = if (entry.durationMs > 0) (entry.positionMs.toFloat() / entry.durationMs).coerceIn(0f, 1f) else 0f
@@ -356,14 +365,16 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 entry.seriesEpisodeId != null -> {
                     val episode = episodesById[entry.seriesEpisodeId] ?: return@mapNotNull null
-                    val series = titlesById[episode.seriesTitleId]
+                    // titlesById is source-filtered, so a null series means the episode belongs to
+                    // another playlist -- drop it rather than falling back to the episode name.
+                    val series = titlesById[episode.seriesTitleId] ?: return@mapNotNull null
                     HomeContinueWatchingItem(
                         vodTitleId = null,
                         seriesEpisodeId = episode.id,
-                        title = series?.name ?: episode.name,
-                        posterUrl = series?.posterUrl,
+                        title = series.name,
+                        posterUrl = series.posterUrl,
                         // Season/episode moves onto the poster as a badge; footer meta stays the series category.
-                        meta = series?.categoryName,
+                        meta = series.categoryName,
                         badgeText = "S${episode.season}·E${episode.episode}",
                         progress = progress,
                     )

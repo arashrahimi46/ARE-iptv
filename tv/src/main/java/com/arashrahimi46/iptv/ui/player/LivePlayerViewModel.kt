@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.model.directStreamLabel
+import android.net.Uri
+import com.arashrahimi46.iptv.data.recording.RecordingSupervisor
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
@@ -36,6 +39,12 @@ sealed class PlaybackSource {
     data class Channel(val channelId: Long) : PlaybackSource()
     data class Vod(val vodTitleId: Long) : PlaybackSource()
     data class Episode(val episodeId: Long) : PlaybackSource()
+    /** A local Live TV recording (V1) -- played back seekably from disk like VOD. */
+    data class LocalRecording(val recordingId: Long) : PlaybackSource()
+
+    /** A user-pasted direct URL ("Open network stream"), resolved from the [com.arashrahimi46.iptv.data.model.DirectStream]
+     *  history row [streamId]. No channel/EPG/favorites context -- just plays the row's URL, seekable. */
+    data class DirectStream(val streamId: Long) : PlaybackSource()
 }
 
 /**
@@ -83,6 +92,8 @@ data class LivePlayerUiState(
      * never resume. Drive [resumePositionMs]/[saveProgress]. */
     val resumeVodTitleId: Long? = null,
     val resumeEpisodeId: Long? = null,
+    /** Continue-watching key for a local recording (Live TV Recording V1). */
+    val resumeRecordingId: Long? = null,
 )
 
 /**
@@ -105,6 +116,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     private val epgRepository = EpgRepository(app)
     private val favoritesRepository = FavoritesRepository(app)
     private val continueWatchingRepository = ContinueWatchingRepository(app)
+    private val recordingRepository = com.arashrahimi46.iptv.data.repository.RecordingRepository(app)
+    private val recordingStorage = com.arashrahimi46.iptv.data.recording.RecordingStorage(app)
     private val settings = UserSettings(app)
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
@@ -112,6 +125,16 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
 
     private val _upNext = MutableStateFlow<List<UpNextProgram>>(emptyList())
     val upNext: StateFlow<List<UpNextProgram>> = _upNext.asStateFlow()
+
+    /** Live TV Recording (V1): owns the capture tee + state machine for THIS player session. The tee
+     * is wired into the ExoPlayer's DataSource.Factory by the screen ([recordingSink]); recording is
+     * bound to this player's lifecycle, so leaving the player finalizes cleanly (see [onCleared]). */
+    val recordingSupervisor = RecordingSupervisor(app)
+
+    /** The media3 DataSink the screen tees playback bytes into (no-op until a recording starts). */
+    val recordingSink: androidx.media3.datasource.DataSink get() = recordingSupervisor
+
+    val recordingState: StateFlow<RecordingSupervisor.RecordingState> = recordingSupervisor.state
 
     init {
         loadMedia(initialSource)
@@ -211,6 +234,29 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                         )
                     }
                 }
+                // A local recording plays seekably from disk (content:// URI) like VOD. // monolean:
+                // plays the first part only; multi-part (>3.9 GB) stitching is a deferred follow-up.
+                is PlaybackSource.LocalRecording -> recordingRepository.getById(s.recordingId)?.let { rec ->
+                    runCatching { Uri.parse(rec.storageTreeUri) }.getOrNull()?.let { treeUri ->
+                        PlayableMedia(
+                            title = rec.channelName,
+                            subtitle = rec.programTitle,
+                            streamUrl = recordingStorage.documentUri(treeUri, rec.documentId).toString(),
+                            isLive = false,
+                        )
+                    }
+                }
+                // A pasted direct URL, played seekably like VOD. Bump its history recency so
+                // replaying an existing box floats it to the top of the Streams list.
+                is PlaybackSource.DirectStream -> db.directStreamDao().getById(s.streamId)?.let { ds ->
+                    db.directStreamDao().touch(ds.id, System.currentTimeMillis())
+                    PlayableMedia(
+                        title = directStreamLabel(ds.url, ds.name),
+                        subtitle = null,
+                        streamUrl = ds.url,
+                        isLive = false,
+                    )
+                }
             }
             // Resolve the favoritable target for whatever resolved: a channel favorites the channel;
             // a movie/series favorites the VOD title; an episode favorites its parent series.
@@ -224,6 +270,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 is PlaybackSource.Episode -> db.seriesEpisodeDao().getById(s.episodeId)?.let { e ->
                     e.seriesTitleId to ContentType.SERIES
                 } ?: (null to null)
+                is PlaybackSource.LocalRecording -> null to null
+                is PlaybackSource.DirectStream -> null to null
             }
 
             val siblingIds = if (source is PlaybackSource.Channel && media != null) {
@@ -248,6 +296,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             // channels resume nothing.
             val resumeVodId = (source as? PlaybackSource.Vod)?.vodTitleId
             val resumeEpisodeId = (source as? PlaybackSource.Episode)?.episodeId
+            val resumeRecordingId = (source as? PlaybackSource.LocalRecording)?.recordingId
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
@@ -261,6 +310,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 favoriteContentType = favoriteType,
                 resumeVodTitleId = if (media == null) null else resumeVodId,
                 resumeEpisodeId = if (media == null) null else resumeEpisodeId,
+                resumeRecordingId = if (media == null) null else resumeRecordingId,
             )
         }
     }
@@ -295,12 +345,118 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
         _uiState.value = _uiState.value.copy(phase = phase, errorMessage = errorMessage)
     }
 
+    /**
+     * Whether the currently-playing live channel can be recorded. V1 captures progressive `.ts`
+     * (the tee records exactly what plays), so a plain `.ts`/extensionless stream is recordable
+     * as-is. An Xtream HLS (`/live/…/<id>.m3u8`) channel is ALSO recordable because the identical
+     * stream is served as raw MPEG-TS at `…/<id>.ts` -- pressing REC switches playback to that
+     * `.ts` variant just for the recording session (see [startRecording]). A non-Xtream `.m3u8`
+     * (an M3U/HLS-only source with no `.ts` sibling) stays non-recordable.
+     */
+    val isCurrentStreamRecordable: Boolean
+        get() {
+            val media = _uiState.value.media ?: return false
+            if (!media.isLive || _uiState.value.currentChannelId == null) return false
+            return !isHls(media.streamUrl) || xtreamTsVariant(media.streamUrl) != null
+        }
+
+    /** treeUri awaiting a playback switch to `.ts` before capture begins (Option B handshake). Null
+     * when no record is pending. The screen calls [beginPendingRecording] once the `.ts` variant is
+     * actually playing, so the file never captures a garbage HLS prefix. */
+    private val _pendingRecord = MutableStateFlow<Uri?>(null)
+    val pendingRecord: StateFlow<Uri?> = _pendingRecord.asStateFlow()
+    private var pendingOnResult: ((RecordingSupervisor.StartResult) -> Unit)? = null
+    /** Original HLS URL to restore if the `.ts` variant won't play (server is HLS-only / off-air),
+     * so pressing REC never leaves the user stuck on a broken stream. */
+    private var pendingRecordOriginalUrl: String? = null
+
+    /**
+     * Begin recording the current live channel into [treeUri]. If the channel is playing an Xtream
+     * HLS stream, playback is first switched to its `.ts` variant and capture is deferred until that
+     * variant is actually live ([beginPendingRecording]); an already-progressive stream records
+     * immediately. [onResult] reports pre-flight/creation success or the failure reason to the screen.
+     */
+    fun startRecording(treeUri: Uri, onResult: (RecordingSupervisor.StartResult) -> Unit) {
+        val channelId = _uiState.value.currentChannelId ?: return
+        val media = _uiState.value.media ?: return
+        val tsVariant = xtreamTsVariant(media.streamUrl)
+        if (isHls(media.streamUrl) && tsVariant != null) {
+            // Switch this channel's playback to the .ts variant (rebuilds the player), then wait for
+            // it to actually play before starting the tee -- so the .ts file starts on a real TS byte.
+            pendingOnResult = onResult
+            pendingRecordOriginalUrl = media.streamUrl
+            _pendingRecord.value = treeUri
+            _uiState.value = _uiState.value.copy(media = media.copy(streamUrl = tsVariant))
+        } else {
+            // Already progressive (plain .ts / extensionless): record what's playing now.
+            val program = _upNext.value.firstOrNull { it.isNow }?.title
+            viewModelScope.launch {
+                onResult(recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false))
+            }
+        }
+    }
+
+    /** Called by the screen once the `.ts` variant is confirmed playing -- actually starts capture. */
+    fun beginPendingRecording() {
+        val treeUri = _pendingRecord.value ?: return
+        _pendingRecord.value = null
+        val onResult = pendingOnResult
+        pendingOnResult = null
+        pendingRecordOriginalUrl = null
+        val channelId = _uiState.value.currentChannelId ?: return
+        val media = _uiState.value.media ?: return
+        val program = _upNext.value.firstOrNull { it.isNow }?.title
+        viewModelScope.launch {
+            val result = recordingSupervisor.start(channelId, media.title, program, treeUri, isHls = false)
+            onResult?.invoke(result)
+        }
+    }
+
+    /** Called by the screen when the `.ts` variant fails to play (error or timeout): restore the
+     * original HLS stream so the user keeps watching, and report that recording couldn't start. */
+    fun abandonPendingRecording() {
+        if (_pendingRecord.value == null) return
+        _pendingRecord.value = null
+        val onResult = pendingOnResult
+        pendingOnResult = null
+        pendingRecordOriginalUrl?.let { orig ->
+            _uiState.value.media?.let { m -> _uiState.value = _uiState.value.copy(media = m.copy(streamUrl = orig)) }
+        }
+        pendingRecordOriginalUrl = null
+        onResult?.invoke(RecordingSupervisor.StartResult.Failed(RecordingSupervisor.FailReason.HLS_STREAM))
+    }
+
+    fun stopRecording() = recordingSupervisor.stop()
+
+    private fun isHls(url: String): Boolean = url.contains(".m3u8", ignoreCase = true)
+
+    /**
+     * The raw MPEG-TS (`.ts`) sibling of an Xtream live HLS URL, or null when [url] isn't a
+     * derivable Xtream live stream. Xtream serves the same live stream at both
+     * `…/live/<user>/<pass>/<id>.m3u8` and `…/live/<user>/<pass>/<id>.ts`; only that shape is
+     * converted, so plain M3U/HLS-only sources (no `.ts` sibling) stay non-recordable.
+     */
+    private fun xtreamTsVariant(url: String): String? {
+        val base = url.substringBefore('?')
+        if (!base.endsWith(".m3u8", ignoreCase = true)) return null
+        if (!base.contains("/live/", ignoreCase = true)) return null
+        return base.dropLast(".m3u8".length) + ".ts"
+    }
+
+    /** Leaving the player finalizes any in-progress recording cleanly (COMPLETED) -- the accepted
+     * "record while you watch" lifecycle. Runs on the supervisor's own scope, so it survives this
+     * ViewModel's scope being cancelled. */
+    override fun onCleared() {
+        recordingSupervisor.stop()
+        super.onCleared()
+    }
+
     /** P1.2: saved VOD resume position (ms) for whatever is currently playing, or 0 for live
      * channels / titles with no bookmark. The screen seeks a freshly-built ExoPlayer to this. */
     suspend fun resumePositionMs(): Long {
         val state = _uiState.value
-        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null) return 0L
-        return continueWatchingRepository.resumePositionFor(state.resumeVodTitleId, state.resumeEpisodeId)
+        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null && state.resumeRecordingId == null) return 0L
+        return continueWatchingRepository.resumePositionFor(state.resumeVodTitleId, state.resumeEpisodeId, state.resumeRecordingId)
     }
 
     /** P1.2: persists the VOD watch bookmark. No-op for live channels (no resume keys) and for
@@ -310,14 +466,14 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
      * than lingering with a full progress bar (and resuming from its very end). */
     fun saveProgress(positionMs: Long, durationMs: Long) {
         val state = _uiState.value
-        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null) return
+        if (state.resumeVodTitleId == null && state.resumeEpisodeId == null && state.resumeRecordingId == null) return
         if (positionMs <= 0) return
         val finished = durationMs > 0 && positionMs.toFloat() / durationMs >= COMPLETION_THRESHOLD
         viewModelScope.launch {
             if (finished) {
-                continueWatchingRepository.clear(state.resumeVodTitleId, state.resumeEpisodeId)
+                continueWatchingRepository.clear(state.resumeVodTitleId, state.resumeEpisodeId, state.resumeRecordingId)
             } else {
-                continueWatchingRepository.updateProgress(state.resumeVodTitleId, state.resumeEpisodeId, positionMs, durationMs)
+                continueWatchingRepository.updateProgress(state.resumeVodTitleId, state.resumeEpisodeId, positionMs, durationMs, state.resumeRecordingId)
             }
         }
     }

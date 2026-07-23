@@ -3,6 +3,8 @@ package com.arashrahimi46.iptv.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
@@ -62,6 +64,13 @@ fun AreIptvTheme(
     val base = if (isDark) AreIptvDarkColors else AreIptvLightColors
     val colors = base.withAccent(accent.tokens(isDark))
     val motion = if (reducedMotion) AreIptvMotionReduced else AreIptvMotionDefault
+    // RTL locales (fa/ar) have no glyphs in the Latin brand fonts — swap the whole type scale to
+    // Vazirmatn. LocalLayoutDirection is already RTL here, derived from the per-app locale.
+    val typography = if (LocalLayoutDirection.current == LayoutDirection.Rtl) {
+        AreIptvTypographyVazir
+    } else {
+        AreIptvTypographyDefault
+    }
 
     val tvColorScheme = if (isDark) {
         darkColorScheme(
@@ -99,7 +108,7 @@ fun AreIptvTheme(
 
     CompositionLocalProvider(
         LocalAreIptvColors provides colors,
-        LocalAreIptvTypography provides AreIptvTypographyDefault,
+        LocalAreIptvTypography provides typography,
         LocalAreIptvSpacing provides AreIptvSpacingDefault,
         LocalAreIptvRadius provides AreIptvRadiusDefault,
         LocalAreIptvMotion provides motion,

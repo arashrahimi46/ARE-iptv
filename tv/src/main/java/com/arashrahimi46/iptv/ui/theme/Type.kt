@@ -35,6 +35,19 @@ val MonoFontFamily: FontFamily = FontFamily(
     Font(R.font.jetbrains_mono_bold, FontWeight.Bold),
 )
 
+/*
+ * Vazirmatn (OFL) — the Persian/Arabic-capable family used for every text role when the active
+ * locale is RTL (see [AreIptvTypographyVazir]). The Latin brand families above have no Arabic
+ * glyphs, so RTL locales swap to this wholesale rather than mixing fonts within a word.
+ */
+val VazirFontFamily: FontFamily = FontFamily(
+    Font(R.font.vazirmatn_regular, FontWeight.Normal),
+    Font(R.font.vazirmatn_medium, FontWeight.Medium),
+    Font(R.font.vazirmatn_semibold, FontWeight.SemiBold),
+    Font(R.font.vazirmatn_bold, FontWeight.Bold),
+    Font(R.font.vazirmatn_extrabold, FontWeight.ExtraBold),
+)
+
 // Line-height multipliers from tokens/typography.css
 const val LineHeightTight = 1.05f
 const val LineHeightSnug = 1.2f
@@ -124,4 +137,23 @@ val AreIptvTypographyDefault = AreIptvTypography(
         fontSize = 14.sp,
         lineHeight = (14 * LineHeightNormal).sp,
     ),
+)
+
+/**
+ * RTL (Persian/Arabic) typography: every role rendered in [VazirFontFamily], keeping the default
+ * sizes and line-heights. Negative letter-spacing is zeroed — Arabic script is cursive and
+ * tightening the tracking would break glyph joining. Provided by [AreIptvTheme] whenever the
+ * active layout direction is RTL.
+ */
+val AreIptvTypographyVazir = AreIptvTypography(
+    hero = AreIptvTypographyDefault.hero.copy(fontFamily = VazirFontFamily, letterSpacing = 0.sp),
+    display = AreIptvTypographyDefault.display.copy(fontFamily = VazirFontFamily, letterSpacing = 0.sp),
+    h1 = AreIptvTypographyDefault.h1.copy(fontFamily = VazirFontFamily, letterSpacing = 0.sp),
+    h2 = AreIptvTypographyDefault.h2.copy(fontFamily = VazirFontFamily, letterSpacing = 0.sp),
+    h3 = AreIptvTypographyDefault.h3.copy(fontFamily = VazirFontFamily, letterSpacing = 0.sp),
+    tile = AreIptvTypographyDefault.tile.copy(fontFamily = VazirFontFamily),
+    body = AreIptvTypographyDefault.body.copy(fontFamily = VazirFontFamily),
+    label = AreIptvTypographyDefault.label.copy(fontFamily = VazirFontFamily),
+    caption = AreIptvTypographyDefault.caption.copy(fontFamily = VazirFontFamily),
+    mono = AreIptvTypographyDefault.mono.copy(fontFamily = VazirFontFamily),
 )

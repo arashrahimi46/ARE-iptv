@@ -6,14 +6,18 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import androidx.room.Upsert
 import com.arashrahimi46.iptv.data.model.Category
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
+import com.arashrahimi46.iptv.data.model.DirectStream
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.Favorite
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.Recording
+import com.arashrahimi46.iptv.data.model.RecordingStatus
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.data.model.VodTitle
 import kotlinx.coroutines.flow.Flow
@@ -473,4 +477,84 @@ interface ContinueWatchingDao {
     /** Retention cap: drop everything past the [keep] most-recent bookmarks so the list stays bounded. */
     @Query("DELETE FROM continue_watching WHERE id NOT IN (SELECT id FROM continue_watching ORDER BY updatedAtMs DESC LIMIT :keep)")
     suspend fun trimToMostRecent(keep: Int)
+
+    /** Resume bookmark for a local recording (Live TV Recording V1). */
+    @Query("SELECT * FROM continue_watching WHERE recordingId = :recordingId LIMIT 1")
+    suspend fun findByRecording(recordingId: Long): ContinueWatchingEntry?
+
+    /** Drop a recording's resume point (deleting the recording, or it finished playing). */
+    @Query("DELETE FROM continue_watching WHERE recordingId = :recordingId")
+    suspend fun deleteByRecording(recordingId: Long)
+}
+
+/**
+ * Live TV recordings (Live TV Recording V1) -- see
+ * [com.arashrahimi46.iptv.data.repository.RecordingRepository] for the observe/reconcile surface and
+ * [com.arashrahimi46.iptv.data.recording.RecordingSupervisor] for the capture-time writes.
+ */
+@Dao
+interface RecordingDao {
+    @Insert
+    suspend fun insert(recording: Recording): Long
+
+    @Update
+    suspend fun update(recording: Recording)
+
+    @Query("SELECT * FROM recordings WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): Recording?
+
+    /** All recordings, newest first -- backs the Recordings tab (the ● Recording row sorts to top). */
+    @Query("SELECT * FROM recordings ORDER BY startedAtMs DESC")
+    fun observeAll(): Flow<List<Recording>>
+
+    /** Live running totals for an in-progress recording (size/duration/bitrate/parts). */
+    @Query("UPDATE recordings SET sizeBytes = :sizeBytes, durationMs = :durationMs, bitrateBps = :bitrateBps, parts = :parts WHERE id = :id")
+    suspend fun updateProgress(id: Long, sizeBytes: Long, durationMs: Long?, bitrateBps: Long?, parts: Int)
+
+    /** Finalize: terminal status + reason + final duration. */
+    @Query("UPDATE recordings SET status = :status, statusReason = :reason, durationMs = :durationMs WHERE id = :id")
+    suspend fun finalize(id: Long, status: RecordingStatus, reason: String?, durationMs: Long?)
+
+    /** Launch-time crash reconciliation: any row left RECORDING (orphaned by crash/power-loss)
+     * becomes INTERRUPTED. Idempotent -- a clean shutdown leaves no RECORDING rows to touch. */
+    @Query("UPDATE recordings SET status = 'INTERRUPTED', statusReason = :reason WHERE status = 'RECORDING'")
+    suspend fun reconcileOrphaned(reason: String)
+
+    /** Rows still marked RECORDING at launch (need [reconcileOrphaned] + duration approximation). */
+    @Query("SELECT * FROM recordings WHERE status = 'RECORDING'")
+    suspend fun orphanedRecordings(): List<Recording>
+
+    @Delete
+    suspend fun delete(recording: Recording)
+}
+
+/**
+ * "Open network stream" (VLC-style) direct URLs + their play history. Newest-played first.
+ * Dedup is by [DirectStream.url]: the ViewModel looks the URL up with [findByUrl] and either
+ * [touch]es the existing row's recency or [insert]s a new one, so replaying never duplicates.
+ */
+@Dao
+interface DirectStreamDao {
+    @Query("SELECT * FROM direct_streams ORDER BY lastPlayedAtMs DESC")
+    fun observeAll(): Flow<List<DirectStream>>
+
+    @Query("SELECT * FROM direct_streams WHERE id = :id")
+    suspend fun getById(id: Long): DirectStream?
+
+    @Query("SELECT * FROM direct_streams WHERE url = :url LIMIT 1")
+    suspend fun findByUrl(url: String): DirectStream?
+
+    @Insert
+    suspend fun insert(stream: DirectStream): Long
+
+    /** Bump a row to the top of the history (called when it (re)plays). */
+    @Query("UPDATE direct_streams SET lastPlayedAtMs = :ts WHERE id = :id")
+    suspend fun touch(id: Long, ts: Long)
+
+    /** Rename a history box; pass null/blank to clear back to the URL-derived label. */
+    @Query("UPDATE direct_streams SET name = :name WHERE id = :id")
+    suspend fun rename(id: Long, name: String?)
+
+    @Delete
+    suspend fun delete(stream: DirectStream)
 }

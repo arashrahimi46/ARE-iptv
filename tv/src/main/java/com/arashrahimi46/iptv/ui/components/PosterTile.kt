@@ -154,17 +154,23 @@ fun ArePosterTile(
                     }
                 }
                 if (progress != null) {
+                    // Inset from the poster edges and rounded into a pill so the bar floats inside
+                    // the rounded tile instead of butting square corners against the rounded image.
+                    val barShape = RoundedCornerShape(AreIptvTheme.radius.pill)
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
                             .fillMaxWidth()
-                            .height(4.dp)
-                            .background(Color.Black.copy(alpha = 0.5f)),
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                            .height(5.dp)
+                            .clip(barShape)
+                            .background(Color.Black.copy(alpha = 0.45f)),
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth(progress.coerceIn(0f, 1f))
                                 .fillMaxSize()
+                                .clip(barShape)
                                 .background(colors.accent),
                         )
                     }

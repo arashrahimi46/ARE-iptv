@@ -36,6 +36,8 @@ val AreLanguageOptions: List<AreLanguageOption> = listOf(
     AreLanguageOption("el", R.string.language_name_el),
     AreLanguageOption("hu", R.string.language_name_hu),
     AreLanguageOption("bg", R.string.language_name_bg),
+    AreLanguageOption("fa", R.string.language_name_fa),
+    AreLanguageOption("ar", R.string.language_name_ar),
 )
 
 /**
