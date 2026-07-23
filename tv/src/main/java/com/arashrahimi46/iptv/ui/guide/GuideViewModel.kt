@@ -215,7 +215,12 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
             GuideChannelRow(
                 channel = channel,
                 slots = slots.ifEmpty {
-                    listOf(GuideProgramSlot(title = getApplication<Application>().getString(R.string.player_no_programme_data), description = null, startMs = window.first, endMs = window.second, isNow = false))
+                    // Cap the "no programme data" placeholder to a normal ~90-min cell rather than
+                    // spanning the whole 6h window: a full-window cell is so wide that the focus
+                    // scale-up overflows and gets cropped ("moves out of the box") at the guide
+                    // lane's clip edge. A normal-width cell focuses cleanly like a real programme.
+                    val placeholderEnd = (window.first + 90 * 60_000L).coerceAtMost(window.second)
+                    listOf(GuideProgramSlot(title = getApplication<Application>().getString(R.string.player_no_programme_data), description = null, startMs = window.first, endMs = placeholderEnd, isNow = false))
                 },
             )
         }
