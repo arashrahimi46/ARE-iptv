@@ -363,6 +363,9 @@ Ships **English + 21 translated locales**. A missing translation silently falls 
 
 Conventional commits scoped to the module: `fix(tv):`, `feat(tv):`, `release(tv):`.
 
+**Work directly on `main`. Do NOT create feature branches** unless the user explicitly asks for
+one — commit straight to `main`. (Overrides the generic "branch first" default above.)
+
 ## Design specs (`docs/`)
 
 Agreed-but-not-yet-built feature designs live in `docs/*-v1-design.md` (locked-decisions table,
