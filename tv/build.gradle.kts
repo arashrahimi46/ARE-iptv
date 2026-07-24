@@ -17,8 +17,8 @@ android {
         applicationId = "com.arashrahimi46.iptv"
         minSdk = 23
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 7
+        versionName = "1.4.2"
 
     }
 
