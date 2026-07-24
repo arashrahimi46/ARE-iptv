@@ -45,6 +45,7 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import java.time.Instant
 import java.time.ZoneId
@@ -375,8 +376,7 @@ private fun ChannelHeaderCell(name: String, number: String?) {
             // surface2 + a defined border deliberately set the pinned rail apart from the
             // programme cells (surface1) beside it -- and give the rail a visible edge on the
             // near-white light-theme background, where a borderless white-on-white cell vanished.
-            .background(colors.surface2, shape)
-            .border(1.dp, colors.borderDefault, shape)
+            .glassSurface(shape)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -406,7 +406,7 @@ private fun FocusedInfoBar(info: GuideFocusedInfo?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.md))
+            .glassSurface(RoundedCornerShape(AreIptvTheme.radius.md))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),

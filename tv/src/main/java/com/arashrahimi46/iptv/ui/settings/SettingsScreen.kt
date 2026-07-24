@@ -39,6 +39,7 @@ import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * Real Settings screen. Every control persists through [SettingsViewModel] ->
@@ -129,7 +130,7 @@ internal fun SettingsSection(title: String, content: @Composable () -> Unit) {
             modifier = Modifier.padding(bottom = 12.dp),
         )
         Column(
-            modifier = Modifier.background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg)),
+            modifier = Modifier.glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg)),
         ) {
             content()
         }

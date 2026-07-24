@@ -26,6 +26,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
  * CategoryRow — compact list row for the category filter column (CategoryRow.jsx)
@@ -47,7 +48,7 @@ fun AreCategoryRow(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
-    val background = if (active) colors.accentWash else colors.bgBase
+    val background = if (active) colors.accentWash else colors.surfaceGlass
 
     TvFocusable(
         onClick = onClick,
@@ -55,6 +56,7 @@ fun AreCategoryRow(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
+        borderBrush = if (active) null else glassBorderBrush(),
         onLongClick = onLongClick,
     ) { _, _ ->
         Row(
