@@ -389,6 +389,28 @@ fun AreIptvApp() {
                 onOpenGuide = { navController.popBackStack() },
             )
         }
+        // Catch-up / archive: play an already-aired programme (identified by channel + EPG window).
+        // Wired here in Phase 1; the Guide starts navigating to it in Phase 2. See docs/catchup-v1-design.md.
+        composable(
+            route = "player/catchup/{channelId}/{startMs}/{endMs}",
+            arguments = listOf(
+                navArgument("channelId") { type = NavType.LongType },
+                navArgument("startMs") { type = NavType.LongType },
+                navArgument("endMs") { type = NavType.LongType },
+            ),
+        ) { backStackEntry ->
+            val args = backStackEntry.arguments ?: return@composable
+            LivePlayerScreen(
+                source = PlaybackSource.Catchup(
+                    channelId = args.getLong("channelId"),
+                    programStartMs = args.getLong("startMs"),
+                    programEndMs = args.getLong("endMs"),
+                ),
+                onBack = { navController.popBackStack() },
+                onMultiView = { navController.navigate("multiview") },
+                onOpenGuide = { navController.popBackStack() },
+            )
+        }
         composable("multiview") {
             MultiViewScreen(onBack = { navController.popBackStack() })
         }

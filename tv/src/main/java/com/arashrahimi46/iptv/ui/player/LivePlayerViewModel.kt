@@ -46,6 +46,11 @@ sealed class PlaybackSource {
     /** A local Live TV recording (V1) -- played back seekably from disk like VOD. */
     data class LocalRecording(val recordingId: Long) : PlaybackSource()
 
+    /** Catch-up / archive: an already-aired programme on live [channelId], identified by its EPG
+     * window [programStartMs]..[programEndMs]. The archive URL is minted at play-time from the
+     * channel's source (resolve-on-play). Plays seekably like VOD. See docs/catchup-v1-design.md. */
+    data class Catchup(val channelId: Long, val programStartMs: Long, val programEndMs: Long) : PlaybackSource()
+
     /** A user-pasted direct URL ("Open network stream"), resolved from the [com.arashrahimi46.iptv.data.model.DirectStream]
      *  history row [streamId]. No channel/EPG/favorites context -- just plays the row's URL, seekable. */
     data class DirectStream(val streamId: Long) : PlaybackSource()
@@ -236,11 +241,14 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
         externalId: String?,
         storedUrl: String?,
         series: Int? = null,
+        catchup: com.arashrahimi46.iptv.data.player.CatchupRequest? = null,
     ): String? {
         val source = sourceId?.let { db.playlistSourceDao().getById(it) } ?: return storedUrl?.takeIf { it.isNotBlank() }
-        lastResolveOnPlay = source.type == SourceType.STALKER
+        // A catch-up URL is minted fresh at press-time (like Stalker), so a manual Retry should re-mint
+        // it via [reload] rather than replay a possibly-stale link.
+        lastResolveOnPlay = source.type == SourceType.STALKER || catchup != null
         return try {
-            streamResolver.resolve(source, kind, externalId, storedUrl, series).takeIf { it.isNotBlank() }
+            streamResolver.resolve(source, kind, externalId, storedUrl, series, catchup).takeIf { it.isNotBlank() }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -308,6 +316,19 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                         )
                     }
                 }
+                // Catch-up: mint the archive URL from the channel's source for the aired programme
+                // window, then play it seekably (isLive = false => VOD/timeshift seek path).
+                is PlaybackSource.Catchup -> db.channelDao().getById(s.channelId)?.let { ch ->
+                    val request = com.arashrahimi46.iptv.data.player.CatchupRequest(
+                        startMs = s.programStartMs,
+                        endMs = s.programEndMs,
+                        m3uSource = ch.catchupSource,
+                        m3uType = ch.catchupType,
+                    )
+                    resolvePlayUrl(ch.sourceId, StreamKind.LIVE, ch.externalId, ch.streamUrl, catchup = request)?.let { url ->
+                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = false)
+                    }
+                }
                 // A pasted direct URL, played seekably like VOD. Bump its history recency so
                 // replaying an existing box floats it to the top of the Streams list.
                 is PlaybackSource.DirectStream -> db.directStreamDao().getById(s.streamId)?.let { ds ->
@@ -329,6 +350,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                     is PlaybackSource.Episode -> "episode"
                     is PlaybackSource.LocalRecording -> "recording"
                     is PlaybackSource.DirectStream -> "direct"
+                    is PlaybackSource.Catchup -> "catchup"
                 }
                 com.arashrahimi46.iptv.analytics.Analytics.logPlay(type, media.title, media.subtitle)
             }
@@ -347,6 +369,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 } ?: (null to null)
                 is PlaybackSource.LocalRecording -> null to null
                 is PlaybackSource.DirectStream -> null to null
+                // Catch-up favorites the underlying live channel.
+                is PlaybackSource.Catchup -> s.channelId to ContentType.LIVE
             }
 
             val siblingIds = if (source is PlaybackSource.Channel && media != null) {

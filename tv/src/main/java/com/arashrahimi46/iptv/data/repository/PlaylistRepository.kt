@@ -634,6 +634,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     categoryName = it.categoryId?.let(liveCatNames::get) ?: UNCATEGORIZED_CATEGORY,
                     externalId = it.id,
                     tvgId = it.epgChannelId,
+                    catchupDays = it.archiveDays,
                 )
             }
             val movies = vodStreams.map {
@@ -793,6 +794,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 categoryName = it.categoryId?.let(liveCatNames::get) ?: UNCATEGORIZED_CATEGORY,
                 externalId = it.id,
                 tvgId = it.epgChannelId,
+                catchupDays = it.archiveDays,
             )
         }
         val movies = vodStreams.map {
