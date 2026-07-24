@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 /** Content type a [Category] or catalog item belongs to. */
 enum class ContentType { LIVE, MOVIE, SERIES }
 
-/** A configured playlist source (Xtream Codes portal or M3U playlist/file). */
-enum class SourceType { XTREAM, M3U }
+/** A configured playlist source (Xtream Codes portal, M3U playlist/file, or Stalker/Ministra portal). */
+enum class SourceType { XTREAM, M3U, STALKER }
 
 /**
  * A user-added playlist/portal. Xtream username/password are NOT stored on this entity --

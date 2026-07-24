@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
 import com.arashrahimi46.iptv.data.parser.OmdbClient
+import com.arashrahimi46.iptv.data.parser.StalkerClient
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.parser.parseSeriesEpisode
 import com.arashrahimi46.iptv.data.parser.XtreamException
@@ -171,6 +172,19 @@ interface PlaylistRepository {
         epgUrl: String?,
     ): ImportSummary
 
+    /**
+     * Opens a Stalker/Ministra portal session (handshake→get_profile) with the pasted [mac], pulls
+     * the live/VOD/series catalog, and persists it. Each row stores the portal `cmd` in its
+     * `externalId` (there is no static stream URL — it's minted at play time); the MAC is saved
+     * encrypted in [CredentialsStore]. Throws on network/auth failure, rolling back a half-import.
+     */
+    suspend fun addStalkerSource(
+        name: String,
+        portalUrl: String,
+        mac: String,
+        epgUrl: String?,
+    ): ImportSummary
+
     /** Real per-series episode list (Room-cached) -- empty for M3U titles/titles with no episodes loaded yet. */
     fun observeSeriesEpisodes(seriesTitleId: Long): Flow<List<SeriesEpisode>>
 
@@ -288,21 +302,40 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         if (!vodTitle.isSeries || vodTitle.externalId == null) return@withContext
         if (db.seriesEpisodeDao().countForSeries(vodTitle.id) > 0) return@withContext
         val source = db.playlistSourceDao().getById(vodTitle.sourceId) ?: return@withContext
-        if (source.type != SourceType.XTREAM) return@withContext
-        val username = credentials.username(source.id) ?: return@withContext
-        val password = credentials.password(source.id) ?: return@withContext
 
-        val xtream = XtreamClient(source.url, username, password)
-        val episodes = xtream.getSeriesInfo(vodTitle.externalId)
-        val entities = episodes.map { ep ->
-            SeriesEpisode(
-                seriesTitleId = vodTitle.id,
-                season = ep.season,
-                episode = ep.episode,
-                name = ep.title,
-                streamUrl = xtream.streamUrl("series", ep.id, ep.containerExtension ?: "mp4"),
-                externalId = ep.id,
-            )
+        val entities = when (source.type) {
+            SourceType.XTREAM -> {
+                val (user, secret) = credentials.forSource(source.id)
+                if (user == null || secret == null) return@withContext
+                val xtream = XtreamClient(source.url, user, secret)
+                xtream.getSeriesInfo(vodTitle.externalId).map { ep ->
+                    SeriesEpisode(
+                        seriesTitleId = vodTitle.id,
+                        season = ep.season,
+                        episode = ep.episode,
+                        name = ep.title,
+                        streamUrl = xtream.streamUrl("series", ep.id, ep.containerExtension ?: "mp4"),
+                        externalId = ep.id,
+                    )
+                }
+            }
+            SourceType.STALKER -> {
+                val mac = credentials.mac(source.id) ?: return@withContext
+                // externalId is the series parent id (see buildStalkerSeries); drill down for its
+                // seasons/episodes. Each episode stores the season `cmd` in externalId — Phase 3's
+                // resolver mints the real URL at play time (no static stream URL for Stalker).
+                StalkerClient(source.url, mac).getSeriesEpisodes(vodTitle.externalId).map { ep ->
+                    SeriesEpisode(
+                        seriesTitleId = vodTitle.id,
+                        season = ep.season,
+                        episode = ep.episode,
+                        name = ep.name,
+                        streamUrl = null,
+                        externalId = ep.cmd,
+                    )
+                }
+            }
+            SourceType.M3U -> return@withContext
         }
         if (entities.isNotEmpty()) {
             db.seriesEpisodeDao().insertAll(entities)
@@ -646,9 +679,70 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         }
     }
 
+    override suspend fun addStalkerSource(
+        name: String,
+        portalUrl: String,
+        mac: String,
+        epgUrl: String?,
+    ): ImportSummary = withContext(Dispatchers.IO) {
+        val stalker = StalkerClient(portalUrl, mac)
+        val account = stalker.authenticate()
+
+        // Fetch the whole catalog BEFORE writing anything (mirrors addXtreamSource). Live is
+        // mandatory; VOD/series are best-effort — a live-only portal (or one that 404s the vod/series
+        // sections) still imports fully rather than failing the whole add.
+        val liveCategories = stalker.getLiveCategories()
+        val liveChannels = stalker.getLiveChannels()
+        val vodCategories = runCatching { stalker.getVodCategories() }.getOrDefault(emptyList())
+        val vod = runCatching { stalker.getVod() }.getOrDefault(emptyList())
+        val seriesCategories = runCatching { stalker.getSeriesCategories() }.getOrDefault(emptyList())
+        val series = runCatching { stalker.getSeries() }.getOrDefault(emptyList())
+
+        val source = PlaylistSource(
+            name = name,
+            type = SourceType.STALKER,
+            url = portalUrl,
+            epgUrl = epgUrl,
+            lastRefreshedAtMs = System.currentTimeMillis(),
+            accountInfoJson = account.toJson(),
+        )
+        val sourceId = db.playlistSourceDao().insert(source)
+        // The MAC is the portal secret — encrypted-at-rest, keyed by the id Room just generated,
+        // exactly like Xtream user/pass (never on the Room row).
+        credentials.saveStalker(sourceId, mac)
+
+        try {
+            val categories = liveCategories.map { Category(sourceId, ContentType.LIVE, it.title, it.id) } +
+                vodCategories.map { Category(sourceId, ContentType.MOVIE, it.title, it.id) } +
+                seriesCategories.map { Category(sourceId, ContentType.SERIES, it.title, it.id) }
+            val channels = buildStalkerChannels(sourceId, liveChannels, liveCategories)
+            val movies = buildStalkerMovies(sourceId, vod, vodCategories)
+            val seriesRows = buildStalkerSeries(sourceId, series, seriesCategories)
+
+            db.categoryDao().upsertAll(categories)
+            db.channelDao().insertAll(channels)
+            db.vodTitleDao().insertAll(movies + seriesRows)
+            replaceDuplicateSources(sourceId)
+            settings.setActiveSourceId(sourceId)
+
+            ImportSummary(channels = channels.size, movies = movies.size, series = seriesRows.size)
+        } catch (e: Throwable) {
+            // Same all-or-nothing rollback (rows + creds) as addXtreamSource — a half-import must
+            // never leave a dead, selectable source behind.
+            db.channelDao().deleteForSource(sourceId)
+            db.vodTitleDao().deleteForSource(sourceId)
+            db.categoryDao().deleteForSource(sourceId)
+            credentials.clear(sourceId)
+            db.playlistSourceDao().delete(source.copy(id = sourceId))
+            throw e
+        }
+    }
+
     override suspend fun refreshSource(sourceId: Long): ImportSummary = withContext(Dispatchers.IO) {
         val source = db.playlistSourceDao().getById(sourceId)
             ?: throw IllegalStateException("Playlist not found")
+
+        if (source.type == SourceType.STALKER) return@withContext refreshStalkerSource(source)
 
         // M3U has no stable per-item id namespace and a streaming/batched importer -- an
         // id-preserving diff isn't worth building for it. Re-import by URL instead: it de-dups on
@@ -761,6 +855,111 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         credentials.clear(sourceId)
         // Don't leave the active pointer dangling at a source that no longer exists.
         if (settings.activeSourceId.first() == sourceId) settings.clearActiveSourceId()
+    }
+
+    /** Live channels → [Channel] rows: `cmd` into `externalId`, `streamUrl` left blank (Phase 3's
+     * resolver mints the real URL at play time), `tvgId` from the portal's `xmltv_id` for EPG matching. */
+    private fun buildStalkerChannels(
+        sourceId: Long,
+        channels: List<com.arashrahimi46.iptv.data.parser.StalkerChannel>,
+        categories: List<com.arashrahimi46.iptv.data.parser.StalkerCategory>,
+    ): List<Channel> {
+        val catNames = categories.associate { it.id to it.title }
+        return channels.map {
+            Channel(
+                sourceId = sourceId,
+                name = it.name,
+                streamUrl = "",
+                logoUrl = it.logo,
+                categoryName = it.categoryId?.let(catNames::get) ?: UNCATEGORIZED_CATEGORY,
+                tvgId = it.xmltvId,
+                number = it.number,
+                externalId = it.cmd,
+            )
+        }
+    }
+
+    private fun buildStalkerMovies(
+        sourceId: Long,
+        vod: List<com.arashrahimi46.iptv.data.parser.StalkerVod>,
+        categories: List<com.arashrahimi46.iptv.data.parser.StalkerCategory>,
+    ): List<VodTitle> {
+        val catNames = categories.associate { it.id to it.title }
+        return vod.map {
+            VodTitle(
+                sourceId = sourceId,
+                name = it.name,
+                isSeries = false,
+                posterUrl = it.cover,
+                categoryName = it.categoryId?.let(catNames::get) ?: UNCATEGORIZED_CATEGORY,
+                year = it.year,
+                externalId = it.cmd,
+            )
+        }
+    }
+
+    private fun buildStalkerSeries(
+        sourceId: Long,
+        series: List<com.arashrahimi46.iptv.data.parser.StalkerSeries>,
+        categories: List<com.arashrahimi46.iptv.data.parser.StalkerCategory>,
+    ): List<VodTitle> {
+        val catNames = categories.associate { it.id to it.title }
+        return series.map {
+            VodTitle(
+                sourceId = sourceId,
+                name = it.name,
+                isSeries = true,
+                posterUrl = it.cover,
+                categoryName = it.categoryId?.let(catNames::get) ?: UNCATEGORIZED_CATEGORY,
+                // The series parent's own id (not a cmd) — the episode drill-down keys off it.
+                externalId = it.id,
+            )
+        }
+    }
+
+    /**
+     * Stalker refresh — the Xtream shape (fetch-all-first, empty-guard, id-preserving upsert inside
+     * one transaction) applied to a portal session. The MAC comes from [CredentialsStore]; a fresh
+     * handshake happens inside [StalkerClient]. Match key is the `cmd` (in `externalId`), so a
+     * re-listed channel keeps its Room id → favorites/continue-watching survive.
+     */
+    private suspend fun refreshStalkerSource(source: PlaylistSource): ImportSummary {
+        val sourceId = source.id
+        val mac = credentials.mac(sourceId)
+            ?: throw IllegalStateException("Saved MAC for this portal is missing -- re-add it to refresh.")
+
+        val stalker = StalkerClient(source.url, mac)
+        val account = stalker.authenticate()
+        val liveCategories = stalker.getLiveCategories()
+        val liveChannels = stalker.getLiveChannels()
+        val vodCategories = runCatching { stalker.getVodCategories() }.getOrDefault(emptyList())
+        val vod = runCatching { stalker.getVod() }.getOrDefault(emptyList())
+        val seriesCategories = runCatching { stalker.getSeriesCategories() }.getOrDefault(emptyList())
+        val series = runCatching { stalker.getSeries() }.getOrDefault(emptyList())
+
+        // Empty-guard: a portal that answers but returns nothing (connection cap / glitch) must not be
+        // read as "the whole catalog was removed". Abort, keep everything.
+        if (liveChannels.isEmpty() && vod.isEmpty() && series.isEmpty()) {
+            throw IllegalStateException("The portal returned an empty catalog -- your connection may be limited. Nothing was changed.")
+        }
+
+        val categories = liveCategories.map { Category(sourceId, ContentType.LIVE, it.title, it.id) } +
+            vodCategories.map { Category(sourceId, ContentType.MOVIE, it.title, it.id) } +
+            seriesCategories.map { Category(sourceId, ContentType.SERIES, it.title, it.id) }
+        val channels = buildStalkerChannels(sourceId, liveChannels, liveCategories)
+        val movies = buildStalkerMovies(sourceId, vod, vodCategories)
+        val seriesRows = buildStalkerSeries(sourceId, series, seriesCategories)
+
+        db.withTransaction {
+            upsertChannels(sourceId, channels)
+            upsertTitles(sourceId, isSeries = false, incoming = movies)
+            upsertTitles(sourceId, isSeries = true, incoming = seriesRows)
+            db.categoryDao().deleteForSource(sourceId)
+            db.categoryDao().upsertAll(categories)
+            db.playlistSourceDao().setLastRefreshed(sourceId, System.currentTimeMillis())
+            db.playlistSourceDao().setAccountInfo(sourceId, account.toJson())
+        }
+        return ImportSummary(channels = channels.size, movies = movies.size, series = seriesRows.size)
     }
 
     /**
