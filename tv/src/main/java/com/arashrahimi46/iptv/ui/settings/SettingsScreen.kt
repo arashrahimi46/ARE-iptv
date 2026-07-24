@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -93,7 +94,16 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 @Composable
 private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).focusGroup(),
+        // horizontalScroll clips its content on all four edges, cutting off a focused chip's
+        // accent ring/glow. Pad inside the scroll on every side so the glow has headroom, then
+        // offset the whole strip back by the same horizontal amount so the first chip still lines
+        // up with the title/cards (the left glow spills harmlessly into the safe-area margin).
+        modifier = Modifier
+            .offset(x = (-14).dp)
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 14.dp, vertical = 14.dp)
+            .focusGroup(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         SettingsTab.entries.forEach { tab ->

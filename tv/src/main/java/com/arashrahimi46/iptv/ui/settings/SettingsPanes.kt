@@ -112,7 +112,9 @@ import kotlinx.coroutines.launch
  * thin. Rows reuse [SettingsSection]/[SettingsRow]/[SelectionChangeControl] from SettingsScreen.kt.
  */
 
-private val PaneBottomPad = PaddingValues(bottom = 40.dp)
+// Top pad gives the first row's focus ring headroom before the LazyColumn's top clip; bottom pad
+// keeps the last row clear of the screen edge.
+private val PaneBottomPad = PaddingValues(top = 8.dp, bottom = 40.dp)
 
 // =============================================================================================
 // GENERAL — playlists, provider, language, metadata, catalog reminder, storage & reset

@@ -244,8 +244,3 @@ locale dirs (D8). No DB migration, no new DataStore.
 - Multi-playlist management UI (tracked separately).
 - Per-source overrides of global settings.
 - Text size / tile density / buffering profile / launch volume / CW size (§4c).
-
-<!-- POLISH BACKLOG (fix after final phase, per user 2026-07-24):
-  - Settings tab strip: top of the chip / focus ring is clipped at the screen top edge (needs top padding/headroom).
-  - First content row under the strip is clipped at its top edge (same headroom issue).
--->
