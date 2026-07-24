@@ -329,7 +329,6 @@ fun ArePlayerControls(
                         if (playing) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
                         onClick = onPlayPause,
                         variant = AreIconButtonVariant.Glass,
-                        size = AreIconButtonSize.Large,
                         active = true,
                         modifier = if (playPauseFocusRequester != null) Modifier.focusRequester(playPauseFocusRequester) else Modifier,
                     )
@@ -409,7 +408,7 @@ fun ArePlayerControls(
         val transportExtra = shown.filter { it.control.group == HudGroup.TRANSPORT && !it.control.locked }
         val utilities = shown.filter { it.control.group == HudGroup.UTILITIES }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             transportCore.forEach { HudButton(it.control) }
             if (transportExtra.isNotEmpty()) {
                 Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))

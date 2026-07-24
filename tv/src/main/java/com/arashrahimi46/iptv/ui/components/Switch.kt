@@ -25,6 +25,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Switch — on/off toggle (theme, parental lock, PiP, autoplay) (Switch.jsx). */
 @Composable
@@ -37,7 +39,9 @@ fun AreSwitch(
 ) {
     val colors = AreIptvTheme.colors
     val motion = AreIptvTheme.motion
-    val trackColor = if (checked) colors.accent else colors.surface3
+    // ON = accent-gradient track + soft accent glow (design §5 Toggle); OFF = neutral surface.
+    val onBrush = if (checked && !disabled) accentGradientBrush() else null
+    val offColor = if (disabled) colors.surface3.copy(alpha = 0.5f) else colors.surface3
     val thumbOffset by animateDpAsState(
         targetValue = if (checked) 28.dp else 4.dp,
         animationSpec = tween(motion.durFastMs, easing = motion.easeEmph),
@@ -50,6 +54,7 @@ fun AreSwitch(
         // reads its on/off state -- previously just a focusable/clickable Box with no
         // semantics of its own beyond that.
         modifier = modifier
+            .then(if (onBrush != null) Modifier.tvGlow(colors.accent, CircleShape) else Modifier)
             .size(width = 58.dp, height = 34.dp)
             .semantics {
                 role = Role.Switch
@@ -57,7 +62,8 @@ fun AreSwitch(
             },
         interactionSource = interactionSource,
         shape = CircleShape,
-        backgroundColor = if (disabled) trackColor.copy(alpha = 0.5f) else trackColor,
+        backgroundColor = if (checked && !disabled) Color.Transparent else if (disabled && checked) colors.accent.copy(alpha = 0.5f) else offColor,
+        backgroundBrush = onBrush,
         enabled = !disabled,
     ) { _, _ ->
         Box(Modifier.padding(4.dp)) {

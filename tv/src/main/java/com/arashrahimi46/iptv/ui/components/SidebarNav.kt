@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,10 +41,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -56,7 +61,9 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
@@ -116,7 +123,18 @@ fun AreSidebarNav(
         modifier = modifier
             .width(width)
             .fillMaxHeight()
-            .background(colors.surface1)
+            // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
+            // lit hairline right edge (the glass seam separating rail from content). Drawn behind
+            // the nav rows. Over the solid page -- no blur (design §6).
+            .drawBehind {
+                drawRect(Brush.verticalGradient(listOf(colors.surface2, colors.surface1)))
+                val edge = 1.dp.toPx()
+                drawRect(
+                    brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
+                    topLeft = Offset(size.width - edge, 0f),
+                    size = Size(edge, size.height),
+                )
+            }
             .padding(vertical = spacing.sp8),
     ) {
         Row(
@@ -173,11 +191,15 @@ fun AreSidebarNav(
 
 @Composable
 private fun BrandMark(brand: String, colors: AreIptvColors) {
+    val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
     Box(
         modifier = Modifier
             .size(40.dp)
-            .tvGlow(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm))
-            .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm)),
+            .tvGlow(colors.accent, shape)
+            // Accent-gradient frosted tile (glossy top -> accent), with the glass lit edge on top --
+            // the app-mark echoes the same material as the rest of the shell.
+            .background(accentGradientBrush(), shape)
+            .border(1.dp, glassBorderBrush(), shape),
         contentAlignment = Alignment.Center,
     ) {
         Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = colors.accentFg)
@@ -210,11 +232,11 @@ private fun SidebarNavRow(
             .focusRequester(focusRequester),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
-        backgroundColor = when {
-            active -> colors.accentWash
-            focused -> colors.surfaceGlass
-            else -> Color.Transparent
-        },
+        // Three distinct states (design §6b): rest = transparent, focused = glass fill + lit edge,
+        // current screen = accent-gradient chip (denser than focus) that floats on a subtle shadow.
+        backgroundColor = if (focused && !active) colors.surfaceGlass else Color.Transparent,
+        backgroundBrush = if (active) accentGradientBrush() else null,
+        shadowElevation = if (active) GlassElevation else 0.dp,
         borderBrush = if (focused && !active) glassBorderBrush() else null,
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
@@ -239,7 +261,7 @@ private fun SidebarNavRow(
                 Icon(
                     item.icon,
                     contentDescription = label,
-                    tint = if (active) colors.accentHover else colors.textTertiary,
+                    tint = if (active) colors.accentFg else colors.textTertiary,
                     modifier = Modifier.size(26.dp),
                 )
                 // "!" attention badge -- e.g. the active playlist is overdue for a refresh. Amber,
@@ -262,7 +284,7 @@ private fun SidebarNavRow(
                 Text(
                     text = label,
                     style = AreIptvTheme.typography.label,
-                    color = if (active) colors.textPrimary else colors.textSecondary,
+                    color = if (active) colors.accentFg else colors.textSecondary,
                 )
             }
         }

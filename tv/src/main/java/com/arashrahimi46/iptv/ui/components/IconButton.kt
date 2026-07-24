@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
@@ -65,7 +67,8 @@ fun AreIconButton(
         AreIconButtonVariant.Glass -> colors.surfaceGlass to colors.textPrimary
         AreIconButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
     }
-    val resolvedBackground = if (active) colors.accent else background
+    // Active = the accent-gradient chip (design §6b), floating on a subtle shadow -- not a flat accent.
+    val activeBrush = if (active && !disabled) accentGradientBrush() else null
     val resolvedContentColor = contentTint ?: if (active) colors.accentFg else contentColor
     // Glass variant carries the "lit edge" gradient hairline (not when accent-active).
     val glassBorder = if (variant == AreIconButtonVariant.Glass && !active) glassBorderBrush() else null
@@ -75,7 +78,13 @@ fun AreIconButton(
         modifier = modifier.size(dims),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = if (disabled) resolvedBackground.copy(alpha = 0.4f) else resolvedBackground,
+        backgroundColor = when {
+            active -> if (disabled) colors.accent.copy(alpha = 0.4f) else Color.Transparent
+            disabled -> background.copy(alpha = 0.4f)
+            else -> background
+        },
+        backgroundBrush = activeBrush,
+        shadowElevation = if (activeBrush != null) GlassElevation else 0.dp,
         borderBrush = glassBorder,
         enabled = !disabled,
     ) { _, _ ->

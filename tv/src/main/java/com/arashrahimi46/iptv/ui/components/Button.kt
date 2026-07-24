@@ -26,7 +26,9 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** Visual style, mirrors the design system's `variant` prop (Button.jsx). */
@@ -88,6 +90,10 @@ fun AreButton(
     // edge); disabled secondary falls back to a solid neutral outline.
     val glassBorder = if (variant == AreButtonVariant.Secondary && !disabled) glassBorderBrush() else null
     val borderColor = if (variant == AreButtonVariant.Secondary && disabled) colors.borderDefault else null
+    // Primary is the accent-gradient chip (design §5: "Primary = accent-gradient glass"); filled
+    // variants float on a subtle shadow. Ghost stays flat/transparent.
+    val fillBrush = if (variant == AreButtonVariant.Primary && !disabled) accentGradientBrush() else null
+    val elevation = if (!disabled && variant != AreButtonVariant.Ghost) GlassElevation else 0.dp
 
     TvFocusable(
         onClick = onClick,
@@ -95,7 +101,9 @@ fun AreButton(
             .height(spec.height),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = background,
+        backgroundColor = if (fillBrush != null) Color.Transparent else background,
+        backgroundBrush = fillBrush,
+        shadowElevation = elevation,
         borderColor = borderColor,
         borderBrush = glassBorder,
         onLongClick = onLongClick,

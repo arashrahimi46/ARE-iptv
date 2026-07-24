@@ -25,6 +25,7 @@ import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -270,6 +271,12 @@ fun TvFocusable(
     shape: Shape = RoundedCornerShape(AreIptvTheme.radius.md),
     glowColor: Color = AreIptvTheme.colors.focusRing,
     backgroundColor: Color = Color.Transparent,
+    /** Optional gradient FILL (e.g. [accentGradientBrush] for the selected/current state). Takes
+     *  precedence over [backgroundColor] when set -- the one funnel for the accent-gradient chip. */
+    backgroundBrush: Brush? = null,
+    /** Subtle resting drop shadow (dp of elevation). >0 lifts the surface off the page; used for the
+     *  accent-gradient chip and filled buttons so they float (design ask: "subtle hint" depth). */
+    shadowElevation: Dp = 0.dp,
     /** Optional 1dp outline drawn over the fill (under the focus ring) -- lets low-contrast
      *  fills (e.g. an unselected chip on a white card in light mode) read as a distinct shape. */
     borderColor: Color? = null,
@@ -289,7 +296,11 @@ fun TvFocusable(
     Box(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
-            .background(backgroundColor, shape)
+            .then(if (shadowElevation > 0.dp) Modifier.shadow(shadowElevation, shape) else Modifier)
+            .then(
+                if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
+                else Modifier.background(backgroundColor, shape),
+            )
             .then(
                 when {
                     borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)

@@ -75,9 +75,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
     ) {
-        Box(Modifier.padding(top = spacing.sp6))
+        // Title sits high (design: pull the page title up to give the content more room).
+        Box(Modifier.padding(top = spacing.sp2))
         Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
-        Box(Modifier.padding(top = spacing.sp5))
+        Box(Modifier.padding(top = spacing.sp4))
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
         Box(Modifier.padding(top = spacing.sp5))
         // Each pane is its own LazyColumn (only the visible tab composes/draws) and claims the
@@ -130,7 +131,7 @@ internal fun SettingsSection(title: String, content: @Composable () -> Unit) {
             modifier = Modifier.padding(bottom = 12.dp),
         )
         Column(
-            modifier = Modifier.glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg)),
+            modifier = Modifier.glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl)),
         ) {
             content()
         }
@@ -148,7 +149,7 @@ internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(
-            modifier = Modifier.size(42.dp).background(colors.surface2, RoundedCornerShape(AreIptvTheme.radius.sm)),
+            modifier = Modifier.size(42.dp).glassSurface(RoundedCornerShape(AreIptvTheme.radius.sm), shadow = false),
             contentAlignment = Alignment.Center,
         ) {
             Icon(icon, contentDescription = null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))
