@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material.icons.filled.Update
@@ -595,8 +596,10 @@ internal fun PlaybackPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
     val preferredAudioLang by viewModel.preferredAudioLanguage.collectAsState()
     val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
     val isRecordingIndicatorEnabled by viewModel.isRecordingIndicatorEnabled.collectAsState()
+    val hudLayout by viewModel.hudLayout.collectAsState()
 
     var showAudioLangPicker by remember { mutableStateOf(false) }
+    var showHudEditor by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
         item {
@@ -654,7 +657,29 @@ internal fun PlaybackPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
                 ) {
                     AreSwitch(checked = isRecordingIndicatorEnabled, onCheckedChange = viewModel::setRecordingIndicatorEnabled)
                 }
+                SettingsRow(
+                    icon = Icons.Filled.Tune,
+                    title = stringResource(R.string.settings_rearrange_hud),
+                    desc = stringResource(R.string.settings_rearrange_hud_desc),
+                ) {
+                    AreButton(
+                        text = stringResource(R.string.settings_change),
+                        onClick = { showHudEditor = true },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                }
             }
+        }
+    }
+
+    if (showHudEditor) {
+        Dialog(onDismissRequest = { showHudEditor = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            HudLayoutEditor(
+                slots = hudLayout,
+                onApply = viewModel::setHudLayout,
+                onDismiss = { showHudEditor = false },
+            )
         }
     }
 

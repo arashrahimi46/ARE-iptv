@@ -339,6 +339,19 @@
     <string name="settings_analytics_desc">Share anonymous usage stats to help us improve the app. No personal data is collected.</string>
     <string name="settings_recording_indicator_title">Recording indicator</string>
     <string name="settings_recording_indicator_desc">Show a pulsing REC badge in the player while a recording is in progress.</string>
+    <!-- Rearrange-HUD editor (glass redesign V1) -->
+    <string name="settings_rearrange_hud">Rearrange player controls</string>
+    <string name="settings_rearrange_hud_desc">Reorder or hide the buttons on the player HUD.</string>
+    <string name="hud_editor_transport_group">Playback</string>
+    <string name="hud_editor_utilities_group">Tools</string>
+    <string name="hud_editor_locked_note">Play, rewind and fast-forward are always shown.</string>
+    <string name="hud_editor_hint">Select a control and press OK to grab it, then use up/down to move it. Press OK again to drop. Use the eye to hide or show it.</string>
+    <string name="hud_editor_reset">Reset to default</string>
+    <string name="hud_editor_done">Done</string>
+    <string name="hud_ctl_skip_previous">Previous</string>
+    <string name="hud_ctl_skip_next">Next</string>
+    <string name="hud_ctl_favorite">Favorite</string>
+    <string name="hud_ctl_record">Record</string>
     <string name="player_recording_label">REC</string>
     <string name="player_recording_reconnecting">Reconnecting…</string>
 
