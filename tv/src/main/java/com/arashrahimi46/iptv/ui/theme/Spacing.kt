@@ -29,7 +29,7 @@ data class AreIptvSpacing(
 
     // Common sizing
     val sidebarWidth: Dp = 104.dp,
-    val sidebarWidthOpen: Dp = 244.dp,
+    val sidebarWidthOpen: Dp = 212.dp,
     val tilePosterWidth: Dp = 208.dp,
     val tilePosterHeight: Dp = 312.dp,
     val tileLandWidth: Dp = 320.dp,
