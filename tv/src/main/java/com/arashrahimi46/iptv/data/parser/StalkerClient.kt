@@ -219,6 +219,34 @@ class StalkerClient(
     }
 
     /**
+     * Resolve-on-play (Phase 3): `type=<itv|vod>&action=create_link&cmd=<cmd>` mints a short-lived,
+     * session-scoped URL for [cmd] (a live channel's or VOD item's play command). The portal answers
+     * with a launcher command like `ffmpeg http://…` or `auto http://…`; [stripStalkerCmdPrefix]
+     * reduces it to the bare URL ExoPlayer needs. [series] is the episode number for a Stalker series
+     * (sent as `&series=`, since all episodes of a season share the season's `cmd`). Ensures the
+     * session first, so callers can resolve without a separate [authenticate] step.
+     */
+    suspend fun createLink(cmd: String, type: String, series: Int? = null): String = withContext(Dispatchers.IO) {
+        ensureSession()
+        val extra = buildString {
+            append("&cmd=").append(java.net.URLEncoder.encode(cmd, "UTF-8"))
+            if (series != null) append("&series=").append(series)
+            append("&forced_storage=undefined&disable_ad=0")
+        }
+        val js = call(type, "create_link", extra)
+        val raw = js.stalkerString("cmd") ?: js.stalkerString("url")
+            ?: throw StalkerException("The portal did not return a playable link")
+        stripStalkerCmdPrefix(raw)
+    }
+
+    /** Bring the session up if it isn't already (endpoint probed + handshake + get_profile), so a bare
+     *  [createLink] works without the caller having run [authenticate] first. */
+    private suspend fun ensureSession() {
+        if (endpoint == null) resolveEndpoint()
+        if (bearer == null) { handshake(); getProfile() }
+    }
+
+    /**
      * One authenticated portal call, returning its `js` payload as a [JSONObject]. Injects the MAG
      * headers + MAC cookie + bearer credential, and on an expired-session response ([isSessionExpired])
      * transparently re-handshakes once and retries — Stalker sessions are short-lived, so a single
@@ -444,6 +472,18 @@ internal fun parseStalkerEpisodes(seasons: List<JSONObject>): List<StalkerEpisod
         }
     }
     return out
+}
+
+/**
+ * Reduce a Stalker `create_link` result to the bare URL ExoPlayer can open. Portals prefix the URL
+ * with a launcher token — `ffmpeg http://…`, `auto http://…` — or return the bare URL already; we
+ * cut everything before the first `http`. A result with no `http` (unexpected) is returned trimmed
+ * and left for the player to reject, rather than mangled here.
+ */
+internal fun stripStalkerCmdPrefix(raw: String): String {
+    val trimmed = raw.trim()
+    val idx = trimmed.indexOf("http")
+    return if (idx > 0) trimmed.substring(idx) else trimmed
 }
 
 private inline fun <T> org.json.JSONArray.mapStalkerObjects(transform: (JSONObject) -> T?): List<T> {

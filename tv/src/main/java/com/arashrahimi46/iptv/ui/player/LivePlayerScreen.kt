@@ -917,7 +917,11 @@ fun LivePlayerScreen(
                             onRetry = {
                                 viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                                 autoRetryAttempt = 0
-                                retryCount++
+                                // Stalker (resolve-on-play): re-mint the short-lived link via the
+                                // resolver rather than replaying a possibly-expired URL. The reload
+                                // changes media.streamUrl, which rebuilds the player on its own; other
+                                // sources just bump retryCount to rebuild with the same (static) URL.
+                                if (state.resolveOnPlay) viewModel.reload() else retryCount++
                             },
                             focusRequester = errorFocusRequester,
                         )

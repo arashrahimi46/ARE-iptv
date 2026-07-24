@@ -201,7 +201,9 @@ private fun playLabel(title: VodTitle, state: DetailUiState): String = when {
 }
 
 private fun resolvePlayTarget(title: VodTitle, state: DetailUiState): PlayTarget? = when {
-    !title.isSeries -> title.streamUrl?.let { PlayTarget.Movie(title.id) }
+    // A movie is playable if it has a precomputed URL (M3U/Xtream) OR a portal cmd in externalId
+    // (Stalker resolves the URL on play — see StreamUrlResolver).
+    !title.isSeries -> (title.streamUrl ?: title.externalId)?.let { PlayTarget.Movie(title.id) }
     state.episodesBySeason.isNotEmpty() -> {
         val firstSeason = state.episodesBySeason.keys.min()
         state.episodesBySeason.getValue(firstSeason).minByOrNull { it.episode }?.let { PlayTarget.Episode(it.id) }

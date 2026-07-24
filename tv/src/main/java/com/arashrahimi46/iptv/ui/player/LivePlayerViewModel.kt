@@ -8,7 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContentType
+import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.directStreamLabel
+import com.arashrahimi46.iptv.data.player.DefaultStreamUrlResolver
+import com.arashrahimi46.iptv.data.player.StreamKind
+import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import android.net.Uri
 import com.arashrahimi46.iptv.data.recording.RecordingSupervisor
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
@@ -98,6 +102,9 @@ data class LivePlayerUiState(
     val resumeEpisodeId: Long? = null,
     /** Continue-watching key for a local recording (Live TV Recording V1). */
     val resumeRecordingId: Long? = null,
+    /** True when the current media came from a resolve-on-play source (Stalker): its `streamUrl` is a
+     * short-lived minted link, so a manual Retry re-mints it ([reload]) instead of replaying a stale URL. */
+    val resolveOnPlay: Boolean = false,
 )
 
 /**
@@ -123,6 +130,18 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     private val recordingRepository = com.arashrahimi46.iptv.data.repository.RecordingRepository(app)
     private val recordingStorage = com.arashrahimi46.iptv.data.recording.RecordingStorage(app)
     private val settings = UserSettings(app)
+    // Resolve-on-play seam (Stalker Phase 3): identity for M3U/Xtream, create_link for Stalker.
+    private val streamResolver = DefaultStreamUrlResolver(CredentialsStore(app))
+
+    /** The source currently loaded — kept so a manual retry can re-mint a stale Stalker link ([reload]). */
+    private var currentSource: PlaybackSource? = null
+
+    /** Message from the last failed resolve-on-play (Stalker portal outage), surfaced instead of the
+     * generic "content not found" when a resolve rather than a missing row is why nothing loaded. */
+    private var lastResolveError: String? = null
+
+    /** Whether the last resolve went through the Stalker create_link path (feeds [LivePlayerUiState.resolveOnPlay]). */
+    private var lastResolveOnPlay: Boolean = false
 
     private val _uiState = MutableStateFlow(LivePlayerUiState())
     val uiState: StateFlow<LivePlayerUiState> = _uiState.asStateFlow()
@@ -204,15 +223,52 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
         }
     }
 
+    /**
+     * The one resolve-on-play call site (Stalker Phase 3). For M3U/Xtream this is pure identity — it
+     * returns the row's precomputed [storedUrl] unchanged. For Stalker it mints a fresh session URL
+     * from the stored portal `cmd` ([externalId]) via `create_link`. Returns null (and records
+     * [lastResolveError]) when nothing playable can be produced, so the caller shows a clear error
+     * instead of handing ExoPlayer a blank URL. [sourceId] null / row missing ⇒ not playable.
+     */
+    private suspend fun resolvePlayUrl(
+        sourceId: Long?,
+        kind: StreamKind,
+        externalId: String?,
+        storedUrl: String?,
+        series: Int? = null,
+    ): String? {
+        val source = sourceId?.let { db.playlistSourceDao().getById(it) } ?: return storedUrl?.takeIf { it.isNotBlank() }
+        lastResolveOnPlay = source.type == SourceType.STALKER
+        return try {
+            streamResolver.resolve(source, kind, externalId, storedUrl, series).takeIf { it.isNotBlank() }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            lastResolveError = e.message
+            null
+        }
+    }
+
+    /** Re-run the load for the current source. Used by the player's manual Retry so a Stalker source
+     *  re-mints its short-lived link (resolve-on-play) instead of replaying a URL that may have expired. */
+    fun reload() {
+        currentSource?.let { loadMedia(it) }
+    }
+
     private fun loadMedia(source: PlaybackSource) {
+        currentSource = source
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(loading = true, errorMessage = null)
+            lastResolveError = null
+            lastResolveOnPlay = false
             val media = when (val s = source) {
-                is PlaybackSource.Channel -> db.channelDao().getById(s.channelId)?.let {
-                    PlayableMedia(title = it.name, subtitle = it.categoryName, streamUrl = it.streamUrl, isLive = true)
+                is PlaybackSource.Channel -> db.channelDao().getById(s.channelId)?.let { ch ->
+                    resolvePlayUrl(ch.sourceId, StreamKind.LIVE, ch.externalId, ch.streamUrl)?.let { url ->
+                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = true)
+                    }
                 }
                 is PlaybackSource.Vod -> db.vodTitleDao().getById(s.vodTitleId)?.let { title ->
-                    title.streamUrl?.let { url ->
+                    resolvePlayUrl(title.sourceId, StreamKind.VOD, title.externalId, title.streamUrl)?.let { url ->
                         PlayableMedia(
                             title = title.name,
                             subtitle = title.categoryName,
@@ -224,15 +280,15 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                     }
                 }
                 is PlaybackSource.Episode -> db.seriesEpisodeDao().getById(s.episodeId)?.let { episode ->
-                    episode.streamUrl?.let { url ->
-                        // Episodes match on the parent series name + S/E, not the (often per-episode) title.
-                        val seriesName = db.vodTitleDao().getById(episode.seriesTitleId)?.name
+                    // Episodes match on the parent series name + S/E, not the (often per-episode) title.
+                    val parent = db.vodTitleDao().getById(episode.seriesTitleId)
+                    resolvePlayUrl(parent?.sourceId, StreamKind.SERIES, episode.externalId, episode.streamUrl, episode.episode)?.let { url ->
                         PlayableMedia(
                             title = episode.name,
                             subtitle = "S${episode.season} · E${episode.episode}",
                             streamUrl = url,
                             isLive = false,
-                            searchName = seriesName,
+                            searchName = parent?.name,
                             season = episode.season,
                             episode = episode.episode,
                         )
@@ -319,7 +375,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
-                errorMessage = if (media == null) getApplication<Application>().getString(R.string.player_content_not_found) else null,
+                errorMessage = if (media != null) null
+                    else lastResolveError ?: getApplication<Application>().getString(R.string.player_content_not_found),
                 phase = if (media == null) PlaybackPhase.Error else PlaybackPhase.Idle,
                 currentChannelId = (source as? PlaybackSource.Channel)?.channelId,
                 siblingChannelIds = siblingIds,
@@ -330,6 +387,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 resumeVodTitleId = if (media == null) null else resumeVodId,
                 resumeEpisodeId = if (media == null) null else resumeEpisodeId,
                 resumeRecordingId = if (media == null) null else resumeRecordingId,
+                resolveOnPlay = media != null && lastResolveOnPlay,
             )
         }
     }

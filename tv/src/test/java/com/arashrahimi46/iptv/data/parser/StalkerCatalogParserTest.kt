@@ -87,4 +87,17 @@ class StalkerCatalogParserTest {
         assertEquals(1, eps.single().episode)
         assertEquals("/media/m", eps.single().cmd)
     }
+
+    @Test
+    fun `create_link prefixes are stripped to the bare url`() {
+        assertEquals("http://p/live/1.ts", stripStalkerCmdPrefix("ffmpeg http://p/live/1.ts"))
+        assertEquals("http://p/live/1.ts", stripStalkerCmdPrefix("auto http://p/live/1.ts"))
+        assertEquals("http://p/live/1.ts", stripStalkerCmdPrefix("  http://p/live/1.ts  "))
+        assertEquals("https://p/vod/9.mp4", stripStalkerCmdPrefix("https://p/vod/9.mp4"))
+    }
+
+    @Test
+    fun `a link with no http is left intact for the player to reject`() {
+        assertEquals("rtmp://p/live/1", stripStalkerCmdPrefix("rtmp://p/live/1"))
+    }
 }
