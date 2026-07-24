@@ -355,6 +355,11 @@
     <string name="player_fast_forward">İrəli sar</string>
     <string name="player_audio_track">Səs cığırı</string>
     <string name="player_subtitles">Altyazılar</string>
+    <string name="player_aspect_ratio">Tərəflər nisbəti</string>
+    <string name="player_aspect_fit">Sığdır</string>
+    <string name="player_aspect_fill">Doldur</string>
+    <string name="player_aspect_stretch">Uzat</string>
+    <string name="player_aspect_toast">Nisbət: %1$s</string>
     <string name="player_minimize_to_corner">Küncə kiçilt</string>
     <string name="player_mini_player">Mini pleyer</string>
     <string name="player_up_next_action">Növbəti</string>

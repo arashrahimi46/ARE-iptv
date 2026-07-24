@@ -36,6 +36,8 @@ class UserSettings(private val context: Context) {
         val ACCENT_LIGHT = stringPreferencesKey("accent_light")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val HARDWARE_DECODING = booleanPreferencesKey("hardware_decoding")
+        /** Video aspect/resize mode applied in the player (enum name, see AspectMode); default fit. */
+        val VIDEO_ASPECT_MODE = stringPreferencesKey("video_aspect_mode")
         val AUTOPLAY_NEXT_EPISODE = booleanPreferencesKey("autoplay_next_episode")
         val MINI_PLAYER_BEHAVIOR = stringPreferencesKey("mini_player_behavior")
         val PARENTAL_LOCK_ENABLED = booleanPreferencesKey("parental_lock_enabled")
@@ -117,6 +119,9 @@ class UserSettings(private val context: Context) {
 
     /** Preferred subtitle language (ISO code) pre-selected when searching subtitles online; defaults to English. */
     val subtitleLanguage: Flow<String> = context.dataStore.data.map { it[Keys.SUBTITLE_LANGUAGE] ?: "en" }
+
+    /** Video aspect/resize mode name (see AspectMode in the player); "FIT" (whole picture) by default. */
+    val videoAspectMode: Flow<String> = context.dataStore.data.map { it[Keys.VIDEO_ASPECT_MODE] ?: "FIT" }
 
     /** User's personal OpenSubtitles API key for online subtitle search; null until they connect one in Settings. */
     val openSubsCredential: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_CRED]?.takeIf { k -> k.isNotBlank() } }
@@ -210,6 +215,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setSubtitleLanguage(code: String) {
         context.dataStore.edit { it[Keys.SUBTITLE_LANGUAGE] = code }
+    }
+
+    suspend fun setVideoAspectMode(mode: String) {
+        context.dataStore.edit { it[Keys.VIDEO_ASPECT_MODE] = mode }
     }
 
     /** Persists a validated OpenSubtitles API key, or clears it when [key] is null/blank. */

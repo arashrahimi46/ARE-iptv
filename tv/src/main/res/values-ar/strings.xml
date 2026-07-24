@@ -352,6 +352,11 @@
     <string name="player_fast_forward">تقديم سريع</string>
     <string name="player_audio_track">المسار الصوتي</string>
     <string name="player_subtitles">الترجمات</string>
+    <string name="player_aspect_ratio">نسبة العرض إلى الارتفاع</string>
+    <string name="player_aspect_fit">احتواء</string>
+    <string name="player_aspect_fill">ملء</string>
+    <string name="player_aspect_stretch">تمديد</string>
+    <string name="player_aspect_toast">النسبة: %1$s</string>
     <string name="player_minimize_to_corner">تصغير إلى الزاوية</string>
     <string name="player_mini_player">المشغّل المصغّر</string>
     <string name="player_up_next_action">التالي</string>

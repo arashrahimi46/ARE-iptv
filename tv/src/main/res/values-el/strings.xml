@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Γρήγορη προώθηση</string>
     <string name="player_audio_track">Κομμάτι ήχου</string>
     <string name="player_subtitles">Υπότιτλοι</string>
+    <string name="player_aspect_ratio">Αναλογία εικόνας</string>
+    <string name="player_aspect_fit">Προσαρμογή</string>
+    <string name="player_aspect_fill">Γέμισμα</string>
+    <string name="player_aspect_stretch">Τέντωμα</string>
+    <string name="player_aspect_toast">Αναλογία: %1$s</string>
     <string name="player_minimize_to_corner">Ελαχιστοποίηση στη γωνία</string>
     <string name="player_mini_player">Μίνι player</string>
     <string name="player_up_next_action">Ακολουθεί</string>

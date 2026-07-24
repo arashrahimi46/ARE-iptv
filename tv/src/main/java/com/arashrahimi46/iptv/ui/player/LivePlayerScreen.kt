@@ -75,6 +75,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.video.VideoFrameMetadataListener
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -189,6 +190,12 @@ fun LivePlayerScreen(
     val showRecordingIndicator by settings.isRecordingIndicatorEnabled.collectAsState(initial = true)
     val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
+    // Video aspect/resize mode: seeded from the saved preference, then overridden locally as the user
+    // cycles it from the HUD (the override wins so the change is instant; it's persisted below).
+    val persistedAspect by settings.videoAspectMode.collectAsState(initial = "FIT")
+    var aspectOverride by remember { mutableStateOf<AspectMode?>(null) }
+    val aspectMode = aspectOverride ?: AspectMode.fromName(persistedAspect)
+    LaunchedEffect(aspectOverride) { aspectOverride?.let { settings.setVideoAspectMode(it.name) } }
     // Online subtitles need BOTH the API key (search) and the account login (download). If either is
     // missing the feature is unusable, so the "Search online" entry is hidden until both are set.
     val subsKeyConnected by settings.openSubsCredential.collectAsState(initial = null)
@@ -454,6 +461,11 @@ fun LivePlayerScreen(
             var subtitleChoice by remember(media.streamUrl) { mutableStateOf<SubtitleTrack>(SubtitleTrack.Off) }
             var showSubtitles by remember { mutableStateOf(false) }
             val textTracks = remember(tracks) { textTracksFrom(tracks) }
+            // Audio-track state, reset per stream: the tracks the current stream exposes and the user's
+            // forced pick (null = the player's automatic choice). Applied by the effect further down.
+            val audioTracks = remember(tracks) { audioTracksFrom(tracks) }
+            var audioChoice by remember(media.streamUrl) { mutableStateOf<AudioTrack?>(null) }
+            var showAudio by remember { mutableStateOf(false) }
             // Language sniffed from the selected track's rendered text (rowKey -> language), for
             // tracks the container left untagged. Reset per stream. Read live in the cue listener.
             val detectedLangs = remember(media.streamUrl) { mutableStateMapOf<String, String>() }
@@ -717,8 +729,10 @@ fun LivePlayerScreen(
             // is force-selected. Re-runs on a player rebuild (channel switch / retry) so the choice
             // survives, and when the user changes it. textTracks is a key so a just-arrived track
             // that matches the current pick gets (re)applied once it's actually available.
-            LaunchedEffect(exoPlayer, subtitleChoice, textTracks) {
-                exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters.withSubtitle(subtitleChoice)
+            LaunchedEffect(exoPlayer, subtitleChoice, textTracks, audioChoice, audioTracks) {
+                exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                    .withSubtitle(subtitleChoice)
+                    .withAudioTrack(audioChoice)
             }
 
             // Sideload downloaded subtitles by re-setting the MediaItem with them attached, seeking
@@ -818,13 +832,17 @@ fun LivePlayerScreen(
                         useController = false
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         player = exoPlayer
+                        resizeMode = aspectMode.resizeMode
                     }
                 },
                 // exoPlayer is remember(streamUrl, retryCount, hardwareDecoding) -- a NEW instance
                 // on every channel switch, retry, fallback or decoder toggle. The one-shot factory
                 // only binds the first one, so without this the surface stays attached to the
                 // released old player (black video). Rebind the surface to the current instance.
-                update = { view -> view.player = exoPlayer },
+                update = { view ->
+                    view.player = exoPlayer
+                    view.resizeMode = aspectMode.resizeMode
+                },
             )
 
             Box(
@@ -986,6 +1004,23 @@ fun LivePlayerScreen(
                         // picker. Lit while an embedded track is active.
                         onSubtitles = { showSubtitles = true },
                         subtitlesActive = subtitleChoice is SubtitleTrack.Embedded,
+                        // Audio track: only offer the picker when there's an actual choice (>1 track).
+                        onAudioTrack = if (audioTracks.size > 1) {
+                            { showAudio = true }
+                        } else {
+                            null
+                        },
+                        audioTrackActive = audioChoice != null,
+                        // Aspect ratio: cycle Fit -> Fill -> Stretch, persist, and toast the new mode.
+                        onAspectRatio = {
+                            val next = aspectMode.next()
+                            aspectOverride = next
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.player_aspect_toast, context.getString(next.labelRes)),
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        },
                         // ● REC (Live TV Recording V1): recordable live .ts channels only. Recording
                         // stops in place; idle opens the drive picker. Non-.ts -> dimmed placeholder.
                         onToggleRecord = if (viewModel.isCurrentStreamRecordable) {
@@ -1036,6 +1071,14 @@ fun LivePlayerScreen(
                 )
             }
 
+            if (showAudio) {
+                AudioTrackMenuDialog(
+                    tracks = audioTracks,
+                    selectedKey = audioChoice?.rowKey(),
+                    onSelectTrack = { audioChoice = it; showAudio = false },
+                    onDismiss = { showAudio = false },
+                )
+            }
             if (showSubtitles) {
                 SubtitleMenuDialog(
                     tracks = textTracks,
@@ -1219,5 +1262,25 @@ private fun PlayerErrorState(
                 )
             }
         }
+    }
+}
+
+/**
+ * Video aspect/resize modes offered by the HUD's aspect button, each mapping to a Media3
+ * [AspectRatioFrameLayout] resize mode. The choice is persisted (see UserSettings.videoAspectMode)
+ * so it survives across streams and app restarts. Three honest modes, each a distinct native
+ * behaviour: [FIT] shows the whole picture (letterbox/pillarbox), [FILL] crops to fill the screen
+ * with no distortion, [STRETCH] fills by distorting.
+ */
+enum class AspectMode(val resizeMode: Int, val labelRes: Int) {
+    FIT(AspectRatioFrameLayout.RESIZE_MODE_FIT, R.string.player_aspect_fit),
+    FILL(AspectRatioFrameLayout.RESIZE_MODE_ZOOM, R.string.player_aspect_fill),
+    STRETCH(AspectRatioFrameLayout.RESIZE_MODE_FILL, R.string.player_aspect_stretch);
+
+    fun next(): AspectMode = entries[(ordinal + 1) % entries.size]
+
+    companion object {
+        /** Parses a persisted enum name back to a mode, falling back to [FIT] for unknown values. */
+        fun fromName(name: String): AspectMode = entries.firstOrNull { it.name == name } ?: FIT
     }
 }

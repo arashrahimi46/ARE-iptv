@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Перемотка вперёд</string>
     <string name="player_audio_track">Аудиодорожка</string>
     <string name="player_subtitles">Субтитры</string>
+    <string name="player_aspect_ratio">Соотношение сторон</string>
+    <string name="player_aspect_fit">Вписать</string>
+    <string name="player_aspect_fill">Заполнить</string>
+    <string name="player_aspect_stretch">Растянуть</string>
+    <string name="player_aspect_toast">Соотношение: %1$s</string>
     <string name="player_minimize_to_corner">Свернуть в угол</string>
     <string name="player_mini_player">Мини-плеер</string>
     <string name="player_up_next_action">Далее</string>

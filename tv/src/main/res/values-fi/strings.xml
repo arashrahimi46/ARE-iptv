@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Kelaa eteen</string>
     <string name="player_audio_track">Ääniraita</string>
     <string name="player_subtitles">Tekstitykset</string>
+    <string name="player_aspect_ratio">Kuvasuhde</string>
+    <string name="player_aspect_fit">Sovita</string>
+    <string name="player_aspect_fill">Täytä</string>
+    <string name="player_aspect_stretch">Venytä</string>
+    <string name="player_aspect_toast">Kuvasuhde: %1$s</string>
     <string name="player_minimize_to_corner">Pienennä kulmaan</string>
     <string name="player_mini_player">Minisoitin</string>
     <string name="player_up_next_action">Seuraavaksi</string>

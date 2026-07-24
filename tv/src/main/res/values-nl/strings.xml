@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Vooruitspoelen</string>
     <string name="player_audio_track">Audiospoor</string>
     <string name="player_subtitles">Ondertiteling</string>
+    <string name="player_aspect_ratio">Beeldverhouding</string>
+    <string name="player_aspect_fit">Passend</string>
+    <string name="player_aspect_fill">Vullen</string>
+    <string name="player_aspect_stretch">Uitrekken</string>
+    <string name="player_aspect_toast">Verhouding: %1$s</string>
     <string name="player_minimize_to_corner">Minimaliseren naar hoek</string>
     <string name="player_mini_player">Minispeler</string>
     <string name="player_up_next_action">Hierna</string>

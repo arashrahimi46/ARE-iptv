@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Avance rápido</string>
     <string name="player_audio_track">Pista de audio</string>
     <string name="player_subtitles">Subtítulos</string>
+    <string name="player_aspect_ratio">Relación de aspecto</string>
+    <string name="player_aspect_fit">Ajustar</string>
+    <string name="player_aspect_fill">Rellenar</string>
+    <string name="player_aspect_stretch">Estirar</string>
+    <string name="player_aspect_toast">Aspecto: %1$s</string>
     <string name="player_minimize_to_corner">Minimizar a la esquina</string>
     <string name="player_mini_player">Mini reproductor</string>
     <string name="player_up_next_action">A continuación</string>

@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Snabbspola framåt</string>
     <string name="player_audio_track">Ljudspår</string>
     <string name="player_subtitles">Undertexter</string>
+    <string name="player_aspect_ratio">Bildformat</string>
+    <string name="player_aspect_fit">Anpassa</string>
+    <string name="player_aspect_fill">Fyll</string>
+    <string name="player_aspect_stretch">Sträck ut</string>
+    <string name="player_aspect_toast">Format: %1$s</string>
     <string name="player_minimize_to_corner">Minimera till hörnet</string>
     <string name="player_mini_player">Minispelare</string>
     <string name="player_up_next_action">Nästa</string>

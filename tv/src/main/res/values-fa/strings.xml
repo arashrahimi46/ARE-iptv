@@ -353,6 +353,11 @@
     <string name="player_fast_forward">جلو بردن سریع</string>
     <string name="player_audio_track">باند صوتی</string>
     <string name="player_subtitles">زیرنویس‌ها</string>
+    <string name="player_aspect_ratio">نسبت تصویر</string>
+    <string name="player_aspect_fit">جا دادن</string>
+    <string name="player_aspect_fill">پر کردن</string>
+    <string name="player_aspect_stretch">کشیدن</string>
+    <string name="player_aspect_toast">نسبت: %1$s</string>
     <string name="player_minimize_to_corner">کوچک کردن به گوشه</string>
     <string name="player_mini_player">پخش‌کنندهٔ کوچک</string>
     <string name="player_up_next_action">بعدی</string>

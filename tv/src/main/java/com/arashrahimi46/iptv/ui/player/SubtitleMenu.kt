@@ -144,6 +144,100 @@ fun TrackSelectionParameters.withSubtitle(choice: SubtitleTrack): TrackSelection
     }.build()
 
 /**
+ * One selectable audio track baked into the current stream, identified by its [TrackGroup] +
+ * [trackIndex] so it can be force-selected via [TrackSelectionOverride] -- the same model the
+ * subtitle picker uses. [label] is a human string like "English · EAC3 · 5.1".
+ */
+data class AudioTrack(val group: TrackGroup, val trackIndex: Int, val label: String)
+
+/** Row key for an audio track, stable within a single stream's Tracks snapshot. */
+fun AudioTrack.rowKey(): String = "${System.identityHashCode(group)}:$trackIndex"
+
+/** Audio tracks the player currently exposes, labelled by language + codec + channel layout. */
+fun audioTracksFrom(tracks: Tracks): List<AudioTrack> {
+    val out = mutableListOf<AudioTrack>()
+    var untitled = 0
+    for (group in tracks.groups) {
+        if (group.type != C.TRACK_TYPE_AUDIO) continue
+        for (i in 0 until group.length) {
+            if (!group.isTrackSupported(i)) continue
+            val format = group.getTrackFormat(i)
+            val lang = format.language
+                ?.takeIf { it.isNotBlank() && it != C.LANGUAGE_UNDETERMINED }
+                ?.let { displayLanguage(it) }
+            val parts = listOfNotNull(
+                lang ?: format.label?.takeIf { it.isNotBlank() } ?: "Audio ${++untitled}",
+                audioCodecName(format.sampleMimeType),
+                channelLayoutName(format.channelCount),
+            )
+            out += AudioTrack(group.mediaTrackGroup, i, parts.joinToString(" · "))
+        }
+    }
+    return out
+}
+
+/** Short human codec name from a MIME type ("audio/eac3" -> "EAC3"); null when unknown/absent. */
+private fun audioCodecName(mime: String?): String? = when (mime) {
+    "audio/eac3", "audio/eac3-joc" -> "EAC3"
+    "audio/ac3" -> "AC3"
+    "audio/ac4" -> "AC4"
+    "audio/mp4a-latm" -> "AAC"
+    "audio/mpeg", "audio/mpeg-L1", "audio/mpeg-L2" -> "MP3"
+    "audio/vnd.dts", "audio/vnd.dts.hd" -> "DTS"
+    "audio/opus" -> "Opus"
+    "audio/vorbis" -> "Vorbis"
+    "audio/flac" -> "FLAC"
+    "audio/raw" -> "PCM"
+    else -> mime?.substringAfter('/')?.uppercase()?.takeIf { it.isNotBlank() }
+}
+
+/** Channel-count -> layout name (2 -> "Stereo", 6 -> "5.1"); null when the count is unknown (<=0). */
+private fun channelLayoutName(channels: Int): String? = when {
+    channels <= 0 -> null
+    channels == 1 -> "Mono"
+    channels == 2 -> "Stereo"
+    channels == 6 -> "5.1"
+    channels == 8 -> "7.1"
+    else -> "${channels}ch"
+}
+
+/** Forces [track] as the active audio track; a null [track] restores automatic selection. */
+fun TrackSelectionParameters.withAudioTrack(track: AudioTrack?): TrackSelectionParameters =
+    buildUpon().apply {
+        clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+        if (track != null) setOverrideForType(TrackSelectionOverride(track.group, track.trackIndex))
+    }.build()
+
+/**
+ * Audio-track picker shown from the player HUD. Lists every audio track; the active one carries a
+ * check. Same Dialog/[AreDialog] shell as the subtitle picker so it traps D-pad focus and Back
+ * dismisses. [selectedKey] identifies the active row (null before the user has chosen one -- the
+ * first row, the player's default pick, then reads as active).
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun AudioTrackMenuDialog(
+    tracks: List<AudioTrack>,
+    selectedKey: String?,
+    onSelectTrack: (AudioTrack) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(onDismiss = onDismiss, title = stringResource(R.string.player_audio_track), width = 420.dp) {
+            Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+                // No user pick yet -> the player's own default is active: check the first row so the
+                // menu never opens with nothing selected.
+                tracks.forEachIndexed { index, track ->
+                    val key = track.rowKey()
+                    val active = if (selectedKey == null) index == 0 else selectedKey == key
+                    SubtitleRow(label = track.label, selected = active) { onSelectTrack(track) }
+                }
+            }
+        }
+    }
+}
+
+/**
  * Subtitle picker shown from the player HUD's CC button. Lists **Off** plus every embedded text
  * track; the active one carries a check. Same Dialog/[AreDialog] pattern as the up-next panel so it
  * traps D-pad focus and Back dismisses. [selectedKey] identifies the active row for the checkmark.

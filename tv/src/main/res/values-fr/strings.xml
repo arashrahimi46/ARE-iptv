@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Avance rapide</string>
     <string name="player_audio_track">Piste audio</string>
     <string name="player_subtitles">Sous-titres</string>
+    <string name="player_aspect_ratio">Format d\'image</string>
+    <string name="player_aspect_fit">Ajuster</string>
+    <string name="player_aspect_fill">Remplir</string>
+    <string name="player_aspect_stretch">Étirer</string>
+    <string name="player_aspect_toast">Format : %1$s</string>
     <string name="player_minimize_to_corner">Réduire dans le coin</string>
     <string name="player_mini_player">Mini-lecteur</string>
     <string name="player_up_next_action">À suivre</string>

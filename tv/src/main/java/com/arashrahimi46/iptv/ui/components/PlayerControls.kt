@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddToQueue
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
@@ -33,7 +35,6 @@ import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -111,6 +112,13 @@ fun ArePlayerControls(
     onSubtitles: (() -> Unit)? = null,
     /** True when a subtitle track is currently active -- lights the CC button so the user can see subtitles are on. */
     subtitlesActive: Boolean = false,
+    /** Opens the audio-track picker; null keeps the glyph a dimmed placeholder (e.g. a stream with a
+     * single audio track, where there's nothing to pick). */
+    onAudioTrack: (() -> Unit)? = null,
+    /** True when the user has forced a non-default audio track -- lights the button. */
+    audioTrackActive: Boolean = false,
+    /** Cycles the video aspect/resize mode (Fit -> Fill -> Stretch); null keeps a dimmed placeholder. */
+    onAspectRatio: (() -> Unit)? = null,
     /** Live TV Recording (V1): toggles record for the current channel. Null => the stream isn't
      * recordable (non-`.ts`) -> a dimmed placeholder with a "not supported" hint. */
     onToggleRecord: (() -> Unit)? = null,
@@ -285,9 +293,31 @@ fun ArePlayerControls(
                 }
             }
             Box(Modifier.weight(1f))
-            // Audio track selection still needs a real track-selector UI -- stays a dimmed,
-            // non-focusable placeholder (same treatment as Add Playlist) until built.
-            StaticGlyph(Icons.Filled.VolumeUp, stringResource(R.string.player_audio_track))
+            // Aspect ratio: cycles Fit -> Fill -> Stretch on press (a toast names each). Dimmed
+            // placeholder until the player is ready to report/apply a mode.
+            if (onAspectRatio != null) {
+                AreIconButton(
+                    Icons.Filled.AspectRatio,
+                    stringResource(R.string.player_aspect_ratio),
+                    onClick = onAspectRatio,
+                    variant = AreIconButtonVariant.Glass,
+                )
+            } else {
+                StaticGlyph(Icons.Filled.AspectRatio, stringResource(R.string.player_aspect_ratio))
+            }
+            // Audio track: real picker once the stream exposes more than one audio track; a dimmed
+            // placeholder otherwise (nothing to choose). Lit when a non-default track is forced.
+            if (onAudioTrack != null) {
+                AreIconButton(
+                    Icons.Filled.Audiotrack,
+                    stringResource(R.string.player_audio_track),
+                    onClick = onAudioTrack,
+                    variant = AreIconButtonVariant.Glass,
+                    active = audioTrackActive,
+                )
+            } else {
+                StaticGlyph(Icons.Filled.Audiotrack, stringResource(R.string.player_audio_track))
+            }
             // Subtitles: real picker (Off / embedded tracks / online search) once tracks are known;
             // a dimmed placeholder before then (onSubtitles == null). Lit when a track is active.
             if (onSubtitles != null) {

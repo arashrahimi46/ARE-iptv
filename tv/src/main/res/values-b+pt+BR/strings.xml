@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Avanço rápido</string>
     <string name="player_audio_track">Faixa de áudio</string>
     <string name="player_subtitles">Legendas</string>
+    <string name="player_aspect_ratio">Proporção</string>
+    <string name="player_aspect_fit">Ajustar</string>
+    <string name="player_aspect_fill">Preencher</string>
+    <string name="player_aspect_stretch">Esticar</string>
+    <string name="player_aspect_toast">Proporção: %1$s</string>
     <string name="player_minimize_to_corner">Minimizar para o canto</string>
     <string name="player_mini_player">Mini player</string>
     <string name="player_up_next_action">A seguir</string>

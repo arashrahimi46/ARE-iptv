@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Přetočit vpřed</string>
     <string name="player_audio_track">Zvuková stopa</string>
     <string name="player_subtitles">Titulky</string>
+    <string name="player_aspect_ratio">Poměr stran</string>
+    <string name="player_aspect_fit">Přizpůsobit</string>
+    <string name="player_aspect_fill">Vyplnit</string>
+    <string name="player_aspect_stretch">Roztáhnout</string>
+    <string name="player_aspect_toast">Poměr: %1$s</string>
     <string name="player_minimize_to_corner">Minimalizovat do rohu</string>
     <string name="player_mini_player">Mini přehrávač</string>
     <string name="player_up_next_action">Následuje</string>

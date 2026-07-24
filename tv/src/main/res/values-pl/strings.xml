@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Przewiń do przodu</string>
     <string name="player_audio_track">Ścieżka dźwiękowa</string>
     <string name="player_subtitles">Napisy</string>
+    <string name="player_aspect_ratio">Proporcje obrazu</string>
+    <string name="player_aspect_fit">Dopasuj</string>
+    <string name="player_aspect_fill">Wypełnij</string>
+    <string name="player_aspect_stretch">Rozciągnij</string>
+    <string name="player_aspect_toast">Proporcje: %1$s</string>
     <string name="player_minimize_to_corner">Zminimalizuj do rogu</string>
     <string name="player_mini_player">Mini odtwarzacz</string>
     <string name="player_up_next_action">Następnie</string>

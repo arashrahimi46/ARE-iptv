@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Vorspulen</string>
     <string name="player_audio_track">Tonspur</string>
     <string name="player_subtitles">Untertitel</string>
+    <string name="player_aspect_ratio">Seitenverhältnis</string>
+    <string name="player_aspect_fit">Anpassen</string>
+    <string name="player_aspect_fill">Ausfüllen</string>
+    <string name="player_aspect_stretch">Strecken</string>
+    <string name="player_aspect_toast">Format: %1$s</string>
     <string name="player_minimize_to_corner">In die Ecke verkleinern</string>
     <string name="player_mini_player">Mini-Player</string>
     <string name="player_up_next_action">Als Nächstes</string>

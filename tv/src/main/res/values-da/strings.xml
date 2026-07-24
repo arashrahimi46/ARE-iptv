@@ -355,6 +355,11 @@
     <string name="player_fast_forward">Spol frem</string>
     <string name="player_audio_track">Lydspor</string>
     <string name="player_subtitles">Undertekster</string>
+    <string name="player_aspect_ratio">Billedformat</string>
+    <string name="player_aspect_fit">Tilpas</string>
+    <string name="player_aspect_fill">Udfyld</string>
+    <string name="player_aspect_stretch">Stræk</string>
+    <string name="player_aspect_toast">Format: %1$s</string>
     <string name="player_minimize_to_corner">Minimer til hjørnet</string>
     <string name="player_mini_player">Miniafspiller</string>
     <string name="player_up_next_action">Næste</string>
