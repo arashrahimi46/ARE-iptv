@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -57,7 +59,11 @@ private val DpPerMinute = 3.dp
  * plays that channel via the real [com.arashrahimi46.iptv.ui.player.LivePlayerScreen].
  */
 @Composable
-fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier = Modifier) {
+fun GuideScreen(
+    onChannelSelected: (channelId: Long) -> Unit,
+    modifier: Modifier = Modifier,
+    onCatchup: (channelId: Long, startMs: Long, endMs: Long) -> Unit = { _, _, _ -> },
+) {
     val context = LocalContext.current
     val viewModel: GuideViewModel = viewModel(
         factory = GuideViewModel.factory(context.applicationContext as android.app.Application),
@@ -74,6 +80,8 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
     // of the explanation (survives the screen pausing while the player is on top).
     var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
     var lastPlayedSlotStartMs by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Catch-up action menu: the (channel, slot) whose past cell was pressed, or null when closed.
+    var catchupMenu by remember { mutableStateOf<Pair<com.arashrahimi46.iptv.data.model.Channel, GuideProgramSlot>?>(null) }
 
     if (!state.hasSource) {
         Text(
@@ -197,12 +205,19 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
                                     title = slot.title,
                                     time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(timeFormatter),
                                     onClick = {
-                                        lastPlayedChannelId = row.channel.id
-                                        lastPlayedSlotStartMs = slot.startMs
-                                        onChannelSelected(row.channel.id)
+                                        // A catch-up-eligible past cell opens the action menu (watch from
+                                        // start / go live); any other cell plays the live channel as before.
+                                        if (slot.catchupEligible) {
+                                            catchupMenu = row.channel to slot
+                                        } else {
+                                            lastPlayedChannelId = row.channel.id
+                                            lastPlayedSlotStartMs = slot.startMs
+                                            onChannelSelected(row.channel.id)
+                                        }
                                     },
                                     live = slot.isNow,
                                     now = slot.isNow,
+                                    catchup = slot.catchupEligible,
                                     // Clamp so window-clipped boundary programmes (1-2 min) don't
                                     // compute a <=0.dp, invisible/unfocusable cell.
                                     width = ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp),
@@ -216,6 +231,106 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
             }
         }
     }
+
+    catchupMenu?.let { (channel, slot) ->
+        CatchupActionDialog(
+            channelName = channel.name,
+            programTitle = slot.title,
+            programStartMs = slot.programStartMs,
+            programEndMs = slot.programEndMs,
+            onWatchFromStart = {
+                catchupMenu = null
+                lastPlayedChannelId = channel.id
+                lastPlayedSlotStartMs = slot.startMs
+                onCatchup(channel.id, slot.programStartMs, slot.programEndMs)
+            },
+            onGoLive = {
+                catchupMenu = null
+                lastPlayedChannelId = channel.id
+                lastPlayedSlotStartMs = slot.startMs
+                onChannelSelected(channel.id)
+            },
+            onDismiss = { catchupMenu = null },
+        )
+    }
+}
+
+/**
+ * Catch-up action menu (docs/catchup-v1-design.md, D4). A focus-trapped [AreDialog] wrapped in a real
+ * [Dialog] window (same convention as [com.arashrahimi46.iptv.ui.home.HomeAddSectionDialog]); default
+ * focus lands on "Watch from start". "Record" is shown disabled as the seam for the future DVR work.
+ */
+@Composable
+private fun CatchupActionDialog(
+    channelName: String,
+    programTitle: String,
+    programStartMs: Long,
+    programEndMs: Long,
+    onWatchFromStart: () -> Unit,
+    onGoLive: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    val zone = ZoneId.systemDefault()
+    val timeFormatter = rememberClockFormatter()
+    val start = Instant.ofEpochMilli(programStartMs).atZone(zone).format(timeFormatter)
+    val end = Instant.ofEpochMilli(programEndMs).atZone(zone).format(timeFormatter)
+    val watchFocus = remember { androidx.compose.ui.focus.FocusRequester() }
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = programTitle,
+            width = 440.dp,
+            actions = {
+                com.arashrahimi46.iptv.ui.components.AreButton(
+                    text = stringResource(R.string.action_close),
+                    onClick = onDismiss,
+                    variant = com.arashrahimi46.iptv.ui.components.AreButtonVariant.Ghost,
+                )
+            },
+        ) {
+            Text(
+                text = "⟲ ${stringResource(R.string.guide_catchup_label)} · $channelName",
+                style = AreIptvTheme.typography.caption,
+                color = colors.success,
+            )
+            Box(Modifier.height(2.dp))
+            Text(
+                text = stringResource(R.string.guide_catchup_aired, start, end),
+                style = AreIptvTheme.typography.caption,
+                color = colors.textTertiary,
+            )
+            Box(Modifier.height(AreIptvTheme.spacing.sp5))
+            com.arashrahimi46.iptv.ui.components.AreButton(
+                text = stringResource(R.string.guide_catchup_watch_from_start),
+                onClick = onWatchFromStart,
+                variant = com.arashrahimi46.iptv.ui.components.AreButtonVariant.Primary,
+                full = true,
+                modifier = Modifier.fillMaxWidth().focusRequester(watchFocus),
+            )
+            Box(Modifier.height(8.dp))
+            com.arashrahimi46.iptv.ui.components.AreButton(
+                text = stringResource(R.string.guide_catchup_go_live),
+                onClick = onGoLive,
+                variant = com.arashrahimi46.iptv.ui.components.AreButtonVariant.Secondary,
+                full = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Box(Modifier.height(8.dp))
+            com.arashrahimi46.iptv.ui.components.AreButton(
+                text = stringResource(R.string.guide_catchup_record_soon),
+                onClick = {},
+                variant = com.arashrahimi46.iptv.ui.components.AreButtonVariant.Secondary,
+                full = true,
+                disabled = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+    LaunchedEffect(Unit) { runCatching { watchFocus.requestFocus() } }
 }
 
 @Composable

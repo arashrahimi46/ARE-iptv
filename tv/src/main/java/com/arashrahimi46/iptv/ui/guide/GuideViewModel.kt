@@ -44,6 +44,14 @@ data class GuideProgramSlot(
     val startMs: Long,
     val endMs: Long,
     val isNow: Boolean,
+    /** True *aired* programme bounds (unclamped by the visible window) — [startMs]/[endMs] are clamped
+     * for grid layout, but catch-up must mint the archive URL from the real broadcast start/end. */
+    val programStartMs: Long = startMs,
+    val programEndMs: Long = endMs,
+    /** Catch-up playable: the channel has an archive window, this programme has already started (aired
+     * or now-airing, for Start-Over), and it falls inside that window. Drives the ⟲ glyph + action menu.
+     * See docs/catchup-v1-design.md (D5/D6/D8). */
+    val catchupEligible: Boolean = false,
 )
 
 /** A programme-less row still renders -- a single "no programme data" placeholder slot spanning the window. */
@@ -61,6 +69,15 @@ data class GuideFocusedInfo(val channel: Channel, val slot: GuideProgramSlot)
  */
 internal fun resolveGuideGroup(rawGroup: String, groups: List<String>): String =
     if (rawGroup in groups) rawGroup else groups.firstOrNull() ?: rawGroup
+
+/**
+ * Whether a programme is catch-up-eligible (docs/catchup-v1-design.md, D6): the channel advertises an
+ * archive window ([catchupDays] > 0), the programme has already started ([programStartMs] < [nowMs] —
+ * which also covers the now-airing cell, for Start-Over), and its start is still inside that window.
+ * Top-level + internal so the window arithmetic is unit-testable without standing up Room/AndroidViewModel.
+ */
+internal fun isCatchupEligible(catchupDays: Int, programStartMs: Long, nowMs: Long): Boolean =
+    catchupDays > 0 && programStartMs < nowMs && programStartMs >= nowMs - catchupDays * 86_400_000L
 
 data class GuideUiState(
     val hasSource: Boolean = false,
@@ -209,6 +226,9 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                         startMs = p.startMs.coerceAtLeast(window.first),
                         endMs = p.endMs.coerceAtMost(window.second),
                         isNow = nowMs in p.startMs until p.endMs,
+                        programStartMs = p.startMs,
+                        programEndMs = p.endMs,
+                        catchupEligible = isCatchupEligible(channel.catchupDays, p.startMs, nowMs),
                     )
                 }
                 .filter { it.endMs > it.startMs }

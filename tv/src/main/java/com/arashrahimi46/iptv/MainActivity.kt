@@ -590,7 +590,12 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             }
             composable("guide") {
                 FullSizeTab {
-                    GuideScreen(onChannelSelected = { channelId -> rootNav.navigate("player/$channelId") })
+                    GuideScreen(
+                        onChannelSelected = { channelId -> rootNav.navigate("player/$channelId") },
+                        onCatchup = { channelId, startMs, endMs ->
+                            rootNav.navigate("player/catchup/$channelId/$startMs/$endMs")
+                        },
+                    )
                 }
             }
             composable("movies") {

@@ -407,6 +407,12 @@
     <string name="guide_focus_hint">Focus a programme to see details</string>
     <string name="guide_live_badge">LIVE</string>
     <string name="guide_catchup_available_desc">Catch-up available</string>
+    <!-- Catch-up action menu (opened by pressing a past programme cell). Translations: catchup-v1 phase 6. -->
+    <string name="guide_catchup_label">Catch-up</string>
+    <string name="guide_catchup_aired">Aired %1$s – %2$s</string>
+    <string name="guide_catchup_watch_from_start">Watch from start</string>
+    <string name="guide_catchup_go_live">Go to live</string>
+    <string name="guide_catchup_record_soon">Record (soon)</string>
     <string name="guide_day_yesterday">Yesterday</string>
     <string name="guide_day_today">Today</string>
     <string name="guide_day_tomorrow">Tomorrow</string>
