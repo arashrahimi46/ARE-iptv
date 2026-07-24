@@ -94,10 +94,11 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
         sectionCountLabel = { count -> String.format(movieCountTitlesTemplate, count) },
         emptyLabel = stringResource(R.string.series_empty_genre),
         listMode = isListMode,
-        // Dense responsive poster grid: ~130dp columns that the tiles fill. Adaptive reflows the
-        // column count to the available width, so covers stay small enough to show fully (with
-        // their title) even when the sidebar expands and squeezes the content.
-        minItemWidth = 130.dp,
+        // Dense responsive poster grid: small columns the tiles fill. Kept small (≈115dp) so the
+        // content pane fits 3+ columns -- a wider 2:3 poster makes each tile (poster + title +
+        // meta) taller than the grid viewport, so the focused tile can't scroll fully into view
+        // and its title/meta fall off the bottom edge.
+        minItemWidth = 115.dp,
         contentFocusRequester = contentFocusRequester,
         modifier = modifier,
     ) { show ->
