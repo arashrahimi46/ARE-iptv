@@ -610,4 +610,12 @@
     <string name="settings_sub_font_serif">Serif</string>
     <string name="settings_sub_font_mono">Mono</string>
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
+    <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
+    <string name="guide_catchup_label">Reluare</string>
+    <string name="guide_catchup_aired">Difuzat %1$s – %2$s</string>
+    <string name="guide_catchup_watch_from_start">Vezi de la început</string>
+    <string name="guide_catchup_go_live">Mergi la live</string>
+    <string name="guide_catchup_record_soon">Înregistrează (în curând)</string>
+    <string name="player_previous_program">Programul anterior</string>
+    <string name="player_next_program">Programul următor</string>
 </resources>

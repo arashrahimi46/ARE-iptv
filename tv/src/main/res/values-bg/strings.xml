@@ -610,4 +610,12 @@
     <string name="settings_sub_font_serif">Serif</string>
     <string name="settings_sub_font_mono">Mono</string>
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
+    <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
+    <string name="guide_catchup_label">Гледане на запис</string>
+    <string name="guide_catchup_aired">Излъчено %1$s – %2$s</string>
+    <string name="guide_catchup_watch_from_start">Гледане отначало</string>
+    <string name="guide_catchup_go_live">Към на живо</string>
+    <string name="guide_catchup_record_soon">Запис (скоро)</string>
+    <string name="player_previous_program">Предишно предаване</string>
+    <string name="player_next_program">Следващо предаване</string>
 </resources>

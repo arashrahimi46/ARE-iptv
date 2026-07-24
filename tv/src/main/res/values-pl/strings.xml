@@ -610,4 +610,12 @@
     <string name="settings_sub_font_serif">Serif</string>
     <string name="settings_sub_font_mono">Mono</string>
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
+    <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
+    <string name="guide_catchup_label">Powtórka</string>
+    <string name="guide_catchup_aired">Wyemitowano %1$s – %2$s</string>
+    <string name="guide_catchup_watch_from_start">Oglądaj od początku</string>
+    <string name="guide_catchup_go_live">Przejdź na żywo</string>
+    <string name="guide_catchup_record_soon">Nagraj (wkrótce)</string>
+    <string name="player_previous_program">Poprzedni program</string>
+    <string name="player_next_program">Następny program</string>
 </resources>

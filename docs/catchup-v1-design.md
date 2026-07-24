@@ -1,6 +1,11 @@
 # Catch-up / Archive — v1 design
 
-> **Status:** designed, not yet built. Sequenced as the #1 roadmap item per
+> **Status:** ✅ **implemented** (phases 1–6). All three sources (Xtream, M3U, Stalker), the Guide
+> glyph + action menu, and the player HUD (⟲ pill, Go Live, ⏮/⏭ program-hop) are built and
+> unit-tested; strings are localized across all 24 locales. Remaining: on-device validation against a
+> real archive-enabled Xtream provider and a real Ministra portal (the `&start=` param shape is
+> to-be-confirmed) — deferred because provider probing from the shell is forbidden (repo rule).
+> Sequenced as the #1 roadmap item per
 > `docs/competitive-analysis-2026.md` (the single feature 10/10 rivals ship and we don't).
 > **Schema impact:** one real migration **v11 → v12** (three columns on `Channel`).
 > **Player identity:** catch-up is a *live channel, rewound* — it plays through the existing

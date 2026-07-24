@@ -608,4 +608,12 @@
     <string name="settings_sub_font_serif">Serif</string>
     <string name="settings_sub_font_mono">Mono</string>
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
+    <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
+    <string name="guide_catchup_label">المشاهدة اللاحقة</string>
+    <string name="guide_catchup_aired">عُرض %1$s – %2$s</string>
+    <string name="guide_catchup_watch_from_start">المشاهدة من البداية</string>
+    <string name="guide_catchup_go_live">الانتقال إلى البث المباشر</string>
+    <string name="guide_catchup_record_soon">تسجيل (قريبًا)</string>
+    <string name="player_previous_program">البرنامج السابق</string>
+    <string name="player_next_program">البرنامج التالي</string>
 </resources>
