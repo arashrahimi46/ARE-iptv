@@ -125,7 +125,7 @@ fun Modifier.tvFocusable(
 fun Modifier.tvGlowCached(
     color: Color,
     shape: Shape,
-    spread: Dp = 4.dp,
+    spread: Dp = 2.5.dp,
     alpha: () -> Float,
 ): Modifier = this.drawWithCache {
     val spreadPx = spread.toPx()
@@ -159,7 +159,7 @@ fun Modifier.tvGlowCached(
     onDrawBehind {
         val a = alpha()
         if (a > 0f) {
-            paint.alpha = (0.30f * a * 255f).toInt().coerceIn(0, 255)
+            paint.alpha = (0.20f * a * 255f).toInt().coerceIn(0, 255)
             drawIntoCanvas { canvas ->
                 canvas.nativeCanvas.drawPath(androidPath, paint)
             }
