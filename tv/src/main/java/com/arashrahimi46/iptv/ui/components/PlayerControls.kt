@@ -62,9 +62,14 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT
+import com.arashrahimi46.iptv.ui.player.HudControl
+import com.arashrahimi46.iptv.ui.player.HudGroup
+import com.arashrahimi46.iptv.ui.player.HudSlot
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * PlayerControls — glass transport HUD overlaid on live video / VOD
@@ -152,6 +157,9 @@ fun ArePlayerControls(
     // the screen's D-pad model while this bar holds focus.
     seekBarFocusRequester: FocusRequester? = null,
     onSeekBarFocusChanged: (Boolean) -> Unit = {},
+    /** User-customized HUD button order + per-button visibility (see [HudSlot]). Defaults to the
+     * canonical order; locked core transport (rewind/play-pause/FF) always renders regardless. */
+    slots: List<HudSlot> = DEFAULT_HUD_LAYOUT,
 ) {
     val colors = AreIptvTheme.colors
 
@@ -162,8 +170,10 @@ fun ArePlayerControls(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(colors.surfaceGlass, RoundedCornerShape(AreIptvTheme.radius.xl))
-            .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.xl))
+            // Elevated glass: denser fill + the lit-edge gradient border so text stays legible over
+            // busy video (design option B — Cinematic Unified). Real blur is impossible here (video
+            // is a SurfaceView); the translucent fill carries the glass look.
+            .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
             .padding(AreIptvTheme.spacing.sp6),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -291,110 +301,82 @@ fun ArePlayerControls(
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AreIconButton(Icons.Filled.FastRewind, stringResource(R.string.player_rewind), onClick = onRewind, variant = AreIconButtonVariant.Glass)
-            AreIconButton(
-                if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                if (playing) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
-                onClick = onPlayPause,
-                variant = AreIconButtonVariant.Glass,
-                size = AreIconButtonSize.Large,
-                active = true,
-                modifier = if (playPauseFocusRequester != null) Modifier.focusRequester(playPauseFocusRequester) else Modifier,
-            )
-            AreIconButton(Icons.Filled.FastForward, stringResource(R.string.player_fast_forward), onClick = onFastForward, variant = AreIconButtonVariant.Glass)
-            if (onSkipPrevious != null || onSkipNext != null) {
-                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
-                if (onSkipPrevious != null) {
-                    AreIconButton(Icons.Filled.SkipPrevious, skipPreviousLabel ?: "", onClick = onSkipPrevious, variant = AreIconButtonVariant.Glass)
-                }
-                if (onSkipNext != null) {
-                    AreIconButton(Icons.Filled.SkipNext, skipNextLabel ?: "", onClick = onSkipNext, variant = AreIconButtonVariant.Glass)
-                }
-            }
-            // Catch-up only (D7): a real button that leaves the archive and jumps to the live edge.
-            if (onGoLive != null) {
-                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
-                AreIconButton(Icons.Filled.LiveTv, stringResource(R.string.guide_catchup_go_live), onClick = onGoLive, variant = AreIconButtonVariant.Glass)
-            }
-            Box(Modifier.weight(1f))
-            // Playback speed: VOD/recordings only (null on live -> not rendered). The button face
-            // shows the active rate (playbackSpeedLabel) once it's non-default, else a generic label.
-            if (onPlaybackSpeed != null) {
-                AreIconButton(
-                    Icons.Filled.Speed,
-                    playbackSpeedLabel ?: stringResource(R.string.player_playback_speed),
-                    onClick = onPlaybackSpeed,
-                    variant = AreIconButtonVariant.Glass,
-                    active = playbackSpeedLabel != null,
-                )
-            }
-            // Aspect ratio: cycles Fit -> Fill -> Stretch on press (a toast names each). Dimmed
-            // placeholder until the player is ready to report/apply a mode.
-            if (onAspectRatio != null) {
-                AreIconButton(
-                    Icons.Filled.AspectRatio,
-                    stringResource(R.string.player_aspect_ratio),
-                    onClick = onAspectRatio,
-                    variant = AreIconButtonVariant.Glass,
-                )
-            } else {
-                StaticGlyph(Icons.Filled.AspectRatio, stringResource(R.string.player_aspect_ratio))
-            }
-            // Audio track: real picker once the stream exposes more than one audio track; a dimmed
-            // placeholder otherwise (nothing to choose). Lit when a non-default track is forced.
-            if (onAudioTrack != null) {
-                AreIconButton(
-                    Icons.Filled.Audiotrack,
-                    stringResource(R.string.player_audio_track),
-                    onClick = onAudioTrack,
-                    variant = AreIconButtonVariant.Glass,
-                    active = audioTrackActive,
-                )
-            } else {
-                StaticGlyph(Icons.Filled.Audiotrack, stringResource(R.string.player_audio_track))
-            }
-            // Audio sync: a ±ms audio-delay stepper to fix out-of-sync audio. The button face shows the
-            // active offset (audioDelayLabel) once it's non-zero, else the generic label; lit when set.
-            if (onAudioDelay != null) {
-                AreIconButton(
-                    Icons.Filled.Sync,
-                    audioDelayLabel ?: stringResource(R.string.player_audio_delay),
-                    onClick = onAudioDelay,
-                    variant = AreIconButtonVariant.Glass,
-                    active = audioDelayLabel != null,
-                )
-            }
-            // Subtitles: real picker (Off / embedded tracks / online search) once tracks are known;
-            // a dimmed placeholder before then (onSubtitles == null). Lit when a track is active.
-            if (onSubtitles != null) {
-                AreIconButton(
-                    Icons.Filled.ClosedCaption,
-                    stringResource(R.string.player_subtitles),
-                    onClick = onSubtitles,
-                    variant = AreIconButtonVariant.Glass,
-                    active = subtitlesActive,
-                )
-            } else {
-                StaticGlyph(Icons.Filled.ClosedCaption, stringResource(R.string.player_subtitles))
-            }
-            // Multi-view button intentionally removed for now -- feature isn't ready. Re-add here
-            // (wired to onMultiView) once it ships.
-            if (onToggleFavorite != null) {
-                AreIconButton(
-                    icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = if (isFavorite == true) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
-                    onClick = onToggleFavorite,
-                    variant = AreIconButtonVariant.Glass,
-                )
-            }
-            // PiP + up-next + guide are live-only affordances -- movies/series have no EPG and
-            // can't minimize to the corner mini, so drop all three entirely for VOD.
-            if (live) {
-                // ● REC toggle (Live TV Recording V1). Red dot while capturing, amber while
-                // reconnecting, plain when idle+recordable; a dimmed placeholder for non-.ts streams.
-                if (onToggleRecord != null) {
+        // Block C — the reorderable button row. Each control renders only when context allows it
+        // (nullable callbacks, live vs VOD); on top of that, the user's [slots] decide order and
+        // per-button hide. Locked core transport (rewind/play-pause/FF) always renders, first.
+        // A single glyph renderer maps a control id to its existing button, invoked per ordered slot.
+        val renderable = fun(c: HudControl): Boolean = when (c) {
+            HudControl.REWIND, HudControl.PLAY_PAUSE, HudControl.FAST_FORWARD -> true
+            HudControl.SKIP_PREVIOUS -> onSkipPrevious != null
+            HudControl.SKIP_NEXT -> onSkipNext != null
+            HudControl.GO_LIVE -> onGoLive != null
+            HudControl.PLAYBACK_SPEED -> onPlaybackSpeed != null
+            HudControl.ASPECT_RATIO, HudControl.AUDIO_TRACK, HudControl.SUBTITLES -> true
+            HudControl.AUDIO_DELAY -> onAudioDelay != null
+            HudControl.FAVORITE -> onToggleFavorite != null
+            HudControl.RECORD, HudControl.PICTURE_IN_PICTURE, HudControl.UP_NEXT, HudControl.OPEN_GUIDE -> live
+            HudControl.ADD_MULTIVIEW -> live && onAddToMultiView != null
+        }
+
+        @Composable
+        fun HudButton(c: HudControl) {
+            when (c) {
+                HudControl.REWIND ->
+                    AreIconButton(Icons.Filled.FastRewind, stringResource(R.string.player_rewind), onClick = onRewind, variant = AreIconButtonVariant.Glass)
+                HudControl.PLAY_PAUSE ->
                     AreIconButton(
+                        if (playing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        if (playing) stringResource(R.string.player_pause) else stringResource(R.string.player_play),
+                        onClick = onPlayPause,
+                        variant = AreIconButtonVariant.Glass,
+                        size = AreIconButtonSize.Large,
+                        active = true,
+                        modifier = if (playPauseFocusRequester != null) Modifier.focusRequester(playPauseFocusRequester) else Modifier,
+                    )
+                HudControl.FAST_FORWARD ->
+                    AreIconButton(Icons.Filled.FastForward, stringResource(R.string.player_fast_forward), onClick = onFastForward, variant = AreIconButtonVariant.Glass)
+                HudControl.SKIP_PREVIOUS -> onSkipPrevious?.let {
+                    AreIconButton(Icons.Filled.SkipPrevious, skipPreviousLabel ?: "", onClick = it, variant = AreIconButtonVariant.Glass)
+                }
+                HudControl.SKIP_NEXT -> onSkipNext?.let {
+                    AreIconButton(Icons.Filled.SkipNext, skipNextLabel ?: "", onClick = it, variant = AreIconButtonVariant.Glass)
+                }
+                // Catch-up only (D7): leaves the archive and jumps to the live edge.
+                HudControl.GO_LIVE -> onGoLive?.let {
+                    AreIconButton(Icons.Filled.LiveTv, stringResource(R.string.guide_catchup_go_live), onClick = it, variant = AreIconButtonVariant.Glass)
+                }
+                // Speed: VOD/recordings only. Face shows the active rate once non-default.
+                HudControl.PLAYBACK_SPEED -> onPlaybackSpeed?.let {
+                    AreIconButton(Icons.Filled.Speed, playbackSpeedLabel ?: stringResource(R.string.player_playback_speed), onClick = it, variant = AreIconButtonVariant.Glass, active = playbackSpeedLabel != null)
+                }
+                // Aspect: cycles Fit->Fill->Stretch; dimmed placeholder until the player can report a mode.
+                HudControl.ASPECT_RATIO ->
+                    if (onAspectRatio != null) AreIconButton(Icons.Filled.AspectRatio, stringResource(R.string.player_aspect_ratio), onClick = onAspectRatio, variant = AreIconButtonVariant.Glass)
+                    else StaticGlyph(Icons.Filled.AspectRatio, stringResource(R.string.player_aspect_ratio))
+                // Audio track: real picker when >1 track; dimmed placeholder otherwise. Lit when forced.
+                HudControl.AUDIO_TRACK ->
+                    if (onAudioTrack != null) AreIconButton(Icons.Filled.Audiotrack, stringResource(R.string.player_audio_track), onClick = onAudioTrack, variant = AreIconButtonVariant.Glass, active = audioTrackActive)
+                    else StaticGlyph(Icons.Filled.Audiotrack, stringResource(R.string.player_audio_track))
+                // Audio sync: ±ms delay stepper. Face shows the active offset; lit when set.
+                HudControl.AUDIO_DELAY -> onAudioDelay?.let {
+                    AreIconButton(Icons.Filled.Sync, audioDelayLabel ?: stringResource(R.string.player_audio_delay), onClick = it, variant = AreIconButtonVariant.Glass, active = audioDelayLabel != null)
+                }
+                // Subtitles: real picker once tracks are known; dimmed placeholder before then. Lit when active.
+                HudControl.SUBTITLES ->
+                    if (onSubtitles != null) AreIconButton(Icons.Filled.ClosedCaption, stringResource(R.string.player_subtitles), onClick = onSubtitles, variant = AreIconButtonVariant.Glass, active = subtitlesActive)
+                    else StaticGlyph(Icons.Filled.ClosedCaption, stringResource(R.string.player_subtitles))
+                HudControl.FAVORITE -> onToggleFavorite?.let {
+                    AreIconButton(
+                        icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (isFavorite == true) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
+                        onClick = it,
+                        variant = AreIconButtonVariant.Glass,
+                    )
+                }
+                // ● REC (Live TV Recording V1). Red while capturing, amber while reconnecting; a
+                // focusable dimmed hint glyph for non-.ts streams explaining WHY it's unavailable.
+                HudControl.RECORD ->
+                    if (onToggleRecord != null) AreIconButton(
                         Icons.Filled.FiberManualRecord,
                         contentDescription = if (recordingActive) stringResource(R.string.recording_stop) else stringResource(R.string.recording_start),
                         onClick = onToggleRecord,
@@ -404,29 +386,37 @@ fun ArePlayerControls(
                             recordingActive -> colors.danger
                             else -> null
                         },
-                    )
-                } else {
-                    // Not recordable (non-.ts / HLS-only source). Unlike other dimmed placeholders
-                    // this one is focusable, so landing on it reveals a hint explaining WHY -- users
-                    // otherwise read the dimmed dot as a bug (see report).
-                    DisabledHintGlyph(Icons.Filled.FiberManualRecord, stringResource(R.string.recording_not_supported))
+                    ) else DisabledHintGlyph(Icons.Filled.FiberManualRecord, stringResource(R.string.recording_not_supported))
+                // Minimize to the corner mini-player; dimmed placeholder when the controller isn't ready.
+                HudControl.PICTURE_IN_PICTURE ->
+                    if (onPictureInPicture != null) AreIconButton(Icons.Filled.PictureInPicture, stringResource(R.string.player_minimize_to_corner), onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
+                    else StaticGlyph(Icons.Filled.PictureInPicture, stringResource(R.string.player_mini_player))
+                HudControl.ADD_MULTIVIEW -> onAddToMultiView?.let {
+                    AreIconButton(Icons.Filled.AddToQueue, stringResource(R.string.multiview_add_to), onClick = it, variant = AreIconButtonVariant.Glass)
                 }
-                // Live: a real button that minimizes to the in-app corner mini-player. Dimmed
-                // placeholder only when the controller isn't ready (onPictureInPicture == null).
-                if (onPictureInPicture != null) {
-                    AreIconButton(Icons.Filled.PictureInPicture, stringResource(R.string.player_minimize_to_corner), onClick = onPictureInPicture, variant = AreIconButtonVariant.Glass)
-                } else {
-                    StaticGlyph(Icons.Filled.PictureInPicture, stringResource(R.string.player_mini_player))
-                }
-                // Add this live channel to multi-view (live-only -- movies/series have no place there).
-                if (onAddToMultiView != null) {
-                    AreIconButton(Icons.Filled.AddToQueue, stringResource(R.string.multiview_add_to), onClick = onAddToMultiView, variant = AreIconButtonVariant.Glass)
-                }
-                // Mini up-next list scoped to the currently-playing channel -- distinct from "Open
-                // guide" (which leaves the player for the full multi-channel TV Guide).
-                AreIconButton(Icons.Filled.Schedule, stringResource(R.string.player_up_next_action), onClick = onUpNext, variant = AreIconButtonVariant.Glass)
-                AreIconButton(Icons.Filled.GridView, stringResource(R.string.player_open_guide), onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
+                HudControl.UP_NEXT ->
+                    AreIconButton(Icons.Filled.Schedule, stringResource(R.string.player_up_next_action), onClick = onUpNext, variant = AreIconButtonVariant.Glass)
+                HudControl.OPEN_GUIDE ->
+                    AreIconButton(Icons.Filled.GridView, stringResource(R.string.player_open_guide), onClick = onOpenGuide, variant = AreIconButtonVariant.Glass)
             }
+        }
+
+        // Resolve the ordered, visible, context-available controls per cluster. Locked controls are
+        // always shown and pinned to their default order (they can't be moved/hidden in the editor).
+        val shown = slots.filter { (it.control.locked || it.visible) && renderable(it.control) }
+        val transportCore = shown.filter { it.control.group == HudGroup.TRANSPORT && it.control.locked }
+            .sortedBy { it.control.order }
+        val transportExtra = shown.filter { it.control.group == HudGroup.TRANSPORT && !it.control.locked }
+        val utilities = shown.filter { it.control.group == HudGroup.UTILITIES }
+
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            transportCore.forEach { HudButton(it.control) }
+            if (transportExtra.isNotEmpty()) {
+                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
+                transportExtra.forEach { HudButton(it.control) }
+            }
+            Box(Modifier.weight(1f))
+            utilities.forEach { HudButton(it.control) }
         }
     }
     }
