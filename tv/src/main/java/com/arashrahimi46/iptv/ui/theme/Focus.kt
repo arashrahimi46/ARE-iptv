@@ -159,7 +159,7 @@ fun Modifier.tvGlowCached(
     onDrawBehind {
         val a = alpha()
         if (a > 0f) {
-            paint.alpha = (0.55f * a * 255f).toInt().coerceIn(0, 255)
+            paint.alpha = (0.38f * a * 255f).toInt().coerceIn(0, 255)
             drawIntoCanvas { canvas ->
                 canvas.nativeCanvas.drawPath(androidPath, paint)
             }
@@ -217,7 +217,7 @@ fun Modifier.tvGlow(
         isAntiAlias = true
         style = NativePaint.Style.STROKE
         strokeWidth = strokePx
-        this.color = color.copy(alpha = (0.55f * alpha).coerceIn(0f, 1f)).toArgb()
+        this.color = color.copy(alpha = (0.38f * alpha).coerceIn(0f, 1f)).toArgb()
         maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
     }
     drawIntoCanvas { canvas ->

@@ -767,6 +767,251 @@
   .back-pill.glass { background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16);
      box-shadow: inset 0 1px 0 rgba(255,255,255,0.14); }
   .back-pill.glass.foc { box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 0 0 2px rgba(96,165,250,0.6), 0 0 20px rgba(59,130,246,0.38); }
+
+/* ===================== GLASS LIGHT THEME LAYER ===================== */
+  @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .pageframe { background: radial-gradient(130% 110% at 12% -8%, #FFFFFF 0%, #E9EDF4 62%); border-color: rgba(15,20,30,0.10); box-shadow: 0 30px 70px -34px rgba(20,40,80,0.28); }
+  :root:not([data-theme="dark"]) .pf-side { border-color: rgba(15,20,30,0.08); }
+  :root:not([data-theme="dark"]) .pageframe.rtl .pf-side { border-color: rgba(15,20,30,0.08); }
+  :root:not([data-theme="dark"]) .pane.after { background: radial-gradient(120% 120% at 30% 10%, #FFFFFF, #E9EDF4 72%); }
+  :root:not([data-theme="dark"]) .sb-stage.after { background: radial-gradient(120% 100% at 20% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root:not([data-theme="dark"]) .mstage { background: radial-gradient(120% 120% at 30% 0%, #E4EBF6, #EFF3F8 72%); border-color: rgba(15,20,30,0.08); }
+  :root:not([data-theme="dark"]) .mstage::before { background: rgba(255,255,255,0.4); }
+  :root:not([data-theme="dark"]) .pf-main, :root:not([data-theme="dark"]) .pf-brand b, :root:not([data-theme="dark"]) .epg-title, :root:not([data-theme="dark"]) .di b, :root:not([data-theme="dark"]) .epg-ch b, :root:not([data-theme="dark"]) .pcard .in b, :root:not([data-theme="dark"]) .gmodal h4, :root:not([data-theme="dark"]) .search-field .q, :root:not([data-theme="dark"]) .sb-brand b, :root:not([data-theme="dark"]) .epg-cell.now .p, :root:not([data-theme="dark"]) .epg-cell.foc .t, :root:not([data-theme="dark"]) .epg-cell.foc .p { color:#0D1017; }
+  :root:not([data-theme="dark"]) .pf-nav:not(.sel), :root:not([data-theme="dark"]) .di span, :root:not([data-theme="dark"]) .pcard .in span, :root:not([data-theme="dark"]) .gmodal p, :root:not([data-theme="dark"]) .epg-cell .t, :root:not([data-theme="dark"]) .epg-cell .p, :root:not([data-theme="dark"]) .epg-ruler .times span, :root:not([data-theme="dark"]) .gbtns .b.ghost, :root:not([data-theme="dark"]) .back-pill.glass, :root:not([data-theme="dark"]) .sb-item:not(.sel) b, :root:not([data-theme="dark"]) .mrow2, :root:not([data-theme="dark"]) .ta-seg span:not(.on), :root:not([data-theme="dark"]) .st-tab.g { color:#4A5163; }
+  :root:not([data-theme="dark"]) .sb-item:not(.sel) { color:#4A5163; }
+  :root:not([data-theme="dark"]) .pf-nav:not(.sel) { color:#4A5163; }
+  :root:not([data-theme="dark"]) .pf-tbtn { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root:not([data-theme="dark"]) .sb-item.foc.glass, :root:not([data-theme="dark"]) .rail-item.glass { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root:not([data-theme="dark"]) .epg-detail, :root:not([data-theme="dark"]) .epg-ch, :root:not([data-theme="dark"]) .epg-cell { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root:not([data-theme="dark"]) .epg-cell.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root:not([data-theme="dark"]) .epg-ch .cw, :root:not([data-theme="dark"]) .epg-detail .dw { background:#E6EBF3; border-color: rgba(15,20,30,0.10); color:#4A5163; }
+  :root:not([data-theme="dark"]) .pcard { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root:not([data-theme="dark"]) .pcard.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root:not([data-theme="dark"]) .pcard .th { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  :root:not([data-theme="dark"]) .pcard .heart { background: rgba(255,255,255,0.8); border-color: rgba(15,20,30,0.14); }
+  :root:not([data-theme="dark"]) .ccard.glass, :root:not([data-theme="dark"]) .crow.glass, :root:not([data-theme="dark"]) .modal.glass, :root:not([data-theme="dark"]) .chip { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root:not([data-theme="dark"]) .ccard .thumb2 { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  :root:not([data-theme="dark"]) .ccard.glass .cinfo b { color:#0D1017; }
+  :root:not([data-theme="dark"]) .ccard.glass .cinfo span, :root:not([data-theme="dark"]) .crow.glass, :root:not([data-theme="dark"]) .modal.glass .mrow { color:#4A5163; }
+  :root:not([data-theme="dark"]) .modal.glass .mrow { background: rgba(255,255,255,0.7); border-color: rgba(15,20,30,0.1); }
+  :root:not([data-theme="dark"]) .search-field { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.4), 0 0 22px rgba(37,99,235,0.2); }
+  :root:not([data-theme="dark"]) .search-field svg { color:#6B7280; }
+  :root:not([data-theme="dark"]) .ta-seg { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.1); }
+  :root:not([data-theme="dark"]) .st-tab.g { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  :root:not([data-theme="dark"]) .ta-vert .it.on { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.12); color:#0D1017; }
+  :root:not([data-theme="dark"]) .gmodal { background: rgba(255,255,255,0.86); border-color: rgba(15,20,30,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 40px 90px -40px rgba(20,40,80,0.28); color:#0D1017; }
+  :root:not([data-theme="dark"]) .mrow2 { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.08); color:#0D1017; }
+  :root:not([data-theme="dark"]) .mrow2 svg, :root:not([data-theme="dark"]) .gmodal .mrow2 svg { color:#4A5163; }
+  :root:not([data-theme="dark"]) .gbtns .b.ghost { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.12); color:#4A5163; }
+  :root:not([data-theme="dark"]) .pin-dots i { background: rgba(15,20,30,0.08); border-color: rgba(15,20,30,0.16); }
+  :root:not([data-theme="dark"]) .back-pill.glass { background: rgba(255,255,255,0.75); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root:not([data-theme="dark"]) .back-pill.glass.foc { background: rgba(255,255,255,0.92); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root:not([data-theme="dark"]) .back-pill.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  :root:not([data-theme="dark"]) .pane.before { background:#F3F5F9; }
+  :root:not([data-theme="dark"]) .sb-stage.before { background:#F3F5F9; }
+  :root:not([data-theme="dark"]) .sb-stage.before .sb-plabel { color: rgba(15,20,30,0.45); }
+  :root:not([data-theme="dark"]) .rail-item.solid, :root:not([data-theme="dark"]) .ccard.solid, :root:not([data-theme="dark"]) .crow.solid, :root:not([data-theme="dark"]) .modal.solid { background:#FFFFFF; border:1px solid rgba(15,20,30,0.1); color:#0D1017; }
+  :root:not([data-theme="dark"]) .modal.solid .mrow { background:#EEF1F6; color:#4A5163; }
+  :root:not([data-theme="dark"]) .sb-item.rest { color:#4A5163; }
+  :root:not([data-theme="dark"]) .sb-item.sel.solid { background: rgba(20,150,180,0.14); color:#0D1017; }
+  :root:not([data-theme="dark"]) .plabel { color: rgba(15,20,30,0.45); }
+  :root:not([data-theme="dark"]) .pane.after .plabel, :root:not([data-theme="dark"]) .sb-stage.after .sb-plabel { color: var(--accent-press); }
+  }
+  :root[data-theme="light"] .pageframe { background: radial-gradient(130% 110% at 12% -8%, #FFFFFF 0%, #E9EDF4 62%); border-color: rgba(15,20,30,0.10); box-shadow: 0 30px 70px -34px rgba(20,40,80,0.28); }
+  :root[data-theme="light"] .pf-side { border-color: rgba(15,20,30,0.08); }
+  :root[data-theme="light"] .pageframe.rtl .pf-side { border-color: rgba(15,20,30,0.08); }
+  :root[data-theme="light"] .pane.after { background: radial-gradient(120% 120% at 30% 10%, #FFFFFF, #E9EDF4 72%); }
+  :root[data-theme="light"] .sb-stage.after { background: radial-gradient(120% 100% at 20% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root[data-theme="light"] .mstage { background: radial-gradient(120% 120% at 30% 0%, #E4EBF6, #EFF3F8 72%); border-color: rgba(15,20,30,0.08); }
+  :root[data-theme="light"] .mstage::before { background: rgba(255,255,255,0.4); }
+  :root[data-theme="light"] .pf-main, :root[data-theme="light"] .pf-brand b, :root[data-theme="light"] .epg-title, :root[data-theme="light"] .di b, :root[data-theme="light"] .epg-ch b, :root[data-theme="light"] .pcard .in b, :root[data-theme="light"] .gmodal h4, :root[data-theme="light"] .search-field .q, :root[data-theme="light"] .sb-brand b, :root[data-theme="light"] .epg-cell.now .p, :root[data-theme="light"] .epg-cell.foc .t, :root[data-theme="light"] .epg-cell.foc .p { color:#0D1017; }
+  :root[data-theme="light"] .pf-nav:not(.sel), :root[data-theme="light"] .di span, :root[data-theme="light"] .pcard .in span, :root[data-theme="light"] .gmodal p, :root[data-theme="light"] .epg-cell .t, :root[data-theme="light"] .epg-cell .p, :root[data-theme="light"] .epg-ruler .times span, :root[data-theme="light"] .gbtns .b.ghost, :root[data-theme="light"] .back-pill.glass, :root[data-theme="light"] .sb-item:not(.sel) b, :root[data-theme="light"] .mrow2, :root[data-theme="light"] .ta-seg span:not(.on), :root[data-theme="light"] .st-tab.g { color:#4A5163; }
+  :root[data-theme="light"] .sb-item:not(.sel) { color:#4A5163; }
+  :root[data-theme="light"] .pf-nav:not(.sel) { color:#4A5163; }
+  :root[data-theme="light"] .pf-tbtn { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root[data-theme="light"] .sb-item.foc.glass, :root[data-theme="light"] .rail-item.glass { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root[data-theme="light"] .epg-detail, :root[data-theme="light"] .epg-ch, :root[data-theme="light"] .epg-cell { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root[data-theme="light"] .epg-cell.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root[data-theme="light"] .epg-ch .cw, :root[data-theme="light"] .epg-detail .dw { background:#E6EBF3; border-color: rgba(15,20,30,0.10); color:#4A5163; }
+  :root[data-theme="light"] .pcard { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root[data-theme="light"] .pcard.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root[data-theme="light"] .pcard .th { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  :root[data-theme="light"] .pcard .heart { background: rgba(255,255,255,0.8); border-color: rgba(15,20,30,0.14); }
+  :root[data-theme="light"] .ccard.glass, :root[data-theme="light"] .crow.glass, :root[data-theme="light"] .modal.glass, :root[data-theme="light"] .chip { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root[data-theme="light"] .ccard .thumb2 { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  :root[data-theme="light"] .ccard.glass .cinfo b { color:#0D1017; }
+  :root[data-theme="light"] .ccard.glass .cinfo span, :root[data-theme="light"] .crow.glass, :root[data-theme="light"] .modal.glass .mrow { color:#4A5163; }
+  :root[data-theme="light"] .modal.glass .mrow { background: rgba(255,255,255,0.7); border-color: rgba(15,20,30,0.1); }
+  :root[data-theme="light"] .search-field { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.4), 0 0 22px rgba(37,99,235,0.2); }
+  :root[data-theme="light"] .search-field svg { color:#6B7280; }
+  :root[data-theme="light"] .ta-seg { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.1); }
+  :root[data-theme="light"] .st-tab.g { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  :root[data-theme="light"] .ta-vert .it.on { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.12); color:#0D1017; }
+  :root[data-theme="light"] .gmodal { background: rgba(255,255,255,0.86); border-color: rgba(15,20,30,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 40px 90px -40px rgba(20,40,80,0.28); color:#0D1017; }
+  :root[data-theme="light"] .mrow2 { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.08); color:#0D1017; }
+  :root[data-theme="light"] .mrow2 svg, :root[data-theme="light"] .gmodal .mrow2 svg { color:#4A5163; }
+  :root[data-theme="light"] .gbtns .b.ghost { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.12); color:#4A5163; }
+  :root[data-theme="light"] .pin-dots i { background: rgba(15,20,30,0.08); border-color: rgba(15,20,30,0.16); }
+  :root[data-theme="light"] .back-pill.glass { background: rgba(255,255,255,0.75); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  :root[data-theme="light"] .back-pill.glass.foc { background: rgba(255,255,255,0.92); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root[data-theme="light"] .back-pill.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  :root[data-theme="light"] .pane.before { background:#F3F5F9; }
+  :root[data-theme="light"] .sb-stage.before { background:#F3F5F9; }
+  :root[data-theme="light"] .sb-stage.before .sb-plabel { color: rgba(15,20,30,0.45); }
+  :root[data-theme="light"] .rail-item.solid, :root[data-theme="light"] .ccard.solid, :root[data-theme="light"] .crow.solid, :root[data-theme="light"] .modal.solid { background:#FFFFFF; border:1px solid rgba(15,20,30,0.1); color:#0D1017; }
+  :root[data-theme="light"] .modal.solid .mrow { background:#EEF1F6; color:#4A5163; }
+  :root[data-theme="light"] .sb-item.rest { color:#4A5163; }
+  :root[data-theme="light"] .sb-item.sel.solid { background: rgba(20,150,180,0.14); color:#0D1017; }
+  :root[data-theme="light"] .plabel { color: rgba(15,20,30,0.45); }
+  :root[data-theme="light"] .pane.after .plabel, :root[data-theme="light"] .sb-stage.after .sb-plabel { color: var(--accent-press); }
+  .force-light .pageframe { background: radial-gradient(130% 110% at 12% -8%, #FFFFFF 0%, #E9EDF4 62%); border-color: rgba(15,20,30,0.10); box-shadow: 0 30px 70px -34px rgba(20,40,80,0.28); }
+  .force-light .pf-side { border-color: rgba(15,20,30,0.08); }
+  .force-light .pageframe.rtl .pf-side { border-color: rgba(15,20,30,0.08); }
+  .force-light .pane.after { background: radial-gradient(120% 120% at 30% 10%, #FFFFFF, #E9EDF4 72%); }
+  .force-light .sb-stage.after { background: radial-gradient(120% 100% at 20% 0%, #FFFFFF, #E9EDF4 70%); }
+  .force-light .mstage { background: radial-gradient(120% 120% at 30% 0%, #E4EBF6, #EFF3F8 72%); border-color: rgba(15,20,30,0.08); }
+  .force-light .mstage::before { background: rgba(255,255,255,0.4); }
+  .force-light .pf-main, .force-light .pf-brand b, .force-light .epg-title, .force-light .di b, .force-light .epg-ch b, .force-light .pcard .in b, .force-light .gmodal h4, .force-light .search-field .q, .force-light .sb-brand b, .force-light .epg-cell.now .p, .force-light .epg-cell.foc .t, .force-light .epg-cell.foc .p { color:#0D1017; }
+  .force-light .pf-nav:not(.sel), .force-light .di span, .force-light .pcard .in span, .force-light .gmodal p, .force-light .epg-cell .t, .force-light .epg-cell .p, .force-light .epg-ruler .times span, .force-light .gbtns .b.ghost, .force-light .back-pill.glass, .force-light .sb-item:not(.sel) b, .force-light .mrow2, .force-light .ta-seg span:not(.on), .force-light .st-tab.g { color:#4A5163; }
+  .force-light .sb-item:not(.sel) { color:#4A5163; }
+  .force-light .pf-nav:not(.sel) { color:#4A5163; }
+  .force-light .pf-tbtn { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  .force-light .sb-item.foc.glass, .force-light .rail-item.glass { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  .force-light .epg-detail, .force-light .epg-ch, .force-light .epg-cell { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  .force-light .epg-cell.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  .force-light .epg-ch .cw, .force-light .epg-detail .dw { background:#E6EBF3; border-color: rgba(15,20,30,0.10); color:#4A5163; }
+  .force-light .pcard { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  .force-light .pcard.foc { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  .force-light .pcard .th { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  .force-light .pcard .heart { background: rgba(255,255,255,0.8); border-color: rgba(15,20,30,0.14); }
+  .force-light .ccard.glass, .force-light .crow.glass, .force-light .modal.glass, .force-light .chip { background: rgba(255,255,255,0.74); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  .force-light .ccard .thumb2 { background: linear-gradient(150deg,#C9D6EC,#AEBED6); color:#4A5163; }
+  .force-light .ccard.glass .cinfo b { color:#0D1017; }
+  .force-light .ccard.glass .cinfo span, .force-light .crow.glass, .force-light .modal.glass .mrow { color:#4A5163; }
+  .force-light .modal.glass .mrow { background: rgba(255,255,255,0.7); border-color: rgba(15,20,30,0.1); }
+  .force-light .search-field { background: rgba(255,255,255,0.9); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.4), 0 0 22px rgba(37,99,235,0.2); }
+  .force-light .search-field svg { color:#6B7280; }
+  .force-light .ta-seg { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.1); }
+  .force-light .st-tab.g { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  .force-light .ta-vert .it.on { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.12); color:#0D1017; }
+  .force-light .gmodal { background: rgba(255,255,255,0.86); border-color: rgba(15,20,30,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 40px 90px -40px rgba(20,40,80,0.28); color:#0D1017; }
+  .force-light .mrow2 { background: rgba(15,20,30,0.05); border-color: rgba(15,20,30,0.08); color:#0D1017; }
+  .force-light .mrow2 svg, .force-light .gmodal .mrow2 svg { color:#4A5163; }
+  .force-light .gbtns .b.ghost { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.12); color:#4A5163; }
+  .force-light .pin-dots i { background: rgba(15,20,30,0.08); border-color: rgba(15,20,30,0.16); }
+  .force-light .back-pill.glass { background: rgba(255,255,255,0.75); border-color: rgba(15,20,30,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); color:#0D1017; }
+  .force-light .back-pill.glass.foc { background: rgba(255,255,255,0.92); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  .force-light .back-pill.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  .force-light .pane.before { background:#F3F5F9; }
+  .force-light .sb-stage.before { background:#F3F5F9; }
+  .force-light .sb-stage.before .sb-plabel { color: rgba(15,20,30,0.45); }
+  .force-light .rail-item.solid, .force-light .ccard.solid, .force-light .crow.solid, .force-light .modal.solid { background:#FFFFFF; border:1px solid rgba(15,20,30,0.1); color:#0D1017; }
+  .force-light .modal.solid .mrow { background:#EEF1F6; color:#4A5163; }
+  .force-light .sb-item.rest { color:#4A5163; }
+  .force-light .sb-item.sel.solid { background: rgba(20,150,180,0.14); color:#0D1017; }
+  .force-light .plabel { color: rgba(15,20,30,0.45); }
+  .force-light .pane.after .plabel, .force-light .sb-stage.after .sb-plabel { color: var(--accent-press); }
+  .force-light { --text-1:#0D1017; --text-2:#4A5163; --text-3:#6B7280; color:#0D1017; }
+
+/* ===================== GLASS LIGHT THEME LAYER 2 (settings + buttons) ===================== */
+  @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .st-title { color:#0D1017; }
+  :root:not([data-theme="dark"]) .st-sec { color:#5B6270; }
+  :root:not([data-theme="dark"]) .st-card { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 18px 40px -22px rgba(20,40,80,0.18); }
+  :root:not([data-theme="dark"]) .st-div { background: rgba(15,20,30,0.08); }
+  :root:not([data-theme="dark"]) .st-ico { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root:not([data-theme="dark"]) .st-info b { color:#0D1017; }
+  :root:not([data-theme="dark"]) .st-info span { color:#4A5163; }
+  :root:not([data-theme="dark"]) .st-btn { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root:not([data-theme="dark"]) .st-btn.foc { background: rgba(255,255,255,0.94); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root:not([data-theme="dark"]) .st-pill:not(.on) { color:#4A5163; background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  :root:not([data-theme="dark"]) .tbtn.glass { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root:not([data-theme="dark"]) .sbtn.glass { background: rgba(255,255,255,0.78); border-color: rgba(15,20,30,0.14); color:#0D1017; }
+  :root:not([data-theme="dark"]) .cnt-g { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root:not([data-theme="dark"]) .tbtn.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  :root:not([data-theme="dark"]) .sbtn.solid { background:#EEF1F6; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root:not([data-theme="dark"]) .cnt-s { background:#E6EBF3; color:#4A5163; }
+  }
+  :root[data-theme="light"] .st-title { color:#0D1017; }
+  :root[data-theme="light"] .st-sec { color:#5B6270; }
+  :root[data-theme="light"] .st-card { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 18px 40px -22px rgba(20,40,80,0.18); }
+  :root[data-theme="light"] .st-div { background: rgba(15,20,30,0.08); }
+  :root[data-theme="light"] .st-ico { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root[data-theme="light"] .st-info b { color:#0D1017; }
+  :root[data-theme="light"] .st-info span { color:#4A5163; }
+  :root[data-theme="light"] .st-btn { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root[data-theme="light"] .st-btn.foc { background: rgba(255,255,255,0.94); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  :root[data-theme="light"] .st-pill:not(.on) { color:#4A5163; background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  :root[data-theme="light"] .tbtn.glass { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  :root[data-theme="light"] .sbtn.glass { background: rgba(255,255,255,0.78); border-color: rgba(15,20,30,0.14); color:#0D1017; }
+  :root[data-theme="light"] .cnt-g { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root[data-theme="light"] .tbtn.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  :root[data-theme="light"] .sbtn.solid { background:#EEF1F6; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  :root[data-theme="light"] .cnt-s { background:#E6EBF3; color:#4A5163; }
+  .force-light .st-title { color:#0D1017; }
+  .force-light .st-sec { color:#5B6270; }
+  .force-light .st-card { background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 18px 40px -22px rgba(20,40,80,0.18); }
+  .force-light .st-div { background: rgba(15,20,30,0.08); }
+  .force-light .st-ico { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  .force-light .st-info b { color:#0D1017; }
+  .force-light .st-info span { color:#4A5163; }
+  .force-light .st-btn { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  .force-light .st-btn.foc { background: rgba(255,255,255,0.94); border-color: rgba(96,165,250,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 0 0 2px rgba(37,99,235,0.55), 0 0 22px rgba(37,99,235,0.22); color:#0D1017; }
+  .force-light .st-pill:not(.on) { color:#4A5163; background: rgba(255,255,255,0.72); border-color: rgba(15,20,30,0.12); }
+  .force-light .tbtn.glass { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); color:#0D1017; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9); }
+  .force-light .sbtn.glass { background: rgba(255,255,255,0.78); border-color: rgba(15,20,30,0.14); color:#0D1017; }
+  .force-light .cnt-g { background: rgba(15,20,30,0.06); border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  .force-light .tbtn.solid { background:#E6EBF3; border-color: rgba(15,20,30,0.1); color:#0D1017; }
+  .force-light .sbtn.solid { background:#EEF1F6; border-color: rgba(15,20,30,0.1); color:#4A5163; }
+  .force-light .cnt-s { background:#E6EBF3; color:#4A5163; }
+
+/* ===================== GLASS LIGHT THEME LAYER 3 (demo-stage consistency) ===================== */
+  @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .tabalt-stage { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root:not([data-theme="dark"]) .fx-cell { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root:not([data-theme="dark"]) .gc { color:#0D1017; }
+  :root:not([data-theme="dark"]) .gc.pill, :root:not([data-theme="dark"]) .gc.sq, :root:not([data-theme="dark"]) .gc.tab { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); }
+  :root:not([data-theme="dark"]) .gc.foc { background: rgba(255,255,255,0.92); border-color: rgba(96,165,250,0.7); }
+  :root:not([data-theme="dark"]) .gc.tab { color:#4A5163; }
+  :root:not([data-theme="dark"]) .gc.card .b { color:#0D1017; }
+  :root:not([data-theme="dark"]) .gc.card .t { background: linear-gradient(150deg,#C9D6EC,#AEBED6); }
+  :root:not([data-theme="dark"]) .ta-ink .it { color:#4A5163; }
+  :root:not([data-theme="dark"]) .ta-ink .it.on { color:#0D1017; }
+  :root:not([data-theme="dark"]) .sb-item.foc.solid { color:#0D1017; }
+  :root:not([data-theme="dark"]) .search-field .q { color:#0D1017; }
+  }
+  :root[data-theme="light"] .tabalt-stage { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root[data-theme="light"] .fx-cell { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  :root[data-theme="light"] .gc { color:#0D1017; }
+  :root[data-theme="light"] .gc.pill, :root[data-theme="light"] .gc.sq, :root[data-theme="light"] .gc.tab { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); }
+  :root[data-theme="light"] .gc.foc { background: rgba(255,255,255,0.92); border-color: rgba(96,165,250,0.7); }
+  :root[data-theme="light"] .gc.tab { color:#4A5163; }
+  :root[data-theme="light"] .gc.card .b { color:#0D1017; }
+  :root[data-theme="light"] .gc.card .t { background: linear-gradient(150deg,#C9D6EC,#AEBED6); }
+  :root[data-theme="light"] .ta-ink .it { color:#4A5163; }
+  :root[data-theme="light"] .ta-ink .it.on { color:#0D1017; }
+  :root[data-theme="light"] .sb-item.foc.solid { color:#0D1017; }
+  :root[data-theme="light"] .search-field .q { color:#0D1017; }
+  .force-light .tabalt-stage { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  .force-light .fx-cell { background: radial-gradient(120% 120% at 25% 0%, #FFFFFF, #E9EDF4 70%); }
+  .force-light .gc { color:#0D1017; }
+  .force-light .gc.pill, .force-light .gc.sq, .force-light .gc.tab { background: rgba(255,255,255,0.82); border-color: rgba(15,20,30,0.14); }
+  .force-light .gc.foc { background: rgba(255,255,255,0.92); border-color: rgba(96,165,250,0.7); }
+  .force-light .gc.tab { color:#4A5163; }
+  .force-light .gc.card .b { color:#0D1017; }
+  .force-light .gc.card .t { background: linear-gradient(150deg,#C9D6EC,#AEBED6); }
+  .force-light .ta-ink .it { color:#4A5163; }
+  .force-light .ta-ink .it.on { color:#0D1017; }
+  .force-light .sb-item.foc.solid { color:#0D1017; }
+  .force-light .search-field .q { color:#0D1017; }
+
+/* ===== GLASS LIGHT THEME LAYER 4 (live badge contrast) ===== */
+  @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .b-live-g { background: rgba(220,38,38,0.92); border-color: rgba(220,38,38,0.9); }
+  }
+  :root[data-theme="light"] .b-live-g { background: rgba(220,38,38,0.92); border-color: rgba(220,38,38,0.9); }
+  .force-light .b-live-g { background: rgba(220,38,38,0.92); border-color: rgba(220,38,38,0.9); }
 </style>
 
 <button class="theme-toggle" id="tt" aria-label="Toggle light and dark theme">◐ theme</button>
@@ -871,6 +1116,12 @@
   </section>
 
   <div class="section-label">Redesign directions</div>
+
+  <div class="callout" style="margin:14px 0 4px"><span class="mk">i</span><div><b>Reorder &amp; hide already ship.</b>
+    <p>The HUD row is already data-driven — <code>ui/player/HudLayout.kt</code> (controls, <code>TRANSPORT</code>/<code>UTILITIES</code>
+    clusters, locked transport), persisted via <code>UserSettings.hudLayout</code>, with the <code>HudLayoutEditor</code> rearrange
+    modal wired into Settings. So the choice below is purely the HUD&rsquo;s <b>container style</b> — glass just reskins the bar,
+    the buttons, and that editor.</p></div></div>
 
   <!-- ============ CONCEPT A ============ -->
   <section class="opt" id="a">
@@ -1256,7 +1507,7 @@
       </div></div>
     </div>
     <div class="tabalt rec">
-      <div class="tabalt-h"><b>Segmented control</b><span class="rectag">recommended</span><span>One glass track; the accent indicator slides between segments</span></div>
+      <div class="tabalt-h"><b>Segmented control</b><span class="rectag">recommended · component exists</span><span>One glass track; the accent indicator slides between segments — reuse <code>AreSegmentedControl</code></span></div>
       <div class="tabalt-stage"><div class="ta-seg">
         <span class="on">General</span><span>Display</span><span>Playback</span><span>Subtitles</span>
       </div></div>
@@ -1497,6 +1748,63 @@
     </div>
   </div>
 
+
+  <!-- ===================== LIGHT THEME SHOWCASE ===================== -->
+  <div class="section-label" id="light-theme" style="margin-top:72px">Light theme — the whole system</div>
+  <h2 class="opt-title" style="font-size:26px; margin:6px 0 0">Best light theme, on purpose</h2>
+  <p class="spec-intro">Everything above also ships in light. The rule (from the spec): glass becomes a
+    <b>near-white translucent surface</b> with a <b>darker hairline edge</b> (<code>borderGlass</code> flips to
+    ink&nbsp;.14) so cards don&rsquo;t vanish on the off-white page; text drops to <code>textPrimary</code>/
+    <code>textSecondary</code>; the accent stays the same electric blue (dark enough for white text on its
+    gradient). The panels below are rendered <b>light regardless of your toggle</b> so you can compare — use the
+    <span style="white-space:nowrap">◐&nbsp;theme</span> button to flip the rest of the page.</p>
+
+  <div class="force-light" style="display:flex; flex-direction:column; gap:20px">
+    <!-- full shell in light -->
+    <div class="pageframe">
+      <div class="pf-side"><div class="pf-brand"><span class="m">A</span><b>ARE iptv</b></div><div class="pf-nav-list"><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><b>Home</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M8 3l4 4 4-4"/></svg><b>Live TV</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v16"/></svg><b>TV Guide</b></div><div class="pf-nav sel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16"/></svg><b>Movies</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v16"/></svg><b>Series</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><b>Search</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6C19 16.5 12 21 12 21z"/></svg><b>Favorites</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>Recordings</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 11a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg><b>Streams</b></div><div class="pf-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg><b>Settings</b></div></div></div>
+      <div class="pf-main">
+        <div class="pf-top">
+          <span class="pf-tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></span>
+          <span class="pf-tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+        </div>
+        <h3 class="epg-title" style="margin-bottom:14px">Movies</h3>
+        <div class="ta-seg" style="margin-bottom:20px"><span class="on">All</span><span>Action</span><span>Drama</span><span>Kids</span></div>
+        <div class="res-grid">
+          <div class="pcard foc"><div class="th">DU</div><div class="in"><b>Dune: Part Two</b><span>2024 · Sci-Fi</span></div></div>
+          <div class="pcard"><div class="th">OP</div><div class="in"><b>Oppenheimer</b><span>2023 · Drama</span></div></div>
+          <div class="pcard"><div class="th">BM</div><div class="in"><b>The Batman</b><span>2022 · Action</span></div></div>
+          <div class="pcard"><div class="th">BB</div><div class="in"><b>Barbie</b><span>2023 · Comedy</span></div></div>
+          <div class="pcard"><div class="th">IN</div><div class="in"><b>Interstellar</b><span>2014 · Sci-Fi</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- modal + HUD in light -->
+    <div class="panes" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px">
+      <div class="mstage">
+        <div class="gmodal">
+          <h4>Leave ARE iptv?</h4>
+          <p>Your place in Live TV will be kept. You can jump right back in from Home.</p>
+          <div class="gbtns"><span class="b prim">Stay</span><span class="b ghost">Leave</span></div>
+        </div>
+      </div>
+      <div class="mstage" style="align-items:flex-end">
+        <div style="position:relative; width:100%; display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:18px;
+             background: rgba(255,255,255,0.82); border:1px solid rgba(15,20,30,0.14);
+             box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 24px 60px -30px rgba(20,40,80,0.3);">
+          <span class="pf-tbtn" style="width:40px;height:40px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l14 8-14 8z"/></svg></span>
+          <span style="flex:1; height:4px; border-radius:999px; background:rgba(15,20,30,0.12); position:relative;">
+            <span style="position:absolute; left:0; top:0; bottom:0; width:42%; border-radius:999px; background:linear-gradient(90deg,#3B82F6,#60A5FA);"></span></span>
+          <span style="font-family:var(--mono); font-size:13px; color:#0D1017; font-weight:600">14:32 / 33:10</span>
+        </div>
+      </div>
+    </div>
+    <p class="shot-cap">Same tokens, flipped: surfaces are white glass at ~74% with an ink hairline; wells and
+      thumbnails use light neutrals; the accent gradient and focus ring are unchanged. This is exactly what the
+      <code>:root[data-theme="light"]</code> token overrides produce app-wide.</p>
+  </div>
+
   <!-- ===================== IMPLEMENTATION SPEC ===================== -->
   <div class="section-label" id="spec" style="margin-top:72px">Implementation spec · build sheet</div>
   <h2 class="opt-title" style="font-size:26px; margin:6px 0 0">Everything an implementer needs</h2>
@@ -1589,8 +1897,8 @@
             <td>ON track = accent-gradient glass + glow; thumb stays white.</td><td>pill</td><td>No</td></tr>
         <tr><td><b>Dialogs / modals</b></td><td><code>components/Dialog.kt</code> (<code>AreDialog</code>), <code>settings/*Dialog.kt</code>, <code>RecordVolumeDialog</code></td>
             <td><code>glassSurface(radius.xl, elevated = true)</code> + real blur behind (see §4). Focus default action.</td><td><code>radius.xl</code></td><td>Yes</td></tr>
-        <tr><td><b>Player HUD</b></td><td><code>components/PlayerControls.kt</code> (chosen HUD option)</td>
-            <td>Already glass — upgrade to <code>glassSurface</code>, add the HUD-option layout (A/B/C).</td><td><code>radius.xl</code></td><td>Yes</td></tr>
+        <tr><td><b>Player HUD</b></td><td><code>components/PlayerControls.kt</code> + model <code>ui/player/HudLayout.kt</code></td>
+            <td>Already glass &amp; data-driven — upgrade to <code>glassSurface</code>, apply the chosen container style (A/B/C), reskin the existing <code>HudLayoutEditor</code>. Reorder/hide already ships.</td><td><code>radius.xl</code></td><td>Yes</td></tr>
       </tbody>
     </table>
     </div>
@@ -1658,10 +1966,11 @@
       We can also blend — e.g. B's bar with A's centred accent-glow play disc.</p>
     <p style="margin-top:14px"><b>On going fully glass:</b> yes to a shared glass language, but apply blur only where media sits behind it (player, cards over posters, modals) and use soft translucent surfaces for the browse chrome. That keeps it fast on TV hardware and legible in the light theme — same result visually, without blurring panels that have nothing behind them.</p>
     <div class="qrow">
-      <div class="q"><b>Which HUD base?</b><span>A floating pods · B unified bar · C minimal — or a blend.</span></div>
+      <div class="q"><b>Which HUD container style?</b><span>A floating pods · B unified bar (rec) · C minimal — or a blend. (Button reorder/hide already ships.)</span></div>
+      <div class="q"><b>Also expose the style as a setting?</b><span>Ship one style, or add a style toggle next to the existing rearrange editor.</span></div>
       <div class="q"><b>Glass everywhere, or just over media?</b><span>Full app-wide glass language, or blur only on player + modals with soft surfaces elsewhere (my rec).</span></div>
       <div class="q"><b>New app icon?</b><span>Keep the cyan mark, or ship the frosted-blue glass tile.</span></div>
-      <div class="q"><b>Tab style?</b><span>Segmented control (rec) · underline ink-bar · vertical sub-rail · keep pills.</span></div>
+      <div class="q"><b>Tab style?</b><span>Segmented control — <code>AreSegmentedControl</code> exists (rec) · underline · vertical sub-rail · keep pills.</span></div>
     </div>
   </div>
 </div>
