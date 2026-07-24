@@ -57,9 +57,21 @@ class CredentialsStore(context: Context) {
             .commit()
     }
 
+    /**
+     * A Stalker Portal source authenticates by MAC address, not username/password. The MAC grants
+     * portal access (it is the identity a portal binds the subscription to), so it is a secret and
+     * lives here encrypted rather than in the plaintext `playlist_sources.url`/columns — same
+     * reasoning as the Xtream credentials above.
+     */
+    fun saveStalker(sourceId: Long, mac: String) {
+        prefs.edit().putString(macKey(sourceId), mac).apply()
+    }
+
     fun username(sourceId: Long): String? = prefs.getString(usernameKey(sourceId), null)
 
     fun password(sourceId: Long): String? = prefs.getString(passwordKey(sourceId), null)
+
+    fun mac(sourceId: Long): String? = prefs.getString(macKey(sourceId), null)
 
     /** Both stored credentials for [sourceId] as `(username, secret)` -- either half is null when absent. */
     fun forSource(sourceId: Long): Pair<String?, String?> =
@@ -69,9 +81,11 @@ class CredentialsStore(context: Context) {
         prefs.edit()
             .remove(usernameKey(sourceId))
             .remove(passwordKey(sourceId))
+            .remove(macKey(sourceId))
             .apply()
     }
 
     private fun usernameKey(sourceId: Long) = "username_$sourceId"
     private fun passwordKey(sourceId: Long) = "password_$sourceId"
+    private fun macKey(sourceId: Long) = "mac_$sourceId"
 }

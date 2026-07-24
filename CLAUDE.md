@@ -362,3 +362,17 @@ Ships **English + 21 translated locales**. A missing translation silently falls 
 ## Commits
 
 Conventional commits scoped to the module: `fix(tv):`, `feat(tv):`, `release(tv):`.
+
+## Design specs (`docs/`)
+
+Agreed-but-not-yet-built feature designs live in `docs/*-v1-design.md` (locked-decisions table,
+resilience/variance notes, component/file map, phasing). Read the relevant one BEFORE building that
+feature — decisions there were made deliberately; don't relitigate them.
+
+- `docs/recording-v1-design.md` — Live TV recording (record-now, tee-based). **Implemented.**
+- `docs/stalker-portal-v1-design.md` — **Stalker Portal / Ministra** as a third source type
+  (live + VOD + series). Not yet built; sequenced behind catch-up. Key shape: a stateful
+  `StalkerClient` (handshake→token→get_profile), **resolve-on-play** via a `StreamUrlResolver` seam
+  (`create_link` mints session-scoped URLs — they can't be precomputed like Xtream's), MAC stored in
+  `CredentialsStore`, `cmd` in `Channel.externalId`, **no DB migration** (schema stays v11).
+  Visual one-pager: https://claude.ai/code/artifact/d34083e0-3255-41ce-8189-dbb84e9c237c
