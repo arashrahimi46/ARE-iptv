@@ -7,6 +7,12 @@ data class M3uEntry(
     val tvgId: String? = null,
     val logoUrl: String? = null,
     val groupTitle: String? = null,
+    /** Catch-up (docs/catchup-v1-design.md, Phase 4): the `catchup-type` convention (default/append/
+     * flussonic/xc), the `catchup-source` template, and the archive window in days. [catchupDays] > 0
+     * is the capability flag (drives the Guide glyph); 0 = no archive. */
+    val catchupType: String? = null,
+    val catchupSource: String? = null,
+    val catchupDays: Int = 0,
 )
 
 /**
@@ -29,6 +35,17 @@ object M3uParser {
         val attrs = attrRegex.findAll(headerLine).associate { it.groupValues[1].lowercase() to it.groupValues[2] }
         return (attrs["url-tvg"] ?: attrs["x-tvg-url"] ?: attrs["tvg-url"])
             ?.split(",")?.firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
+    }
+
+    /** Archive window in days from an #EXTINF's attributes: explicit `catchup-days`/`tvg-rec` wins;
+     *  otherwise a declared `catchup`/`catchup-type` without a day count defaults to a 7-day window.
+     *  0 (no attributes) means the channel has no archive. */
+    private fun m3uCatchupDays(attrs: Map<String, String>): Int {
+        (attrs["catchup-days"] ?: attrs["tvg-rec"])?.trim()?.toIntOrNull()?.let { if (it > 0) return it }
+        val hasCatchup = !attrs["catchup"].isNullOrBlank() ||
+            !attrs["catchup-type"].isNullOrBlank() ||
+            !attrs["catchup-source"].isNullOrBlank()
+        return if (hasCatchup) 7 else 0
     }
 
     fun parse(playlist: String): List<M3uEntry> = parse(playlist.lineSequence()).toList()
@@ -70,6 +87,10 @@ object M3uParser {
                         tvgId = pendingAttrs["tvg-id"],
                         logoUrl = pendingAttrs["tvg-logo"],
                         groupTitle = pendingAttrs["group-title"],
+                        catchupType = pendingAttrs["catchup-type"]?.takeIf { it.isNotBlank() }
+                            ?: pendingAttrs["catchup"]?.takeIf { it.isNotBlank() },
+                        catchupSource = pendingAttrs["catchup-source"]?.takeIf { it.isNotBlank() },
+                        catchupDays = m3uCatchupDays(pendingAttrs),
                     ),
                 )
                 pendingName = null

@@ -42,6 +42,58 @@ class M3uParserTest {
     }
 
     @Test
+    fun `parses catchup attributes with an explicit day count`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 catchup="default" catchup-source="http://x/a?utc={utc}" catchup-days="5",Ch
+            http://example.com/live/1.m3u8
+        """.trimIndent()
+
+        val entry = M3uParser.parse(playlist).single()
+        assertEquals("default", entry.catchupType)
+        assertEquals("http://x/a?utc={utc}", entry.catchupSource)
+        assertEquals(5, entry.catchupDays)
+    }
+
+    @Test
+    fun `catchup-type is read and tvg-rec supplies the window when catchup-days is absent`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 catchup-type="flussonic" tvg-rec="3",Ch
+            http://example.com/ch/index.m3u8
+        """.trimIndent()
+
+        val entry = M3uParser.parse(playlist).single()
+        assertEquals("flussonic", entry.catchupType)
+        assertEquals(3, entry.catchupDays)
+    }
+
+    @Test
+    fun `a declared catchup with no day count defaults to a 7-day window`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 catchup="append" catchup-source="?a={utc}",Ch
+            http://example.com/live/2.ts
+        """.trimIndent()
+
+        assertEquals(7, M3uParser.parse(playlist).single().catchupDays)
+    }
+
+    @Test
+    fun `a channel with no catchup attributes has a zero window and null template`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 tvg-id="x",Ch
+            http://example.com/live/3.ts
+        """.trimIndent()
+
+        val entry = M3uParser.parse(playlist).single()
+        assertEquals(0, entry.catchupDays)
+        assertEquals(null, entry.catchupType)
+        assertEquals(null, entry.catchupSource)
+    }
+
+    @Test
     fun `falls back to the display name when tvg-name is absent`() {
         val playlist = """
             #EXTM3U

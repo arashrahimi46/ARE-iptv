@@ -488,6 +488,9 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                                     logoUrl = entry.logoUrl,
                                     categoryName = group.ifEmpty { null },
                                     tvgId = entry.tvgId,
+                                    catchupDays = entry.catchupDays,
+                                    catchupSource = entry.catchupSource,
+                                    catchupType = entry.catchupType,
                                 )
                                 channelCount++
                             }

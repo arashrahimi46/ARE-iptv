@@ -118,8 +118,20 @@ class DefaultStreamUrlResolver(private val credentials: CredentialsStore) : Stre
             }
             SourceType.STALKER ->
                 throw StreamResolveException("Catch-up isn't available for this portal yet")
-            SourceType.M3U ->
-                throw StreamResolveException("Catch-up isn't available for this playlist yet")
+            SourceType.M3U -> {
+                // Expand the channel's catchup-source template (or derive from the live URL) for the
+                // programme window -- pure, per catchup-type. No stream to rewrite ⇒ D9 message.
+                val live = storedUrl?.takeIf { it.isNotBlank() }
+                    ?: throw StreamResolveException("This channel has no stream to catch up")
+                com.arashrahimi46.iptv.data.parser.expandCatchup(
+                    liveUrl = live,
+                    source = req.m3uSource,
+                    type = req.m3uType,
+                    startMs = req.startMs,
+                    endMs = req.endMs,
+                    nowMs = System.currentTimeMillis(),
+                )
+            }
         }
     }
 }
