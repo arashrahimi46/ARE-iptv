@@ -217,7 +217,11 @@ private fun SidebarNavRow(
                 // the (offset) glow pools in the empty lower half.
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(horizontal = 20.dp),
+                // 23dp start inset centres the 26dp icon in the collapsed rail (104dp wide minus
+                // the 16dp column padding = 72dp; (72-26)/2 = 23). Kept static (not switched by
+                // `expanded`) so the icon stays put through the width animation -- a conditional
+                // arrangement made it jump between centred and left-aligned mid-animation.
+                .padding(horizontal = 23.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {

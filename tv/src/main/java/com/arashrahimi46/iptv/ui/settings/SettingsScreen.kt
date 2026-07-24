@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -144,7 +145,7 @@ internal fun SettingsSection(title: String, content: @Composable () -> Unit) {
 /** Icon tile + title/description + a right-hand `control` slot -- one settings row. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, control: @Composable () -> Unit) {
+internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, control: @Composable RowScope.() -> Unit) {
     val colors = AreIptvTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),

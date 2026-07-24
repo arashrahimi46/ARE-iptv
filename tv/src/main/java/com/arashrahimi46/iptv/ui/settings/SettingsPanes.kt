@@ -194,6 +194,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                     desc = stringResource(R.string.settings_start_screen_desc),
                 ) {
                     ChipChoiceRow(
+                        modifier = Modifier.weight(1f),
                         options = StartScreen.values().asIterable(),
                         isSelected = { it == startScreen },
                         label = { stringResource(it.labelRes()) },
@@ -206,6 +207,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                     desc = stringResource(R.string.settings_auto_refresh_desc),
                 ) {
                     ChipChoiceRow(
+                        modifier = Modifier.weight(1f),
                         options = AutoRefreshInterval.values().asIterable(),
                         isSelected = { it == autoRefreshInterval },
                         label = { stringResource(it.labelRes()) },
@@ -1188,8 +1190,20 @@ private fun WhatsNewDialog(onDismiss: () -> Unit) {
 
 /** A row of small chips for a discrete enum/number choice (D3); [isSelected] marks the active one. */
 @Composable
-private fun <T> ChipChoiceRow(options: Iterable<T>, isSelected: (T) -> Boolean, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun <T> ChipChoiceRow(
+    modifier: Modifier = Modifier,
+    options: Iterable<T>,
+    isSelected: (T) -> Boolean,
+    label: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+) {
+    // FlowRow (not Row) so a wide chip set wraps to a second line instead of clipping / squeezing
+    // the row's title to zero width when the content area is narrow (e.g. the rail is expanded).
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         options.forEach { option ->
             AreChip(text = label(option), selected = isSelected(option), onClick = { onSelect(option) }, size = AreChipSize.Small)
         }
