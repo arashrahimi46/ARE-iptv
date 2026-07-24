@@ -25,16 +25,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.TableChart
-import androidx.compose.material.icons.filled.Theaters
-import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.TableChart
+import androidx.compose.material.icons.outlined.Theaters
+import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,26 +61,24 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
-import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
 
 /** Default nav items per the app shell spec (app.jsx `navItems`), with placeholder Material icons. */
 val DefaultSidebarNavItems = listOf(
-    SidebarNavItem("home", R.string.nav_home, Icons.Filled.Home),
-    SidebarNavItem("live", R.string.nav_live_tv, Icons.Filled.LiveTv),
-    SidebarNavItem("guide", R.string.nav_tv_guide, Icons.Filled.TableChart),
-    SidebarNavItem("movies", R.string.nav_movies, Icons.Filled.Movie),
-    SidebarNavItem("series", R.string.nav_series, Icons.Filled.Theaters),
-    SidebarNavItem("search", R.string.nav_search, Icons.Filled.Search),
-    SidebarNavItem("favorites", R.string.nav_favorites, Icons.Filled.Favorite),
-    SidebarNavItem("recordings", R.string.nav_recordings, Icons.Filled.VideoLibrary),
-    SidebarNavItem("streams", R.string.nav_streams, Icons.Filled.Link),
-    SidebarNavItem("settings", R.string.nav_settings, Icons.Filled.Settings),
+    SidebarNavItem("home", R.string.nav_home, Icons.Outlined.Home),
+    SidebarNavItem("live", R.string.nav_live_tv, Icons.Outlined.LiveTv),
+    SidebarNavItem("guide", R.string.nav_tv_guide, Icons.Outlined.TableChart),
+    SidebarNavItem("movies", R.string.nav_movies, Icons.Outlined.Movie),
+    SidebarNavItem("series", R.string.nav_series, Icons.Outlined.Theaters),
+    SidebarNavItem("search", R.string.nav_search, Icons.Outlined.Search),
+    SidebarNavItem("favorites", R.string.nav_favorites, Icons.Outlined.Favorite),
+    SidebarNavItem("recordings", R.string.nav_recordings, Icons.Outlined.VideoLibrary),
+    SidebarNavItem("streams", R.string.nav_streams, Icons.Outlined.Link),
+    SidebarNavItem("settings", R.string.nav_settings, Icons.Outlined.Settings),
 )
 
 /**
@@ -195,9 +193,9 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .tvGlow(colors.accent, shape)
             // Accent-gradient frosted tile (glossy top -> accent), with the glass lit edge on top --
-            // the app-mark echoes the same material as the rest of the shell.
+            // the app-mark echoes the same material as the rest of the shell. No glow: it read as a
+            // heavy pink halo; the gradient + lit edge is enough.
             .background(accentGradientBrush(), shape)
             .border(1.dp, glassBorderBrush(), shape),
         contentAlignment = Alignment.Center,
@@ -228,15 +226,17 @@ private fun SidebarNavRow(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp)
+            // Smaller, tighter rows per the design artifact (rail-item: 22px icon, ~44dp tall) --
+            // the rail reads lighter and shinier occupying less vertical space than before.
+            .height(44.dp)
             .focusRequester(focusRequester),
         interactionSource = interactionSource,
-        shape = RoundedCornerShape(AreIptvTheme.radius.md),
+        shape = RoundedCornerShape(AreIptvTheme.radius.lg),
         // Three distinct states (design §6b): rest = transparent, focused = glass fill + lit edge,
-        // current screen = accent-gradient chip (denser than focus) that floats on a subtle shadow.
+        // current screen = accent-gradient chip (denser than focus). No shadow -- the chip sits on
+        // the flat rail, so a drop shadow reads as heavy; the gradient alone marks it.
         backgroundColor = if (focused && !active) colors.surfaceGlass else Color.Transparent,
         backgroundBrush = if (active) accentGradientBrush() else null,
-        shadowElevation = if (active) GlassElevation else 0.dp,
         borderBrush = if (focused && !active) glassBorderBrush() else null,
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
@@ -255,14 +255,14 @@ private fun SidebarNavRow(
                 // arrangement made it jump between centred and left-aligned mid-animation.
                 .padding(horizontal = 23.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(contentAlignment = Alignment.TopEnd) {
                 Icon(
                     item.icon,
                     contentDescription = label,
                     tint = if (active) colors.accentFg else colors.textTertiary,
-                    modifier = Modifier.size(26.dp),
+                    modifier = Modifier.size(22.dp),
                 )
                 // "!" attention badge -- e.g. the active playlist is overdue for a refresh. Amber,
                 // nudge-not-alarm; sits ON the icon's top-right corner (a small inward offset) so it

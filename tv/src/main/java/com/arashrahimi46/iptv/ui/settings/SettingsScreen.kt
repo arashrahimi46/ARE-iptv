@@ -1,5 +1,11 @@
 package com.arashrahimi46.iptv.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.horizontalScroll
@@ -69,6 +75,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     )
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    val motion = AreIptvTheme.motion
     // rememberSaveable so the chosen tab survives the screen pausing while the player is on top.
     var selectedTab by rememberSaveable { mutableStateOf(SettingsTab.GENERAL) }
 
@@ -81,15 +88,28 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         Box(Modifier.padding(top = spacing.sp4))
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
         Box(Modifier.padding(top = spacing.sp5))
-        // Each pane is its own LazyColumn (only the visible tab composes/draws) and claims the
-        // remaining height via weight(1f) -- a valid bounded height for the lazy layout.
-        when (selectedTab) {
-            SettingsTab.GENERAL -> GeneralPane(viewModel, Modifier.weight(1f))
-            SettingsTab.DISPLAY -> DisplayPane(viewModel, Modifier.weight(1f))
-            SettingsTab.PLAYBACK -> PlaybackPane(viewModel, Modifier.weight(1f))
-            SettingsTab.SUBTITLES -> SubtitlesPane(viewModel, Modifier.weight(1f))
-            SettingsTab.PARENTAL -> ParentalPane(viewModel, Modifier.weight(1f))
-            SettingsTab.ABOUT -> AboutPane(viewModel, Modifier.weight(1f))
+        // The visible pane cross-fades + slides slightly when the tab changes, so switching tabs
+        // (and its new data appearing) reads as a smooth transition rather than a hard cut. Durations
+        // come from the motion tokens, so reduced-motion collapses them. AnimatedContent's own
+        // weight(1f) gives each pane a bounded height for its LazyColumn.
+        AnimatedContent(
+            targetState = selectedTab,
+            modifier = Modifier.weight(1f),
+            transitionSpec = {
+                (fadeIn(tween(motion.durBaseMs)) +
+                    slideInHorizontally(tween(motion.durBaseMs)) { it / 14 }) togetherWith
+                    fadeOut(tween(motion.durFastMs))
+            },
+            label = "settingsPane",
+        ) { tab ->
+            when (tab) {
+                SettingsTab.GENERAL -> GeneralPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.DISPLAY -> DisplayPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.PLAYBACK -> PlaybackPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.SUBTITLES -> SubtitlesPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.PARENTAL -> ParentalPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.ABOUT -> AboutPane(viewModel, Modifier.fillMaxSize())
+            }
         }
     }
 }

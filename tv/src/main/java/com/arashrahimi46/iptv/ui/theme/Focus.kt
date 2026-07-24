@@ -25,7 +25,6 @@ import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -296,7 +295,7 @@ fun TvFocusable(
     Box(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
-            .then(if (shadowElevation > 0.dp) Modifier.shadow(shadowElevation, shape) else Modifier)
+            .then(if (shadowElevation > 0.dp) Modifier.softShadow(shape) else Modifier)
             .then(
                 if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
                 else Modifier.background(backgroundColor, shape),
