@@ -167,6 +167,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 
     val activeSource by viewModel.activeSource.collectAsState()
     val providerInfo by viewModel.providerInfo.collectAsState()
+    val stalkerInfo by viewModel.stalkerInfo.collectAsState()
     val refreshState by viewModel.refreshState.collectAsState()
 
     var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
@@ -228,11 +229,18 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
         }
         }
 
-        // Provider (Xtream account) panel -- only for Xtream sources; M3U playlists carry no account.
+        // Provider account panel -- Xtream and Stalker carry account metadata; M3U playlists don't.
         if (activeSource?.type == SourceType.XTREAM) {
             item {
                 SettingsSection(title = stringResource(R.string.settings_section_provider)) {
                     ProviderPanel(info = providerInfo)
+                }
+            }
+        }
+        if (activeSource?.type == SourceType.STALKER) {
+            item {
+                SettingsSection(title = stringResource(R.string.settings_section_provider)) {
+                    StalkerProviderPanel(info = stalkerInfo)
                 }
             }
         }
@@ -825,6 +833,38 @@ private fun SettingsSection(title: String, content: @Composable () -> Unit) {
         ) {
             content()
         }
+    }
+}
+
+/**
+ * Read-only account panel for a Stalker portal — mirrors [ProviderPanel]'s shape but reads the
+ * portal's own metadata block ([com.arashrahimi46.iptv.data.parser.StalkerAccountInfo]). Stalker
+ * reports expiry as free-form text (e.g. "October 21, 2025"), so [StalkerAccountInfo.expiresRaw] is
+ * shown verbatim rather than through [expiryText]. Fields the portal omits collapse to a dash/hide.
+ */
+@Composable
+private fun StalkerProviderPanel(info: com.arashrahimi46.iptv.data.parser.StalkerAccountInfo?) {
+    val colors = AreIptvTheme.colors
+    if (info == null) {
+        Text(
+            text = stringResource(R.string.settings_provider_loading),
+            style = AreIptvTheme.typography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+        )
+        return
+    }
+    val dash = stringResource(R.string.settings_provider_unknown)
+    Column {
+        val status = info.status?.replaceFirstChar { it.uppercase() }
+        val statusColor = when (status?.lowercase()) {
+            "active" -> colors.success
+            "expired", "banned", "disabled" -> colors.danger
+            else -> colors.textPrimary
+        }
+        ProviderInfoRow(stringResource(R.string.settings_provider_status), status ?: dash, statusColor)
+        ProviderInfoRow(stringResource(R.string.settings_provider_expires), info.expiresRaw ?: dash)
+        info.host?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server), it) }
     }
 }
 

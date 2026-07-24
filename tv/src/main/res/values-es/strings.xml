@@ -505,4 +505,12 @@
     <string name="recordings_missing">El archivo ya no está en la unidad</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d partes</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">URL del portal + dirección MAC. Para portales tipo MAG que te identifican por la MAC.</string>
+    <string name="onboarding_portal_url_label">URL del portal</string>
+    <string name="onboarding_mac_label">Dirección MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Usa la dirección MAC que tu proveedor registró para este portal.</string>
+    <string name="onboarding_mac_invalid">Introduce una dirección MAC completa, p. ej. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

@@ -60,6 +60,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     val firstItemFocus = remember { FocusRequester() }
     val xtreamLabel = stringResource(R.string.sources_type_xtream)
     val m3uLabel = stringResource(R.string.sources_type_m3u)
+    val stalkerLabel = stringResource(R.string.sources_type_stalker)
     // Non-null while the hold-OK delete confirmation is open for that playlist.
     var pendingDelete by remember { mutableStateOf<PlaylistSource?>(null) }
 
@@ -115,7 +116,12 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             sources.forEachIndexed { index, source ->
-                val label = "${source.name}  ·  ${if (source.type == SourceType.XTREAM) xtreamLabel else m3uLabel}"
+                val typeLabel = when (source.type) {
+                    SourceType.XTREAM -> xtreamLabel
+                    SourceType.STALKER -> stalkerLabel
+                    SourceType.M3U -> m3uLabel
+                }
+                val label = "${source.name}  ·  $typeLabel"
                 AreButton(
                     text = label,
                     onClick = { viewModel.select(source.id, onSelected) },

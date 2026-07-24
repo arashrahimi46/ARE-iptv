@@ -505,4 +505,12 @@
     <string name="recordings_missing">Le fichier n\'est plus sur le lecteur</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d parties</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">URL du portail + adresse MAC. Pour les portails de type MAG qui vous identifient par MAC.</string>
+    <string name="onboarding_portal_url_label">URL du portail</string>
+    <string name="onboarding_mac_label">Adresse MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Utilisez l’adresse MAC que votre fournisseur a enregistrée pour ce portail.</string>
+    <string name="onboarding_mac_invalid">Saisissez une adresse MAC complète, par ex. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

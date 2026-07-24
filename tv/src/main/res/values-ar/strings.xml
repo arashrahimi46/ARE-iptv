@@ -505,4 +505,12 @@
     <string name="settings_feedback_title">إرسال ملاحظات</string>
     <string name="settings_recording_indicator_desc">إظهار شارة REC نابضة في المشغّل أثناء التسجيل.</string>
     <string name="settings_recording_indicator_title">مؤشر التسجيل</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">رابط البوابة + عنوان MAC. للبوابات من نوع MAG التي تتعرّف عليك عبر MAC.</string>
+    <string name="onboarding_portal_url_label">رابط البوابة</string>
+    <string name="onboarding_mac_label">عنوان MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">استخدم عنوان MAC الذي سجّله مزوّدك لهذه البوابة.</string>
+    <string name="onboarding_mac_invalid">أدخل عنوان MAC كاملاً، مثل 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

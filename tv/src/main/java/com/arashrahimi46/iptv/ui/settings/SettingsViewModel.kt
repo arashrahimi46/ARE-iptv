@@ -242,6 +242,26 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
             null,
         )
 
+    /** Parsed Stalker portal metadata for the active source (Provider panel); null for non-Stalker
+     *  sources. Snapshot as of the last refresh, mirroring [providerInfo] for Xtream. */
+    val stalkerInfo: StateFlow<com.arashrahimi46.iptv.data.parser.StalkerAccountInfo?> =
+        flowState(
+            settings.activeSourceId.flatMapLatest { id ->
+                if (id == null) {
+                    flowOf(null)
+                } else {
+                    playlists.observeSource(id).map { src ->
+                        if (src?.type == SourceType.STALKER) {
+                            com.arashrahimi46.iptv.data.parser.StalkerAccountInfo.fromJson(src.accountInfoJson)
+                        } else {
+                            null
+                        }
+                    }
+                }
+            },
+            null,
+        )
+
     private val _refreshState = MutableStateFlow<RefreshState>(RefreshState.Idle)
     /** Live feedback for the manual refresh action. */
     val refreshState: StateFlow<RefreshState> = _refreshState.asStateFlow()

@@ -505,4 +505,12 @@
     <string name="recordings_missing">Soubor už na disku není</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">počet částí: %1$d</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">URL portálu + MAC adresa. Pro portály typu MAG, které vás identifikují podle MAC.</string>
+    <string name="onboarding_portal_url_label">URL portálu</string>
+    <string name="onboarding_mac_label">MAC adresa</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Použijte MAC adresu, kterou pro tento portál zaregistroval váš poskytovatel.</string>
+    <string name="onboarding_mac_invalid">Zadejte úplnou MAC adresu, např. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

@@ -505,4 +505,12 @@
     <string name="recordings_missing">Bestand staat niet meer op het station</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d delen</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">Portal-URL + MAC-adres. Voor MAG-achtige portals die je via MAC identificeren.</string>
+    <string name="onboarding_portal_url_label">Portal-URL</string>
+    <string name="onboarding_mac_label">MAC-adres</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Gebruik het MAC-adres dat je provider voor deze portal heeft geregistreerd.</string>
+    <string name="onboarding_mac_invalid">Voer een volledig MAC-adres in, bijv. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

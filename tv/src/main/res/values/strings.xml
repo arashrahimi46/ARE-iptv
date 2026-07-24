@@ -44,6 +44,13 @@
     <string name="onboarding_xtream_desc">Enter your portal host, username and password. Best for live TV + VOD with automatic EPG.</string>
     <string name="onboarding_m3u_title">M3U / URL playlist</string>
     <string name="onboarding_m3u_desc">Paste a single M3U or M3U-plus link. Add an XMLTV EPG URL separately if you have one.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">Portal URL + MAC address. For MAG-style portals that identify you by MAC.</string>
+    <string name="onboarding_portal_url_label">Portal URL</string>
+    <string name="onboarding_mac_label">MAC address</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Use the MAC address your provider registered for this portal.</string>
+    <string name="onboarding_mac_invalid">Enter a full MAC address, e.g. 00:1A:79:AB:CD:EF</string>
     <string name="onboarding_portal_name_label">Portal name</string>
     <string name="onboarding_portal_name_placeholder">Living room</string>
     <string name="onboarding_server_url_label">Server URL</string>
@@ -86,6 +93,7 @@
     <string name="sources_choose_subtitle">Pick which of your added playlists to open.</string>
     <string name="sources_type_xtream">Xtream</string>
     <string name="sources_type_m3u">M3U</string>
+    <string name="sources_type_stalker">Stalker</string>
     <string name="sources_add_new_playlist">Add new playlist</string>
     <string name="sources_delete_title">Delete playlist?</string>
     <string name="sources_delete_body">This permanently deletes “%1$s” and everything in it — channels, movies, series, favorites and watch history — from this device. This can\'t be undone.</string>

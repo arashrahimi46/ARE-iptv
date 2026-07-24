@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Router
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -71,6 +72,14 @@ fun SourceStep(
             icon = Icons.Filled.Link,
             selected = selected == OnboardingSourceType.M3U,
             onClick = { onSelect(OnboardingSourceType.M3U) },
+            modifier = Modifier.weight(1f),
+        )
+        SourceCard(
+            title = stringResource(R.string.onboarding_stalker_title),
+            desc = stringResource(R.string.onboarding_stalker_desc),
+            icon = Icons.Filled.Router,
+            selected = selected == OnboardingSourceType.STALKER,
+            onClick = { onSelect(OnboardingSourceType.STALKER) },
             modifier = Modifier.weight(1f),
         )
     }
@@ -127,56 +136,82 @@ private fun SourceCard(
     }
 }
 
-/** Step 2 — server/user/pass for Xtream, or the playlist URL for M3U (Onboarding.jsx step===1). */
+/** Step 2 — server/user/pass for Xtream, portal URL + MAC for Stalker, or the playlist URL for M3U. */
 @Composable
 fun CredentialsStep(
     state: OnboardingUiState,
-    onChange: (portalName: String, serverUrl: String, username: String, password: String, m3uUrl: String) -> Unit,
+    onChange: (OnboardingCredentials) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.widthIn(max = 640.dp)) {
         AreTextField(
             value = state.portalName,
-            onValueChange = { onChange(it, state.serverUrl, state.username, state.password, state.m3uUrl) },
+            onValueChange = { onChange(state.creds().copy(portalName = it)) },
             label = stringResource(R.string.onboarding_portal_name_label),
             placeholder = stringResource(R.string.onboarding_portal_name_placeholder),
         )
         Box(Modifier.height(20.dp))
-        if (state.sourceType == OnboardingSourceType.XTREAM) {
-            AreTextField(
-                value = state.serverUrl,
-                onValueChange = { onChange(state.portalName, it, state.username, state.password, state.m3uUrl) },
-                label = stringResource(R.string.onboarding_server_url_label),
-                mono = true,
-                placeholder = stringResource(R.string.onboarding_server_url_placeholder),
-                icon = Icons.Filled.Dns,
-            )
-            Box(Modifier.height(20.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+        when (state.sourceType) {
+            OnboardingSourceType.XTREAM -> {
                 AreTextField(
-                    value = state.username,
-                    onValueChange = { onChange(state.portalName, state.serverUrl, it, state.password, state.m3uUrl) },
-                    label = stringResource(R.string.onboarding_username_label),
+                    value = state.serverUrl,
+                    onValueChange = { onChange(state.creds().copy(serverUrl = it)) },
+                    label = stringResource(R.string.onboarding_server_url_label),
                     mono = true,
-                    modifier = Modifier.weight(1f),
+                    placeholder = stringResource(R.string.onboarding_server_url_placeholder),
+                    icon = Icons.Filled.Dns,
                 )
+                Box(Modifier.height(20.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    AreTextField(
+                        value = state.username,
+                        onValueChange = { onChange(state.creds().copy(username = it)) },
+                        label = stringResource(R.string.onboarding_username_label),
+                        mono = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                    AreTextField(
+                        value = state.password,
+                        onValueChange = { onChange(state.creds().copy(password = it)) },
+                        label = stringResource(R.string.onboarding_password_label),
+                        mono = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+            OnboardingSourceType.STALKER -> {
                 AreTextField(
-                    value = state.password,
-                    onValueChange = { onChange(state.portalName, state.serverUrl, state.username, it, state.m3uUrl) },
-                    label = stringResource(R.string.onboarding_password_label),
+                    value = state.serverUrl,
+                    onValueChange = { onChange(state.creds().copy(serverUrl = it)) },
+                    label = stringResource(R.string.onboarding_portal_url_label),
                     mono = true,
-                    modifier = Modifier.weight(1f),
+                    placeholder = stringResource(R.string.onboarding_server_url_placeholder),
+                    icon = Icons.Filled.Router,
+                )
+                Box(Modifier.height(20.dp))
+                // MAC is auto-formatted to AA:BB:CC:DD:EE:FF in the ViewModel; show an inline
+                // validity hint so the user knows when it's complete before continuing.
+                val macValid = isValidMac(state.mac)
+                AreTextField(
+                    value = state.mac,
+                    onValueChange = { onChange(state.creds().copy(mac = it)) },
+                    label = stringResource(R.string.onboarding_mac_label),
+                    mono = true,
+                    placeholder = stringResource(R.string.onboarding_mac_placeholder),
+                    helper = if (state.mac.isBlank() || macValid) stringResource(R.string.onboarding_mac_helper)
+                        else stringResource(R.string.onboarding_mac_invalid),
                 )
             }
-        } else {
-            AreTextField(
-                value = state.m3uUrl,
-                onValueChange = { onChange(state.portalName, state.serverUrl, state.username, state.password, it) },
-                label = stringResource(R.string.onboarding_m3u_url_label),
-                mono = true,
-                placeholder = stringResource(R.string.onboarding_m3u_url_placeholder),
-                icon = Icons.Filled.Link,
-            )
+            OnboardingSourceType.M3U -> {
+                AreTextField(
+                    value = state.m3uUrl,
+                    onValueChange = { onChange(state.creds().copy(m3uUrl = it)) },
+                    label = stringResource(R.string.onboarding_m3u_url_label),
+                    mono = true,
+                    placeholder = stringResource(R.string.onboarding_m3u_url_placeholder),
+                    icon = Icons.Filled.Link,
+                )
+            }
         }
         if (state.error != null) {
             Box(Modifier.height(16.dp))
@@ -278,13 +313,22 @@ fun ConfirmStep(
             } else {
                 val xtream = stringResource(R.string.onboarding_xtream_title)
                 val m3u = stringResource(R.string.onboarding_m3u_title)
+                val stalker = stringResource(R.string.onboarding_stalker_title)
                 val dash = stringResource(R.string.onboarding_confirm_dash)
+                val sourceLabel = when (state.sourceType) {
+                    OnboardingSourceType.XTREAM -> xtream
+                    OnboardingSourceType.M3U -> m3u
+                    OnboardingSourceType.STALKER -> stalker
+                }
+                // Xtream & Stalker are addressed by a portal/server URL (serverUrl); M3U by its playlist URL.
+                val serverValue = when (state.sourceType) {
+                    OnboardingSourceType.M3U -> state.m3uUrl
+                    else -> state.serverUrl
+                }.ifBlank { dash }
                 val rows = buildList {
                     add(stringResource(R.string.onboarding_confirm_row_portal) to state.portalName.ifBlank { stringResource(R.string.onboarding_confirm_default_portal_name) })
-                    add(stringResource(R.string.onboarding_confirm_row_source) to if (state.sourceType == OnboardingSourceType.XTREAM) xtream else m3u)
-                    add(
-                        stringResource(R.string.onboarding_confirm_row_server) to if (state.sourceType == OnboardingSourceType.XTREAM) state.serverUrl.ifBlank { dash } else state.m3uUrl.ifBlank { dash },
-                    )
+                    add(stringResource(R.string.onboarding_confirm_row_source) to sourceLabel)
+                    add(stringResource(R.string.onboarding_confirm_row_server) to serverValue)
                     add(stringResource(R.string.onboarding_confirm_row_epg) to if (state.epgAuto) stringResource(R.string.onboarding_confirm_auto_matched) else stringResource(R.string.onboarding_confirm_custom_xmltv))
                     state.result?.let { add(stringResource(R.string.onboarding_confirm_row_catalog) to stringResource(R.string.onboarding_confirm_catalog_summary, it.channels, it.movies, it.series)) }
                 }

@@ -505,4 +505,12 @@
     <string name="recordings_missing">Fayl artıq diskdə deyil</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d hissə</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">Portal URL + MAC ünvanı. Sizi MAC ilə tanıyan MAG tipli portallar üçün.</string>
+    <string name="onboarding_portal_url_label">Portal URL</string>
+    <string name="onboarding_mac_label">MAC ünvanı</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Provayderinizin bu portal üçün qeydə aldığı MAC ünvanından istifadə edin.</string>
+    <string name="onboarding_mac_invalid">Tam MAC ünvanı daxil edin, məs. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

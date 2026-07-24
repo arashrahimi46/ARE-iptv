@@ -505,4 +505,12 @@
     <string name="recordings_missing">Файлу більше немає на накопичувачі</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d частин</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">URL порталу + MAC-адреса. Для порталів типу MAG, які ідентифікують вас за MAC.</string>
+    <string name="onboarding_portal_url_label">URL порталу</string>
+    <string name="onboarding_mac_label">MAC-адреса</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Використовуйте MAC-адресу, яку ваш провайдер зареєстрував для цього порталу.</string>
+    <string name="onboarding_mac_invalid">Введіть повну MAC-адресу, напр. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

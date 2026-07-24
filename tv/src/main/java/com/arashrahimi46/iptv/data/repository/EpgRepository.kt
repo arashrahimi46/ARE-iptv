@@ -131,19 +131,24 @@ class EpgRepository(context: Context) {
     suspend fun refresh(source: PlaylistSource, channels: List<Channel>) = withContext(Dispatchers.IO) {
         if (channels.isEmpty()) return@withContext
 
-        val xmlTvUrl = source.epgUrl ?: if (source.type == SourceType.XTREAM) {
-            val username = credentials.username(source.id)
-            val password = credentials.password(source.id)
-            if (username != null && password != null) {
-                runCatching { XtreamClient(source.url, username, password).xmltvUrl() }.getOrNull()
-            } else {
-                null
+        val xmlTvUrl = source.epgUrl ?: when (source.type) {
+            SourceType.XTREAM -> {
+                val (xtUser, xtSecret) = credentials.forSource(source.id)
+                if (xtUser != null && xtSecret != null) {
+                    runCatching { XtreamClient(source.url, xtUser, xtSecret).xmltvUrl() }.getOrNull()
+                } else {
+                    null
+                }
             }
-        } else {
-            // Heal M3U sources imported before header parsing existed (or that failed to capture it):
-            // fetch just the `#EXTM3U` header line, read its `url-tvg`, and persist it so later
-            // refreshes short-circuit here via `source.epgUrl` above instead of re-fetching.
-            backfillM3uEpgUrl(source)
+            SourceType.M3U ->
+                // Heal M3U sources imported before header parsing existed (or that failed to capture it):
+                // fetch just the `#EXTM3U` header line, read its `url-tvg`, and persist it so later
+                // refreshes short-circuit here via `source.epgUrl` above instead of re-fetching.
+                backfillM3uEpgUrl(source)
+            // Stalker: EPG comes only from an explicit XMLTV override (source.epgUrl, handled above).
+            // Native per-channel short-EPG needs the portal's numeric channel id (not stored in V1's
+            // no-migration schema) and is deferred to Phase 5's real-portal validation.
+            SourceType.STALKER -> null
         }
 
         val bulkRows = mutableListOf<EPGProgram>()

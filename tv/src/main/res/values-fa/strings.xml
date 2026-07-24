@@ -505,4 +505,12 @@
     <string name="settings_feedback_title">ارسال بازخورد</string>
     <string name="settings_recording_indicator_desc">نمایش نشان ضربان‌دار REC در پخش‌کننده هنگام ضبط.</string>
     <string name="settings_recording_indicator_title">نشانگر ضبط</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">نشانی پرتال + آدرس MAC. برای پرتال‌های نوع MAG که شما را با MAC شناسایی می‌کنند.</string>
+    <string name="onboarding_portal_url_label">نشانی پرتال</string>
+    <string name="onboarding_mac_label">آدرس MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">از آدرس MAC که ارائه‌دهنده‌تان برای این پرتال ثبت کرده است استفاده کنید.</string>
+    <string name="onboarding_mac_invalid">یک آدرس MAC کامل وارد کنید، مثلاً 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

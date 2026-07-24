@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-enum class OnboardingSourceType { XTREAM, M3U }
+enum class OnboardingSourceType { XTREAM, M3U, STALKER }
 
 data class OnboardingUiState(
     val sourceType: OnboardingSourceType = OnboardingSourceType.XTREAM,
@@ -25,6 +25,9 @@ data class OnboardingUiState(
     val username: String = "",
     val password: String = "",
     val m3uUrl: String = "",
+    /** Stalker only: the portal-issued MAC, kept auto-formatted as `AA:BB:CC:DD:EE:FF` (see [formatMacInput]).
+     *  The portal URL reuses [serverUrl]. */
+    val mac: String = "",
     val epgAuto: Boolean = true,
     val epgUrl: String = "",
     val isSubmitting: Boolean = false,
@@ -32,6 +35,39 @@ data class OnboardingUiState(
     val result: ImportSummary? = null,
     val completedSourceId: Long? = null,
 )
+
+/** The editable credential fields for step 2, passed as one immutable snapshot so the step composable
+ *  can update any single field via `copy(...)` without a wide positional callback. */
+data class OnboardingCredentials(
+    val portalName: String,
+    val serverUrl: String,
+    val username: String,
+    val password: String,
+    val m3uUrl: String,
+    val mac: String,
+)
+
+/** Current credential fields as an [OnboardingCredentials] snapshot. */
+fun OnboardingUiState.creds(): OnboardingCredentials =
+    OnboardingCredentials(portalName, serverUrl, username, password, m3uUrl, mac)
+
+/** The MAC a Stalker portal binds a subscription to, e.g. `00:1A:79:AB:CD:EF`. */
+private val MAC_REGEX = Regex("^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
+
+/** True when [mac] is a complete, well-formed colon-separated MAC address. */
+internal fun isValidMac(mac: String): Boolean = MAC_REGEX.matches(mac.trim())
+
+/**
+ * Auto-format raw MAC keystrokes into `AA:BB:CC:DD:EE:FF` as the user types: keep only hex digits,
+ * uppercase, cap at 12, and re-insert a colon every two. Lets the user paste `001A79ABCDEF` or type
+ * freely and still land on a valid, readable MAC without fighting the colons.
+ */
+internal fun formatMacInput(raw: String): String =
+    raw.filter { it.isDigit() || it in 'a'..'f' || it in 'A'..'F' }
+        .uppercase()
+        .take(12)
+        .chunked(2)
+        .joinToString(":")
 
 /**
  * Shared state for the whole onboarding flow, hoisted above the internal
@@ -56,6 +92,7 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
         username: String = _uiState.value.username,
         password: String = _uiState.value.password,
         m3uUrl: String = _uiState.value.m3uUrl,
+        mac: String = _uiState.value.mac,
     ) {
         _uiState.value = _uiState.value.copy(
             portalName = portalName,
@@ -63,6 +100,8 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
             username = username,
             password = password,
             m3uUrl = m3uUrl,
+            // Auto-format on every keystroke so the field always shows a canonical MAC.
+            mac = formatMacInput(mac),
             error = null,
         )
     }
@@ -101,6 +140,12 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
                     OnboardingSourceType.M3U -> repository.addM3uSource(
                         name = name,
                         url = state.m3uUrl.trim(),
+                        epgUrl = epgUrl,
+                    )
+                    OnboardingSourceType.STALKER -> repository.addStalkerSource(
+                        name = name,
+                        portalUrl = state.serverUrl.trim(),
+                        mac = state.mac.trim(),
                         epgUrl = epgUrl,
                     )
                 }

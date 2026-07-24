@@ -131,8 +131,8 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                     composable("credentials") {
                         CredentialsStep(
                             state = uiState,
-                            onChange = { portalName, serverUrl, username, password, m3uUrl ->
-                                viewModel.updateCredentials(portalName, serverUrl, username, password, m3uUrl)
+                            onChange = { c ->
+                                viewModel.updateCredentials(c.portalName, c.serverUrl, c.username, c.password, c.m3uUrl, c.mac)
                             },
                         )
                     }
@@ -175,10 +175,12 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
                 AreButton(stringResource(R.string.onboarding_skip_for_now), onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 if (stepIndex < stepRoutes.lastIndex) {
                     val canContinue = when (currentRoute) {
-                        "credentials" -> if (uiState.sourceType == OnboardingSourceType.XTREAM) {
-                            uiState.serverUrl.isNotBlank() && uiState.username.isNotBlank() && uiState.password.isNotBlank()
-                        } else {
-                            uiState.m3uUrl.isNotBlank()
+                        "credentials" -> when (uiState.sourceType) {
+                            OnboardingSourceType.XTREAM ->
+                                uiState.serverUrl.isNotBlank() && uiState.username.isNotBlank() && uiState.password.isNotBlank()
+                            OnboardingSourceType.STALKER ->
+                                uiState.serverUrl.isNotBlank() && isValidMac(uiState.mac)
+                            OnboardingSourceType.M3U -> uiState.m3uUrl.isNotBlank()
                         }
                         else -> true
                     }

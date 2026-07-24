@@ -505,4 +505,12 @@
     <string name="recordings_missing">Файлът вече го няма на устройството</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d части</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">URL на портала + MAC адрес. За портали от типа MAG, които ви идентифицират по MAC.</string>
+    <string name="onboarding_portal_url_label">URL на портала</string>
+    <string name="onboarding_mac_label">MAC адрес</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Използвайте MAC адреса, който доставчикът ви е регистрирал за този портал.</string>
+    <string name="onboarding_mac_invalid">Въведете пълен MAC адрес, напр. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>

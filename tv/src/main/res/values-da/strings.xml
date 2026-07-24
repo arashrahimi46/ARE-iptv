@@ -505,4 +505,12 @@
     <string name="recordings_missing">Filen er ikke længere på drevet</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d dele</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">Portal-URL + MAC-adresse. Til MAG-lignende portaler, der identificerer dig via MAC.</string>
+    <string name="onboarding_portal_url_label">Portal-URL</string>
+    <string name="onboarding_mac_label">MAC-adresse</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_mac_helper">Brug den MAC-adresse, som din udbyder har registreret til denne portal.</string>
+    <string name="onboarding_mac_invalid">Indtast en fuld MAC-adresse, f.eks. 00:1A:79:AB:CD:EF</string>
+    <string name="sources_type_stalker">Stalker</string>
 </resources>
