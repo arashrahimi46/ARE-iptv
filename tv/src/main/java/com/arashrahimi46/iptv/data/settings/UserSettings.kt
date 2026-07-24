@@ -11,6 +11,10 @@ import com.arashrahimi46.iptv.ui.home.DEFAULT_HOME_LAYOUT
 import com.arashrahimi46.iptv.ui.home.HomeSection
 import com.arashrahimi46.iptv.ui.home.decodeHomeLayout
 import com.arashrahimi46.iptv.ui.home.encodeHomeLayout
+import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT
+import com.arashrahimi46.iptv.ui.player.HudSlot
+import com.arashrahimi46.iptv.ui.player.decodeHudLayout
+import com.arashrahimi46.iptv.ui.player.encodeHudLayout
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -124,6 +128,8 @@ class UserSettings(private val context: Context) {
         val OPENSUBS_P = stringPreferencesKey("opensubs_p")
         val OMDB_KEY = stringPreferencesKey("omdb_key")
         val HOME_LAYOUT = stringPreferencesKey("home_layout")
+        /** Persisted player-HUD button order/visibility (see [hudLayout]). */
+        val HUD_LAYOUT = stringPreferencesKey("hud_layout")
         /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); see [languageTag]. */
         val LANGUAGE_TAG = stringPreferencesKey("language_tag")
         /** Whether the first-run language selector has been completed; see [hasSelectedLanguage]. */
@@ -298,6 +304,13 @@ class UserSettings(private val context: Context) {
      * customizes it (or if the stored value decodes to nothing usable). */
     val homeLayout: Flow<List<HomeSection>> = context.dataStore.data.map { prefs ->
         prefs[Keys.HOME_LAYOUT]?.let(::decodeHomeLayout)?.takeIf { it.isNotEmpty() } ?: DEFAULT_HOME_LAYOUT
+    }
+
+    /** Persisted player-HUD button order/visibility; defaults to [DEFAULT_HUD_LAYOUT] until the
+     * user rearranges it. [decodeHudLayout] self-heals (fills any missing controls) so this always
+     * yields every control exactly once. */
+    val hudLayout: Flow<List<HudSlot>> = context.dataStore.data.map { prefs ->
+        prefs[Keys.HUD_LAYOUT]?.let(::decodeHudLayout) ?: DEFAULT_HUD_LAYOUT
     }
 
     /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); mirrors whatever was last
@@ -533,6 +546,10 @@ class UserSettings(private val context: Context) {
 
     suspend fun setHomeLayout(sections: List<HomeSection>) {
         context.dataStore.edit { it[Keys.HOME_LAYOUT] = encodeHomeLayout(sections) }
+    }
+
+    suspend fun setHudLayout(slots: List<HudSlot>) {
+        context.dataStore.edit { it[Keys.HUD_LAYOUT] = encodeHudLayout(slots) }
     }
 
     /** Persists the chosen app language tag and marks the first-run selector as completed. Callers

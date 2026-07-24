@@ -1,5 +1,11 @@
 package com.arashrahimi46.iptv.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.horizontalScroll
@@ -35,9 +41,11 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * Real Settings screen. Every control persists through [SettingsViewModel] ->
@@ -67,53 +75,61 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     )
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    val motion = AreIptvTheme.motion
     // rememberSaveable so the chosen tab survives the screen pausing while the player is on top.
     var selectedTab by rememberSaveable { mutableStateOf(SettingsTab.GENERAL) }
 
     Column(
         modifier = modifier.fillMaxSize().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
     ) {
-        Box(Modifier.padding(top = spacing.sp6))
+        // Title sits high (design: pull the page title up to give the content more room).
+        Box(Modifier.padding(top = spacing.sp2))
         Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
-        Box(Modifier.padding(top = spacing.sp5))
+        Box(Modifier.padding(top = spacing.sp4))
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
         Box(Modifier.padding(top = spacing.sp5))
-        // Each pane is its own LazyColumn (only the visible tab composes/draws) and claims the
-        // remaining height via weight(1f) -- a valid bounded height for the lazy layout.
-        when (selectedTab) {
-            SettingsTab.GENERAL -> GeneralPane(viewModel, Modifier.weight(1f))
-            SettingsTab.DISPLAY -> DisplayPane(viewModel, Modifier.weight(1f))
-            SettingsTab.PLAYBACK -> PlaybackPane(viewModel, Modifier.weight(1f))
-            SettingsTab.SUBTITLES -> SubtitlesPane(viewModel, Modifier.weight(1f))
-            SettingsTab.PARENTAL -> ParentalPane(viewModel, Modifier.weight(1f))
-            SettingsTab.ABOUT -> AboutPane(viewModel, Modifier.weight(1f))
+        // The visible pane cross-fades + slides slightly when the tab changes, so switching tabs
+        // (and its new data appearing) reads as a smooth transition rather than a hard cut. Durations
+        // come from the motion tokens, so reduced-motion collapses them. AnimatedContent's own
+        // weight(1f) gives each pane a bounded height for its LazyColumn.
+        AnimatedContent(
+            targetState = selectedTab,
+            modifier = Modifier.weight(1f),
+            transitionSpec = {
+                (fadeIn(tween(motion.durBaseMs)) +
+                    slideInHorizontally(tween(motion.durBaseMs)) { it / 14 }) togetherWith
+                    fadeOut(tween(motion.durFastMs))
+            },
+            label = "settingsPane",
+        ) { tab ->
+            when (tab) {
+                SettingsTab.GENERAL -> GeneralPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.DISPLAY -> DisplayPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.PLAYBACK -> PlaybackPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.SUBTITLES -> SubtitlesPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.PARENTAL -> ParentalPane(viewModel, Modifier.fillMaxSize())
+                SettingsTab.ABOUT -> AboutPane(viewModel, Modifier.fillMaxSize())
+            }
         }
     }
 }
 
-/** Horizontal tab strip -- a focus group of accent-ring chips (TvFocusable via [AreChip]). */
+/** Horizontal tab strip -- a glass segmented control (design §6c). Padded so the focused segment's
+ *  accent ring/glow has headroom, then offset back so it lines up with the title/cards. */
 @Composable
 private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit) {
     Row(
-        // horizontalScroll clips its content on all four edges, cutting off a focused chip's
-        // accent ring/glow. Pad inside the scroll on every side so the glow has headroom, then
-        // offset the whole strip back by the same horizontal amount so the first chip still lines
-        // up with the title/cards (the left glow spills harmlessly into the safe-area margin).
         modifier = Modifier
             .offset(x = (-14).dp)
-            .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 14.dp, vertical = 14.dp)
-            .focusGroup(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
     ) {
-        SettingsTab.entries.forEach { tab ->
-            AreChip(
-                text = stringResource(tab.labelRes),
-                selected = tab == selected,
-                onClick = { onSelect(tab) },
-            )
-        }
+        AreSegmentedControl(
+            options = SettingsTab.entries,
+            selected = selected,
+            label = { stringResource(it.labelRes) },
+            onSelect = onSelect,
+        )
     }
 }
 
@@ -135,7 +151,7 @@ internal fun SettingsSection(title: String, content: @Composable () -> Unit) {
             modifier = Modifier.padding(bottom = 12.dp),
         )
         Column(
-            modifier = Modifier.background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg)),
+            modifier = Modifier.glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl)),
         ) {
             content()
         }
@@ -153,7 +169,7 @@ internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(
-            modifier = Modifier.size(42.dp).background(colors.surface2, RoundedCornerShape(AreIptvTheme.radius.sm)),
+            modifier = Modifier.size(42.dp).glassSurface(RoundedCornerShape(AreIptvTheme.radius.sm), shadow = false),
             contentAlignment = Alignment.Center,
         ) {
             Icon(icon, contentDescription = null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))

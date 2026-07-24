@@ -32,6 +32,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /**
@@ -61,7 +62,8 @@ fun AreContinueCard(
                 .aspectRatio(16f / 9f),
             interactionSource = interactionSource,
             shape = shape,
-            backgroundColor = colors.surface3,
+            backgroundColor = colors.surfaceGlass,
+            borderBrush = glassBorderBrush(),
         ) { focused, _ ->
             Box(Modifier.fillMaxSize()) {
                 if (focused) {

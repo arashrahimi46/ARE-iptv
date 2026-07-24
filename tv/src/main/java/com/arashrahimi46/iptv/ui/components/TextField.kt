@@ -135,7 +135,7 @@ fun AreTextField(
                         }
                     } else Modifier,
                 )
-                .background(colors.surface1, shape)
+                .background(colors.surfaceGlass, shape)
                 .border(1.dp, restingBorderColor, shape)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,

@@ -46,7 +46,7 @@ fun AreBadge(
         AreBadgeTone.Quality -> ToneStyle(colors.surfaceGlass, colors.textPrimary, colors.borderStrong, null)
         AreBadgeTone.Catchup -> ToneStyle(colors.success.copy(alpha = 0.16f), colors.catchupText, colors.success.copy(alpha = 0.4f), null)
         AreBadgeTone.Smart -> ToneStyle(colors.smart.copy(alpha = 0.16f), colors.violetText, colors.smart.copy(alpha = 0.45f), colors.smart)
-        AreBadgeTone.Neutral -> ToneStyle(colors.surface2, colors.textSecondary, colors.borderDefault, null)
+        AreBadgeTone.Neutral -> ToneStyle(colors.surfaceGlass, colors.textSecondary, colors.borderGlass, null)
     }
 
     // LIVE reads as a compact status flag, not a chip — smaller than the other tones.

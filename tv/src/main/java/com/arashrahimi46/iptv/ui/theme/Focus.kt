@@ -25,6 +25,7 @@ import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -158,7 +159,7 @@ fun Modifier.tvGlowCached(
     onDrawBehind {
         val a = alpha()
         if (a > 0f) {
-            paint.alpha = (0.55f * a * 255f).toInt().coerceIn(0, 255)
+            paint.alpha = (0.38f * a * 255f).toInt().coerceIn(0, 255)
             drawIntoCanvas { canvas ->
                 canvas.nativeCanvas.drawPath(androidPath, paint)
             }
@@ -216,7 +217,7 @@ fun Modifier.tvGlow(
         isAntiAlias = true
         style = NativePaint.Style.STROKE
         strokeWidth = strokePx
-        this.color = color.copy(alpha = (0.55f * alpha).coerceIn(0f, 1f)).toArgb()
+        this.color = color.copy(alpha = (0.38f * alpha).coerceIn(0f, 1f)).toArgb()
         maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
     }
     drawIntoCanvas { canvas ->
@@ -269,9 +270,18 @@ fun TvFocusable(
     shape: Shape = RoundedCornerShape(AreIptvTheme.radius.md),
     glowColor: Color = AreIptvTheme.colors.focusRing,
     backgroundColor: Color = Color.Transparent,
+    /** Optional gradient FILL (e.g. [accentGradientBrush] for the selected/current state). Takes
+     *  precedence over [backgroundColor] when set -- the one funnel for the accent-gradient chip. */
+    backgroundBrush: Brush? = null,
+    /** Subtle resting drop shadow (dp of elevation). >0 lifts the surface off the page; used for the
+     *  accent-gradient chip and filled buttons so they float (design ask: "subtle hint" depth). */
+    shadowElevation: Dp = 0.dp,
     /** Optional 1dp outline drawn over the fill (under the focus ring) -- lets low-contrast
      *  fills (e.g. an unselected chip on a white card in light mode) read as a distinct shape. */
     borderColor: Color? = null,
+    /** Optional gradient border (the glass "lit edge"). Takes precedence over [borderColor] when
+     *  set, so a glassified component can carry the highlight->faint hairline without forking. */
+    borderBrush: Brush? = null,
     enabled: Boolean = true,
     /** Long-press (hold OK ~[LONG_PRESS_MS]) handler; when null the control has short-press only. */
     onLongClick: (() -> Unit)? = null,
@@ -285,8 +295,18 @@ fun TvFocusable(
     Box(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
-            .background(backgroundColor, shape)
-            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
+            .then(if (shadowElevation > 0.dp) Modifier.softShadow(shape) else Modifier)
+            .then(
+                if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
+                else Modifier.background(backgroundColor, shape),
+            )
+            .then(
+                when {
+                    borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)
+                    borderColor != null -> Modifier.border(1.dp, borderColor, shape)
+                    else -> Modifier
+                },
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,

@@ -205,6 +205,8 @@ fun LivePlayerScreen(
     // channel's saved choice; VOD (no channel id) falls back to the single global default.
     val persistedAspect by settings.videoAspectMode.collectAsState(initial = "FIT")
     val aspectByChannel by settings.videoAspectByChannel.collectAsState(initial = emptyMap())
+    // User-customized HUD button order/visibility (Settings → Playback → Rearrange HUD).
+    val hudLayout by settings.hudLayout.collectAsState(initial = DEFAULT_HUD_LAYOUT)
     val aspectChannelId = state.currentChannelId
     // Reset the local override per channel so the new channel's own saved aspect is shown.
     var aspectOverride by remember(aspectChannelId) { mutableStateOf<AspectMode?>(null) }
@@ -1164,6 +1166,7 @@ fun LivePlayerScreen(
                             recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
                         recordingReconnecting = recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
                         playPauseFocusRequester = hudFocusRequester,
+                        slots = hudLayout,
                     )
                 }
                 }

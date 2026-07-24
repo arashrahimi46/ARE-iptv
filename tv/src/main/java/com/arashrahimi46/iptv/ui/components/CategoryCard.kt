@@ -35,6 +35,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** Content kind, drives the folder icon/watermark (CategoryCard.jsx `kind`) and the localized
  * count-unit string ("%1$d channels" etc.) shown under the name. */
@@ -76,10 +77,10 @@ fun AreCategoryCard(
         modifier = modifier.width(width).aspectRatio(if (compact) 16f / 7f else 16f / 10f),
         interactionSource = interactionSource,
         shape = shape,
-        // surface2 (#F7F9FC) vanished on bgBase (#F3F5F9) in light theme. surface1 (raised
-        // white) + a border reads as a distinct card in both themes, focused or not.
-        backgroundColor = colors.surface1,
-        borderColor = colors.borderDefault,
+        // Glass fill + lit-edge gradient reads as a distinct card in both themes (the gradient's
+        // dark bottom stop supplies the light-theme edge the fill can't).
+        backgroundColor = colors.surfaceGlass,
+        borderBrush = glassBorderBrush(),
     ) { _, _ ->
       Box(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxSize().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {

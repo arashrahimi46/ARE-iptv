@@ -42,6 +42,7 @@ import coil.compose.AsyncImagePainter
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
  * ChannelTile — logo-first live-TV tile (ChannelTile.jsx). IPTV providers
@@ -92,10 +93,10 @@ fun AreChannelTile(
         modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width)),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = colors.surface2,
-        // surface1/surface2 fills are near-white on the off-white light-theme page -- a border
-        // gives the unfocused tile a distinct edge.
-        borderColor = colors.borderDefault,
+        backgroundColor = colors.surfaceGlass,
+        // The lit-edge gradient gives the unfocused tile a distinct edge on the off-white
+        // light-theme page (replacing the old solid border).
+        borderBrush = glassBorderBrush(),
     ) { focused, _ ->
       Box(Modifier.fillMaxWidth().clip(shape)) {
         // Clip the content to the tile shape so the info panel's square surface1 background
@@ -187,7 +188,7 @@ fun AreChannelTile(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colors.surface1)
+                    .background(colors.surfaceGlass)
                     .padding(top = 12.dp, start = 12.dp, end = 12.dp, bottom = 11.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

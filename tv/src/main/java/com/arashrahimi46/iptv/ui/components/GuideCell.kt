@@ -32,6 +32,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
  * GuideCell — one program block in the EPG grid (GuideCell.jsx). Width is set
@@ -59,7 +60,7 @@ fun AreGuideCell(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
-    val background = if (now) colors.accentWash else colors.surface1
+    val background = if (now) colors.accentWash else colors.surfaceGlass
     val focused by interactionSource.collectIsFocusedAsState()
     LaunchedEffect(focused) { onFocusChange(focused) }
     val liveDesc = stringResource(R.string.badge_live)
@@ -75,7 +76,8 @@ fun AreGuideCell(
         // light-theme surface (borderless white-on-white merged into one flat sheet); the
         // now-playing cell keeps its accent-tinted fill + accent edge bar and takes a matching
         // accent border so the "on now" block stays the clear focal point.
-        borderColor = if (now) colors.accent else colors.borderDefault,
+        borderColor = if (now) colors.accent else null,
+        borderBrush = if (now) null else glassBorderBrush(),
     ) { _, _ ->
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
             if (now) {

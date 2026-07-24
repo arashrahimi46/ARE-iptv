@@ -47,6 +47,7 @@ import coil.compose.AsyncImagePainter
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
  * PosterTile — portrait VOD tile for movies/series (PosterTile.jsx). Loads
@@ -110,7 +111,8 @@ fun ArePosterTile(
                 .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
             interactionSource = interactionSource,
             shape = shape,
-            backgroundColor = colors.surface3,
+            backgroundColor = colors.surfaceGlass,
+            borderBrush = glassBorderBrush(),
             onLongClick = if (obscured) null else onLongClick,
         ) { _, _ ->
           Box(Modifier.fillMaxSize()) {
