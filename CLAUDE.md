@@ -372,6 +372,10 @@ Agreed-but-not-yet-built feature designs live in `docs/*-v1-design.md` (locked-d
 resilience/variance notes, component/file map, phasing). Read the relevant one BEFORE building that
 feature — decisions there were made deliberately; don't relitigate them.
 
+- `docs/glass-redesign-v1-design.md` — **Glass Design** initiative: one translucent "glass" surface
+  language across the whole app (HUD, sidebar, buttons, cards, tabs, badges, Settings, dialogs). Surface/
+  material pass — not a re-layout. Companion visual pitch + build sheet: `docs/glass-redesign-v1.html`. Not
+  yet implemented; HUD layout + tab style are open decisions.
 - `docs/recording-v1-design.md` — Live TV recording (record-now, tee-based). **Implemented.**
 - `docs/stalker-portal-v1-design.md` — **Stalker Portal / Ministra** as a third source type
   (live + VOD + series). Not yet built; sequenced behind catch-up. Key shape: a stateful
