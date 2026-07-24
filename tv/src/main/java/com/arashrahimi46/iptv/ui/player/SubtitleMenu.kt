@@ -237,6 +237,38 @@ fun AudioTrackMenuDialog(
     }
 }
 
+/** Preset playback rates offered in the speed picker; 1.0× is the default. */
+val PLAYBACK_SPEEDS: List<Float> = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
+
+/** Renders a rate as a clean label, trimming a trailing ".0" so 1.0× reads "1×", not "1.0×". */
+fun formatPlaybackSpeed(rate: Float): String {
+    val text = if (rate == rate.toLong().toFloat()) rate.toLong().toString() else rate.toString()
+    return "$text×"
+}
+
+/**
+ * Playback-speed picker shown from the player HUD's speed button (VOD/recordings only). Lists the
+ * preset rates; the active one carries a check. Same Dialog/[AreDialog] shell as the audio-track
+ * picker so it traps D-pad focus and Back dismisses. Session-local -- resets to 1.0× per stream.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun PlaybackSpeedMenuDialog(
+    current: Float,
+    onDismiss: () -> Unit,
+    onSelect: (Float) -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(onDismiss = onDismiss, title = stringResource(R.string.player_playback_speed), width = 420.dp) {
+            Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+                PLAYBACK_SPEEDS.forEach { rate ->
+                    SubtitleRow(label = formatPlaybackSpeed(rate), selected = rate == current) { onSelect(rate) }
+                }
+            }
+        }
+    }
+}
+
 /**
  * Subtitle picker shown from the player HUD's CC button. Lists **Off** plus every embedded text
  * track; the active one carries a check. Same Dialog/[AreDialog] pattern as the up-next panel so it

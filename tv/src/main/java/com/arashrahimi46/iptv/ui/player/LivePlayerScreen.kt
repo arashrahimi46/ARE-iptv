@@ -466,6 +466,10 @@ fun LivePlayerScreen(
             val audioTracks = remember(tracks) { audioTracksFrom(tracks) }
             var audioChoice by remember(media.streamUrl) { mutableStateOf<AudioTrack?>(null) }
             var showAudio by remember { mutableStateOf(false) }
+            // Playback-speed state, reset per stream (session-local, not persisted): the active rate
+            // and whether the picker is open. VOD/recordings only -- the HUD hides it on live.
+            var playbackSpeed by remember(media.streamUrl) { mutableStateOf(1f) }
+            var showSpeed by remember { mutableStateOf(false) }
             // Language sniffed from the selected track's rendered text (rowKey -> language), for
             // tracks the container left untagged. Reset per stream. Read live in the cue listener.
             val detectedLangs = remember(media.streamUrl) { mutableStateMapOf<String, String>() }
@@ -733,6 +737,11 @@ fun LivePlayerScreen(
                 exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
                     .withSubtitle(subtitleChoice)
                     .withAudioTrack(audioChoice)
+            }
+            // Apply the playback speed to the player. Re-runs on a player rebuild (retry/channel
+            // switch) so the chosen rate survives, and when the user changes it.
+            LaunchedEffect(exoPlayer, playbackSpeed) {
+                exoPlayer.setPlaybackSpeed(playbackSpeed)
             }
 
             // Sideload downloaded subtitles by re-setting the MediaItem with them attached, seeking
@@ -1015,6 +1024,14 @@ fun LivePlayerScreen(
                             null
                         },
                         audioTrackActive = audioChoice != null,
+                        // Playback speed: VOD/recordings only (hidden on live). Show the active rate on
+                        // the button face only when it's non-default.
+                        onPlaybackSpeed = if (!media.isLive) {
+                            { showSpeed = true }
+                        } else {
+                            null
+                        },
+                        playbackSpeedLabel = if (playbackSpeed != 1f) formatPlaybackSpeed(playbackSpeed) else null,
                         // Aspect ratio: cycle Fit -> Fill -> Stretch, persist, and toast the new mode.
                         onAspectRatio = {
                             val next = aspectMode.next()
@@ -1075,6 +1092,13 @@ fun LivePlayerScreen(
                 )
             }
 
+            if (showSpeed) {
+                PlaybackSpeedMenuDialog(
+                    current = playbackSpeed,
+                    onDismiss = { showSpeed = false },
+                    onSelect = { playbackSpeed = it; showSpeed = false },
+                )
+            }
             if (showAudio) {
                 AudioTrackMenuDialog(
                     tracks = audioTracks,

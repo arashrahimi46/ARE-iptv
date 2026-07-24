@@ -356,6 +356,7 @@
     <string name="player_audio_track">Audiospoor</string>
     <string name="player_subtitles">Ondertiteling</string>
     <string name="player_aspect_ratio">Beeldverhouding</string>
+    <string name="player_playback_speed">Afspeelsnelheid</string>
     <string name="player_aspect_fit">Passend</string>
     <string name="player_aspect_fill">Vullen</string>
     <string name="player_aspect_stretch">Uitrekken</string>

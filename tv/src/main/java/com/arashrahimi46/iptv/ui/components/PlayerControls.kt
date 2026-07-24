@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.PictureInPicture
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -119,6 +120,10 @@ fun ArePlayerControls(
     audioTrackActive: Boolean = false,
     /** Cycles the video aspect/resize mode (Fit -> Fill -> Stretch); null keeps a dimmed placeholder. */
     onAspectRatio: (() -> Unit)? = null,
+    /** Opens the playback-speed picker (VOD/recordings only); null hides the button (e.g. live). */
+    onPlaybackSpeed: (() -> Unit)? = null,
+    /** The active rate rendered on the speed button face (e.g. "1.5×"); null shows the generic label. */
+    playbackSpeedLabel: String? = null,
     /** Live TV Recording (V1): toggles record for the current channel. Null => the stream isn't
      * recordable (non-`.ts`) -> a dimmed placeholder with a "not supported" hint. */
     onToggleRecord: (() -> Unit)? = null,
@@ -293,6 +298,17 @@ fun ArePlayerControls(
                 }
             }
             Box(Modifier.weight(1f))
+            // Playback speed: VOD/recordings only (null on live -> not rendered). The button face
+            // shows the active rate (playbackSpeedLabel) once it's non-default, else a generic label.
+            if (onPlaybackSpeed != null) {
+                AreIconButton(
+                    Icons.Filled.Speed,
+                    playbackSpeedLabel ?: stringResource(R.string.player_playback_speed),
+                    onClick = onPlaybackSpeed,
+                    variant = AreIconButtonVariant.Glass,
+                    active = playbackSpeedLabel != null,
+                )
+            }
             // Aspect ratio: cycles Fit -> Fill -> Stretch on press (a toast names each). Dimmed
             // placeholder until the player is ready to report/apply a mode.
             if (onAspectRatio != null) {

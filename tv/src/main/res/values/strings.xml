@@ -392,6 +392,7 @@
     <string name="player_audio_track">Audio track</string>
     <string name="player_subtitles">Subtitles</string>
     <string name="player_aspect_ratio">Aspect ratio</string>
+    <string name="player_playback_speed">Playback speed</string>
     <string name="player_aspect_fit">Fit</string>
     <string name="player_aspect_fill">Fill</string>
     <string name="player_aspect_stretch">Stretch</string>

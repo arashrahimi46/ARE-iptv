@@ -356,6 +356,7 @@
     <string name="player_audio_track">Ljudspår</string>
     <string name="player_subtitles">Undertexter</string>
     <string name="player_aspect_ratio">Bildformat</string>
+    <string name="player_playback_speed">Uppspelningshastighet</string>
     <string name="player_aspect_fit">Anpassa</string>
     <string name="player_aspect_fill">Fyll</string>
     <string name="player_aspect_stretch">Sträck ut</string>

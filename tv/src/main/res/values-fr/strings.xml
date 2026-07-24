@@ -356,6 +356,7 @@
     <string name="player_audio_track">Piste audio</string>
     <string name="player_subtitles">Sous-titres</string>
     <string name="player_aspect_ratio">Format d\'image</string>
+    <string name="player_playback_speed">Vitesse de lecture</string>
     <string name="player_aspect_fit">Ajuster</string>
     <string name="player_aspect_fill">Remplir</string>
     <string name="player_aspect_stretch">Étirer</string>

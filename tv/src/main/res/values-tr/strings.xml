@@ -356,6 +356,7 @@
     <string name="player_audio_track">Ses parçası</string>
     <string name="player_subtitles">Altyazılar</string>
     <string name="player_aspect_ratio">En boy oranı</string>
+    <string name="player_playback_speed">Oynatma hızı</string>
     <string name="player_aspect_fit">Sığdır</string>
     <string name="player_aspect_fill">Doldur</string>
     <string name="player_aspect_stretch">Uzat</string>

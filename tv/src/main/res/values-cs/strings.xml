@@ -356,6 +356,7 @@
     <string name="player_audio_track">Zvuková stopa</string>
     <string name="player_subtitles">Titulky</string>
     <string name="player_aspect_ratio">Poměr stran</string>
+    <string name="player_playback_speed">Rychlost přehrávání</string>
     <string name="player_aspect_fit">Přizpůsobit</string>
     <string name="player_aspect_fill">Vyplnit</string>
     <string name="player_aspect_stretch">Roztáhnout</string>

@@ -356,6 +356,7 @@
     <string name="player_audio_track">Ääniraita</string>
     <string name="player_subtitles">Tekstitykset</string>
     <string name="player_aspect_ratio">Kuvasuhde</string>
+    <string name="player_playback_speed">Toistonopeus</string>
     <string name="player_aspect_fit">Sovita</string>
     <string name="player_aspect_fill">Täytä</string>
     <string name="player_aspect_stretch">Venytä</string>
