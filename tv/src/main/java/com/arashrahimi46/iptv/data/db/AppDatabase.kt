@@ -59,7 +59,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Recording::class,
         DirectStream::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -287,13 +287,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v11 -> v12: catch-up / archive (docs/catchup-v1-design.md). Adds three columns to `channels`:
+         * `catchupDays` (0 = no archive; >0 = window length, which drives both capability and the guide
+         * catch-up glyph) plus the M3U-only `catchupSource`/`catchupType` template fields. Plain additive
+         * ADD COLUMNs -- an existing catalog is preserved and simply reads as "no archive" (catchupDays 0)
+         * until the next refresh repopulates the columns from the provider.
+         */
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `channels` ADD COLUMN `catchupDays` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE `channels` ADD COLUMN `catchupSource` TEXT")
+                db.execSQL("ALTER TABLE `channels` ADD COLUMN `catchupType` TEXT")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                     .build().also { instance = it }
             }
     }

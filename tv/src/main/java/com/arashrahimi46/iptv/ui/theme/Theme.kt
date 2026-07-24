@@ -14,6 +14,10 @@ val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
 val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
 val LocalAreIptvSpacing = staticCompositionLocalOf { AreIptvSpacingDefault }
 val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
+/** Effective dark/light state after resolving ThemeMode.SYSTEM against the device. Read this
+ * (via [AreIptvTheme.isDark]) instead of the stored theme pref when a component needs to know which
+ * mode is actually on screen (e.g. the per-mode accent picker). */
+val LocalThemeIsDark = staticCompositionLocalOf { true }
 
 /**
  * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /
@@ -35,6 +39,10 @@ object AreIptvTheme {
 
     val motion: AreIptvMotion
         @Composable get() = LocalAreIptvMotion.current
+
+    /** Effective dark/light state on screen (ThemeMode.SYSTEM already resolved). */
+    val isDark: Boolean
+        @Composable get() = LocalThemeIsDark.current
 }
 
 /**
@@ -113,6 +121,7 @@ fun AreIptvTheme(
         LocalAreIptvRadius provides AreIptvRadiusDefault,
         LocalAreIptvMotion provides motion,
         LocalReducedMotion provides reducedMotion,
+        LocalThemeIsDark provides isDark,
     ) {
         MaterialTheme(
             colorScheme = tvColorScheme,

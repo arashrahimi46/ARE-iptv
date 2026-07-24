@@ -1,124 +1,62 @@
 package com.arashrahimi46.iptv.ui.settings
 
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ClosedCaption
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Feedback
-import androidx.compose.material.icons.filled.FiberManualRecord
-import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.ViewAgenda
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.OpenWith
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.foundation.focusGroup
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import android.content.Intent
-import android.net.Uri
-import com.arashrahimi46.iptv.BuildConfig
 import com.arashrahimi46.iptv.R
-import com.arashrahimi46.iptv.data.model.SourceType
-import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
-import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
-import com.arashrahimi46.iptv.ui.components.AreDialog
-import com.arashrahimi46.iptv.ui.components.AreLanguageOptions
-import com.arashrahimi46.iptv.ui.components.AreLanguageSelector
-import com.arashrahimi46.iptv.ui.components.AreSwitch
-import com.arashrahimi46.iptv.ui.components.AreTextField
-import com.arashrahimi46.iptv.ui.language.localizedConfirmCopy
-import com.arashrahimi46.iptv.ui.player.SUBTITLE_LANGUAGES
-import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import kotlinx.coroutines.launch
 
 /**
- * Real Settings screen (Settings.jsx). Every control here persists through
- * [SettingsViewModel] -> [com.arashrahimi46.iptv.data.settings.UserSettings]'
- * DataStore. Theme and reduced-motion take visible effect immediately because
- * [com.arashrahimi46.iptv.MainActivity] reads those same DataStore flows at
- * the composition root and feeds them straight into
- * [com.arashrahimi46.iptv.ui.theme.AreIptvTheme] -- there is no separate
- * "restart to apply" step. Hardware decoding and autoplay-next-episode are
- * real preferences read by [com.arashrahimi46.iptv.ui.player.LivePlayerScreen]
- * and (persisted only, no auto-advance wiring yet -- see report)
- * [com.arashrahimi46.iptv.ui.detail.DetailScreen] respectively.
- * Picture-in-picture is storage-only by explicit product-lead scoping (see
- * the toggle's own comment below) -- no enter-PiP-mode code was added.
+ * Real Settings screen. Every control persists through [SettingsViewModel] ->
+ * [com.arashrahimi46.iptv.data.settings.UserSettings]' DataStore, read live at each consumer so
+ * changes apply without a restart (Language is the documented exception -- Activity recreate).
  *
- * Parental lock gates the *toggle itself* rather than individual titles: the
- * schema has no per-title "mature" flag yet (a real gate-a-title feature
- * needs a schema addition), so once a PIN is set, turning the lock back OFF
- * requires re-entering it -- a real, if simple, security-meaningful gate for v1.
- *
- * The "Playlists & sync" / "About & support" sections from Settings.jsx are
- * out of scope for this phase (no multi-playlist management, no backup/export,
- * no store rating/licenses infra) and are intentionally not built here. Same
- * reason [com.arashrahimi46.iptv.ui.shell.AreTopBar]'s "Add playlist" glyph is
- * a static icon, not a real button -- see that file's comment.
- *
- * Round 1 multi-language support: the Language row lets the user re-open the same
- * [AreLanguageSelector] used on first run. Picking a DIFFERENT language than the current one
- * shows a confirmation modal phrased in the TARGET language (via [localizedConfirmCopy]) before
- * applying -- confirm applies the locale (`AppCompatDelegate.setApplicationLocales`, an Activity
- * recreate is expected) and persists it; cancel leaves the picker showing the still-current
- * language (it was never changed until confirm).
+ * The screen is organized into a horizontal [SettingsTab] strip; only the selected tab's pane
+ * composes. Each pane (see SettingsPanes.kt) owns its own local state and dialogs and reads the
+ * shared [SettingsViewModel] flows, so the shell here stays thin.
  */
-@OptIn(ExperimentalComposeUiApi::class)
+
+/** Top-level Settings tabs (the horizontal strip). Order = left-to-right on screen. */
+enum class SettingsTab(val labelRes: Int) {
+    GENERAL(R.string.settings_tab_general),
+    DISPLAY(R.string.settings_tab_display),
+    PLAYBACK(R.string.settings_tab_playback),
+    SUBTITLES(R.string.settings_tab_subtitles),
+    PARENTAL(R.string.settings_tab_parental),
+    ABOUT(R.string.settings_tab_about),
+}
+
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -127,698 +65,56 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     )
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
-    val scope = rememberCoroutineScope()
+    // rememberSaveable so the chosen tab survives the screen pausing while the player is on top.
+    var selectedTab by rememberSaveable { mutableStateOf(SettingsTab.GENERAL) }
 
-    val isDarkTheme by viewModel.isDarkTheme.collectAsState()
-    val activeAccent by viewModel.activeAccent.collectAsState()
-    val isReducedMotion by viewModel.isReducedMotion.collectAsState()
-    val isHardwareDecoding by viewModel.isHardwareDecoding.collectAsState()
-    val isAutoplayNextEpisode by viewModel.isAutoplayNextEpisode.collectAsState()
-    val isBrowseListMode by viewModel.isBrowseListMode.collectAsState()
-    val isAnalyticsEnabled by viewModel.isAnalyticsEnabled.collectAsState()
-    val isRecordingIndicatorEnabled by viewModel.isRecordingIndicatorEnabled.collectAsState()
-    val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
-    val isParentalLockEnabled by viewModel.isParentalLockEnabled.collectAsState()
-    // null = the PIN state hasn't loaded from DataStore yet. Until it resolves the PIN row and
-    // lock toggle are disabled, so a fast tap during that window can't route to a no-verify
-    // SetOnly / SetThenEnable flow and clobber an existing PIN.
-    val hasPinSet by viewModel.hasPinSet.collectAsState()
-    val pinLoaded = hasPinSet != null
-    val hasPin = hasPinSet == true
-
-    val subtitleLanguage by viewModel.subtitleLanguage.collectAsState()
-    val languageTag by viewModel.languageTag.collectAsState()
-    // Different-language pick pending confirmation (see class doc); null = no dialog open.
-    var pendingLanguage by remember { mutableStateOf<String?>(null) }
-    // Change-button modals for the app-language and subtitle-language pickers.
-    var showLanguagePicker by remember { mutableStateOf(false) }
-    var showSubtitlePicker by remember { mutableStateOf(false) }
-    val openSubsCredential by viewModel.openSubsCredential.collectAsState()
-    val subsValidation by viewModel.subsValidation.collectAsState()
-    val openSubsUsername by viewModel.openSubsUsername.collectAsState()
-    val subsLogin by viewModel.subsLogin.collectAsState()
-    var subsKeyInput by remember { mutableStateOf("") }
-    var subsUserInput by remember { mutableStateOf("") }
-    var subsPassInput by remember { mutableStateOf("") }
-
-    val omdbKey by viewModel.omdbKey.collectAsState()
-    val omdbValidation by viewModel.omdbValidation.collectAsState()
-    var omdbKeyInput by remember { mutableStateOf("") }
-
-    val activeSource by viewModel.activeSource.collectAsState()
-    val providerInfo by viewModel.providerInfo.collectAsState()
-    val stalkerInfo by viewModel.stalkerInfo.collectAsState()
-    val refreshState by viewModel.refreshState.collectAsState()
-
-    var pinDialog by remember { mutableStateOf<PinFlow?>(null) }
-    var showFeedback by remember { mutableStateOf(false) }
-
-    // Settings owns a LazyColumn so only the on-screen sections compose/draw -- far smoother scroll
-    // than the old single eager Column that laid out every section (incl. the long subtitle-chip row
-    // and the API-key text fields) up front. The caller must therefore hand this a bounded height
-    // (FullSizeTab, NOT ScrollableTab -- a LazyColumn can't nest inside another verticalScroll).
-    val refreshingText = stringResource(R.string.settings_refreshing)
-    val neverRefreshedText = stringResource(R.string.settings_never_refreshed)
-    val syncingSuffix = stringResource(R.string.settings_refresh_syncing)
-    val staleSuffix = stringResource(R.string.settings_refresh_stale)
-    // Arrow-right from the sidebar must land on the FIRST control (Refresh now), not whichever row
-    // happens to sit at the sidebar icon's height. focusRestorer's fallback only fires when THIS group
-    // is entered without a target, but the shell's directional search resolves straight to the nearest
-    // focusable (Dark theme) and never consults it. focusProperties{enter} intercepts every entry into
-    // this focus group and redirects it -- so it wins over the directional pick.
-    val topFocus = remember { FocusRequester() }
-    // vertical inset via contentPadding (NOT modifier .padding): with modifier padding the list's clip
-    // edge lands exactly on the first item's top and shears the big display title's glyph tops. As
-    // contentPadding the clip edge sits above the first item, so the title's ascenders have room.
-    LazyColumn(
-        modifier = modifier.fillMaxSize().focusProperties { enter = { topFocus } }.focusGroup().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
-        contentPadding = PaddingValues(vertical = spacing.sp6),
+    Column(
+        modifier = modifier.fillMaxSize().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
     ) {
-        item {
-            Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
-            Box(Modifier.padding(top = spacing.sp8))
+        Box(Modifier.padding(top = spacing.sp6))
+        Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+        Box(Modifier.padding(top = spacing.sp5))
+        SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
+        Box(Modifier.padding(top = spacing.sp5))
+        // Each pane is its own LazyColumn (only the visible tab composes/draws) and claims the
+        // remaining height via weight(1f) -- a valid bounded height for the lazy layout.
+        when (selectedTab) {
+            SettingsTab.GENERAL -> GeneralPane(viewModel, Modifier.weight(1f))
+            SettingsTab.DISPLAY -> DisplayPane(viewModel, Modifier.weight(1f))
+            SettingsTab.PLAYBACK -> PlaybackPane(viewModel, Modifier.weight(1f))
+            SettingsTab.SUBTITLES -> SubtitlesPane(viewModel, Modifier.weight(1f))
+            SettingsTab.PARENTAL -> ParentalPane(viewModel, Modifier.weight(1f))
+            SettingsTab.ABOUT -> AboutPane(viewModel, Modifier.weight(1f))
         }
+    }
+}
 
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_playlists)) {
-            val refreshing = refreshState is RefreshState.Refreshing
-            val stale = activeSource?.lastRefreshedAtMs.isStale()
-            val lastUpdatedText = lastUpdatedLabel(activeSource?.lastRefreshedAtMs, neverRefreshedText)
-            SettingsRow(
-                icon = Icons.Filled.Refresh,
-                title = stringResource(R.string.settings_refresh_catalog),
-                desc = buildString {
-                    append(lastUpdatedText)
-                    when (val r = refreshState) {
-                        is RefreshState.Refreshing -> append(" · $syncingSuffix")
-                        is RefreshState.Success -> append(" · " + stringResource(R.string.settings_refresh_success, r.channels, r.movies, r.series))
-                        is RefreshState.Error -> append(" · ${r.message}")
-                        RefreshState.Idle -> if (stale) append(" · $staleSuffix")
-                    }
-                },
-            ) {
-                AreButton(
-                    modifier = Modifier.focusRequester(topFocus),
-                    text = if (refreshing) refreshingText else stringResource(R.string.settings_refresh_now),
-                    onClick = { viewModel.refresh() },
-                    disabled = refreshing || activeSource == null,
-                    variant = if (stale) AreButtonVariant.Primary else AreButtonVariant.Secondary,
-                    size = AreButtonSize.Small,
-                )
-            }
-        }
-        }
-
-        // Provider account panel -- Xtream and Stalker carry account metadata; M3U playlists don't.
-        if (activeSource?.type == SourceType.XTREAM) {
-            item {
-                SettingsSection(title = stringResource(R.string.settings_section_provider)) {
-                    ProviderPanel(info = providerInfo)
-                }
-            }
-        }
-        if (activeSource?.type == SourceType.STALKER) {
-            item {
-                SettingsSection(title = stringResource(R.string.settings_section_provider)) {
-                    StalkerProviderPanel(info = stalkerInfo)
-                }
-            }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
-            SettingsRow(
-                icon = Icons.Filled.Brightness4,
-                title = stringResource(R.string.settings_dark_theme),
-                desc = stringResource(R.string.settings_dark_theme_desc),
-            ) {
-                AreSwitch(checked = isDarkTheme, onCheckedChange = viewModel::setDarkTheme)
-            }
-            // Accent picker edits the accent for whichever mode is currently active (per-mode: dark
-            // and light are stored independently). Switch the toggle above to set the other mode's.
-            AccentPickerBlock(
-                selected = activeAccent,
-                isDark = isDarkTheme,
-                onSelect = viewModel::setActiveAccent,
+/** Horizontal tab strip -- a focus group of accent-ring chips (TvFocusable via [AreChip]). */
+@Composable
+private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).focusGroup(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        SettingsTab.entries.forEach { tab ->
+            AreChip(
+                text = stringResource(tab.labelRes),
+                selected = tab == selected,
+                onClick = { onSelect(tab) },
             )
-            SettingsRow(icon = Icons.Filled.Bolt, title = stringResource(R.string.settings_reduce_motion), desc = stringResource(R.string.settings_reduce_motion_desc)) {
-                AreSwitch(checked = isReducedMotion, onCheckedChange = viewModel::setReducedMotion)
-            }
-            SettingsRow(
-                icon = Icons.Filled.ViewAgenda,
-                title = stringResource(R.string.settings_list_view),
-                desc = stringResource(R.string.settings_list_view_desc),
-            ) {
-                AreSwitch(checked = isBrowseListMode, onCheckedChange = viewModel::setBrowseListMode)
-            }
-        }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_language)) {
-            SettingsRow(
-                icon = Icons.Filled.Language,
-                title = stringResource(R.string.settings_language_row_title),
-                desc = stringResource(R.string.settings_language_row_desc),
-            ) {
-                SelectionChangeControl(
-                    current = AreLanguageOptions.firstOrNull { it.tag.equals(languageTag, ignoreCase = true) }
-                        ?.let { stringResource(it.nativeNameRes) } ?: languageTag,
-                    onChange = { showLanguagePicker = true },
-                )
-            }
-        }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_playback)) {
-            SettingsRow(
-                icon = Icons.Filled.HighQuality,
-                title = stringResource(R.string.settings_hardware_decoding),
-                desc = stringResource(R.string.settings_hardware_decoding_desc),
-            ) {
-                AreSwitch(checked = isHardwareDecoding, onCheckedChange = viewModel::setHardwareDecoding)
-            }
-            SettingsRow(
-                icon = Icons.Filled.SkipNext,
-                title = stringResource(R.string.settings_autoplay_next),
-                desc = stringResource(R.string.settings_autoplay_next_desc),
-            ) {
-                AreSwitch(checked = isAutoplayNextEpisode, onCheckedChange = viewModel::setAutoplayNextEpisode)
-            }
-            SettingsRow(
-                icon = Icons.Filled.OpenWith,
-                title = stringResource(R.string.settings_mini_player_behavior),
-                desc = stringResource(R.string.settings_mini_player_behavior_desc),
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MiniPlayerBehavior.entries.forEach { choice ->
-                        AreChip(
-                            text = choice.label(),
-                            selected = choice == miniPlayerBehavior,
-                            onClick = { viewModel.setMiniPlayerBehavior(choice) },
-                            size = com.arashrahimi46.iptv.ui.components.AreChipSize.Small,
-                        )
-                    }
-                }
-            }
-            SettingsRow(
-                icon = Icons.Filled.FiberManualRecord,
-                title = stringResource(R.string.settings_recording_indicator_title),
-                desc = stringResource(R.string.settings_recording_indicator_desc),
-            ) {
-                AreSwitch(checked = isRecordingIndicatorEnabled, onCheckedChange = viewModel::setRecordingIndicatorEnabled)
-            }
-        }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_parental)) {
-            SettingsRow(
-                icon = Icons.Filled.Lock,
-                title = stringResource(R.string.settings_lock_adult),
-                desc = stringResource(R.string.settings_lock_adult_desc),
-            ) {
-                AreSwitch(
-                    checked = isParentalLockEnabled,
-                    disabled = !pinLoaded,
-                    onCheckedChange = { turnOn ->
-                        if (turnOn) {
-                            if (hasPin) {
-                                viewModel.setParentalLockEnabled(true)
-                            } else {
-                                pinDialog = PinFlow.SetThenEnable
-                            }
-                        } else {
-                            pinDialog = PinFlow.VerifyThenDisable
-                        }
-                    },
-                )
-            }
-            SettingsRow(
-                icon = Icons.Filled.VpnKey,
-                title = stringResource(R.string.settings_change_pin),
-                desc = when {
-                    !pinLoaded -> stringResource(R.string.settings_pin_loading)
-                    hasPin -> stringResource(R.string.settings_pin_is_set)
-                    else -> stringResource(R.string.settings_pin_not_set)
-                },
-            ) {
-                AreButton(
-                    text = if (hasPin) stringResource(R.string.settings_change) else stringResource(R.string.settings_set_pin),
-                    onClick = { pinDialog = if (hasPin) PinFlow.VerifyThenChange else PinFlow.SetOnly },
-                    disabled = !pinLoaded,
-                    variant = AreButtonVariant.Secondary,
-                    size = AreButtonSize.Small,
-                )
-            }
-        }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_subtitles)) {
-            SettingsRow(
-                icon = Icons.Filled.ClosedCaption,
-                title = stringResource(R.string.settings_subtitle_lang_title),
-                desc = stringResource(R.string.settings_subtitle_lang_desc),
-            ) {
-                SelectionChangeControl(
-                    current = SUBTITLE_LANGUAGES.firstOrNull { it.first == subtitleLanguage }?.second ?: subtitleLanguage,
-                    onChange = { showSubtitlePicker = true },
-                )
-            }
-            if (openSubsCredential != null) {
-                SettingsRow(
-                    icon = Icons.Filled.ClosedCaption,
-                    title = stringResource(R.string.settings_opensubs_title),
-                    desc = if (openSubsUsername != null) {
-                        stringResource(R.string.settings_opensubs_ready)
-                    } else {
-                        stringResource(R.string.settings_opensubs_key_connected)
-                    },
-                ) {
-                    AreButton(
-                        text = stringResource(R.string.action_disconnect),
-                        onClick = {
-                            viewModel.disconnectOpenSubs()
-                            subsKeyInput = ""
-                            subsUserInput = ""
-                            subsPassInput = ""
-                        },
-                        variant = AreButtonVariant.Secondary,
-                        size = AreButtonSize.Small,
-                    )
-                }
-                if (openSubsUsername != null) {
-                    SettingsRow(
-                        icon = Icons.Filled.Person,
-                        title = stringResource(R.string.settings_account),
-                        desc = stringResource(R.string.settings_account_signed_in, openSubsUsername ?: ""),
-                    ) {
-                        AreButton(
-                            text = stringResource(R.string.action_sign_out),
-                            onClick = { viewModel.signOutOpenSubs() },
-                            variant = AreButtonVariant.Secondary,
-                            size = AreButtonSize.Small,
-                        )
-                    }
-                } else {
-                    val signingIn = subsLogin is SubsValidation.Validating
-                    val loginError = (subsLogin as? SubsValidation.Error)?.message
-                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
-                        Text(text = stringResource(R.string.settings_signin_title), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-                        Box(Modifier.padding(top = 4.dp))
-                        Text(
-                            text = stringResource(R.string.settings_signin_desc),
-                            style = AreIptvTheme.typography.caption,
-                            color = colors.textTertiary,
-                        )
-                        Box(Modifier.padding(top = 12.dp))
-                        AreTextField(
-                            value = subsUserInput,
-                            onValueChange = { subsUserInput = it },
-                            placeholder = stringResource(R.string.settings_placeholder_username),
-                            icon = Icons.Filled.Person,
-                            activateOnClick = true,
-                        )
-                        Box(Modifier.padding(top = 10.dp))
-                        AreTextField(
-                            value = subsPassInput,
-                            onValueChange = { subsPassInput = it },
-                            placeholder = stringResource(R.string.settings_placeholder_password),
-                            masked = true,
-                            icon = Icons.Filled.Lock,
-                            error = loginError,
-                            activateOnClick = true,
-                        )
-                        Box(Modifier.padding(top = 12.dp))
-                        AreButton(
-                            text = if (signingIn) stringResource(R.string.settings_signing_in) else stringResource(R.string.action_sign_in),
-                            onClick = { viewModel.signInOpenSubs(subsUserInput, subsPassInput) },
-                            disabled = signingIn || subsUserInput.isBlank() || subsPassInput.isBlank(),
-                            variant = AreButtonVariant.Primary,
-                            size = AreButtonSize.Small,
-                        )
-                    }
-                }
-            } else {
-                val validating = subsValidation is SubsValidation.Validating
-                val errorMsg = (subsValidation as? SubsValidation.Error)?.message
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
-                    Text(text = stringResource(R.string.settings_opensubs_key_title), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-                    Box(Modifier.padding(top = 4.dp))
-                    Text(
-                        text = stringResource(R.string.settings_opensubs_key_desc),
-                        style = AreIptvTheme.typography.caption,
-                        color = colors.textTertiary,
-                    )
-                    Box(Modifier.padding(top = 12.dp))
-                    AreTextField(
-                        value = subsKeyInput,
-                        onValueChange = { subsKeyInput = it },
-                        placeholder = stringResource(R.string.settings_placeholder_api_key),
-                        mono = true,
-                        icon = Icons.Filled.VpnKey,
-                        error = errorMsg,
-                        activateOnClick = true,
-                    )
-                    Box(Modifier.padding(top = 12.dp))
-                    AreButton(
-                        text = if (validating) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
-                        onClick = { viewModel.connectOpenSubs(subsKeyInput) },
-                        disabled = validating || subsKeyInput.isBlank(),
-                        variant = AreButtonVariant.Primary,
-                        size = AreButtonSize.Small,
-                    )
-                }
-            }
-        }
-        }
-
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_metadata)) {
-            if (omdbKey != null) {
-                SettingsRow(
-                    icon = Icons.Filled.Star,
-                    title = stringResource(R.string.settings_omdb_title),
-                    desc = stringResource(R.string.settings_omdb_connected),
-                ) {
-                    AreButton(
-                        text = stringResource(R.string.action_disconnect),
-                        onClick = {
-                            viewModel.disconnectOmdb()
-                            omdbKeyInput = ""
-                        },
-                        variant = AreButtonVariant.Secondary,
-                        size = AreButtonSize.Small,
-                    )
-                }
-            } else {
-                val validatingOmdb = omdbValidation is OmdbValidation.Validating
-                val omdbError = (omdbValidation as? OmdbValidation.Error)?.message
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
-                    Text(text = stringResource(R.string.settings_omdb_key_title), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-                    Box(Modifier.padding(top = 4.dp))
-                    Text(
-                        text = stringResource(R.string.settings_omdb_key_desc),
-                        style = AreIptvTheme.typography.caption,
-                        color = colors.textTertiary,
-                    )
-                    Box(Modifier.padding(top = 12.dp))
-                    AreTextField(
-                        value = omdbKeyInput,
-                        onValueChange = { omdbKeyInput = it },
-                        placeholder = stringResource(R.string.settings_placeholder_api_key),
-                        mono = true,
-                        icon = Icons.Filled.VpnKey,
-                        error = omdbError,
-                        activateOnClick = true,
-                    )
-                    Box(Modifier.padding(top = 12.dp))
-                    AreButton(
-                        text = if (validatingOmdb) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
-                        onClick = { viewModel.connectOmdb(omdbKeyInput) },
-                        disabled = validatingOmdb || omdbKeyInput.isBlank(),
-                        variant = AreButtonVariant.Primary,
-                        size = AreButtonSize.Small,
-                    )
-                }
-            }
-        }
-        }
-
-        // Issue #11: About section -- app version + a donation link. Everything else under
-        // Settings.jsx's original "About & support" (store rating, licenses, etc.) is still out
-        // of scope, per this file's class doc.
-        item {
-        SettingsSection(title = stringResource(R.string.settings_section_about)) {
-            SettingsRow(icon = Icons.Filled.Info, title = stringResource(R.string.settings_version_title), desc = stringResource(R.string.settings_version_value, BuildConfig.VERSION_NAME)) {}
-            SettingsRow(
-                icon = Icons.Filled.Favorite,
-                title = stringResource(R.string.settings_support_title),
-                desc = stringResource(R.string.settings_support_desc),
-            ) {
-                AreButton(
-                    text = stringResource(R.string.action_buy_coffee),
-                    onClick = {
-                        // PLACEHOLDER URL -- set the real Buy Me a Coffee page (buymeacoffee.com/<name>).
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/change-me"))
-                        context.startActivity(intent)
-                    },
-                    variant = AreButtonVariant.Secondary,
-                    size = AreButtonSize.Small,
-                )
-            }
-            SettingsRow(
-                icon = Icons.Filled.Feedback,
-                title = stringResource(R.string.settings_feedback_title),
-                desc = stringResource(R.string.settings_feedback_desc),
-            ) {
-                AreButton(
-                    text = stringResource(R.string.settings_feedback_action),
-                    onClick = { showFeedback = true },
-                    variant = AreButtonVariant.Secondary,
-                    size = AreButtonSize.Small,
-                )
-            }
-            SettingsRow(
-                icon = Icons.Filled.Analytics,
-                title = stringResource(R.string.settings_analytics_title),
-                desc = stringResource(R.string.settings_analytics_desc),
-            ) {
-                AreSwitch(checked = isAnalyticsEnabled, onCheckedChange = viewModel::setAnalyticsEnabled)
-            }
-        }
-        }
-    }
-
-    // Feedback modal — rendered in a real Dialog window so D-pad focus is trapped (TV convention).
-    if (showFeedback) {
-        Dialog(onDismissRequest = { showFeedback = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            FeedbackDialog(onDismiss = { showFeedback = false })
-        }
-    }
-
-    when (val flow = pinDialog) {
-        PinFlow.SetThenEnable, PinFlow.SetOnly -> ParentalPinDialog(
-            mode = ParentalPinDialogMode.Set,
-            onDismiss = { pinDialog = null },
-            onPinConfirmed = { pin ->
-                viewModel.setPin(pin)
-                if (flow == PinFlow.SetThenEnable) viewModel.setParentalLockEnabled(true)
-                pinDialog = null
-            },
-        )
-        PinFlow.VerifyThenDisable -> ParentalPinDialog(
-            mode = ParentalPinDialogMode.Verify,
-            onDismiss = { pinDialog = null },
-            onVerify = viewModel::verifyPin,
-            onVerified = {
-                viewModel.setParentalLockEnabled(false)
-                pinDialog = null
-            },
-        )
-        PinFlow.VerifyThenChange -> ParentalPinDialog(
-            mode = ParentalPinDialogMode.Verify,
-            onDismiss = { pinDialog = null },
-            onVerify = viewModel::verifyPin,
-            onVerified = { pinDialog = PinFlow.SetOnly },
-        )
-        null -> Unit
-    }
-
-    // App-language picker (opened by the "Change" button). Picking a different language closes this
-    // and hands off to the confirm-in-target-language dialog below (pendingLanguage), unchanged.
-    if (showLanguagePicker) {
-        Dialog(onDismissRequest = { showLanguagePicker = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            AreDialog(onDismiss = { showLanguagePicker = false }, title = stringResource(R.string.settings_language_row_title)) {
-                AreLanguageSelector(
-                    selectedTag = languageTag,
-                    onSelect = { picked ->
-                        showLanguagePicker = false
-                        if (!picked.equals(languageTag, ignoreCase = true)) pendingLanguage = picked
-                    },
-                )
-            }
-        }
-    }
-
-    // Subtitle-language picker (opened by the "Change" button) -- persists immediately on pick.
-    if (showSubtitlePicker) {
-        Dialog(onDismissRequest = { showSubtitlePicker = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            AreDialog(onDismiss = { showSubtitlePicker = false }, title = stringResource(R.string.settings_subtitle_lang_title)) {
-                // Vertical gap must clear the focused chip's glow halo (~10dp past its edge) plus the
-                // 1.06x focus scale, or the focus glow bleeds onto the chip in the row below.
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    SUBTITLE_LANGUAGES.forEach { (code, name) ->
-                        AreChip(
-                            text = name,
-                            selected = code == subtitleLanguage,
-                            onClick = {
-                                viewModel.setSubtitleLanguage(code)
-                                showSubtitlePicker = false
-                            },
-                            size = com.arashrahimi46.iptv.ui.components.AreChipSize.Small,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // Language-switch confirmation, phrased in the TARGET language (see class doc). Cancel just
-    // closes the dialog -- the picker above was never changed, so it already shows the current
-    // language again with no extra revert step needed.
-    val targetLanguage = pendingLanguage
-    if (targetLanguage != null) {
-        val copy = remember(targetLanguage) { localizedConfirmCopy(context, targetLanguage) }
-        Dialog(onDismissRequest = { pendingLanguage = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            AreDialog(
-                onDismiss = { pendingLanguage = null },
-                title = copy.title,
-                actions = {
-                    AreButton(copy.cancel, onClick = { pendingLanguage = null }, variant = AreButtonVariant.Ghost)
-                    AreButton(
-                        copy.confirm,
-                        onClick = {
-                            scope.launch {
-                                viewModel.setLanguageTag(targetLanguage)
-                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(targetLanguage))
-                                pendingLanguage = null
-                            }
-                        },
-                        variant = AreButtonVariant.Primary,
-                    )
-                },
-            ) {}
         }
     }
 }
 
-/** A catalog is "stale" (nudge a refresh) once its last sync is older than this -- also the window
- * the sidebar Settings badge uses. Null (never refreshed / legacy row) counts as stale. */
-const val REFRESH_STALE_MS = 14L * 24 * 60 * 60 * 1000
+// ---------------------------------------------------------------------------------------------
+// Shared row primitives (used by every pane in SettingsPanes.kt) -- internal so panes can call
+// them across files. No new control primitives (design principle §2): rows compose the existing
+// AreSwitch/AreChip/AreButton in their `control` slot.
+// ---------------------------------------------------------------------------------------------
 
-/** True when [this] last-refresh timestamp is missing or older than [REFRESH_STALE_MS]. */
-fun Long?.isStale(): Boolean = this == null || System.currentTimeMillis() - this > REFRESH_STALE_MS
-
+/** Uppercased caption header + a surface1 rounded column -- the group container for each section. */
 @Composable
-private fun lastUpdatedLabel(ts: Long?, neverRefreshedText: String): String {
-    if (ts == null) return neverRefreshedText
-    val ago = System.currentTimeMillis() - ts
-    val days = ago / (24 * 60 * 60 * 1000)
-    val hours = ago / (60 * 60 * 1000)
-    val mins = ago / (60 * 1000)
-    return when {
-        days >= 1 -> if (days == 1L) stringResource(R.string.settings_last_updated_days, days) else stringResource(R.string.settings_last_updated_days_plural, days)
-        hours >= 1 -> if (hours == 1L) stringResource(R.string.settings_last_updated_hours, hours) else stringResource(R.string.settings_last_updated_hours_plural, hours)
-        mins >= 1 -> stringResource(R.string.settings_last_updated_mins, mins)
-        else -> stringResource(R.string.settings_last_updated_now)
-    }
-}
-
-/** Local dialog step -- not persisted, purely UI navigation for the PIN flow. */
-private enum class PinFlow { SetThenEnable, SetOnly, VerifyThenDisable, VerifyThenChange }
-
-/** Right-hand control shared by the app-language and subtitle-language rows: the current selection
- * as text, with a "Change" button that opens the picker modal. */
-@Composable
-private fun SelectionChangeControl(current: String, onChange: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(text = current, style = AreIptvTheme.typography.label, color = AreIptvTheme.colors.textSecondary)
-        AreButton(
-            text = stringResource(R.string.settings_change),
-            onClick = onChange,
-            variant = AreButtonVariant.Secondary,
-            size = AreButtonSize.Small,
-        )
-    }
-}
-
-/**
- * Full-width accent-color picker inside the Appearance section: a labelled block with a row of
- * preset swatches. Selecting one persists immediately for the active mode and recolors the whole
- * app live (every component reads [AreIptvTheme.colors.accent] / focusRing). The description
- * spells out the per-mode behaviour so the "why is there only one row" question answers itself.
- */
-@Composable
-private fun AccentPickerBlock(selected: AccentPreset, isDark: Boolean, onSelect: (AccentPreset) -> Unit) {
-    val colors = AreIptvTheme.colors
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp)) {
-        Text(text = stringResource(R.string.settings_accent_color), style = AreIptvTheme.typography.label, color = colors.textPrimary)
-        Box(Modifier.padding(top = 4.dp))
-        Text(
-            text = stringResource(
-                if (isDark) R.string.settings_accent_color_desc_dark else R.string.settings_accent_color_desc_light,
-            ),
-            style = AreIptvTheme.typography.caption,
-            color = colors.textTertiary,
-        )
-        Box(Modifier.padding(top = 16.dp))
-        // Gaps clear the focused swatch's glow halo + focus scale (same reasoning as the subtitle chips).
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            AccentPreset.entries.forEach { preset ->
-                AccentSwatch(
-                    preset = preset,
-                    isDark = isDark,
-                    selected = preset == selected,
-                    onSelect = { onSelect(preset) },
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-private fun AccentSwatch(preset: AccentPreset, isDark: Boolean, selected: Boolean, onSelect: () -> Unit) {
-    val colors = AreIptvTheme.colors
-    val swatchColor = preset.swatch(isDark)
-    val outerShape = RoundedCornerShape(AreIptvTheme.radius.md)
-    val fillShape = RoundedCornerShape(AreIptvTheme.radius.sm)
-    // The outer TvFocusable box carries the focus ring + glow + scale (glowColor = focusRing, the
-    // same accent ring used everywhere else). The colored fill is INSET (padding) so it never
-    // paints over that ring -- the earlier version filled the box edge-to-edge, hiding the focus
-    // indicator entirely, and a same-color glow made it worse. A focused swatch also gets a bright
-    // textPrimary ring right on the fill so it reads even against a same-hue accent ring.
-    TvFocusable(
-        onClick = onSelect,
-        modifier = Modifier.size(52.dp),
-        shape = outerShape,
-    ) { focused, _ ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(5.dp)
-                .background(swatchColor, fillShape)
-                .border(
-                    width = if (focused || selected) 2.dp else 1.dp,
-                    color = if (focused || selected) colors.textPrimary else colors.borderDefault,
-                    shape = fillShape,
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            // Check tint uses the preset's own on-accent color, guaranteed readable on the fill.
-            if (selected) {
-                Icon(
-                    Icons.Filled.Check,
-                    contentDescription = null,
-                    tint = preset.tokens(isDark).accentFg,
-                    modifier = Modifier.size(22.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MiniPlayerBehavior.label(): String = when (this) {
-    MiniPlayerBehavior.DODGE -> stringResource(R.string.settings_mini_player_dodge)
-    MiniPlayerBehavior.FADE -> stringResource(R.string.settings_mini_player_fade)
-}
-
-@Composable
-private fun SettingsSection(title: String, content: @Composable () -> Unit) {
+internal fun SettingsSection(title: String, content: @Composable () -> Unit) {
     val colors = AreIptvTheme.colors
     Column(modifier = Modifier.padding(bottom = 34.dp)) {
         Text(
@@ -828,146 +124,18 @@ private fun SettingsSection(title: String, content: @Composable () -> Unit) {
             modifier = Modifier.padding(bottom = 12.dp),
         )
         Column(
-            modifier = Modifier
-                .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg)),
+            modifier = Modifier.background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg)),
         ) {
             content()
         }
     }
 }
 
-/**
- * Read-only account panel for a Stalker portal — mirrors [ProviderPanel]'s shape but reads the
- * portal's own metadata block ([com.arashrahimi46.iptv.data.parser.StalkerAccountInfo]). Stalker
- * reports expiry as free-form text (e.g. "October 21, 2025"), so [StalkerAccountInfo.expiresRaw] is
- * shown verbatim rather than through [expiryText]. Fields the portal omits collapse to a dash/hide.
- */
-@Composable
-private fun StalkerProviderPanel(info: com.arashrahimi46.iptv.data.parser.StalkerAccountInfo?) {
-    val colors = AreIptvTheme.colors
-    if (info == null) {
-        Text(
-            text = stringResource(R.string.settings_provider_loading),
-            style = AreIptvTheme.typography.caption,
-            color = colors.textTertiary,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-        )
-        return
-    }
-    val dash = stringResource(R.string.settings_provider_unknown)
-    Column {
-        val status = info.status?.replaceFirstChar { it.uppercase() }
-        val statusColor = when (status?.lowercase()) {
-            "active" -> colors.success
-            "expired", "banned", "disabled" -> colors.danger
-            else -> colors.textPrimary
-        }
-        ProviderInfoRow(stringResource(R.string.settings_provider_status), status ?: dash, statusColor)
-        ProviderInfoRow(stringResource(R.string.settings_provider_expires), info.expiresRaw ?: dash)
-        info.host?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server), it) }
-    }
-}
-
-/**
- * Read-only key/value list of the active Xtream provider's account/server metadata (Provider panel).
- * Purely informational -- no focusable controls. Every value is a snapshot from the last catalog
- * refresh (the "in use" connection count especially, which the provider reports point-in-time).
- * Fields a provider omits or misreports collapse to a dash or are hidden entirely.
- */
-@Composable
-private fun ProviderPanel(info: XtreamAccountInfo?) {
-    val colors = AreIptvTheme.colors
-    if (info == null) {
-        Text(
-            text = stringResource(R.string.settings_provider_loading),
-            style = AreIptvTheme.typography.caption,
-            color = colors.textTertiary,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
-        )
-        return
-    }
-    val dash = stringResource(R.string.settings_provider_unknown)
-    Column {
-        val status = info.status?.replaceFirstChar { it.uppercase() }
-        val statusColor = when (status?.lowercase()) {
-            "active" -> colors.success
-            "expired", "banned", "disabled" -> colors.danger
-            else -> colors.textPrimary
-        }
-        ProviderInfoRow(stringResource(R.string.settings_provider_status), status ?: dash, statusColor)
-        ProviderInfoRow(stringResource(R.string.settings_provider_expires), expiryText(info.expiresAtMs), expiryColor(info.expiresAtMs))
-        // Trial is surfaced only when true -- a "No" row would be noise.
-        if (info.isTrial) {
-            ProviderInfoRow(stringResource(R.string.settings_provider_trial), stringResource(R.string.settings_provider_trial_value), colors.warning)
-        }
-        connectionsText(info.maxConnections, info.activeConnections)?.let {
-            ProviderInfoRow(stringResource(R.string.settings_provider_connections), it)
-        }
-        info.timezone?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_timezone), it) }
-        info.serverTime?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server_time), it) }
-        serverText(info.host, info.port)?.let { ProviderInfoRow(stringResource(R.string.settings_provider_server), it) }
-    }
-}
-
-@Composable
-private fun ProviderInfoRow(label: String, value: String, valueColor: Color? = null) {
-    val colors = AreIptvTheme.colors
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text(text = label, style = AreIptvTheme.typography.label, color = colors.textSecondary, modifier = Modifier.width(150.dp))
-        Text(text = value, style = AreIptvTheme.typography.label, color = valueColor ?: colors.textPrimary, modifier = Modifier.weight(1f))
-    }
-}
-
-/** Absolute expiry date + a "N days left" countdown; null == unlimited, past == expired. */
-@Composable
-private fun expiryText(expiresAtMs: Long?): String {
-    if (expiresAtMs == null) return stringResource(R.string.settings_provider_unlimited)
-    val date = java.text.SimpleDateFormat("d MMM yyyy", java.util.Locale.getDefault()).format(java.util.Date(expiresAtMs))
-    val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
-    return when {
-        daysLeft < 0 -> stringResource(R.string.settings_provider_expired)
-        daysLeft == 0L -> stringResource(R.string.settings_provider_expires_today, date)
-        else -> stringResource(R.string.settings_provider_expires_days, date, daysLeft)
-    }
-}
-
-@Composable
-private fun expiryColor(expiresAtMs: Long?): Color {
-    val colors = AreIptvTheme.colors
-    if (expiresAtMs == null) return colors.textPrimary
-    val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
-    return when {
-        daysLeft < 0 -> colors.danger
-        daysLeft <= 7 -> colors.warning
-        else -> colors.textPrimary
-    }
-}
-
-/** "X of Y in use" when both are known, "Y max" when only the cap is, null when neither is. */
-@Composable
-private fun connectionsText(max: Int?, active: Int?): String? = when {
-    max != null && active != null -> stringResource(R.string.settings_provider_connections_value, active, max)
-    max != null -> stringResource(R.string.settings_provider_connections_max, max)
-    else -> null
-}
-
-private fun serverText(host: String?, port: String?): String? {
-    val h = host?.takeIf { it.isNotBlank() } ?: return null
-    return if (!port.isNullOrBlank()) "$h:$port" else h
-}
-
+/** Icon tile + title/description + a right-hand `control` slot -- one settings row. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, control: @Composable () -> Unit) {
+internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, control: @Composable () -> Unit) {
     val colors = AreIptvTheme.colors
-    // QA MEDIUM defect (PIN row wrapping one-char-per-line): this Row had no fillMaxWidth,
-    // so it sized to wrap-content and the label Column's weight(1f) had no real remaining
-    // space to expand into -- every row was affected, the AreButton control (PIN) just made
-    // it most visible. fillMaxWidth is the real fix, not a per-row special case.
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -986,5 +154,41 @@ private fun SettingsRow(icon: ImageVector, title: String, desc: String? = null, 
             }
         }
         control()
+    }
+}
+
+/** Right-hand control shared by the language rows: current selection as text + a "Change" button. */
+@Composable
+internal fun SelectionChangeControl(current: String, onChange: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(text = current, style = AreIptvTheme.typography.label, color = AreIptvTheme.colors.textSecondary)
+        AreButton(
+            text = stringResource(R.string.settings_change),
+            onClick = onChange,
+            variant = AreButtonVariant.Secondary,
+            size = AreButtonSize.Small,
+        )
+    }
+}
+
+/** True when this last-refresh timestamp is missing or older than [staleWindowDays] (the user's
+ * Settings "stale-window" choice, in days). A window of 0 means "never nudge" -- nothing is stale,
+ * including a never-refreshed source. Backs both the Settings refresh row and the sidebar badge. */
+fun Long?.isStale(staleWindowDays: Long): Boolean =
+    staleWindowDays > 0 && (this == null || System.currentTimeMillis() - this > staleWindowDays * 24L * 60 * 60 * 1000)
+
+/** "N days/hours/mins ago" label for the last catalog refresh; [neverRefreshedText] when unset. */
+@Composable
+internal fun lastUpdatedLabel(ts: Long?, neverRefreshedText: String): String {
+    if (ts == null) return neverRefreshedText
+    val ago = System.currentTimeMillis() - ts
+    val days = ago / (24 * 60 * 60 * 1000)
+    val hours = ago / (60 * 60 * 1000)
+    val mins = ago / (60 * 1000)
+    return when {
+        days >= 1 -> if (days == 1L) stringResource(R.string.settings_last_updated_days, days) else stringResource(R.string.settings_last_updated_days_plural, days)
+        hours >= 1 -> if (hours == 1L) stringResource(R.string.settings_last_updated_hours, hours) else stringResource(R.string.settings_last_updated_hours_plural, hours)
+        mins >= 1 -> stringResource(R.string.settings_last_updated_mins, mins)
+        else -> stringResource(R.string.settings_last_updated_now)
     }
 }

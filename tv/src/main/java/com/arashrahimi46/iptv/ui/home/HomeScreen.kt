@@ -433,6 +433,7 @@ private fun HomeSectionContent(
                                 logoUrl = channel.logoUrl,
                                 width = 260.dp,
                                 modifier = Modifier.focusRequester(focusRequester),
+                                lockCategory = channel.categoryName,
                             )
                         }
                     }
@@ -451,7 +452,7 @@ private fun HomeSectionContent(
                 if (recommended.isNotEmpty()) {
                     AreRail(title = recommendedTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(recommended, key = { it.id }) { title ->
-                            ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
+                            ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp, lockCategory = title.categoryName)
                         }
                     }
                 }
@@ -460,7 +461,7 @@ private fun HomeSectionContent(
                 if (state.movies.isNotEmpty()) {
                     AreRail(title = moviesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(state.movies.take(20), key = { it.id }) { movie ->
-                            ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp)
+                            ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp, lockCategory = movie.categoryName)
                         }
                     }
                 }
@@ -469,7 +470,7 @@ private fun HomeSectionContent(
                 if (state.series.isNotEmpty()) {
                     AreRail(title = seriesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
                         items(state.series.take(20), key = { it.id }) { show ->
-                            ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp)
+                            ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp, lockCategory = show.categoryName)
                         }
                     }
                 }
@@ -492,6 +493,7 @@ private fun HomeSectionContent(
                                     logoUrl = channel.logoUrl,
                                     width = 260.dp,
                                     modifier = Modifier.focusRequester(focusRequester),
+                                    lockCategory = channel.categoryName,
                                 )
                             }
                         }
@@ -501,7 +503,7 @@ private fun HomeSectionContent(
                     if (content.titles.isNotEmpty()) {
                         AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }) {
                             items(content.titles, key = { it.id }) { title ->
-                                ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp)
+                                ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp, lockCategory = title.categoryName)
                             }
                         }
                     }

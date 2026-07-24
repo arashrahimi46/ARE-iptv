@@ -30,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -76,11 +77,17 @@ fun ArePosterTile(
     /** Attached to the focusable poster (not the outer Column) so a caller can restore D-pad
      * focus onto the exact tile -- e.g. Back out of Detail/player (see rememberPlaybackFocusRequester). */
     focusRequester: androidx.compose.ui.focus.FocusRequester? = null,
+    /** Category name used to decide whether this tile is blurred under the parental "blur" mode
+     * (see [LocalParentalBlur]); null opts out. Only matters when that mode is engaged. */
+    lockCategory: String? = null,
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
     val initials = title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val focused by interactionSource.collectIsFocusedAsState()
+    // Parental "blur locked content": obscure the poster and route the click to a PIN prompt.
+    val blur = LocalParentalBlur.current
+    val obscured = blur.isObscured(lockCategory)
 
     // Bring the WHOLE tile (poster + title + meta) into view on focus -- the focusable is only the
     // poster, so without this the grid scrolls to show the poster but leaves the title/meta below it
@@ -96,7 +103,7 @@ fun ArePosterTile(
             .bringIntoViewRequester(bringIntoViewRequester),
     ) {
         TvFocusable(
-            onClick = onClick,
+            onClick = if (obscured) blur.onReveal else onClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(2f / 3f)
@@ -104,9 +111,10 @@ fun ArePosterTile(
             interactionSource = interactionSource,
             shape = shape,
             backgroundColor = colors.surface3,
-            onLongClick = onLongClick,
+            onLongClick = if (obscured) null else onLongClick,
         ) { _, _ ->
-            Box(Modifier.fillMaxSize()) {
+          Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {
                 // Initials show only until the poster resolves (posters can be letterboxed or
                 // have transparent edges, so a permanent initials layer would bleed through).
                 // onState is a lightweight callback, NOT subcomposition (SubcomposeAsyncImage) --
@@ -186,6 +194,8 @@ fun ArePosterTile(
                     )
                 }
             }
+            if (obscured) ParentalLockOverlay(shape)
+          }
         }
         Box(Modifier.height(10.dp))
         Text(

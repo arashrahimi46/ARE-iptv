@@ -40,15 +40,14 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
+import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 /** px-per-minute scale for proportional GuideCell widths (mirrors Guide.jsx `PX`). */
 private val DpPerMinute = 3.dp
-private val TimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 /**
  * TV Guide (Guide.jsx): 6-hour rolling window, day chips, channel-group
@@ -67,6 +66,7 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
     val focused by viewModel.focused.collectAsState()
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    val timeFormatter = rememberClockFormatter()
     // Issue #5: which cell started playback -- channel id alone doesn't disambiguate
     // which of a row's several programme cells was clicked (any cell can start playback,
     // not just the live one -- see issue #4 above), so the clicked slot's start time is
@@ -195,7 +195,7 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
                                 }
                                 AreGuideCell(
                                     title = slot.title,
-                                    time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(TimeFormatter),
+                                    time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(timeFormatter),
                                     onClick = {
                                         lastPlayedChannelId = row.channel.id
                                         lastPlayedSlotStartMs = slot.startMs
@@ -220,6 +220,7 @@ fun GuideScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier
 
 @Composable
 private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId, scrollState: ScrollState) {
+    val timeFormatter = rememberClockFormatter()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -233,7 +234,7 @@ private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId,
             while (mark < windowEndMs) {
                 Box(Modifier.width(DpPerMinute * 30)) {
                     Text(
-                        text = Instant.ofEpochMilli(mark).atZone(zone).format(TimeFormatter),
+                        text = Instant.ofEpochMilli(mark).atZone(zone).format(timeFormatter),
                         style = AreIptvTheme.typography.mono,
                         color = AreIptvTheme.colors.textTertiary,
                     )
@@ -282,6 +283,7 @@ private fun ChannelHeaderCell(name: String, number: String?) {
 private fun FocusedInfoBar(info: GuideFocusedInfo?) {
     val colors = AreIptvTheme.colors
     val zone = ZoneId.systemDefault()
+    val timeFormatter = rememberClockFormatter()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -311,8 +313,8 @@ private fun FocusedInfoBar(info: GuideFocusedInfo?) {
                 }
             }
             if (info != null) {
-                val start = Instant.ofEpochMilli(info.slot.startMs).atZone(zone).format(TimeFormatter)
-                val end = Instant.ofEpochMilli(info.slot.endMs).atZone(zone).format(TimeFormatter)
+                val start = Instant.ofEpochMilli(info.slot.startMs).atZone(zone).format(timeFormatter)
+                val end = Instant.ofEpochMilli(info.slot.endMs).atZone(zone).format(timeFormatter)
                 Text(
                     text = "${info.channel.name} · $start – $end",
                     style = AreIptvTheme.typography.caption,

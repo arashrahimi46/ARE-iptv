@@ -12,8 +12,17 @@ import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
 import com.arashrahimi46.iptv.data.parser.OpenSubtitlesClient
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
+import com.arashrahimi46.iptv.data.settings.AutoRelock
+import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.PinHasher
+import com.arashrahimi46.iptv.data.settings.StartScreen
+import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
+import com.arashrahimi46.iptv.data.settings.SubtitleEdge
+import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
+import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,14 +77,21 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     private fun <T> flowState(flow: kotlinx.coroutines.flow.Flow<T>, initial: T): StateFlow<T> =
         flow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)
 
-    val isDarkTheme: StateFlow<Boolean> = flowState(settings.isDarkTheme, true)
+    val themeMode: StateFlow<ThemeMode> = flowState(settings.themeMode, ThemeMode.DARK)
     val isReducedMotion: StateFlow<Boolean> = flowState(settings.isReducedMotion, false)
+    val is24HourClock: StateFlow<Boolean> = flowState(settings.is24HourClock, true)
+    val staleWindowDays: StateFlow<Long> = flowState(settings.staleWindowDays, 14L)
+    val preferredAudioLanguage: StateFlow<String> = flowState(settings.preferredAudioLanguage, "")
+    val autoplayNextDelaySeconds: StateFlow<Long> = flowState(settings.autoplayNextDelaySeconds, 0L)
+    val subtitleTextScale: StateFlow<SubtitleTextScale> = flowState(settings.subtitleTextScale, SubtitleTextScale.MEDIUM)
+    val subtitleEdge: StateFlow<SubtitleEdge> = flowState(settings.subtitleEdge, SubtitleEdge.BOX)
+    val subtitleColor: StateFlow<SubtitleColorChoice> = flowState(settings.subtitleColor, SubtitleColorChoice.WHITE)
+    val subtitleFont: StateFlow<SubtitleFontChoice> = flowState(settings.subtitleFont, SubtitleFontChoice.DEFAULT)
 
-    /** Accent preset for the currently active mode -- what the contextual settings row edits. */
-    val activeAccent: StateFlow<AccentPreset> = flowState(
-        settings.isDarkTheme.flatMapLatest { dark -> if (dark) settings.darkAccent else settings.lightAccent },
-        AccentPreset.BLUE,
-    )
+    /** Per-mode accent presets; the Display tab picks which one to show/edit from the effective
+     * (SYSTEM-resolved) dark state, so SYSTEM mode edits whichever mode is actually on screen. */
+    val darkAccent: StateFlow<AccentPreset> = flowState(settings.darkAccent, AccentPreset.BLUE)
+    val lightAccent: StateFlow<AccentPreset> = flowState(settings.lightAccent, AccentPreset.BLUE)
     val isHardwareDecoding: StateFlow<Boolean> = flowState(settings.isHardwareDecoding, true)
     val isAutoplayNextEpisode: StateFlow<Boolean> = flowState(settings.isAutoplayNextEpisode, true)
     val miniPlayerBehavior: StateFlow<MiniPlayerBehavior> = flowState(settings.miniPlayerBehavior, MiniPlayerBehavior.DODGE)
@@ -87,6 +103,17 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
      * the Settings screen gates the PIN row / lock toggle until this resolves so a fast tap
      * during the initial async DataStore read can't route to a no-verify PIN-set flow. */
     val hasPinSet: StateFlow<Boolean?> = flowState(settings.parentalPinHash.map { it != null }, null)
+
+    // Phase 3 -- General
+    val startScreen: StateFlow<StartScreen> = flowState(settings.startScreen, StartScreen.HOME)
+    val autoRefreshInterval: StateFlow<AutoRefreshInterval> = flowState(settings.autoRefreshInterval, AutoRefreshInterval.OFF)
+    val confirmBeforeExit: StateFlow<Boolean> = flowState(settings.confirmBeforeExit, true)
+
+    // Phase 3 -- Parental depth
+    val parentalAutoRelock: StateFlow<AutoRelock> = flowState(settings.parentalAutoRelock, AutoRelock.IMMEDIATELY)
+    val lockedContentDisplay: StateFlow<LockedContentDisplay> = flowState(settings.lockedContentDisplay, LockedContentDisplay.HIDE)
+    val parentalKeywords: StateFlow<Set<String>> = flowState(settings.parentalKeywords, emptySet())
+    val isPinOnLaunch: StateFlow<Boolean> = flowState(settings.isPinOnLaunch, false)
 
     /** Preferred subtitle language (ISO code) used first in online search; defaults to English. */
     val subtitleLanguage: StateFlow<String> = flowState(settings.subtitleLanguage, "en")
@@ -117,12 +144,36 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     // Async, off the main thread -- these are DataStore file writes and must not block the UI
     // thread's switch callback (jank/ANR on low-end boxes). Matches every other setter below.
-    fun setDarkTheme(enabled: Boolean) = viewModelScope.launch { settings.setDarkTheme(enabled) }
+    fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { settings.setThemeMode(mode) }
     fun setReducedMotion(enabled: Boolean) = viewModelScope.launch { settings.setReducedMotion(enabled) }
+    fun set24HourClock(enabled: Boolean) = viewModelScope.launch { settings.set24HourClock(enabled) }
+    fun setStaleWindowDays(days: Long) = viewModelScope.launch { settings.setStaleWindowDays(days) }
+    fun setPreferredAudioLanguage(code: String) = viewModelScope.launch { settings.setPreferredAudioLanguage(code) }
+    fun setAutoplayNextDelaySeconds(seconds: Long) = viewModelScope.launch { settings.setAutoplayNextDelaySeconds(seconds) }
+    fun setSubtitleTextScale(scale: SubtitleTextScale) = viewModelScope.launch { settings.setSubtitleTextScale(scale) }
+    fun setSubtitleEdge(edge: SubtitleEdge) = viewModelScope.launch { settings.setSubtitleEdge(edge) }
+    fun setSubtitleColor(color: SubtitleColorChoice) = viewModelScope.launch { settings.setSubtitleColor(color) }
+    fun setSubtitleFont(font: SubtitleFontChoice) = viewModelScope.launch { settings.setSubtitleFont(font) }
 
-    /** Writes the accent for the currently active mode (the other mode's accent is untouched). */
-    fun setActiveAccent(preset: AccentPreset) = viewModelScope.launch {
-        settings.setAccent(settings.isDarkTheme.first(), preset)
+    /** Writes the accent for the mode currently on screen ([isDark], effective); the other mode's
+     * accent is untouched. The caller passes the SYSTEM-resolved dark state (see [darkAccent]). */
+    fun setActiveAccent(isDark: Boolean, preset: AccentPreset) = viewModelScope.launch {
+        settings.setAccent(isDark, preset)
+    }
+
+    /** Reset user-facing prefs to defaults (scoped -- see [UserSettings.resetToDefaults]). */
+    fun resetToDefaults() = viewModelScope.launch { settings.resetToDefaults() }
+
+    /** Wipe the Coil memory + disk image cache (posters/logos re-download on next view). */
+    fun clearImageCache() = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        val loader = coil.Coil.imageLoader(getApplication())
+        loader.memoryCache?.clear()
+        loader.diskCache?.clear()
+    }
+
+    /** Clear every Continue-Watching / resume bookmark. */
+    fun clearHistory() = viewModelScope.launch {
+        com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository(getApplication()).clearAll()
     }
     fun setHardwareDecoding(enabled: Boolean) = viewModelScope.launch { settings.setHardwareDecoding(enabled) }
     fun setAutoplayNextEpisode(enabled: Boolean) = viewModelScope.launch { settings.setAutoplayNextEpisode(enabled) }
@@ -306,6 +357,17 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         val salt = settings.parentalPinSalt.first() ?: return false
         return PinHasher.verify(pin, salt, hash)
     }
+
+    // Phase 3 setters -- General
+    fun setStartScreen(value: StartScreen) = viewModelScope.launch { settings.setStartScreen(value) }
+    fun setAutoRefreshInterval(value: AutoRefreshInterval) = viewModelScope.launch { settings.setAutoRefreshInterval(value) }
+    fun setConfirmBeforeExit(enabled: Boolean) = viewModelScope.launch { settings.setConfirmBeforeExit(enabled) }
+
+    // Phase 3 setters -- Parental depth
+    fun setParentalAutoRelock(value: AutoRelock) = viewModelScope.launch { settings.setParentalAutoRelock(value) }
+    fun setLockedContentDisplay(value: LockedContentDisplay) = viewModelScope.launch { settings.setLockedContentDisplay(value) }
+    fun toggleParentalKeyword(word: String) = viewModelScope.launch { settings.toggleParentalKeyword(word) }
+    fun setPinOnLaunch(enabled: Boolean) = viewModelScope.launch { settings.setPinOnLaunch(enabled) }
 
     companion object {
         fun factory(app: Application): ViewModelProvider.Factory =

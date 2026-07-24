@@ -73,6 +73,17 @@ data class Channel(
     val number: String? = null,
     /** Xtream stream_id, used for EPG cross-reference; null for M3U. */
     val externalId: String? = null,
+    /** Catch-up / archive window in days: 0 = the provider offers no archive on this channel; >0 both
+     * marks the channel archive-capable AND bounds how far back the guide's catch-up glyph may appear.
+     * Xtream: `tv_archive_duration`. Stalker: portal archive window. M3U: `catchup-days`.
+     * See docs/catchup-v1-design.md. */
+    val catchupDays: Int = 0,
+    /** M3U only: the `catchup-source` URL template ({utc}/{start}/… placeholders) expanded at play-time
+     * to mint an archive URL; null for Xtream/Stalker (they compute archive URLs without a template). */
+    val catchupSource: String? = null,
+    /** M3U only: the `catchup-type` convention (default/shift/append/flussonic/xc) that selects how
+     * [catchupSource] is expanded; null otherwise. */
+    val catchupType: String? = null,
 )
 
 /**

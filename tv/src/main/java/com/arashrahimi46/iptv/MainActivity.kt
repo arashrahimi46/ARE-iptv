@@ -52,8 +52,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
+import com.arashrahimi46.iptv.data.settings.AutoRelock
+import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
+import com.arashrahimi46.iptv.data.settings.ParentalGate
+import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.components.LocalParentalBlur
+import com.arashrahimi46.iptv.ui.components.ParentalBlurState
+import com.arashrahimi46.iptv.ui.settings.ParentalPinDialog
+import com.arashrahimi46.iptv.ui.settings.ParentalPinDialogMode
 import com.arashrahimi46.iptv.ui.detail.DetailScreen
 import com.arashrahimi46.iptv.ui.detail.PlayTarget
 import com.arashrahimi46.iptv.ui.favorites.FavoritesScreen
@@ -157,7 +166,14 @@ fun AreIptvApp() {
     // Real wiring of the Settings screen's theme/reduced-motion toggles: this is the single
     // composition root wrapping the whole NavHost in AreIptvTheme, so a change from
     // SettingsScreen recomposes here immediately -- no restart, no separate "apply" step.
-    val isDarkTheme by settings.isDarkTheme.collectAsState(initial = true)
+    // Theme mode resolves to an effective dark/light boolean here (the only place with a Composable
+    // scope for isSystemInDarkTheme); everything downstream keeps consuming that plain boolean.
+    val themeMode by settings.themeMode.collectAsState(initial = com.arashrahimi46.iptv.data.settings.ThemeMode.DARK)
+    val isDarkTheme = when (themeMode) {
+        com.arashrahimi46.iptv.data.settings.ThemeMode.DARK -> true
+        com.arashrahimi46.iptv.data.settings.ThemeMode.LIGHT -> false
+        com.arashrahimi46.iptv.data.settings.ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+    }
     val isReducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     // Per-mode accent: dark and light are chosen independently in Settings, so pick the one that
     // matches the active mode. Recomposes (and recolors the whole app) the moment either changes.
@@ -210,6 +226,22 @@ fun AreIptvApp() {
             !hasAnySource -> "onboarding"
             activeSourceId == null || hasMultipleSources -> "sources"
             else -> "shell"
+        }
+    }
+
+    // Auto-refresh catalog on launch (Phase 3): once per process, if the user opted into Daily/Weekly
+    // and the active catalog is older than that window, kick a background refresh. Opt-in (default Off),
+    // so no existing behavior changes until it's turned on.
+    LaunchedEffect(Unit) {
+        if (autoRefreshChecked) return@LaunchedEffect
+        autoRefreshChecked = true
+        val interval = settings.autoRefreshInterval.first()
+        if (interval == AutoRefreshInterval.OFF) return@LaunchedEffect
+        val sid = settings.activeSourceId.first() ?: return@LaunchedEffect
+        val source = playlistRepository.observeSource(sid).first() ?: return@LaunchedEffect
+        val last = source.lastRefreshedAtMs
+        if (last == null || System.currentTimeMillis() - last >= interval.maxAgeMs) {
+            runCatching { playlistRepository.refreshSource(sid) }
         }
     }
 
@@ -402,7 +434,55 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     // Only nudge a refresh when a playlist actually exists -- with no source there's nothing to
     // refresh, and isStale() treats a null timestamp as stale, which wrongly badged a fresh install.
     val currentSource = activeSource
-    val badgedNavIds = if (currentSource != null && currentSource.lastRefreshedAtMs.isStale()) setOf("settings") else emptySet()
+    val staleWindowDays by settings.staleWindowDays.collectAsState(initial = 14L)
+    val badgedNavIds = if (currentSource != null && currentSource.lastRefreshedAtMs.isStale(staleWindowDays)) setOf("settings") else emptySet()
+
+    // Phase 3 -- General: start screen (resolved once for the inner NavHost) + last-used tracking,
+    // and confirm-before-exit. startScreen starts null (DataStore not read yet); gate below so the
+    // NavHost is built with the RIGHT start destination rather than flashing Home first.
+    val startScreen by settings.startScreen.collectAsState(initial = null)
+    val lastUsedTab by settings.lastUsedTab.collectAsState(initial = "home")
+    val confirmExit by settings.confirmBeforeExit.collectAsState(initial = true)
+
+    // Phase 3 -- Parental runtime: the lock + hide/blur choice + custom keywords + PIN-on-launch,
+    // plus the process-scoped session unlock ([ParentalGate]). Together these drive the tile blur
+    // ([LocalParentalBlur]), the launch PIN gate, and the reveal-on-tap PIN prompt.
+    val parentalLock by settings.isParentalLockEnabled.collectAsState(initial = false)
+    val lockedDisplay by settings.lockedContentDisplay.collectAsState(initial = LockedContentDisplay.HIDE)
+    val parentalKeywords by settings.parentalKeywords.collectAsState(initial = emptySet())
+    val pinOnLaunch by settings.isPinOnLaunch.collectAsState(initial = false)
+    val autoRelock by settings.parentalAutoRelock.collectAsState(initial = AutoRelock.IMMEDIATELY)
+    val pinHash by settings.parentalPinHash.collectAsState(initial = null)
+    val pinSalt by settings.parentalPinSalt.collectAsState(initial = null)
+    val sessionUnlocked by ParentalGate.unlocked.collectAsState()
+    val hasPin = pinHash != null && pinSalt != null
+    val verifyPin: suspend (String) -> Boolean = verify@{ pin ->
+        val h = pinHash ?: return@verify false
+        val s = pinSalt ?: return@verify false
+        PinHasher.verify(pin, s, h)
+    }
+
+    if (startScreen == null) return
+    val startRoute = (initialTab?.takeIf { it in KnownRoutes })
+        ?: startScreen?.route
+        ?: lastUsedTab.takeIf { it in KnownRoutes }
+        ?: "home"
+
+    // Reveal-on-tap: a blurred adult tile's click routes here; a correct PIN unlocks the session.
+    var showRevealPin by remember { mutableStateOf(false) }
+    val parentalBlur = ParentalBlurState(
+        enabled = parentalLock && lockedDisplay == LockedContentDisplay.BLUR && !sessionUnlocked && hasPin,
+        keywords = parentalKeywords,
+        onReveal = { showRevealPin = true },
+    )
+    // Launch gate: require the PIN before the shell is usable (once per process; a relaunch re-locks).
+    var launchUnlocked by rememberSaveable { mutableStateOf(false) }
+    val needsLaunchPin = pinOnLaunch && parentalLock && hasPin && !launchUnlocked
+
+    // Remember the current tab so StartScreen.LAST_USED can restore it next launch.
+    LaunchedEffect(activeNav) {
+        if (activeNav in KnownRoutes) settings.setLastUsedTab(activeNav)
+    }
 
     // Honor a tab requested by a full-bleed caller (player -> open guide) once.
     LaunchedEffect(initialTab) {
@@ -459,7 +539,8 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             )
         },
     ) {
-        NavHost(navController = innerNav, startDestination = "home") {
+        CompositionLocalProvider(LocalParentalBlur provides parentalBlur) {
+        NavHost(navController = innerNav, startDestination = startRoute) {
             composable("home") {
                 ScrollableTab {
                     HomeScreen(
@@ -539,6 +620,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 FullSizeTab { SettingsScreen() }
             }
         }
+        }
     }
     } // end focused-bounds wrapper
 
@@ -592,14 +674,35 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
 
     // Back at the shell's start tab exits the app -- intercept to confirm first.
     // Disabled while the dialog is open (the Dialog window owns back then).
-    BackHandler(enabled = !showExitDialog) {
+    BackHandler(enabled = !showExitDialog && !showRevealPin && !needsLaunchPin) {
         if (homeEditMode && activeNav == "home") {
             // In Home edit mode, Back means "done": every move/hide/delete is already persisted
             // as it happens, so just leave edit mode instead of falling through to the exit prompt.
             homeEditMode = false
         } else if (!innerNav.popBackStack()) {
-            showExitDialog = true
+            // Confirm-before-exit (Phase 3): on by default (keeps today's prompt); off exits at once.
+            if (confirmExit) showExitDialog = true else activity?.finish()
         }
+    }
+
+    // Reveal-on-tap PIN: a blurred adult tile was clicked -- verify then unlock the session.
+    if (showRevealPin) {
+        ParentalPinDialog(
+            mode = ParentalPinDialogMode.Verify,
+            onDismiss = { showRevealPin = false },
+            onVerify = verifyPin,
+            onVerified = { showRevealPin = false; ParentalGate.unlock(autoRelock) },
+        )
+    }
+
+    // PIN-on-launch gate: block the shell until the PIN is entered (once per process).
+    if (needsLaunchPin) {
+        ParentalPinDialog(
+            mode = ParentalPinDialogMode.Verify,
+            onDismiss = { activity?.finish() },
+            onVerify = verifyPin,
+            onVerified = { launchUnlocked = true; ParentalGate.unlock(autoRelock) },
+        )
     }
 }
 
@@ -647,6 +750,9 @@ private val KnownRoutes = setOf("home", "live", "guide", "movies", "series", "se
 
 /** Sentinel distinguishing "DataStore hasn't emitted yet" from "no active source" (null). */
 private val UNKNOWN = -1L
+
+/** Guards the launch auto-refresh so it fires at most once per process, not on every recomposition. */
+private var autoRefreshChecked = false
 
 /** How long [AreSplashScreen] stays up on cold start (Issue #13) -- product-lead placeholder duration. */
 private const val SPLASH_DURATION_MS = 1800L

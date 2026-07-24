@@ -55,6 +55,9 @@ class ContinueWatchingRepository(context: Context) {
     /** Most-recently-updated in-progress entries, bounded for the Home rail. */
     fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>> = dao.observeRecent(limit)
 
+    /** Clears every resume bookmark (Settings "Clear continue-watching / history"). */
+    suspend fun clearAll(): Unit = withContext(Dispatchers.IO) { dao.deleteAll() }
+
     companion object {
         /** Retention cap -- keep only the most-recent bookmarks so the rail stays bounded. */
         private const val MAX_ENTRIES = 15

@@ -113,6 +113,7 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
             isFavorite = show.id in favoriteVodIds,
             onToggleFavorite = { viewModel.toggleFavorite(show.id) },
             focusRequester = focusRequester,
+            lockCategory = show.categoryName,
         )
     }
 }

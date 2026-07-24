@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,9 +66,13 @@ fun AreCategoryCard(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    // A category card is identified by its name, so the name itself is the blur key (an adult
+    // category is obscured under the parental "blur" mode; see [LocalParentalBlur]).
+    val blur = LocalParentalBlur.current
+    val obscured = blur.isObscured(name)
 
     TvFocusable(
-        onClick = onClick,
+        onClick = if (obscured) blur.onReveal else onClick,
         modifier = modifier.width(width).aspectRatio(if (compact) 16f / 7f else 16f / 10f),
         interactionSource = interactionSource,
         shape = shape,
@@ -76,7 +81,8 @@ fun AreCategoryCard(
         backgroundColor = colors.surface1,
         borderColor = colors.borderDefault,
     ) { _, _ ->
-        Box(Modifier.fillMaxSize()) {
+      Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {
             Icon(
                 kind.icon,
                 contentDescription = null,
@@ -122,6 +128,8 @@ fun AreCategoryCard(
                 }
             }
         }
+        if (obscured) ParentalLockOverlay(shape)
+      }
     }
 }
 

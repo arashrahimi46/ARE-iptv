@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -70,9 +71,14 @@ fun AreChannelTile(
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    /** Category name used to decide whether this tile is blurred under the parental "blur" mode
+     * (see [LocalParentalBlur]); null opts out. */
+    lockCategory: String? = null,
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    val blur = LocalParentalBlur.current
+    val obscured = blur.isObscured(lockCategory)
     val initials = channel.replace(Regex(" ?HD$", RegexOption.IGNORE_CASE), "")
         .split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val healthColor = when (health) {
@@ -82,7 +88,7 @@ fun AreChannelTile(
     }
 
     TvFocusable(
-        onClick = onClick,
+        onClick = if (obscured) blur.onReveal else onClick,
         modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width)),
         interactionSource = interactionSource,
         shape = shape,
@@ -91,9 +97,10 @@ fun AreChannelTile(
         // gives the unfocused tile a distinct edge.
         borderColor = colors.borderDefault,
     ) { focused, _ ->
+      Box(Modifier.fillMaxWidth().clip(shape)) {
         // Clip the content to the tile shape so the info panel's square surface1 background
         // doesn't poke square corners through the rounded focus ring.
-        Column(Modifier.fillMaxWidth().clip(shape)) {
+        Column(Modifier.fillMaxWidth().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {
             // logo zone
             Box(
                 modifier = Modifier
@@ -222,6 +229,8 @@ fun AreChannelTile(
                 }
             }
         }
+        if (obscured) ParentalLockOverlay(shape)
+      }
     }
 }
 

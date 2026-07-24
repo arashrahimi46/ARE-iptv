@@ -14,7 +14,7 @@ import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.EpgRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.AdultContentFilter
+import com.arashrahimi46.iptv.data.settings.ParentalFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -228,7 +228,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         val available = availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
                         summaries to available
                     }
-                    combine(rails, categoryData, taste, settings.isParentalLockEnabled, settings.homeLayout) { (channels, movies, series), (cats, available), (watched, favVod, favLive), parentalLock, layout ->
+                    combine(rails, categoryData, taste, settings.parentalFilter, settings.homeLayout) { (channels, movies, series), (cats, available), (watched, favVod, favLive), parental, layout ->
                         // Parental lock: strip adult items from every pool and adult chips from the
                         // category row, so the toggle actually hides adult content on Home too. Filter
                         // the pools BEFORE curating so adult items can't leak into the picked rail.
@@ -236,7 +236,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         val pinned = pinnedCategories.map { it.kind to it.name }.toSet()
                         val availableCategories = available
                             .filterNot { (it.kind to it.name) in pinned }
-                            .let { if (parentalLock) it.filterNot { a -> AdultContentFilter.isAdult(a.name) } else it }
+                            .filterNot { a -> parental.hidden(a.name) }
                         // Taste = watches + favorites + PINS. Pinning a category to Home is the clearest
                         // "I like this" the user can give, so it feeds the same weights that rank every rail.
                         val vodTaste = mutableMapOf<String, Double>().also {
@@ -248,9 +248,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             accumulate(it, favLive, FAVORITE_WEIGHT)
                             pinnedCategories.filter { p -> p.kind == CategoryKind.LIVE }.forEach { p -> it[p.name] = (it[p.name] ?: 0.0) + PIN_WEIGHT }
                         }.normalized()
-                        val channelPool = if (parentalLock) channels.filterNot { AdultContentFilter.isAdult(it.categoryName) } else channels
-                        val moviePool = if (parentalLock) movies.filterNot { AdultContentFilter.isAdult(it.categoryName) } else movies
-                        val seriesPool = if (parentalLock) series.filterNot { AdultContentFilter.isAdult(it.categoryName) } else series
+                        val channelPool = channels.filterNot { parental.hidden(it.categoryName) }
+                        val moviePool = movies.filterNot { parental.hidden(it.categoryName) }
+                        val seriesPool = series.filterNot { parental.hidden(it.categoryName) }
                         HomeUiState(
                             hasSource = true,
                             channels = HomeRailCurator.curateChannels(channelPool, liveTaste, daySeed),
@@ -258,7 +258,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             series = HomeRailCurator.curateTitles(seriesPool, vodTaste, daySeed),
                             recommended = HomeRailCurator.recommend(moviePool, seriesPool, vodTaste, daySeed),
                             recommendedLabel = recommendedLabelFor(vodTaste),
-                            categories = if (parentalLock) cats.filterNot { AdultContentFilter.isAdult(it.name) } else cats,
+                            categories = cats.filterNot { parental.hidden(it.name) },
                             isInitializing = false,
                             sections = layout,
                             availableCategories = availableCategories,
@@ -285,15 +285,15 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         // category) changes. Distinct-by kind+name so toggling `hidden` on a category section --
         // which HomeSection.Category's equality treats as a different value -- does NOT cause a
         // pointless requery; only the category set/order or the source itself does.
-        combine(settings.activeSourceId, settings.homeLayout, settings.isParentalLockEnabled) { sourceId, layout, parentalLock ->
-            Triple(sourceId, layout.filterIsInstance<HomeSection.Category>().distinctBy { it.kind to it.name }, parentalLock)
+        combine(settings.activeSourceId, settings.homeLayout, settings.parentalFilter) { sourceId, layout, parental ->
+            Triple(sourceId, layout.filterIsInstance<HomeSection.Category>().distinctBy { it.kind to it.name }, parental)
         }
             .distinctUntilChanged()
-            .flatMapLatest { (sourceId, categorySections, parentalLock) ->
+            .flatMapLatest { (sourceId, categorySections, parental) ->
                 if (sourceId == null || categorySections.isEmpty()) {
                     flowOf(emptyMap())
                 } else {
-                    flow { emit(loadCategoryRails(sourceId, categorySections, parentalLock)) }
+                    flow { emit(loadCategoryRails(sourceId, categorySections, parental)) }
                 }
             }
             .onEach { rails -> _uiState.value = _uiState.value.copy(categoryRails = rails) }
@@ -391,11 +391,11 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private suspend fun loadCategoryRails(
         sourceId: Long,
         categorySections: List<HomeSection.Category>,
-        parentalLock: Boolean,
+        parental: ParentalFilter,
     ): Map<String, HomeCategoryContent> {
         val result = linkedMapOf<String, HomeCategoryContent>()
         for (section in categorySections) {
-            if (parentalLock && AdultContentFilter.isAdult(section.name)) continue
+            if (parental.hidden(section.name)) continue
             val content = when (section.kind) {
                 CategoryKind.LIVE -> HomeCategoryContent.Live(repository.channelsByCategory(sourceId, section.name, RAIL_LIMIT))
                 CategoryKind.MOVIE -> HomeCategoryContent.Vod(repository.moviesByCategory(sourceId, section.name, RAIL_LIMIT))

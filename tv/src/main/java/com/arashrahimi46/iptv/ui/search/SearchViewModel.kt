@@ -11,7 +11,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.AdultContentFilter
+import com.arashrahimi46.iptv.data.settings.ParentalFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,20 +78,20 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         // merged into the state. DB-side LIKE + category queries stay bounded by LIMIT and
         // cancel-on-newer via mapLatest -- never loads the catalog into memory.
         val debouncedQuery = _query.debounce { q -> if (q.isEmpty()) 0L else SEARCH_DEBOUNCE_MS }
-        combine(settings.activeSourceId, debouncedQuery, _categoryFilter, _scope, settings.isParentalLockEnabled) { sid, query, categoryFilter, scope, parentalLock ->
-            SearchInputs(sid, query, categoryFilter, scope, parentalLock)
+        combine(settings.activeSourceId, debouncedQuery, _categoryFilter, _scope, settings.parentalFilter) { sid, query, categoryFilter, scope, parental ->
+            SearchInputs(sid, query, categoryFilter, scope, parental)
         }
             .mapLatest { buildResults(it) }
             .onEach { r -> _uiState.update { it.copy(hasSource = r.hasSource, channelResults = r.channels, titleResults = r.titles) } }
             .launchIn(viewModelScope)
     }
 
-    private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope, val parentalLock: Boolean)
+    private data class SearchInputs(val sourceId: Long?, val query: String, val categoryFilter: String?, val scope: SearchScope, val parental: ParentalFilter)
 
     private data class SearchResults(val hasSource: Boolean, val channels: List<Channel>, val titles: List<VodTitle>)
 
     private suspend fun buildResults(inputs: SearchInputs): SearchResults {
-        val (sourceId, query, categoryFilter, scope, parentalLock) = inputs
+        val (sourceId, query, categoryFilter, scope, parental) = inputs
         if (sourceId == null) return SearchResults(hasSource = false, channels = emptyList(), titles = emptyList())
         val wantChannels = scope == SearchScope.All || scope == SearchScope.LiveTv
         val wantMovies = scope == SearchScope.All || scope == SearchScope.Movies
@@ -100,7 +100,7 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         if (categoryFilter != null) {
             // With the parental lock on, an adult category can't be searched either (its chip is
             // hidden everywhere, but guard the direct category-filter path too).
-            if (parentalLock && AdultContentFilter.isAdult(categoryFilter)) {
+            if (parental.hidden(categoryFilter)) {
                 return SearchResults(hasSource = true, channels = emptyList(), titles = emptyList())
             }
             val channelResults = if (wantChannels) repository.channelsByCategory(sourceId, categoryFilter, RESULT_LIMIT) else emptyList()
@@ -113,10 +113,10 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
         // catalog and isn't a useful search.
         if (trimmed.length < MIN_QUERY_LENGTH) return SearchResults(hasSource = true, channels = emptyList(), titles = emptyList())
         val channelResults = (if (wantChannels) repository.searchChannels(sourceId, trimmed, RESULT_LIMIT) else emptyList())
-            .let { if (parentalLock) it.filterNot { ch -> AdultContentFilter.isAdult(ch.categoryName) } else it }
+            .let { it.filterNot { ch -> parental.hidden(ch.categoryName) } }
         val titleResults = ((if (wantMovies) repository.searchMovies(sourceId, trimmed, RESULT_LIMIT) else emptyList()) +
             (if (wantSeries) repository.searchSeries(sourceId, trimmed, RESULT_LIMIT) else emptyList()))
-            .let { if (parentalLock) it.filterNot { t -> AdultContentFilter.isAdult(t.categoryName) } else it }
+            .let { it.filterNot { t -> parental.hidden(t.categoryName) } }
         return SearchResults(hasSource = true, channels = channelResults, titles = titleResults)
     }
 

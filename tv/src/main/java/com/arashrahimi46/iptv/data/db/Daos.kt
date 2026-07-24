@@ -485,6 +485,10 @@ interface ContinueWatchingDao {
     /** Drop a recording's resume point (deleting the recording, or it finished playing). */
     @Query("DELETE FROM continue_watching WHERE recordingId = :recordingId")
     suspend fun deleteByRecording(recordingId: Long)
+
+    /** Wipe every resume bookmark -- backs the Settings "Clear continue-watching / history" action. */
+    @Query("DELETE FROM continue_watching")
+    suspend fun deleteAll()
 }
 
 /**

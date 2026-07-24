@@ -76,6 +76,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.video.VideoFrameMetadataListener
 import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -83,11 +84,14 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.repository.SubtitleRepository
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.ArePlayerControls
 import com.arashrahimi46.iptv.ui.components.RecordingIndicator
+import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -95,7 +99,6 @@ import com.arashrahimi46.iptv.ui.theme.Ink950
 import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 /** Idle time before the transport HUD auto-hides, whether focus is on the video or a control. */
@@ -190,6 +193,12 @@ fun LivePlayerScreen(
     val showRecordingIndicator by settings.isRecordingIndicatorEnabled.collectAsState(initial = true)
     val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
+    val preferredAudioLang by settings.preferredAudioLanguage.collectAsState(initial = "")
+    val autoplayNextDelay by settings.autoplayNextDelaySeconds.collectAsState(initial = 0L)
+    val subtitleTextScale by settings.subtitleTextScale.collectAsState(initial = com.arashrahimi46.iptv.data.settings.SubtitleTextScale.MEDIUM)
+    val subtitleEdge by settings.subtitleEdge.collectAsState(initial = com.arashrahimi46.iptv.data.settings.SubtitleEdge.BOX)
+    val subtitleColor by settings.subtitleColor.collectAsState(initial = com.arashrahimi46.iptv.data.settings.SubtitleColorChoice.WHITE)
+    val subtitleFont by settings.subtitleFont.collectAsState(initial = com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.DEFAULT)
     // Video aspect/resize mode: seeded from the saved preference, then overridden locally as the user
     // cycles it from the HUD (the override wins so the change is instant; it's persisted below).
     // Live channels remember their own aspect (per channel), so switching channels re-seeds from that
@@ -551,6 +560,12 @@ fun LivePlayerScreen(
                 }.also { playerError = null }
             }
 
+            // Autoplay-next (Phase 2): the player listener flips [playbackEnded] true on STATE_ENDED;
+            // keyed to the player instance so switching episodes (a fresh player) clears it.
+            // [autoAdvanceRemaining] drives the countdown dialog (null = inactive).
+            var playbackEnded by remember(exoPlayer) { mutableStateOf(false) }
+            var autoAdvanceRemaining by remember(exoPlayer) { mutableStateOf<Int?>(null) }
+
             // Opening a fullscreen player that did NOT adopt the docked instance supersedes it:
             // release the stale mini (a different channel, or any VOD -- the choice to close the
             // live mini when VOD starts). After an adopt, the session is already cleared so this
@@ -588,6 +603,8 @@ fun LivePlayerScreen(
                             playerError = null
                             autoRetryAttempt = 0
                         }
+                        // Arm autoplay-next; the LaunchedEffect below decides if it actually applies.
+                        if (playbackState == Player.STATE_ENDED) playbackEnded = true
                     }
 
                     // Feeds the subtitle picker: text tracks become known once the stream is parsed
@@ -753,10 +770,15 @@ fun LivePlayerScreen(
             // is force-selected. Re-runs on a player rebuild (channel switch / retry) so the choice
             // survives, and when the user changes it. textTracks is a key so a just-arrived track
             // that matches the current pick gets (re)applied once it's actually available.
-            LaunchedEffect(exoPlayer, subtitleChoice, textTracks, audioChoice, audioTracks) {
+            LaunchedEffect(exoPlayer, subtitleChoice, textTracks, audioChoice, audioTracks, preferredAudioLang) {
                 exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
                     .withSubtitle(subtitleChoice)
                     .withAudioTrack(audioChoice)
+                    // Preferred audio language only applies when the user hasn't force-picked a track
+                    // in the player HUD (an explicit override always wins). Blank pref = automatic.
+                    .buildUpon()
+                    .setPreferredAudioLanguage(if (audioChoice == null) preferredAudioLang.ifBlank { null } else null)
+                    .build()
             }
             // Apply the playback speed to the player. Re-runs on a player rebuild (retry/channel
             // switch) so the chosen rate survives, and when the user changes it.
@@ -767,6 +789,21 @@ fun LivePlayerScreen(
             // the processor reads delayMs live off the audio thread so no player rebuild is needed.
             LaunchedEffect(audioDelayProcessor, audioOffsetMs) {
                 audioDelayProcessor.delayMs = audioOffsetMs
+            }
+            // Autoplay-next: when a VOD episode ends, the delay is set, and a next episode exists,
+            // count down then advance. Keyed to playbackEnded (reset on the fresh player) so it fires
+            // once per episode; a manual skip/leave rebuilds the player and cancels this.
+            LaunchedEffect(playbackEnded, autoplayNextDelay) {
+                if (!playbackEnded) { autoAdvanceRemaining = null; return@LaunchedEffect }
+                val idx = state.siblingEpisodeIds.indexOf(state.currentEpisodeId)
+                val hasNext = state.currentEpisodeId != null && idx in 0 until state.siblingEpisodeIds.lastIndex
+                if (state.media?.isLive != false || autoplayNextDelay <= 0L || !hasNext) return@LaunchedEffect
+                for (s in autoplayNextDelay.toInt() downTo 1) {
+                    autoAdvanceRemaining = s
+                    delay(1000)
+                }
+                autoAdvanceRemaining = null
+                viewModel.switchEpisode(1)
             }
 
             // Sideload downloaded subtitles by re-setting the MediaItem with them attached, seeking
@@ -859,6 +896,11 @@ fun LivePlayerScreen(
                 onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
             }
 
+            // User subtitle appearance (Phase 2): our style overrides embedded caption styling so it
+            // applies consistently. Rebuilt only when a subtitle-appearance pref changes.
+            val captionStyle = remember(subtitleEdge, subtitleColor, subtitleFont) {
+                buildCaptionStyle(context, subtitleEdge, subtitleColor, subtitleFont)
+            }
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {
@@ -867,6 +909,11 @@ fun LivePlayerScreen(
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         player = exoPlayer
                         resizeMode = aspectMode.resizeMode
+                        subtitleView?.apply {
+                            setApplyEmbeddedStyles(false)
+                            setStyle(captionStyle)
+                            setFractionalTextSize(subtitleTextScale.fraction)
+                        }
                     }
                 },
                 // exoPlayer is remember(streamUrl, retryCount, hardwareDecoding) -- a NEW instance
@@ -876,6 +923,11 @@ fun LivePlayerScreen(
                 update = { view ->
                     view.player = exoPlayer
                     view.resizeMode = aspectMode.resizeMode
+                    view.subtitleView?.apply {
+                        setApplyEmbeddedStyles(false)
+                        setStyle(captionStyle)
+                        setFractionalTextSize(subtitleTextScale.fraction)
+                    }
                 },
             )
 
@@ -1181,6 +1233,39 @@ fun LivePlayerScreen(
                     onDismiss = { showSubtitleSearch = false },
                 )
             }
+
+            // Autoplay-next countdown -- a focus-trapping dialog (TV convention) so the remote can
+            // cancel or skip the wait. Dismiss/Cancel stops the auto-advance; Play now advances now.
+            val remaining = autoAdvanceRemaining
+            if (remaining != null) {
+                Dialog(
+                    onDismissRequest = { playbackEnded = false; autoAdvanceRemaining = null },
+                    properties = DialogProperties(usePlatformDefaultWidth = false),
+                ) {
+                    AreDialog(
+                        onDismiss = { playbackEnded = false; autoAdvanceRemaining = null },
+                        title = stringResource(R.string.player_autoplay_next_title),
+                        actions = {
+                            AreButton(
+                                stringResource(R.string.action_cancel),
+                                onClick = { playbackEnded = false; autoAdvanceRemaining = null },
+                                variant = AreButtonVariant.Ghost,
+                            )
+                            AreButton(
+                                stringResource(R.string.player_autoplay_play_now),
+                                onClick = { autoAdvanceRemaining = null; viewModel.switchEpisode(1) },
+                                variant = AreButtonVariant.Primary,
+                            )
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(R.string.player_autoplay_next_in, remaining),
+                            style = AreIptvTheme.typography.body,
+                            color = AreIptvTheme.colors.textSecondary,
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -1203,7 +1288,7 @@ fun LivePlayerScreen(
 private fun UpNextDialog(channelTitle: String?, programs: List<UpNextProgram>, onDismiss: () -> Unit) {
     val colors = AreIptvTheme.colors
     val zone = ZoneId.systemDefault()
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val timeFormatter = rememberClockFormatter()
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -1328,6 +1413,34 @@ private fun PlayerErrorState(
             }
         }
     }
+}
+
+/** Builds the Media3 [CaptionStyleCompat] from the user's subtitle-appearance prefs (Phase 2).
+ * Foreground = chosen color; edge/background follow the style; typeface from the font choice
+ * (Vazirmatn is the bundled face that renders Persian/Arabic subtitles well). */
+private fun buildCaptionStyle(
+    context: android.content.Context,
+    edge: com.arashrahimi46.iptv.data.settings.SubtitleEdge,
+    color: com.arashrahimi46.iptv.data.settings.SubtitleColorChoice,
+    font: com.arashrahimi46.iptv.data.settings.SubtitleFontChoice,
+): CaptionStyleCompat {
+    val transparent = android.graphics.Color.TRANSPARENT
+    val black = android.graphics.Color.BLACK
+    val boxBg = 0xCC000000.toInt()
+    val (bg, edgeType) = when (edge) {
+        com.arashrahimi46.iptv.data.settings.SubtitleEdge.BOX -> boxBg to CaptionStyleCompat.EDGE_TYPE_NONE
+        com.arashrahimi46.iptv.data.settings.SubtitleEdge.OUTLINE -> transparent to CaptionStyleCompat.EDGE_TYPE_OUTLINE
+        com.arashrahimi46.iptv.data.settings.SubtitleEdge.SHADOW -> transparent to CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW
+    }
+    val typeface = when (font) {
+        com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.DEFAULT -> null
+        com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.SANS -> android.graphics.Typeface.SANS_SERIF
+        com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.SERIF -> android.graphics.Typeface.SERIF
+        com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.MONO -> android.graphics.Typeface.MONOSPACE
+        com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.VAZIRMATN ->
+            androidx.core.content.res.ResourcesCompat.getFont(context, R.font.vazirmatn_regular)
+    }
+    return CaptionStyleCompat(color.argb, bg, transparent, edgeType, black, typeface)
 }
 
 /**

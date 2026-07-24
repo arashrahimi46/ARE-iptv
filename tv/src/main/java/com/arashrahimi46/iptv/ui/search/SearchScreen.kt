@@ -232,6 +232,7 @@ private fun SearchResultsColumn(
                                 isFavorite = channel.id in favoriteChannelIds,
                                 onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
                                 modifier = Modifier.focusRequester(focusRequester),
+                                lockCategory = channel.categoryName,
                             )
                         }
                     }
@@ -252,6 +253,7 @@ private fun SearchResultsColumn(
                                 isFavorite = title.id in favoriteVodIds,
                                 onToggleFavorite = { viewModel.toggleVodFavorite(title) },
                                 focusRequester = focusRequester,
+                                lockCategory = title.categoryName,
                             )
                         }
                     }

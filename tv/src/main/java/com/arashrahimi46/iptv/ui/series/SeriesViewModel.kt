@@ -13,7 +13,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.AdultContentFilter
+import com.arashrahimi46.iptv.data.settings.ParentalFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.browsePager
 import androidx.paging.filter
@@ -68,11 +68,11 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
                     repository.seriesCount(sourceId),
                     selectedCategoryName,
                     settings.pinnedCategories(PIN_NAMESPACE),
-                    settings.isParentalLockEnabled,
-                ) { counts, total, selectedName, pinned, parentalLock ->
+                    settings.parentalFilter,
+                ) { counts, total, selectedName, pinned, parental ->
                     // Parental lock: hide adult genres and subtract them from the "All" total.
-                    val visibleCounts = if (parentalLock) counts.filterNot { AdultContentFilter.isAdult(it.name) } else counts
-                    val allTotal = if (parentalLock) total - counts.filter { AdultContentFilter.isAdult(it.name) }.sumOf { it.count } else total
+                    val visibleCounts = counts.filterNot { parental.hidden(it.name) }
+                    val allTotal = total - counts.filter { parental.hidden(it.name) }.sumOf { it.count }
                     // Pinned genres float to the top (alphabetical); "All series" sits right after the "Favorites" row.
                     val (pinnedCats, others) = visibleCounts
                         .map { SeriesCategorySummary(it.name, it.count, it.name in pinned) }
@@ -97,15 +97,15 @@ class SeriesViewModel(app: Application) : AndroidViewModel(app) {
     val pagingData: Flow<PagingData<VodTitle>> = combine(
         settings.activeSourceId,
         selectedCategoryName,
-        settings.isParentalLockEnabled,
-    ) { sourceId, category, parentalLock -> Triple(sourceId, category, parentalLock) }
-        .flatMapLatest { (sourceId, category, parentalLock) ->
+        settings.parentalFilter,
+    ) { sourceId, category, parental -> Triple(sourceId, category, parental) }
+        .flatMapLatest { (sourceId, category, parental) ->
             if (sourceId == null) flowOf(PagingData.empty())
             else {
                 val pager = if (category == FAVORITES) browsePager { repository.pagingFavoriteSeries(sourceId) }
                     else browsePager { repository.pagingSeries(sourceId, category) }
                 pager.flow
-                    .let { flow -> if (parentalLock) flow.map { it.filter { s -> !AdultContentFilter.isAdult(s.categoryName) } } else flow }
+                    .let { flow -> if (parental.hideLocked) flow.map { it.filter { s -> !parental.hidden(s.categoryName) } } else flow }
             }
         }
         .cachedIn(viewModelScope)

@@ -134,6 +134,111 @@
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <!-- Settings tabs (horizontal strip) -->
+    <string name="settings_tab_general">General</string>
+    <string name="settings_tab_display">Display</string>
+    <string name="settings_tab_playback">Playback</string>
+    <string name="settings_tab_subtitles">Subtitles</string>
+    <string name="settings_tab_parental">Parental</string>
+    <string name="settings_tab_about">About</string>
+    <!-- Display: theme mode + clock -->
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_desc">Choose dark, light, or follow your device</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_clock_title">Clock format</string>
+    <string name="settings_clock_desc">How times appear in the Guide and player</string>
+    <string name="settings_clock_24h">24-hour</string>
+    <string name="settings_clock_12h">12-hour</string>
+    <!-- Catalog stale reminder -->
+    <string name="settings_stale_title">Refresh reminder</string>
+    <string name="settings_stale_desc">Nudge you to refresh when the catalog gets old</string>
+    <string name="settings_stale_7d">7 days</string>
+    <string name="settings_stale_14d">14 days</string>
+    <string name="settings_stale_30d">30 days</string>
+    <string name="settings_stale_off">Off</string>
+    <!-- Phase 3: General preferences -->
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_start_screen_title">Start screen</string>
+    <string name="settings_start_screen_desc">Which screen opens when the app launches.</string>
+    <string name="settings_start_last_used">Last used</string>
+    <string name="settings_auto_refresh_title">Auto-refresh on launch</string>
+    <string name="settings_auto_refresh_desc">Update the catalog in the background when the app opens.</string>
+    <string name="settings_auto_refresh_off">Off</string>
+    <string name="settings_auto_refresh_daily">Daily</string>
+    <string name="settings_auto_refresh_weekly">Weekly</string>
+    <string name="settings_confirm_exit_title">Confirm before exit</string>
+    <string name="settings_confirm_exit_desc">Ask for confirmation when leaving the app.</string>
+    <!-- Phase 3: parental depth -->
+    <string name="settings_section_content_locking">Content locking</string>
+    <string name="settings_relock_title">Auto-relock after</string>
+    <string name="settings_relock_desc">How long a PIN unlock keeps adult content visible.</string>
+    <string name="settings_relock_immediately">Immediately</string>
+    <string name="settings_relock_15min">15 min</string>
+    <string name="settings_relock_1hour">1 hour</string>
+    <string name="settings_relock_never">Never</string>
+    <string name="settings_locked_display_title">Locked content</string>
+    <string name="settings_locked_display_desc">Hide adult content entirely, or show it blurred behind a PIN.</string>
+    <string name="settings_locked_hide">Hide</string>
+    <string name="settings_locked_blur">Blur</string>
+    <string name="settings_pin_launch_title">Require PIN on launch</string>
+    <string name="settings_pin_launch_desc">Ask for the parental PIN each time the app starts.</string>
+    <string name="settings_keywords_title">Custom blocked keywords</string>
+    <string name="settings_keywords_desc">Categories containing any of these words are locked too. Tap a word to remove it.</string>
+    <string name="settings_keywords_placeholder">Add a keyword</string>
+    <string name="settings_keywords_add">Add</string>
+    <!-- Phase 3: What\'s new -->
+    <string name="settings_whats_new">What\'s new</string>
+    <string name="settings_whats_new_title">What\'s new</string>
+    <string name="settings_changelog_1">Fixed various issues and bugs.</string>
+    <string name="settings_changelog_2">Performance and stability improvements.</string>
+    <string name="settings_changelog_3">More customization options in Settings.</string>
+    <!-- Storage &amp; reset -->
+    <string name="settings_section_storage">Storage &amp; reset</string>
+    <string name="settings_clear_cache_title">Clear image cache</string>
+    <string name="settings_clear_cache_desc">Free space used by cached posters and logos</string>
+    <string name="settings_clear_cache_confirm">Clear the cached posters and channel logos? They\'ll re-download when next shown.</string>
+    <string name="settings_clear_history_title">Clear watch history</string>
+    <string name="settings_clear_history_desc">Remove all Continue Watching entries</string>
+    <string name="settings_clear_history_confirm">Clear all Continue Watching progress? This can\'t be undone.</string>
+    <string name="settings_reset_title">Reset to defaults</string>
+    <string name="settings_reset_desc">Restore appearance and playback settings</string>
+    <string name="settings_reset_confirm">Reset appearance and playback settings to their defaults? Your playlists, sign-ins, language, and parental lock are kept.</string>
+    <string name="settings_reset_action">Reset</string>
+    <!-- Playback: preferred audio + autoplay-next delay -->
+    <string name="settings_preferred_audio_title">Preferred audio</string>
+    <string name="settings_preferred_audio_desc">Auto-select this audio language when available</string>
+    <string name="settings_audio_auto">Auto</string>
+    <string name="settings_autoplay_off">Off</string>
+    <string name="settings_autoplay_5s">5s</string>
+    <string name="settings_autoplay_10s">10s</string>
+    <!-- Subtitle appearance -->
+    <string name="settings_section_subtitle_appearance">Subtitle appearance</string>
+    <string name="settings_sub_size_title">Text size</string>
+    <string name="settings_sub_size_desc">Subtitle text size during playback</string>
+    <string name="settings_sub_size_s">S</string>
+    <string name="settings_sub_size_m">M</string>
+    <string name="settings_sub_size_l">L</string>
+    <string name="settings_sub_size_xl">XL</string>
+    <string name="settings_sub_style_title">Style</string>
+    <string name="settings_sub_style_desc">How subtitles are drawn over video</string>
+    <string name="settings_sub_style_box">Box</string>
+    <string name="settings_sub_style_outline">Outline</string>
+    <string name="settings_sub_style_shadow">Shadow</string>
+    <string name="settings_sub_color_title">Color</string>
+    <string name="settings_sub_color_desc">Subtitle text color</string>
+    <string name="settings_sub_font_title">Font</string>
+    <string name="settings_sub_font_desc">Typeface for subtitles</string>
+    <string name="settings_sub_font_default">Default</string>
+    <string name="settings_sub_font_sans">Sans</string>
+    <string name="settings_sub_font_serif">Serif</string>
+    <string name="settings_sub_font_mono">Mono</string>
+    <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
+    <!-- Player: autoplay-next countdown -->
+    <string name="player_autoplay_next_title">Up next</string>
+    <string name="player_autoplay_next_in">Next episode in %1$d s…</string>
+    <string name="player_autoplay_play_now">Play now</string>
     <string name="settings_section_playlists">Playlists &amp; sync</string>
     <string name="settings_refresh_catalog">Refresh catalog</string>
     <string name="settings_refresh_now">Refresh now</string>

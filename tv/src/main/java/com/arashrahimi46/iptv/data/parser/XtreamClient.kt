@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 
 data class XtreamCategory(val id: String, val name: String)
-data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null)
+data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null, val archiveDays: Int = 0)
 data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?, val containerExtension: String?)
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
 data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
@@ -129,6 +129,16 @@ class XtreamClient(
     fun streamUrl(kind: String, streamId: String, ext: String): String =
         "${baseUrl()}/$kind/$username/$password/$streamId.$ext"
 
+    /**
+     * Catch-up / archive stream URL (docs/catchup-v1-design.md). Xtream serves a recorded programme at
+     * `{base}/timeshift/{user}/{pass}/{durationMin}/{yyyy-MM-dd:HH-mm}/{streamId}.{ext}`. [startProviderLocal]
+     * is the programme start already formatted in the PROVIDER's timezone -- NOT the device's; a wrong
+     * offset returns the right programme shifted by hours (see the resolver's formatting + the spec's
+     * resilience notes). Mirrors [streamUrl]'s builder so the same base-URL normalization applies.
+     */
+    fun timeshiftUrl(streamId: String, durationMin: Int, startProviderLocal: String, ext: String = "m3u8"): String =
+        "${baseUrl()}/timeshift/$username/$password/$durationMin/$startProviderLocal/$streamId.$ext"
+
     /** Bulk XMLTV export most Xtream portals expose -- one fetch for the whole EPG rather than N per-channel calls. */
     fun xmltvUrl(): String = "${baseUrl()}/xmltv.php?username=$username&password=$password"
 
@@ -183,6 +193,11 @@ class XtreamClient(
                 // stream to the bulk xmltv.php export by tvgId instead of relying
                 // solely on the N-per-channel get_short_epg fallback (see EpgRepository).
                 epgChannelId = obj.optStringOrNull("epg_channel_id")?.ifBlank { null },
+                // Catch-up / archive: `tv_archive` (0/1) gates it; `tv_archive_duration` is the window
+                // length in days. 0 => no archive on this channel. See docs/catchup-v1-design.md.
+                archiveDays = if (obj.optStringOrNull("tv_archive") == "1")
+                    obj.optStringOrNull("tv_archive_duration")?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+                else 0,
             )
         }
     }

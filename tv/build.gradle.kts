@@ -16,6 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.arashrahimi46.iptv"
         minSdk = 23
+        //noinspection OldTargetApi
         targetSdk = 36
         versionCode = 7
         versionName = "1.4.2"

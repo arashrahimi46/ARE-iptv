@@ -19,8 +19,25 @@ object AdultContentFilter {
         "brazzers", "playboy", "hustler", "+18", "18+",
     )
 
-    fun isAdult(categoryName: String?): Boolean {
+    /**
+     * [extraMarkers] are the user's custom blocked keywords ([UserSettings.parentalKeywords]),
+     * merged with the built-ins so a portal that uses an unusual label can still be caught.
+     */
+    fun isAdult(categoryName: String?, extraMarkers: Set<String> = emptySet()): Boolean {
         val name = categoryName?.lowercase() ?: return false
-        return MARKERS.any { it in name }
+        return MARKERS.any { it in name } || extraMarkers.any { it.isNotBlank() && it in name }
     }
+}
+
+/**
+ * The effective parental filter for a catalog list (see [UserSettings.parentalFilter]).
+ * [hidden] is true only when the item should be dropped entirely -- i.e. the lock is on, the user
+ * chose HIDE (not BLUR), and no session unlock is active. BLUR mode returns false here (items stay
+ * in the list and are obscured at the tile instead), and an active unlock reveals everything.
+ */
+data class ParentalFilter(
+    val hideLocked: Boolean = false,
+    val keywords: Set<String> = emptySet(),
+) {
+    fun hidden(categoryName: String?): Boolean = hideLocked && AdultContentFilter.isAdult(categoryName, keywords)
 }
