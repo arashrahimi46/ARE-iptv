@@ -81,30 +81,38 @@ import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         // Round 1 multi-language support: AppCompatDelegate.setApplicationLocales() only takes
         // effect for an Activity that wraps its base context via AppCompatDelegate -- plain
         // ComponentActivity never applied the selected locale to its Resources at all, which is
         // why the whole feature was silently a no-op (persisted correctly, never rendered). The
-        // AppLocalesMetadataHolderService (see manifest) auto-restores AppCompatDelegate's own
-        // locale store on cold start on API < 33, but as a belt-and-suspenders safeguard we also
-        // resync from the UserSettings/DataStore mirror here in case that store is ever empty
-        // (e.g. first process start after this fix ships, before the service has anything saved).
+        // AppLocalesMetadataHolderService (see manifest, autoStoreLocales) restores AppCompatDelegate's
+        // own locale store on cold start on API < 33, so that is the primary path. As a
+        // belt-and-suspenders safeguard we also resync from the UserSettings/DataStore mirror in
+        // case that store is ever empty -- but OFF the main thread: the old runBlocking DataStore
+        // read here blocked the main thread on a cold disk read during cold start, ANR'ing low-end
+        // API < 33 devices for non-English users (Sentry ANDROID-1, BRAVIA / Android 12). The
+        // re-check of isEmpty inside the coroutine keeps this a no-op once the service has restored.
         if (AppCompatDelegate.getApplicationLocales().isEmpty) {
-            val tag = kotlinx.coroutines.runBlocking {
-                UserSettings(applicationContext).languageTag.first()
-            }
-            if (tag.isNotBlank() && tag != "en") {
-                AppCompatDelegate.setApplicationLocales(
-                    androidx.core.os.LocaleListCompat.forLanguageTags(tag)
-                )
+            lifecycleScope.launch {
+                val tag = withContext(Dispatchers.IO) {
+                    UserSettings(applicationContext).languageTag.first()
+                }
+                if (tag.isNotBlank() && tag != "en" && AppCompatDelegate.getApplicationLocales().isEmpty) {
+                    AppCompatDelegate.setApplicationLocales(
+                        androidx.core.os.LocaleListCompat.forLanguageTags(tag)
+                    )
+                }
             }
         }
-        super.onCreate(savedInstanceState)
         setContent {
             // One Activity-scoped controller owns the in-app "minimized to a corner" live player's
             // ExoPlayer while it's docked, so playback survives navigating between the fullscreen
