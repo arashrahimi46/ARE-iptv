@@ -357,6 +357,7 @@
     <string name="player_subtitles">Субтитры</string>
     <string name="player_aspect_ratio">Соотношение сторон</string>
     <string name="player_playback_speed">Скорость воспроизведения</string>
+    <string name="player_audio_delay">Синхронизация звука</string>
     <string name="player_aspect_fit">Вписать</string>
     <string name="player_aspect_fill">Заполнить</string>
     <string name="player_aspect_stretch">Растянуть</string>

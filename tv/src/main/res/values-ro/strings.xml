@@ -357,6 +357,7 @@
     <string name="player_subtitles">Subtitrări</string>
     <string name="player_aspect_ratio">Raport de aspect</string>
     <string name="player_playback_speed">Viteza de redare</string>
+    <string name="player_audio_delay">Sincronizare audio</string>
     <string name="player_aspect_fit">Încadrare</string>
     <string name="player_aspect_fill">Umplere</string>
     <string name="player_aspect_stretch">Întindere</string>

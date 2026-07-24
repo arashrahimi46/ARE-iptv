@@ -357,6 +357,7 @@
     <string name="player_subtitles">Feliratok</string>
     <string name="player_aspect_ratio">Képarány</string>
     <string name="player_playback_speed">Lejátszási sebesség</string>
+    <string name="player_audio_delay">Hangszinkronizálás</string>
     <string name="player_aspect_fit">Igazítás</string>
     <string name="player_aspect_fill">Kitöltés</string>
     <string name="player_aspect_stretch">Nyújtás</string>

@@ -357,6 +357,7 @@
     <string name="player_subtitles">Undertekster</string>
     <string name="player_aspect_ratio">Bildeformat</string>
     <string name="player_playback_speed">Avspillingshastighet</string>
+    <string name="player_audio_delay">Lydsynkronisering</string>
     <string name="player_aspect_fit">Tilpass</string>
     <string name="player_aspect_fill">Fyll</string>
     <string name="player_aspect_stretch">Strekk</string>

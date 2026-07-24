@@ -15,7 +15,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +48,8 @@ import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreChipSize
 import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.components.AreIconButton
+import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
@@ -263,6 +267,63 @@ fun PlaybackSpeedMenuDialog(
             Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
                 PLAYBACK_SPEEDS.forEach { rate ->
                     SubtitleRow(label = formatPlaybackSpeed(rate), selected = rate == current) { onSelect(rate) }
+                }
+            }
+        }
+    }
+}
+
+/** Audio-delay stepper bounds (ms). Positive-only -- see [DelayAudioProcessor]'s `// monolean:` note. */
+const val AUDIO_DELAY_MIN_MS = 0
+const val AUDIO_DELAY_MAX_MS = 1000
+const val AUDIO_DELAY_STEP_MS = 50
+
+/** Renders an audio offset as a signed "ms" label; a plain "0 ms" when in sync (e.g. "+150 ms"). */
+fun formatAudioDelay(ms: Int): String = if (ms == 0) "0 ms" else String.format(Locale.US, "%+d ms", ms)
+
+/**
+ * Audio-delay ("Audio sync") stepper shown from the player HUD. A −/value/+ control that nudges the
+ * offset in [AUDIO_DELAY_STEP_MS] steps within [AUDIO_DELAY_MIN_MS]..[AUDIO_DELAY_MAX_MS]; 0 ms is in
+ * sync. Same Dialog/[AreDialog] shell as the speed picker so it traps D-pad focus and Back dismisses.
+ * Session-local -- the offset resets per stream. Positive-only (audio shifted later than video).
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun AudioDelayMenuDialog(
+    currentMs: Int,
+    onDismiss: () -> Unit,
+    onChange: (Int) -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(onDismiss = onDismiss, title = stringResource(R.string.player_audio_delay), width = 420.dp) {
+            Column(Modifier.padding(vertical = 8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val decreased = (currentMs - AUDIO_DELAY_STEP_MS).coerceAtLeast(AUDIO_DELAY_MIN_MS)
+                    val increased = (currentMs + AUDIO_DELAY_STEP_MS).coerceAtMost(AUDIO_DELAY_MAX_MS)
+                    AreIconButton(
+                        icon = Icons.Filled.Remove,
+                        contentDescription = formatAudioDelay(decreased),
+                        onClick = { onChange(decreased) },
+                        variant = AreIconButtonVariant.Glass,
+                        disabled = currentMs <= AUDIO_DELAY_MIN_MS,
+                    )
+                    Text(
+                        text = formatAudioDelay(currentMs),
+                        style = AreIptvTheme.typography.h3,
+                        color = AreIptvTheme.colors.textPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    AreIconButton(
+                        icon = Icons.Filled.Add,
+                        contentDescription = formatAudioDelay(increased),
+                        onClick = { onChange(increased) },
+                        variant = AreIconButtonVariant.Glass,
+                        disabled = currentMs >= AUDIO_DELAY_MAX_MS,
+                    )
                 }
             }
         }

@@ -357,6 +357,7 @@
     <string name="player_subtitles">Legendas</string>
     <string name="player_aspect_ratio">Proporção</string>
     <string name="player_playback_speed">Velocidade de reprodução</string>
+    <string name="player_audio_delay">Sincronização de áudio</string>
     <string name="player_aspect_fit">Ajustar</string>
     <string name="player_aspect_fill">Preencher</string>
     <string name="player_aspect_stretch">Esticar</string>

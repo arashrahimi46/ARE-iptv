@@ -192,10 +192,22 @@ fun LivePlayerScreen(
     val preferredSubLang by settings.subtitleLanguage.collectAsState(initial = "en")
     // Video aspect/resize mode: seeded from the saved preference, then overridden locally as the user
     // cycles it from the HUD (the override wins so the change is instant; it's persisted below).
+    // Live channels remember their own aspect (per channel), so switching channels re-seeds from that
+    // channel's saved choice; VOD (no channel id) falls back to the single global default.
     val persistedAspect by settings.videoAspectMode.collectAsState(initial = "FIT")
-    var aspectOverride by remember { mutableStateOf<AspectMode?>(null) }
-    val aspectMode = aspectOverride ?: AspectMode.fromName(persistedAspect)
-    LaunchedEffect(aspectOverride) { aspectOverride?.let { settings.setVideoAspectMode(it.name) } }
+    val aspectByChannel by settings.videoAspectByChannel.collectAsState(initial = emptyMap())
+    val aspectChannelId = state.currentChannelId
+    // Reset the local override per channel so the new channel's own saved aspect is shown.
+    var aspectOverride by remember(aspectChannelId) { mutableStateOf<AspectMode?>(null) }
+    val persistedForChannel = aspectChannelId?.let { aspectByChannel[it.toString()] } ?: persistedAspect
+    val aspectMode = aspectOverride ?: AspectMode.fromName(persistedForChannel)
+    LaunchedEffect(aspectOverride) {
+        aspectOverride?.let { mode ->
+            // Live (channel id present) remembers the choice per channel; VOD keeps the global default.
+            if (aspectChannelId != null) settings.setChannelAspectMode(aspectChannelId.toString(), mode.name)
+            else settings.setVideoAspectMode(mode.name)
+        }
+    }
     // Online subtitles need BOTH the API key (search) and the account login (download). If either is
     // missing the feature is unusable, so the "Search online" entry is hidden until both are set.
     val subsKeyConnected by settings.openSubsCredential.collectAsState(initial = null)
@@ -470,6 +482,12 @@ fun LivePlayerScreen(
             // and whether the picker is open. VOD/recordings only -- the HUD hides it on live.
             var playbackSpeed by remember(media.streamUrl) { mutableStateOf(1f) }
             var showSpeed by remember { mutableStateOf(false) }
+            // Audio-delay state, reset per stream (session-local, not persisted): the offset in ms
+            // applied through the Media3 audio sink (see DelayAudioProcessor) and whether the stepper is
+            // open. The processor instance is stream-scoped so a channel/title switch starts back in sync.
+            val audioDelayProcessor = remember(media.streamUrl) { DelayAudioProcessor() }
+            var audioOffsetMs by remember(media.streamUrl) { mutableStateOf(0) }
+            var showAudioDelay by remember { mutableStateOf(false) }
             // Language sniffed from the selected track's rendered text (rowKey -> language), for
             // tracks the container left untagged. Reset per stream. Read live in the cue listener.
             val detectedLangs = remember(media.streamUrl) { mutableStateMapOf<String, String>() }
@@ -497,7 +515,9 @@ fun LivePlayerScreen(
                     // OFF additionally allows software/extension decoders as a compatibility
                     // fallback (EXTENSION_RENDERER_MODE_ON) for streams the platform decoder can't
                     // handle, at the cost of more CPU/battery use.
-                    val renderersFactory = DefaultRenderersFactory(context).apply {
+                    // DelayRenderersFactory swaps only the audio sink so the "Audio sync" control can
+                    // shift audio vs. video at runtime (audioDelayProcessor); otherwise it's stock.
+                    val renderersFactory = DelayRenderersFactory(context, audioDelayProcessor).apply {
                         setExtensionRendererMode(
                             if (hardwareDecoding) DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF
                             else DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON,
@@ -742,6 +762,11 @@ fun LivePlayerScreen(
             // switch) so the chosen rate survives, and when the user changes it.
             LaunchedEffect(exoPlayer, playbackSpeed) {
                 exoPlayer.setPlaybackSpeed(playbackSpeed)
+            }
+            // Push the audio-delay offset into the sink's processor. Re-runs when the user retunes it;
+            // the processor reads delayMs live off the audio thread so no player rebuild is needed.
+            LaunchedEffect(audioDelayProcessor, audioOffsetMs) {
+                audioDelayProcessor.delayMs = audioOffsetMs
             }
 
             // Sideload downloaded subtitles by re-setting the MediaItem with them attached, seeking
@@ -1024,6 +1049,10 @@ fun LivePlayerScreen(
                             null
                         },
                         audioTrackActive = audioChoice != null,
+                        // Audio sync: always available -- a ±ms audio-delay stepper to fix out-of-sync
+                        // audio. Show the active offset on the button face only when it's non-zero.
+                        onAudioDelay = { showAudioDelay = true },
+                        audioDelayLabel = if (audioOffsetMs != 0) formatAudioDelay(audioOffsetMs) else null,
                         // Playback speed: VOD/recordings only (hidden on live). Show the active rate on
                         // the button face only when it's non-default.
                         onPlaybackSpeed = if (!media.isLive) {
@@ -1097,6 +1126,14 @@ fun LivePlayerScreen(
                     current = playbackSpeed,
                     onDismiss = { showSpeed = false },
                     onSelect = { playbackSpeed = it; showSpeed = false },
+                )
+            }
+            if (showAudioDelay) {
+                // Stepper stays open across nudges so the user can retune the offset while watching.
+                AudioDelayMenuDialog(
+                    currentMs = audioOffsetMs,
+                    onDismiss = { showAudioDelay = false },
+                    onChange = { audioOffsetMs = it },
                 )
             }
             if (showAudio) {

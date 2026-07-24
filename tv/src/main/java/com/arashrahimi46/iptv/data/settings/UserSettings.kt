@@ -38,6 +38,8 @@ class UserSettings(private val context: Context) {
         val HARDWARE_DECODING = booleanPreferencesKey("hardware_decoding")
         /** Video aspect/resize mode applied in the player (enum name, see AspectMode); default fit. */
         val VIDEO_ASPECT_MODE = stringPreferencesKey("video_aspect_mode")
+        /** Per-live-channel aspect overrides (channelId -> AspectMode name); see [videoAspectByChannel]. */
+        val VIDEO_ASPECT_BY_CHANNEL = stringPreferencesKey("video_aspect_by_channel")
         val AUTOPLAY_NEXT_EPISODE = booleanPreferencesKey("autoplay_next_episode")
         val MINI_PLAYER_BEHAVIOR = stringPreferencesKey("mini_player_behavior")
         val PARENTAL_LOCK_ENABLED = booleanPreferencesKey("parental_lock_enabled")
@@ -122,6 +124,12 @@ class UserSettings(private val context: Context) {
 
     /** Video aspect/resize mode name (see AspectMode in the player); "FIT" (whole picture) by default. */
     val videoAspectMode: Flow<String> = context.dataStore.data.map { it[Keys.VIDEO_ASPECT_MODE] ?: "FIT" }
+
+    /** Per-live-channel aspect overrides (channelId -> AspectMode name); empty until a live channel's
+     * aspect is changed from the HUD. Live playback prefers this over the global [videoAspectMode];
+     * VOD (no channel id) always uses the global default. */
+    val videoAspectByChannel: Flow<Map<String, String>> =
+        context.dataStore.data.map { it[Keys.VIDEO_ASPECT_BY_CHANNEL].parseAspectMap() }
 
     /** User's personal OpenSubtitles API key for online subtitle search; null until they connect one in Settings. */
     val openSubsCredential: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_CRED]?.takeIf { k -> k.isNotBlank() } }
@@ -219,6 +227,16 @@ class UserSettings(private val context: Context) {
 
     suspend fun setVideoAspectMode(mode: String) {
         context.dataStore.edit { it[Keys.VIDEO_ASPECT_MODE] = mode }
+    }
+
+    /** Remembers [mode] (an AspectMode name) as the aspect for a single live [channelId]; other
+     * channels' choices and the global [videoAspectMode] default are untouched. */
+    suspend fun setChannelAspectMode(channelId: String, mode: String) {
+        context.dataStore.edit { prefs ->
+            val map = prefs[Keys.VIDEO_ASPECT_BY_CHANNEL].parseAspectMap().toMutableMap()
+            map[channelId] = mode
+            prefs[Keys.VIDEO_ASPECT_BY_CHANNEL] = map.entries.joinToString(";") { "${it.key}=${it.value}" }
+        }
     }
 
     /** Persists a validated OpenSubtitles API key, or clears it when [key] is null/blank. */
@@ -319,3 +337,10 @@ class UserSettings(private val context: Context) {
 
 private fun String?.parseIdCsv(): List<Long> =
     this?.split(',')?.mapNotNull(String::toLongOrNull) ?: emptyList()
+
+/** Decodes the "id=MODE" pairs (joined by ";") used to store per-channel aspect overrides. */
+private fun String?.parseAspectMap(): Map<String, String> =
+    this?.split(';')?.mapNotNull { pair ->
+        val i = pair.indexOf('=')
+        if (i <= 0) null else pair.substring(0, i) to pair.substring(i + 1)
+    }?.toMap() ?: emptyMap()

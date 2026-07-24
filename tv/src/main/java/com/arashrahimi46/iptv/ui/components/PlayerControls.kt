@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -118,6 +119,10 @@ fun ArePlayerControls(
     onAudioTrack: (() -> Unit)? = null,
     /** True when the user has forced a non-default audio track -- lights the button. */
     audioTrackActive: Boolean = false,
+    /** Opens the audio-delay ("Audio sync") stepper; null keeps the button hidden. */
+    onAudioDelay: (() -> Unit)? = null,
+    /** The active offset rendered on the audio-delay button face (e.g. "+150 ms"); null when in sync. */
+    audioDelayLabel: String? = null,
     /** Cycles the video aspect/resize mode (Fit -> Fill -> Stretch); null keeps a dimmed placeholder. */
     onAspectRatio: (() -> Unit)? = null,
     /** Opens the playback-speed picker (VOD/recordings only); null hides the button (e.g. live). */
@@ -333,6 +338,17 @@ fun ArePlayerControls(
                 )
             } else {
                 StaticGlyph(Icons.Filled.Audiotrack, stringResource(R.string.player_audio_track))
+            }
+            // Audio sync: a ±ms audio-delay stepper to fix out-of-sync audio. The button face shows the
+            // active offset (audioDelayLabel) once it's non-zero, else the generic label; lit when set.
+            if (onAudioDelay != null) {
+                AreIconButton(
+                    Icons.Filled.Sync,
+                    audioDelayLabel ?: stringResource(R.string.player_audio_delay),
+                    onClick = onAudioDelay,
+                    variant = AreIconButtonVariant.Glass,
+                    active = audioDelayLabel != null,
+                )
             }
             // Subtitles: real picker (Off / embedded tracks / online search) once tracks are known;
             // a dimmed placeholder before then (onSubtitles == null). Lit when a track is active.

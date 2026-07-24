@@ -357,6 +357,7 @@
     <string name="player_subtitles">Untertitel</string>
     <string name="player_aspect_ratio">Seitenverhältnis</string>
     <string name="player_playback_speed">Wiedergabegeschwindigkeit</string>
+    <string name="player_audio_delay">Audio-Synchronisation</string>
     <string name="player_aspect_fit">Anpassen</string>
     <string name="player_aspect_fill">Ausfüllen</string>
     <string name="player_aspect_stretch">Strecken</string>
