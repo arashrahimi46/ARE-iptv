@@ -74,6 +74,11 @@ data class AreIptvColors(
     val surface3: Color,
     val surfaceOverlay: Color,
     val surfaceGlass: Color,
+    // Glass surface language: an elevated (denser) fill for modals/HUD over media so text stays
+    // legible, plus the two stops of the "lit edge" gradient border (bright top -> faint bottom).
+    val surfaceGlassElevated: Color,
+    val glassHighlight: Color,
+    val borderGlass: Color,
     val textPrimary: Color,
     val textSecondary: Color,
     val textTertiary: Color,
@@ -121,6 +126,9 @@ val AreIptvDarkColors = AreIptvColors(
     surface3 = Ink600,
     surfaceOverlay = Color(0xD10E1015), // rgba(14,16,21,0.82)
     surfaceGlass = Color(0x8C1E222C), // rgba(30,34,44,0.55)
+    surfaceGlassElevated = Color(0xB814161C), // rgba(20,22,28,0.72)
+    glassHighlight = Color(0x38FFFFFF), // white 0.22
+    borderGlass = Color(0x1AFFFFFF), // white 0.10
     textPrimary = White,
     textSecondary = Ink200,
     textTertiary = Ink250,
@@ -147,6 +155,9 @@ val AreIptvLightColors = AreIptvColors(
     surface3 = LightSurface3,
     surfaceOverlay = Color(0xDBFFFFFF), // rgba(255,255,255,0.86)
     surfaceGlass = Color(0x99FFFFFF), // rgba(255,255,255,0.6)
+    surfaceGlassElevated = Color(0xD1FFFFFF), // rgba(255,255,255,0.82)
+    glassHighlight = Color(0xB3FFFFFF), // white 0.70
+    borderGlass = Color(0x240F141E), // ink 0.14 -- light needs a dark edge to read
     textPrimary = LightTextPrimary,
     textSecondary = LightTextSecondary,
     textTertiary = LightTextTertiary,

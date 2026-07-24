@@ -25,6 +25,7 @@ import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -272,6 +273,9 @@ fun TvFocusable(
     /** Optional 1dp outline drawn over the fill (under the focus ring) -- lets low-contrast
      *  fills (e.g. an unselected chip on a white card in light mode) read as a distinct shape. */
     borderColor: Color? = null,
+    /** Optional gradient border (the glass "lit edge"). Takes precedence over [borderColor] when
+     *  set, so a glassified component can carry the highlight->faint hairline without forking. */
+    borderBrush: Brush? = null,
     enabled: Boolean = true,
     /** Long-press (hold OK ~[LONG_PRESS_MS]) handler; when null the control has short-press only. */
     onLongClick: (() -> Unit)? = null,
@@ -286,7 +290,13 @@ fun TvFocusable(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
             .background(backgroundColor, shape)
-            .then(if (borderColor != null) Modifier.border(1.dp, borderColor, shape) else Modifier)
+            .then(
+                when {
+                    borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)
+                    borderColor != null -> Modifier.border(1.dp, borderColor, shape)
+                    else -> Modifier
+                },
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,

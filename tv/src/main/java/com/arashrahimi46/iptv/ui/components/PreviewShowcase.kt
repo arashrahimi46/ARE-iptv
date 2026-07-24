@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * A single scrollable grid of every Phase 0 component for quick visual QA —
@@ -89,6 +91,24 @@ fun PreviewShowcaseContent() {
             AreRail(title = "Continue Watching", smart = true) {
                 items(listOf("Oppenheimer", "The Bear", "Dune Part Two")) { name ->
                     AreContinueCard(title = name, onClick = {}, meta = "Movie")
+                }
+            }
+        }
+        ShowcaseSection("Glass surfaces") {
+            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                Box(
+                    Modifier
+                        .glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg))
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                ) {
+                    Text("Glass · translucent", style = AreIptvTheme.typography.body, color = AreIptvTheme.colors.textPrimary)
+                }
+                Box(
+                    Modifier
+                        .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                ) {
+                    Text("Glass · elevated (modal/HUD)", style = AreIptvTheme.typography.body, color = AreIptvTheme.colors.textPrimary)
                 }
             }
         }
