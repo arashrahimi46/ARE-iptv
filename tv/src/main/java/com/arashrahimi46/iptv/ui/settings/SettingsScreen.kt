@@ -35,6 +35,7 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -91,29 +92,22 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     }
 }
 
-/** Horizontal tab strip -- a focus group of accent-ring chips (TvFocusable via [AreChip]). */
+/** Horizontal tab strip -- a glass segmented control (design §6c). Padded so the focused segment's
+ *  accent ring/glow has headroom, then offset back so it lines up with the title/cards. */
 @Composable
 private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit) {
     Row(
-        // horizontalScroll clips its content on all four edges, cutting off a focused chip's
-        // accent ring/glow. Pad inside the scroll on every side so the glow has headroom, then
-        // offset the whole strip back by the same horizontal amount so the first chip still lines
-        // up with the title/cards (the left glow spills harmlessly into the safe-area margin).
         modifier = Modifier
             .offset(x = (-14).dp)
-            .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 14.dp, vertical = 14.dp)
-            .focusGroup(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
     ) {
-        SettingsTab.entries.forEach { tab ->
-            AreChip(
-                text = stringResource(tab.labelRes),
-                selected = tab == selected,
-                onClick = { onSelect(tab) },
-            )
-        }
+        AreSegmentedControl(
+            options = SettingsTab.entries,
+            selected = selected,
+            label = { stringResource(it.labelRes) },
+            onSelect = onSelect,
+        )
     }
 }
 

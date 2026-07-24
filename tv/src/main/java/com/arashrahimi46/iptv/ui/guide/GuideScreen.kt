@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
@@ -112,9 +113,12 @@ fun GuideScreen(
         ) {
             Text(text = stringResource(R.string.guide_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.weight(1f))
-            GuideDay.entries.forEach { day ->
-                AreChip(text = stringResource(day.labelRes), onClick = { viewModel.selectDay(day) }, selected = day == state.day)
-            }
+            AreSegmentedControl(
+                options = GuideDay.entries,
+                selected = state.day,
+                label = { stringResource(it.labelRes) },
+                onSelect = { viewModel.selectDay(it) },
+            )
         }
         Box(Modifier.height(spacing.sp5))
 

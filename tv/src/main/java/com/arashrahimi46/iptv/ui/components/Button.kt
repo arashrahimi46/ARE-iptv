@@ -27,6 +27,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** Visual style, mirrors the design system's `variant` prop (Button.jsx). */
 enum class AreButtonVariant { Primary, Secondary, Ghost, Danger }
@@ -67,7 +68,8 @@ fun AreButton(
 
     val (enabledBg, enabledFg) = when (variant) {
         AreButtonVariant.Primary -> colors.accent to colors.accentFg
-        AreButtonVariant.Secondary -> colors.surface2 to colors.textPrimary
+        // Secondary is the app's common "card"/Change button -> glass fill + lit-edge gradient.
+        AreButtonVariant.Secondary -> colors.surfaceGlass to colors.textPrimary
         AreButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
         AreButtonVariant.Danger -> colors.danger to Color.White
     }
@@ -82,7 +84,10 @@ fun AreButton(
     // unfocused secondary cards had no visible edge in light mode (the "Choose a playlist" list
     // read as floating text). Give them a border so they read as distinct cards; harmless in dark
     // where borderDefault is a faint white overlay.
-    val borderColor = if (variant == AreButtonVariant.Secondary && !disabled) colors.borderDefault else null
+    // Secondary's glass fill carries the lit-edge gradient (which also gives the needed light-mode
+    // edge); disabled secondary falls back to a solid neutral outline.
+    val glassBorder = if (variant == AreButtonVariant.Secondary && !disabled) glassBorderBrush() else null
+    val borderColor = if (variant == AreButtonVariant.Secondary && disabled) colors.borderDefault else null
 
     TvFocusable(
         onClick = onClick,
@@ -92,6 +97,7 @@ fun AreButton(
         shape = shape,
         backgroundColor = background,
         borderColor = borderColor,
+        borderBrush = glassBorder,
         onLongClick = onLongClick,
         enabled = !disabled,
     ) { _, _ ->

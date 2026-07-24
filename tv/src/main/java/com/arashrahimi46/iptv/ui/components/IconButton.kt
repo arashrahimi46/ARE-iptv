@@ -22,6 +22,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
 enum class AreIconButtonVariant { Solid, Glass, Ghost }
@@ -66,6 +67,8 @@ fun AreIconButton(
     }
     val resolvedBackground = if (active) colors.accent else background
     val resolvedContentColor = contentTint ?: if (active) colors.accentFg else contentColor
+    // Glass variant carries the "lit edge" gradient hairline (not when accent-active).
+    val glassBorder = if (variant == AreIconButtonVariant.Glass && !active) glassBorderBrush() else null
 
     TvFocusable(
         onClick = onClick,
@@ -73,6 +76,7 @@ fun AreIconButton(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = if (disabled) resolvedBackground.copy(alpha = 0.4f) else resolvedBackground,
+        borderBrush = glassBorder,
         enabled = !disabled,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {

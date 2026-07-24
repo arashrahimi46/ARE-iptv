@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,6 +57,7 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
@@ -196,6 +198,9 @@ private fun SidebarNavRow(
 ) {
     val colors = AreIptvTheme.colors
     val label = stringResource(item.labelRes)
+    // Three visually-distinct states (design §6b): rest = transparent, focused = glass fill +
+    // lit-edge gradient (on top of the TvFocusable ring), current screen = accent chip.
+    val focused by interactionSource.collectIsFocusedAsState()
 
     TvFocusable(
         onClick = onClick,
@@ -205,7 +210,12 @@ private fun SidebarNavRow(
             .focusRequester(focusRequester),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
-        backgroundColor = if (active) colors.accentWash else Color.Transparent,
+        backgroundColor = when {
+            active -> colors.accentWash
+            focused -> colors.surfaceGlass
+            else -> Color.Transparent
+        },
+        borderBrush = if (focused && !active) glassBorderBrush() else null,
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
         Row(

@@ -24,7 +24,7 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
-import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
@@ -80,15 +80,18 @@ fun FavoritesScreen(
         Column(Modifier.padding(horizontal = spacing.safeX)) {
             Text(text = stringResource(R.string.favorites_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp6))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                listOf(
-                    "channels" to stringResource(R.string.favorites_tab_channels),
-                    "movies" to stringResource(R.string.favorites_tab_movies),
-                    "series" to stringResource(R.string.favorites_tab_series),
-                ).forEach { (id, label) ->
-                    AreChip(text = label, selected = id == tab, onClick = { selectedTab = id })
-                }
-            }
+            AreSegmentedControl(
+                options = listOf("channels", "movies", "series"),
+                selected = tab,
+                label = {
+                    when (it) {
+                        "channels" -> stringResource(R.string.favorites_tab_channels)
+                        "movies" -> stringResource(R.string.favorites_tab_movies)
+                        else -> stringResource(R.string.favorites_tab_series)
+                    }
+                },
+                onSelect = { selectedTab = it },
+            )
         }
 
         Box(Modifier.padding(top = spacing.sp8))

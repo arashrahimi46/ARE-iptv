@@ -30,10 +30,10 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
-import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
@@ -47,11 +47,6 @@ import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
  * movies/series -- reusing [AreChannelTile]/[ArePosterTile]. No ranking
  * backend: plain substring match over the already-loaded catalog, per spec.
  */
-@Composable
-private fun ScopeChip(label: String, value: SearchScope, current: SearchScope, onSelect: (SearchScope) -> Unit) {
-    AreChip(text = label, selected = value == current, onClick = { onSelect(value) })
-}
-
 @Composable
 fun SearchScreen(
     onChannelSelected: (Channel) -> Unit,
@@ -186,12 +181,19 @@ private fun SearchResultsColumn(
         // and steals width from this column, the trailing chips get pushed past the
         // physical screen edge and clip almost entirely out of view -- FlowRow (already
         // used for the results below) wraps them to a second line instead.
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScopeChip(stringResource(R.string.search_scope_all), SearchScope.All, state.scope, viewModel::setScope)
-            ScopeChip(stringResource(R.string.search_scope_live), SearchScope.LiveTv, state.scope, viewModel::setScope)
-            ScopeChip(stringResource(R.string.search_scope_movies), SearchScope.Movies, state.scope, viewModel::setScope)
-            ScopeChip(stringResource(R.string.search_scope_series), SearchScope.Series, state.scope, viewModel::setScope)
-        }
+        AreSegmentedControl(
+            options = listOf(SearchScope.All, SearchScope.LiveTv, SearchScope.Movies, SearchScope.Series),
+            selected = state.scope,
+            label = {
+                when (it) {
+                    SearchScope.All -> stringResource(R.string.search_scope_all)
+                    SearchScope.LiveTv -> stringResource(R.string.search_scope_live)
+                    SearchScope.Movies -> stringResource(R.string.search_scope_movies)
+                    SearchScope.Series -> stringResource(R.string.search_scope_series)
+                }
+            },
+            onSelect = viewModel::setScope,
+        )
         Box(Modifier.padding(top = 18.dp))
         if (state.categoryFilter != null) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {

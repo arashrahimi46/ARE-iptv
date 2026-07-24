@@ -24,6 +24,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 enum class AreChipSize { Small, Medium }
 
@@ -48,8 +49,12 @@ fun AreChip(
     val paddingH = if (size == AreChipSize.Small) 14.dp else 18.dp
     val shape = RoundedCornerShape(AreIptvTheme.radius.pill)
 
-    val background = if (selected) colors.accent else colors.surface2
+    // Unselected chips are glass pills; selected stays the solid accent.
+    val background = if (selected) colors.accent else colors.surfaceGlass
     val contentColor = if (selected) colors.accentFg else colors.textSecondary
+    // The lit-edge gradient gives unselected pills their shape (incl. the light-mode edge the fill
+    // can't provide); selected accent chips need no border.
+    val glassBorder = if (selected) null else glassBorderBrush()
 
     TvFocusable(
         onClick = onClick,
@@ -57,10 +62,7 @@ fun AreChip(
         interactionSource = interactionSource,
         shape = shape,
         backgroundColor = background,
-        // Unselected chips over a near-white surface (light mode) barely register as pills --
-        // an outline gives the shape definition the fill can't. Selected chips are the solid
-        // accent and need none.
-        borderColor = if (selected) null else colors.borderDefault,
+        borderBrush = glassBorder,
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
