@@ -79,6 +79,21 @@ data class PlayableMedia(
 /** One upcoming/now-playing programme for the currently-playing channel's mini up-next panel. */
 data class UpNextProgram(val title: String, val startMs: Long, val endMs: Long, val isNow: Boolean)
 
+/**
+ * Catch-up playback context (docs/catchup-v1-design.md, D7/D2/D11): non-null only while an archive
+ * programme is playing. Drives the player HUD's ⟲ CATCH-UP pill, "aired …" label, Go Live button,
+ * and ⏮/⏭ program-hop. [previous]/[next] are the immediate aired neighbours (start,end epoch ms) on
+ * the same channel within the archive window, or null at an edge (no hop that way).
+ */
+data class CatchupPlayback(
+    val channelId: Long,
+    val programStartMs: Long,
+    val programEndMs: Long,
+    val programTitle: String?,
+    val previous: Pair<Long, Long>? = null,
+    val next: Pair<Long, Long>? = null,
+)
+
 data class LivePlayerUiState(
     val media: PlayableMedia? = null,
     val loading: Boolean = true,
@@ -110,6 +125,9 @@ data class LivePlayerUiState(
     /** True when the current media came from a resolve-on-play source (Stalker): its `streamUrl` is a
      * short-lived minted link, so a manual Retry re-mints it ([reload]) instead of replaying a stale URL. */
     val resolveOnPlay: Boolean = false,
+    /** Non-null only while a catch-up/archive programme plays -- drives the player's ⟲ pill, aired
+     * label, Go Live button and ⏮/⏭ program-hop. Null for live/VOD/recording playback. */
+    val catchup: CatchupPlayback? = null,
 )
 
 /**
@@ -396,6 +414,30 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             val resumeVodId = (source as? PlaybackSource.Vod)?.vodTitleId
             val resumeEpisodeId = (source as? PlaybackSource.Episode)?.episodeId
             val resumeRecordingId = (source as? PlaybackSource.LocalRecording)?.recordingId
+            // Catch-up HUD context: the archive programme's title + its immediate aired neighbours on
+            // the same channel (for ⏮/⏭ hop). A neighbour is a valid hop target only if it too is
+            // within the archive window and has already aired -- reuse the Guide's glyph predicate.
+            val catchupPlayback = if (source is PlaybackSource.Catchup && media != null) {
+                db.channelDao().getById(source.channelId)?.let { ch ->
+                    val nowMs = System.currentTimeMillis()
+                    val progs = db.epgProgramDao().programsForChannelInWindow(
+                        ch.id, source.programStartMs - 86_400_000L, source.programEndMs + 86_400_000L,
+                    )
+                    val idx = progs.indexOfFirst { source.programStartMs >= it.startMs && source.programStartMs < it.endMs }
+                    val prev = progs.getOrNull(idx - 1)?.takeIf { idx > 0 && com.arashrahimi46.iptv.ui.guide.isCatchupEligible(ch.catchupDays, it.startMs, nowMs) }
+                    val next = progs.getOrNull(idx + 1)?.takeIf { idx >= 0 && com.arashrahimi46.iptv.ui.guide.isCatchupEligible(ch.catchupDays, it.startMs, nowMs) }
+                    CatchupPlayback(
+                        channelId = ch.id,
+                        programStartMs = source.programStartMs,
+                        programEndMs = source.programEndMs,
+                        programTitle = progs.getOrNull(idx)?.title,
+                        previous = prev?.let { it.startMs to it.endMs },
+                        next = next?.let { it.startMs to it.endMs },
+                    )
+                }
+            } else {
+                null
+            }
             _uiState.value = _uiState.value.copy(
                 media = media,
                 loading = false,
@@ -412,8 +454,24 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                 resumeEpisodeId = if (media == null) null else resumeEpisodeId,
                 resumeRecordingId = if (media == null) null else resumeRecordingId,
                 resolveOnPlay = media != null && lastResolveOnPlay,
+                catchup = catchupPlayback,
             )
         }
+    }
+
+    /** D7: leave catch-up and jump to the live edge -- plays the underlying live channel in place
+     *  (loadMedia rebuilds the ExoPlayer on the live URL through the same screen/ViewModel). */
+    fun goLive() {
+        val channelId = _uiState.value.catchup?.channelId ?: return
+        loadMedia(PlaybackSource.Channel(channelId))
+    }
+
+    /** D2/D11: hop to the previous ([direction] < 0) or next aired programme on the same channel,
+     *  within the archive window. No-op at an edge (the button is hidden there anyway). */
+    fun hopCatchupProgram(direction: Int) {
+        val c = _uiState.value.catchup ?: return
+        val target = (if (direction < 0) c.previous else c.next) ?: return
+        loadMedia(PlaybackSource.Catchup(c.channelId, target.first, target.second))
     }
 
     /** [direction] +1 = channel up (next), -1 = channel down (previous). No-op for VOD/episode

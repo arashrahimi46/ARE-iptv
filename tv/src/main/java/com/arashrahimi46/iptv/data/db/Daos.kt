@@ -346,6 +346,12 @@ interface EPGProgramDao {
 
     @Query("SELECT * FROM epg_programs WHERE channelId IN (:channelIds) AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
     fun observeForChannelsInWindow(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>>
+
+    /** Catch-up program-hop / title lookup: one channel's programmes overlapping the window, ordered
+     *  by start. One-shot (not a Flow) -- read once when an archive programme loads to find its title
+     *  and its immediate aired neighbours for the ⏮/⏭ hop. See docs/catchup-v1-design.md. */
+    @Query("SELECT * FROM epg_programs WHERE channelId = :channelId AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
+    suspend fun programsForChannelInWindow(channelId: Long, windowStartMs: Long, windowEndMs: Long): List<EPGProgram>
 }
 
 /**

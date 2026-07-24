@@ -496,6 +496,8 @@
     <string name="player_next_episode">Next episode</string>
     <string name="player_back_10_min">Back 10 minutes</string>
     <string name="player_forward_10_min">Forward 10 minutes</string>
+    <string name="player_previous_program">Previous programme</string>
+    <string name="player_next_program">Next programme</string>
     <string name="player_rewind">Rewind</string>
     <string name="player_pause">Pause</string>
     <string name="player_play">Play</string>

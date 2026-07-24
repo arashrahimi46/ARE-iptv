@@ -336,6 +336,8 @@ fun LivePlayerScreen(
     val nextEpisodeLabel = stringResource(R.string.player_next_episode)
     val back10MinLabel = stringResource(R.string.player_back_10_min)
     val forward10MinLabel = stringResource(R.string.player_forward_10_min)
+    val previousProgramLabel = stringResource(R.string.player_previous_program)
+    val nextProgramLabel = stringResource(R.string.player_next_program)
     // Synthetic error surfaced (P0.1) when auto-retry/fallback gives up on a pure-buffering
     // degradation (no real playerError) with nothing left to fall back to; also doubles as the
     // "already gave up" sentinel compared against below, same role as the old English-only literal.
@@ -870,6 +872,14 @@ fun LivePlayerScreen(
                     skipPreviousLabel = previousEpisodeLabel
                     skipNextLabel = nextEpisodeLabel
                 }
+                // Catch-up (D2/D11): ⏮/⏭ hop to the prev/next aired programme, hidden at an edge.
+                state.catchup != null -> {
+                    val cu = state.catchup!!
+                    skipPrevious = if (cu.previous != null) ({ viewModel.hopCatchupProgram(-1) }) else null
+                    skipNext = if (cu.next != null) ({ viewModel.hopCatchupProgram(1) }) else null
+                    skipPreviousLabel = previousProgramLabel
+                    skipNextLabel = nextProgramLabel
+                }
                 else -> {
                     skipPrevious = { exoPlayer.seekTo((exoPlayer.currentPosition - 600_000).coerceAtLeast(0)) }
                     skipNext = {
@@ -1017,11 +1027,23 @@ fun LivePlayerScreen(
                 }
                 AnimatedVisibility(visible = controlsVisible, enter = fadeIn(), exit = fadeOut()) {
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
+                    // Catch-up: show the archive programme's title + "aired …" window, not the channel
+                    // name/category, so the HUD reflects what's actually playing (D7).
+                    val catchupInfo = state.catchup
+                    val catchupClock = rememberClockFormatter()
+                    val catchupAired = catchupInfo?.let {
+                        val z = ZoneId.systemDefault()
+                        val s = Instant.ofEpochMilli(it.programStartMs).atZone(z).format(catchupClock)
+                        val e = Instant.ofEpochMilli(it.programEndMs).atZone(z).format(catchupClock)
+                        stringResource(R.string.guide_catchup_aired, s, e)
+                    }
                     ArePlayerControls(
-                        title = media.title,
-                        subtitle = media.subtitle,
+                        title = catchupInfo?.programTitle ?: media.title,
+                        subtitle = catchupAired ?: media.subtitle,
                         streamInfo = streamInfo,
                         live = media.isLive,
+                        catchup = catchupInfo != null,
+                        onGoLive = if (catchupInfo != null) ({ viewModel.goLive() }) else null,
                         playing = playing,
                         position = seekPosition,
                         buffered = seekBuffered,

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PictureInPicture
@@ -79,6 +80,12 @@ fun ArePlayerControls(
      * from Media3's decoded video Format. Null hides the tag (VOD, or before the format is known). */
     streamInfo: String? = null,
     live: Boolean = true,
+    /** Catch-up/archive playback: shows a ⟲ CATCH-UP pill in place of the LIVE badge (the stream is a
+     * rewound live channel, played seekably). See docs/catchup-v1-design.md. */
+    catchup: Boolean = false,
+    /** D7: jumps from catch-up to the live edge (plays the underlying live channel). Null hides the
+     * button -- only present during catch-up playback. */
+    onGoLive: (() -> Unit)? = null,
     playing: Boolean = true,
     position: Float = 0.62f,
     buffered: Float = 0.8f,
@@ -173,6 +180,9 @@ fun ArePlayerControls(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (live) {
                         AreBadge(stringResource(R.string.badge_live), tone = AreBadgeTone.Live)
+                    }
+                    if (catchup) {
+                        AreBadge("⟲ ${stringResource(R.string.badge_catchup)}", tone = AreBadgeTone.Catchup)
                     }
                     Text(
                         text = title,
@@ -301,6 +311,11 @@ fun ArePlayerControls(
                 if (onSkipNext != null) {
                     AreIconButton(Icons.Filled.SkipNext, skipNextLabel ?: "", onClick = onSkipNext, variant = AreIconButtonVariant.Glass)
                 }
+            }
+            // Catch-up only (D7): a real button that leaves the archive and jumps to the live edge.
+            if (onGoLive != null) {
+                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
+                AreIconButton(Icons.Filled.LiveTv, stringResource(R.string.guide_catchup_go_live), onClick = onGoLive, variant = AreIconButtonVariant.Glass)
             }
             Box(Modifier.weight(1f))
             // Playback speed: VOD/recordings only (null on live -> not rendered). The button face
