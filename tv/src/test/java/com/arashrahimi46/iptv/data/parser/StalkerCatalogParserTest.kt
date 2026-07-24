@@ -100,4 +100,25 @@ class StalkerCatalogParserTest {
     fun `a link with no http is left intact for the player to reject`() {
         assertEquals("rtmp://p/live/1", stripStalkerCmdPrefix("rtmp://p/live/1"))
     }
+
+    @Test
+    fun `account info round-trips the resolved endpoint so resolve-on-play can skip probing`() {
+        val info = StalkerAccountInfo(
+            mac = "00:1A:79:AB:CD:EF",
+            status = "Active",
+            expiresRaw = "October 21, 2025",
+            host = "http://portal.example:8080",
+            endpoint = "http://portal.example:8080/stalker_portal/server/load.php",
+        )
+        val restored = StalkerAccountInfo.fromJson(info.toJson())!!
+        assertEquals(info.endpoint, restored.endpoint)
+        assertEquals(info.host, restored.host)
+    }
+
+    @Test
+    fun `account info from a pre-endpoint blob leaves endpoint null`() {
+        // Sources imported before Phase 5 have no "endpoint" key — resolve-on-play must fall back to probing.
+        val legacy = """{"mac":"00:1A:79:AB:CD:EF","status":"Active","host":"http://p:8080"}"""
+        assertEquals(null, StalkerAccountInfo.fromJson(legacy)!!.endpoint)
+    }
 }

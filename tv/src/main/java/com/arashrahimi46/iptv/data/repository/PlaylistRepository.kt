@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.parser.M3uParser
 import com.arashrahimi46.iptv.data.parser.OmdbClient
+import com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
 import com.arashrahimi46.iptv.data.parser.StalkerClient
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.parser.parseSeriesEpisode
@@ -324,7 +325,8 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 // externalId is the series parent id (see buildStalkerSeries); drill down for its
                 // seasons/episodes. Each episode stores the season `cmd` in externalId — Phase 3's
                 // resolver mints the real URL at play time (no static stream URL for Stalker).
-                StalkerClient(source.url, mac).getSeriesEpisodes(vodTitle.externalId).map { ep ->
+                val cachedEndpoint = StalkerAccountInfo.fromJson(source.accountInfoJson)?.endpoint
+                StalkerClient(source.url, mac, cachedEndpoint = cachedEndpoint).getSeriesEpisodes(vodTitle.externalId).map { ep ->
                     SeriesEpisode(
                         seriesTitleId = vodTitle.id,
                         season = ep.season,

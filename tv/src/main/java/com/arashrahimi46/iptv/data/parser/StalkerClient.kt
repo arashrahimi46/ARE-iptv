@@ -23,6 +23,12 @@ data class StalkerAccountInfo(
     val expiresRaw: String? = null,
     val phone: String? = null,
     val host: String? = null,
+    /**
+     * The full API endpoint (`host` + the path variant that answered — `/portal.php` etc.) that
+     * [StalkerClient.resolveEndpoint] settled on at import. Persisted so resolve-on-play can skip
+     * re-probing all path variants on every press (design §10, "cache the winner in accountInfoJson").
+     */
+    val endpoint: String? = null,
 ) {
     fun toJson(): String = JSONObject().apply {
         put("mac", mac ?: JSONObject.NULL)
@@ -30,6 +36,7 @@ data class StalkerAccountInfo(
         put("expiresRaw", expiresRaw ?: JSONObject.NULL)
         put("phone", phone ?: JSONObject.NULL)
         put("host", host ?: JSONObject.NULL)
+        put("endpoint", endpoint ?: JSONObject.NULL)
     }.toString()
 
     companion object {
@@ -42,6 +49,7 @@ data class StalkerAccountInfo(
                 expiresRaw = json.stalkerString("expiresRaw"),
                 phone = json.stalkerString("phone"),
                 host = json.stalkerString("host"),
+                endpoint = json.stalkerString("endpoint"),
             )
         }
     }
@@ -109,6 +117,13 @@ data class StalkerEpisode(val season: Int, val episode: Int, val name: String, v
 class StalkerClient(
     portalUrl: String,
     mac: String,
+    /**
+     * A previously-resolved endpoint (from [StalkerAccountInfo.endpoint]) to reuse instead of
+     * probing the path variants again. Resolve-on-play passes this so a play press doesn't spend up
+     * to three round-trips rediscovering the portal's API path. A stale one self-heals: if the first
+     * handshake against it fails, [ensureSession] falls back to a full [resolveEndpoint] probe once.
+     */
+    private val cachedEndpoint: String? = null,
     private val client: OkHttpClient = defaultClient,
 ) {
     private val base: String = run {
@@ -117,8 +132,8 @@ class StalkerClient(
     }
     private val identity = StalkerIdentity.fromMac(mac)
 
-    /** Resolved once by [resolveEndpoint]; the full URL up to `?` that this portal answers on. */
-    private var endpoint: String? = null
+    /** Resolved by [resolveEndpoint] (or seeded from [cachedEndpoint]); the full URL up to `?` that this portal answers on. */
+    private var endpoint: String? = cachedEndpoint?.takeIf { it.isNotBlank() }
 
     /** The short-lived bearer credential minted by [handshake] and sent on every later call. */
     private var bearer: String? = null
@@ -168,6 +183,7 @@ class StalkerClient(
             expiresRaw = js?.stalkerString("end_date"),
             phone = js?.stalkerString("phone"),
             host = base,
+            endpoint = endpoint,
         )
     }
 
@@ -215,6 +231,9 @@ class StalkerClient(
      * [parseStalkerEpisodes] expands those into per-episode entries that share the season's `cmd`.
      */
     suspend fun getSeriesEpisodes(seriesId: String): List<StalkerEpisode> = withContext(Dispatchers.IO) {
+        // Unlike the import-time catalog calls (which run right after authenticate()), this drill-down
+        // is invoked on a fresh client when the user opens a series, so bring the session up first.
+        ensureSession()
         parseStalkerEpisodes(pagedData("series", "get_ordered_list", "&movie_id=$seriesId"))
     }
 
@@ -235,15 +254,38 @@ class StalkerClient(
         }
         val js = call(type, "create_link", extra)
         val raw = js.stalkerString("cmd") ?: js.stalkerString("url")
-            ?: throw StalkerException("The portal did not return a playable link")
+        if (raw.isNullOrBlank()) {
+            // A reachable portal that mints no URL is almost always the connection cap (MAC tied to
+            // one active stream) or a portal-side error string — surface it clearly, not as a hang.
+            val portalError = js.stalkerString("error") ?: js.stalkerString("msg")
+            throw StalkerException(
+                portalError
+                    ?: "The portal didn't return a stream — it may be at its connection limit. Close other streams and try again.",
+            )
+        }
         stripStalkerCmdPrefix(raw)
     }
 
-    /** Bring the session up if it isn't already (endpoint probed + handshake + get_profile), so a bare
-     *  [createLink] works without the caller having run [authenticate] first. */
+    /**
+     * Bring the session up if it isn't already (endpoint probed + handshake + get_profile), so a bare
+     * [createLink] works without the caller having run [authenticate] first. If a [cachedEndpoint] was
+     * seeded but its handshake fails (the portal moved its API path since import), fall back to a full
+     * [resolveEndpoint] probe once before giving up — a stale cache self-heals rather than dead-ends.
+     */
     private suspend fun ensureSession() {
         if (endpoint == null) resolveEndpoint()
-        if (bearer == null) { handshake(); getProfile() }
+        if (bearer == null) {
+            try {
+                handshake()
+            } catch (e: StalkerException) {
+                if (cachedEndpoint != null && endpoint == cachedEndpoint) {
+                    endpoint = null
+                    resolveEndpoint()
+                    handshake()
+                } else throw e
+            }
+            getProfile()
+        }
     }
 
     /**

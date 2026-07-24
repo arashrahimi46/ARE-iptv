@@ -56,8 +56,11 @@ class DefaultStreamUrlResolver(private val credentials: CredentialsStore) : Stre
         val mac = credentials.mac(source.id)
             ?: throw StreamResolveException("Saved MAC for this portal is missing — re-add it to play")
         val stalkerType = if (kind == StreamKind.LIVE) "itv" else "vod"
+        // Reuse the API endpoint discovered at import so a play press doesn't re-probe path variants.
+        val cachedEndpoint = com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
+            .fromJson(source.accountInfoJson)?.endpoint
         return try {
-            StalkerClient(source.url, mac).createLink(cmd, stalkerType, series)
+            StalkerClient(source.url, mac, cachedEndpoint = cachedEndpoint).createLink(cmd, stalkerType, series)
         } catch (e: com.arashrahimi46.iptv.data.parser.StalkerException) {
             // Surface a clear "can't start" rather than a silent null/hang (design §5 accepted
             // consequence: Stalker playback needs the portal reachable at press-time).
