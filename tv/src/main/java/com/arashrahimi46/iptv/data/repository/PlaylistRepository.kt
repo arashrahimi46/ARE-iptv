@@ -882,6 +882,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 tvgId = it.xmltvId,
                 number = it.number,
                 externalId = it.cmd,
+                catchupDays = it.archiveDays,
             )
         }
     }

@@ -95,7 +95,7 @@ class DefaultStreamUrlResolver(private val credentials: CredentialsStore) : Stre
      * Xtream is wired here (Phase 1); Stalker and M3U throw a clear "not available yet" until their phases
      * land, so an accidental call degrades to the D9 message rather than a broken stream.
      */
-    private fun resolveCatchup(
+    private suspend fun resolveCatchup(
         source: PlaylistSource,
         externalId: String?,
         storedUrl: String?,
@@ -116,8 +116,23 @@ class DefaultStreamUrlResolver(private val credentials: CredentialsStore) : Stre
                 val start = xtreamCatchupStart(req.startMs, tz)
                 XtreamClient(source.url, user, pass).timeshiftUrl(streamId, durationMin, start, xtreamCatchupExt(storedUrl))
             }
-            SourceType.STALKER ->
-                throw StreamResolveException("Catch-up isn't available for this portal yet")
+            SourceType.STALKER -> {
+                // Mint an archive link at press-time: create_link with the Ministra &start=<epoch>.
+                // Highest protocol uncertainty (proprietary builds) -- any portal-side failure surfaces
+                // as the D9 message, never a crash, never a live fallback. See docs/catchup-v1-design.md.
+                val cmd = externalId?.takeIf { it.isNotBlank() }
+                    ?: throw StreamResolveException("This channel has no portal command to catch up")
+                val mac = credentials.mac(source.id)
+                    ?: throw StreamResolveException("Saved MAC for this portal is missing — re-add it to catch up")
+                val cachedEndpoint = com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
+                    .fromJson(source.accountInfoJson)?.endpoint
+                try {
+                    StalkerClient(source.url, mac, cachedEndpoint = cachedEndpoint)
+                        .createLink(cmd, "itv", startEpochSec = req.startMs / 1000)
+                } catch (e: com.arashrahimi46.iptv.data.parser.StalkerException) {
+                    throw StreamResolveException(e.message ?: "The portal couldn't start this catch-up stream", e)
+                }
+            }
             SourceType.M3U -> {
                 // Expand the channel's catchup-source template (or derive from the live URL) for the
                 // programme window -- pure, per catchup-type. No stream to rewrite ⇒ D9 message.

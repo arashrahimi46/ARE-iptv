@@ -81,6 +81,9 @@ data class StalkerChannel(
     val logo: String?,
     val xmltvId: String?,
     val categoryId: String?,
+    /** Archive window in days (docs/catchup-v1-design.md, Phase 5): >0 means the portal holds a
+     *  catch-up archive for this channel (drives the Guide glyph); 0 = none. */
+    val archiveDays: Int = 0,
 )
 
 /** A movie from `vod&get_ordered_list`. */
@@ -244,15 +247,13 @@ class StalkerClient(
      * reduces it to the bare URL ExoPlayer needs. [series] is the episode number for a Stalker series
      * (sent as `&series=`, since all episodes of a season share the season's `cmd`). Ensures the
      * session first, so callers can resolve without a separate [authenticate] step.
+     *
+     * Catch-up (Phase 5): when [startEpochSec] is supplied, `&start=<epochSeconds>` is appended so the
+     * portal mints an **archive** link for the programme that aired at that time (Ministra convention).
      */
-    suspend fun createLink(cmd: String, type: String, series: Int? = null): String = withContext(Dispatchers.IO) {
+    suspend fun createLink(cmd: String, type: String, series: Int? = null, startEpochSec: Long? = null): String = withContext(Dispatchers.IO) {
         ensureSession()
-        val extra = buildString {
-            append("&cmd=").append(java.net.URLEncoder.encode(cmd, "UTF-8"))
-            if (series != null) append("&series=").append(series)
-            append("&forced_storage=undefined&disable_ad=0")
-        }
-        val js = call(type, "create_link", extra)
+        val js = call(type, "create_link", stalkerCreateLinkExtra(cmd, series, startEpochSec))
         val raw = js.stalkerString("cmd") ?: js.stalkerString("url")
         if (raw.isNullOrBlank()) {
             // A reachable portal that mints no URL is almost always the connection cap (MAC tied to
@@ -460,8 +461,37 @@ internal fun parseStalkerChannels(data: org.json.JSONArray): List<StalkerChannel
             logo = obj.stalkerString("logo") ?: obj.stalkerString("screenshot_uri"),
             xmltvId = obj.stalkerString("xmltv_id"),
             categoryId = obj.stalkerString("tv_genre_id") ?: obj.stalkerString("genre_id"),
+            archiveDays = stalkerArchiveDays(
+                archiveFlag = obj.stalkerString("archive"),
+                archiveRangeHours = obj.stalkerString("archive_range"),
+                archiveDurationDays = obj.stalkerString("tv_archive_duration"),
+            ),
         )
     }
+
+/**
+ * The catch-up window in days for a Ministra/Stalker channel row (docs/catchup-v1-design.md, Phase 5).
+ * Portal builds vary, so prefer an explicit day count (`tv_archive_duration`), else derive from the
+ * `archive` capability flag + `archive_range` (hours), else default a flagged channel to 7 days.
+ * 0 means no archive. Pure + top-level so the (proprietary, un-probeable) field matrix is unit-testable.
+ */
+internal fun stalkerArchiveDays(archiveFlag: String?, archiveRangeHours: String?, archiveDurationDays: String?): Int {
+    archiveDurationDays?.trim()?.toIntOrNull()?.let { if (it > 0) return it }
+    val enabled = archiveFlag?.trim() == "1"
+    if (!enabled) return 0
+    archiveRangeHours?.trim()?.toIntOrNull()?.let { if (it > 0) return ((it + 23) / 24).coerceAtLeast(1) }
+    return 7
+}
+
+/** The `create_link` query tail. `&start=<epochSeconds>` (when [startEpochSec] set) turns an ordinary
+ *  live/vod link into an archive request (Ministra convention). Pure + top-level so the param shape —
+ *  the least-standardized bit of Stalker catch-up — is unit-testable without a live portal. */
+internal fun stalkerCreateLinkExtra(cmd: String, series: Int?, startEpochSec: Long?): String = buildString {
+    append("&cmd=").append(java.net.URLEncoder.encode(cmd, "UTF-8"))
+    if (series != null) append("&series=").append(series)
+    if (startEpochSec != null) append("&start=").append(startEpochSec)
+    append("&forced_storage=undefined&disable_ad=0")
+}
 
 /** Accumulated `js.data` rows from paged `vod&get_ordered_list`. Falls back to the item id for `cmd` when the portal omits it. */
 internal fun parseStalkerVod(items: List<JSONObject>): List<StalkerVod> =
