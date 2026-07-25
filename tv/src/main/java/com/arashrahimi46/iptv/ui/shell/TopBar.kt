@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
@@ -33,6 +35,12 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 @Composable
 fun AreTopBar(
     modifier: Modifier = Modifier,
+    /**
+     * The current page's title, rendered in the bar's leading slot. Screens used to draw this
+     * themselves below the bar, which left this whole row empty on the leading side and pushed
+     * every page title ~84dp down the screen for no reason. Null on Home (no page title).
+     */
+    title: String? = null,
     onMultiView: () -> Unit = {},
     onSearch: () -> Unit = {},
     onAddPlaylist: () -> Unit = {},
@@ -55,7 +63,18 @@ fun AreTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(Modifier.weight(1f))
+        if (title != null) {
+            Text(
+                text = title,
+                style = AreIptvTheme.typography.h1,
+                color = AreIptvTheme.colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            Box(Modifier.weight(1f))
+        }
         // Customize (edit Home layout) -- only present on Home (onCustomize != null); accent-lit
         // while edit mode is active, matching the old inline "Customize/Done" toggle.
         if (onCustomize != null) {

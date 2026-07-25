@@ -106,13 +106,12 @@ fun GuideScreen(
     // unbounded-height vertical scroll container (same-axis nesting), which is exactly what
     // wrapping this tab in a scrolling container would still do.
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
-        // Header: title + day chips.
+        // Header: day chips (the page title lives in the shell top bar).
         Row(
             modifier = Modifier.padding(horizontal = spacing.safeX).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(text = stringResource(R.string.guide_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
             Box(Modifier.weight(1f))
             AreSegmentedControl(
                 options = GuideDay.entries,

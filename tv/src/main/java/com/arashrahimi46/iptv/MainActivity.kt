@@ -59,6 +59,7 @@ import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.data.settings.ParentalGate
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.ui.components.DefaultSidebarNavItems
 import com.arashrahimi46.iptv.ui.components.LocalParentalBlur
 import com.arashrahimi46.iptv.ui.components.ParentalBlurState
 import com.arashrahimi46.iptv.ui.settings.ParentalPinDialog
@@ -551,6 +552,12 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
         },
         topBar = {
             AreTopBar(
+                // Page title lives in the bar (see AreTopBar.title). Reuses the sidebar's own
+                // label for the route so nav item and page heading can never drift apart -- and
+                // Home stays untitled, since its content starts with its own rail headers.
+                title = DefaultSidebarNavItems
+                    .firstOrNull { it.id == activeNav && it.id != "home" }
+                    ?.let { stringResource(it.labelRes) },
                 onMultiView = { rootNav.navigate("multiview") },
                 onSearch = { if (activeNav != "search") innerNav.selectTab("search") },
                 // Show the existing-playlists picker first (which itself has an "add new" ->

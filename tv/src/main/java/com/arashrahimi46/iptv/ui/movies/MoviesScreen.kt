@@ -80,7 +80,6 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     }
 
     BrowseLayout(
-        title = stringResource(R.string.movies_title),
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,

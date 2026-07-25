@@ -85,8 +85,6 @@ fun StreamsScreen(onStreamSelected: (Long) -> Unit, modifier: Modifier = Modifie
     val openButtonFocus = remember { FocusRequester() }
 
     Column(modifier = modifier.fillMaxSize().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp2, bottom = spacing.sp6)) {
-        Text(text = stringResource(R.string.nav_streams), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
-        Box(Modifier.height(spacing.sp5))
 
         // The VLC "Open network stream" entry point.
         AreButton(

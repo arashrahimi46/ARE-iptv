@@ -82,10 +82,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
     ) {
-        // Title sits high (design: pull the page title up to give the content more room).
-        Box(Modifier.padding(top = spacing.sp2))
-        Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
-        Box(Modifier.padding(top = spacing.sp4))
+        // Page title lives in the shell top bar; content starts straight in on the tab strip.
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
         Box(Modifier.padding(top = spacing.sp5))
         // The visible pane cross-fades + slides slightly when the tab changes, so switching tabs

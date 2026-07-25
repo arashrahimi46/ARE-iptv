@@ -93,7 +93,6 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     }
 
     BrowseLayout(
-        title = stringResource(R.string.live_title),
         titleAccessory = { OnAirNowBadge() },
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,

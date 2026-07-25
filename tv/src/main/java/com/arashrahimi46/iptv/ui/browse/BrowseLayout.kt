@@ -78,7 +78,6 @@ data class BrowseCategoryOption(
  */
 @Composable
 fun <T : Any> BrowseLayout(
-    title: String,
     categories: List<BrowseCategoryOption>,
     selectedIndex: Int,
     onCategorySelected: (Int) -> Unit,
@@ -127,23 +126,21 @@ fun <T : Any> BrowseLayout(
     // real lazy layout and needs a genuine bounded height to lay out against), not
     // each level's own wrap-content guess.
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp1, bottom = spacing.sp3)) {
-        // Header band: the page title sits above the category column (matched 240dp width) and the
+        // Header band: the on-air badge sits above the category column (matched 240dp width) and the
         // section title sits on the SAME line, above the content grid -- so both read at one height
         // and the grid starts as high as possible (poster covers were otherwise pushed down/clipped).
+        // The page title itself lives in the shell top bar (see AreTopBar.title).
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                // min (not fixed) width: matches the 280dp category column for short titles, but
-                // grows so a wide title (e.g. RTL "تلویزیون زنده") doesn't crush the on-air badge
-                // into a one-glyph-per-line strip.
+                // Matches the 280dp category column so the badge aligns with the list beneath it.
                 modifier = Modifier.widthIn(min = 280.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(text = title, style = AreIptvTheme.typography.h1, color = colors.textPrimary, maxLines = 1)
                 titleAccessory?.invoke()
             }
             if (sectionTitle != null) {

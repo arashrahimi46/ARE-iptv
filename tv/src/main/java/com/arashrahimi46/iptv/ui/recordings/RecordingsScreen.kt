@@ -76,13 +76,6 @@ fun RecordingsScreen(
     var toDelete by remember { mutableStateOf<Recording?>(null) }
 
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2)) {
-        Text(
-            text = stringResource(R.string.recordings_title),
-            style = AreIptvTheme.typography.h1,
-            color = colors.textPrimary,
-            modifier = Modifier.padding(horizontal = spacing.safeX),
-        )
-        Box(Modifier.padding(top = spacing.sp6))
 
         if (rows.isEmpty()) {
             Text(

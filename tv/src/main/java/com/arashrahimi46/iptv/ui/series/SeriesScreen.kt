@@ -81,7 +81,6 @@ fun SeriesScreen(onSeriesSelected: (VodTitle) -> Unit, modifier: Modifier = Modi
     }
 
     BrowseLayout(
-        title = stringResource(R.string.series_title),
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
         onCategorySelected = viewModel::selectCategory,
