@@ -130,6 +130,11 @@ data class AreIptvColors(
     val logoWellScrim: Color = Color(0x8C0A0C11), // ink .55, both themes
     /** Strength of the per-tile artwork wash (§6.3.1). */
     val tileWashAlpha: Float = 0.22f,
+    /**
+     * Fill for an input well. Goes DARKER than its parent surface, unlike every other glass token --
+     * a field is recessed into the glass, not sitting on it (see [Modifier.glassWell]).
+     */
+    val glassWellTint: Color = Color(0x3D000000), // black .24
 )
 
 val AreIptvDarkColors = AreIptvColors(
@@ -192,6 +197,7 @@ val AreIptvLightColors = AreIptvColors(
     glassTrackTint = Color(0x170F141E), // ink .09
     backdropVeil = Color(0x00000000), // light needs no darkening veil; the page is already bright
     tileWashAlpha = 0.16f,
+    glassWellTint = Color(0x0F0F141E), // ink .06 -- a light-theme well darkens only slightly
 )
 
 /**

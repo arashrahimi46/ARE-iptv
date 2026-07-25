@@ -58,7 +58,7 @@ fun HomeAddSectionDialog(
         AreDialog(
             onDismiss = onDismiss,
             title = stringResource(R.string.home_add_section_dialog_title),
-            actions = { AreButton(stringResource(R.string.action_close), onClick = onDismiss, variant = AreButtonVariant.Ghost) },
+            actions = { AreButton(stringResource(R.string.action_close), onClick = onDismiss, variant = AreButtonVariant.Secondary) },
         ) {
             if (categories.isEmpty()) {
                 Text(

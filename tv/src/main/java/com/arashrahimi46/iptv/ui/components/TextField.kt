@@ -46,7 +46,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassTrack
+import com.arashrahimi46.iptv.ui.theme.glassWell
 import com.arashrahimi46.iptv.ui.theme.tvFocusable
 
 /**
@@ -134,10 +134,12 @@ fun AreTextField(
                         }
                     } else Modifier,
                 )
-                // V2 §6.1: nested inside glass Settings panels, so glassTrack (tint + lit edge)
-                // instead of an opaque surfaceGlass fill that would compound on the panel. The
+                // V2 §6.1: a field is RECESSED glass (glassWell -- darker fill, inner top shadow,
+                // hairline lit along the bottom), not a raised control. glassTrack made it
+                // translucent but it still read as a flat slab: on a dark page a lit TOP edge says
+                // "sits on top of the glass", which is the opposite of what an input is. The
                 // danger edge still overrides the lit edge when there's a validation error.
-                .glassTrack(shape)
+                .glassWell(shape)
                 .then(if (error != null) Modifier.border(1.dp, colors.danger, shape) else Modifier)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,

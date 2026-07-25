@@ -23,12 +23,9 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.GlassElevation
+import com.arashrahimi46.iptv.ui.theme.ControlTone
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentLensBrush
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
-import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
-import com.arashrahimi46.iptv.ui.theme.lensContentColor
+import com.arashrahimi46.iptv.ui.theme.controlSkin
 
 enum class AreChipSize { Small, Medium }
 
@@ -48,32 +45,26 @@ fun AreChip(
     size: AreChipSize = AreChipSize.Medium,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val colors = AreIptvTheme.colors
     val height = if (size == AreChipSize.Small) 34.dp else 42.dp
     val paddingH = if (size == AreChipSize.Small) 14.dp else 18.dp
     val shape = RoundedCornerShape(AreIptvTheme.radius.pill)
 
-    // Unselected chips are neutral glass tracks (design §6.1: glassTrack tint, not surfaceGlass which
-    // compounds when a chip sits on a glass surface); selected is the accent lens (§6.2) that floats
-    // on a subtle shadow.
-    val selectedBrush = if (selected) accentLensBrush() else null
-    val background = if (selected) Color.Transparent else colors.glassTrackTint
-    // §6.2 contrast note: the lens fill has far less contrast than the old solid gradient, so the
-    // selected label keeps full-weight lens content colour -- it must NOT drop to textSecondary.
-    val contentColor = if (selected) lensContentColor() else colors.textSecondary
-    // The lit-edge gradient gives unselected pills their shape (incl. the light-mode edge the fill
-    // can't provide); the selected lens carries its own brighter, more saturated rim.
-    val glassBorder = if (selected) lensBorderBrush() else glassBorderBrush()
+    // ONE funnel for every control's appearance (see ControlSkin.kt): an unselected chip is neutral
+    // glass, a selected one is the accent lens (§6.2). Nothing about the fill, border, content colour
+    // or lift is decided here, so a chip matches every other control of the same tone.
+    val skin = controlSkin(ControlTone.Neutral, selected = selected)
+    val contentColor = skin.content
 
     TvFocusable(
         onClick = onClick,
         modifier = modifier.height(height),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = background,
-        backgroundBrush = selectedBrush,
-        shadowElevation = if (selected) GlassElevation else 0.dp,
-        borderBrush = glassBorder,
+        backgroundColor = skin.fillColor,
+        backgroundBrush = skin.fillBrush,
+        shadowElevation = skin.elevation,
+        borderColor = skin.borderColor,
+        borderBrush = skin.borderBrush,
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),

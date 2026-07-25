@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.ControlTone
+import com.arashrahimi46.iptv.ui.theme.controlSkin
 
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
 enum class AreIconButtonVariant { Solid, Glass, Ghost }
@@ -59,35 +59,30 @@ fun AreIconButton(
     val dims = dimsFor(size)
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
 
-    val (background, contentColor) = when (variant) {
-        AreIconButtonVariant.Solid -> colors.surface2 to colors.textPrimary
-        // textPrimary (not a hardcoded white) so glass icons read on the frosted panel in BOTH
-        // themes -- white-on-60%-white was invisible in light mode (e.g. the player HUD). Fill is
-        // glassChildTint, not surfaceGlass: a HUD button sits ON the glass HUD bar, and 55% over the
-        // 72% bar compounded to ~87% -- the opaque-square defect. Glass never nests (V2 §6).
-        AreIconButtonVariant.Glass -> colors.glassChildTint to colors.textPrimary
-        AreIconButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
-    }
-    // Active = the accent-gradient chip (design §6b), floating on a subtle shadow -- not a flat accent.
-    val activeBrush = if (active && !disabled) accentGradientBrush() else null
-    val resolvedContentColor = contentTint ?: if (active) colors.accentFg else contentColor
-    // Glass variant carries the glassChild hairline -- a solid borderGlass edge, not the lit-edge
-    // gradient: a nested control is tint + hairline only (V2 §6). Not when accent-active.
-    val glassBorder = if (variant == AreIconButtonVariant.Glass && !active) colors.borderGlass else null
+    // Same single funnel as AreButton (ControlSkin.kt). The Glass variant no longer decides its own
+    // density: whether it is a full glass surface or a nested tint is answered by LocalOnGlass, i.e.
+    // by what it is actually sitting on. The top bar's buttons and the player HUD's buttons are the
+    // same variant on different backgrounds, and only context can tell them apart.
+    val skin = controlSkin(
+        tone = when {
+            active -> ControlTone.Primary
+            variant == AreIconButtonVariant.Ghost -> ControlTone.Ghost
+            else -> ControlTone.Neutral
+        },
+        disabled = disabled,
+    )
+    val resolvedContentColor = contentTint ?: skin.content
 
     TvFocusable(
         onClick = onClick,
         modifier = modifier.size(dims),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = when {
-            active -> if (disabled) colors.accent.copy(alpha = 0.4f) else Color.Transparent
-            disabled -> background.copy(alpha = 0.4f)
-            else -> background
-        },
-        backgroundBrush = activeBrush,
-        shadowElevation = if (activeBrush != null) GlassElevation else 0.dp,
-        borderColor = glassBorder,
+        backgroundColor = skin.fillColor,
+        backgroundBrush = skin.fillBrush,
+        shadowElevation = skin.elevation,
+        borderColor = skin.borderColor,
+        borderBrush = skin.borderBrush,
         enabled = !disabled,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {

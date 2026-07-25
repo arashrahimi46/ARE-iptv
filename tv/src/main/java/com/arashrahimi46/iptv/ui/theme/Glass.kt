@@ -172,6 +172,47 @@ fun Modifier.glassTrack(shape: Shape): Modifier = composed {
 }
 
 /**
+ * An INPUT well -- a text field, search box or any control the user types into.
+ *
+ * Fields are the one control class that must read as **recessed**, not raised. `glassTrack` made
+ * them arithmetically translucent but they still read as flat slabs, because on a dark page every
+ * "raised" cue (lit top edge, tint lighter than its parent) says *this sits on top of the glass* --
+ * the opposite of what a field is. So the cues are inverted here:
+ *
+ *  - the fill goes slightly **darker** than its parent rather than lighter,
+ *  - a soft inner shadow runs down from the top edge, as if the surface were carved,
+ *  - the hairline gradient is flipped: faint at the top, **lit along the bottom**, which is where
+ *    light would actually catch on a recess.
+ *
+ * Depth is carried by the direction of the lighting, not by opacity -- which is why simply raising
+ * the field's alpha never fixed this.
+ */
+fun Modifier.glassWell(shape: Shape): Modifier = composed {
+    val c = AreIptvTheme.colors
+    val shadow = if (c.isDark) Color.Black.copy(alpha = 0.30f) else Color.Black.copy(alpha = 0.10f)
+    this
+        .background(c.glassWellTint, shape)
+        .clip(shape)
+        .drawBehind {
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(shadow, Color.Transparent),
+                    startY = 0f,
+                    endY = size.height * 0.55f,
+                ),
+            )
+        }
+        .border(1.dp, wellBorderBrush(), shape)
+}
+
+/** [glassBorderBrush] inverted -- faint top, lit bottom. The hairline that reads as "recessed". */
+@Composable
+fun wellBorderBrush(): Brush {
+    val c = AreIptvTheme.colors
+    return Brush.verticalGradient(listOf(c.borderGlass, c.glassHighlight))
+}
+
+/**
  * The SELECTION indicator (V2 §6.2). Apple never paints selection: their segmented marker is
  * *clearer and brighter* than the track it slides in, separating by being **more glass** rather than
  * by being opaque. V1 did the opposite -- [accentGradientBrush] laid a fully opaque accent pill on

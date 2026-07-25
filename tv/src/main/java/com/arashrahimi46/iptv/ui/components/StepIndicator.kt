@@ -17,6 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.ControlTone
+import com.arashrahimi46.iptv.ui.theme.controlSkin
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /**
@@ -36,23 +38,30 @@ fun AreStepIndicator(
             val done = index < current
             val active = index == current
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                val badgeBackground = when {
-                    active -> colors.accent
-                    done -> colors.accentWash
-                    else -> colors.glassTrackTint
-                }
-                val badgeContent = when {
-                    active -> colors.accentFg
-                    done -> colors.accentHover
-                    else -> colors.textTertiary
-                }
+                // ONE funnel for the marker's fill/border/content (see ControlSkin.kt): the current
+                // step is the accent lens (§6.2, the same "selected" material as a current tab/chip),
+                // an upcoming step is neutral glass at rest. A completed (done) step keeps its bespoke
+                // accent-wash + check -- the funnel has no "completed" tone, so it is not routed here.
+                val skin = controlSkin(ControlTone.Neutral, selected = active)
+                val badgeFillBrush = if (done) null else skin.fillBrush
+                val badgeFillColor = if (done) colors.accentWash else skin.fillColor
+                val badgeBorderBrush = if (done) null else skin.borderBrush
+                val badgeBorderColor = if (done) null else skin.borderColor
+                val badgeContent = if (done) colors.accentHover else skin.content
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .then(if (active) Modifier.tvGlow(colors.accent, CircleShape) else Modifier)
-                        .background(badgeBackground, CircleShape)
                         .then(
-                            if (!done && !active) Modifier.border(1.dp, colors.borderDefault, CircleShape) else Modifier,
+                            if (badgeFillBrush != null) Modifier.background(badgeFillBrush, CircleShape)
+                            else Modifier.background(badgeFillColor, CircleShape),
+                        )
+                        .then(
+                            when {
+                                badgeBorderBrush != null -> Modifier.border(1.dp, badgeBorderBrush, CircleShape)
+                                badgeBorderColor != null -> Modifier.border(1.dp, badgeBorderColor, CircleShape)
+                                else -> Modifier
+                            },
                         ),
                     contentAlignment = Alignment.Center,
                 ) {

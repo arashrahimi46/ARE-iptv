@@ -26,10 +26,9 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.GlassElevation
+import com.arashrahimi46.iptv.ui.theme.ControlTone
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.controlSkin
 
 /** Visual style, mirrors the design system's `variant` prop (Button.jsx). */
 enum class AreButtonVariant { Primary, Secondary, Ghost, Danger }
@@ -68,32 +67,19 @@ fun AreButton(
     val spec = sizeSpec(size)
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
 
-    val (enabledBg, enabledFg) = when (variant) {
-        AreButtonVariant.Primary -> colors.accent to colors.accentFg
-        // Secondary is the app's common "card"/Change button -> glass fill + lit-edge gradient.
-        AreButtonVariant.Secondary -> colors.surfaceGlass to colors.textPrimary
-        AreButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
-        AreButtonVariant.Danger -> colors.danger to Color.White
-    }
-    // Disabled: dimming both fill and label by the same alpha collapses contrast in light mode
-    // (a 40% accent fill under 40% white text is unreadable -- the "Refresh now" defect). Use a
-    // neutral muted surface + tertiary text so the label stays legible and clearly disabled in
-    // both themes. Ghost stays transparent.
-    val background = if (!disabled) enabledBg
-        else if (variant == AreButtonVariant.Ghost) Color.Transparent else colors.surface3
-    val contentColor = if (disabled) colors.textTertiary else enabledFg
-    // Secondary's surface2 fill is nearly identical to the light bgBase (#F7F9FC on #F3F5F9), so
-    // unfocused secondary cards had no visible edge in light mode (the "Choose a playlist" list
-    // read as floating text). Give them a border so they read as distinct cards; harmless in dark
-    // where borderDefault is a faint white overlay.
-    // Secondary's glass fill carries the lit-edge gradient (which also gives the needed light-mode
-    // edge); disabled secondary falls back to a solid neutral outline.
-    val glassBorder = if (variant == AreButtonVariant.Secondary && !disabled) glassBorderBrush() else null
-    val borderColor = if (variant == AreButtonVariant.Secondary && disabled) colors.borderDefault else null
-    // Primary is the accent-gradient chip (design §5: "Primary = accent-gradient glass"); filled
-    // variants float on a subtle shadow. Ghost stays flat/transparent.
-    val fillBrush = if (variant == AreButtonVariant.Primary && !disabled) accentGradientBrush() else null
-    val elevation = if (!disabled && variant != AreButtonVariant.Ghost) GlassElevation else 0.dp
+    // ONE funnel for every control's appearance (see ControlSkin.kt). Nothing about the fill,
+    // border, content colour or lift is decided here: a button has to look like every other control
+    // of the same tone, and that is only true while exactly one place decides what a tone looks like.
+    val skin = controlSkin(
+        tone = when (variant) {
+            AreButtonVariant.Primary -> ControlTone.Primary
+            AreButtonVariant.Secondary -> ControlTone.Neutral
+            AreButtonVariant.Ghost -> ControlTone.Ghost
+            AreButtonVariant.Danger -> ControlTone.Danger
+        },
+        disabled = disabled,
+    )
+    val contentColor = skin.content
 
     TvFocusable(
         onClick = onClick,
@@ -101,11 +87,11 @@ fun AreButton(
             .height(spec.height),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = if (fillBrush != null) Color.Transparent else background,
-        backgroundBrush = fillBrush,
-        shadowElevation = elevation,
-        borderColor = borderColor,
-        borderBrush = glassBorder,
+        backgroundColor = skin.fillColor,
+        backgroundBrush = skin.fillBrush,
+        shadowElevation = skin.elevation,
+        borderColor = skin.borderColor,
+        borderBrush = skin.borderBrush,
         onLongClick = onLongClick,
         enabled = !disabled,
     ) { _, _ ->
