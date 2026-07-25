@@ -152,7 +152,7 @@ fun <T : Any> BrowseLayout(
                     // default, which floated "N channels" above the title's cap height.
                     itemVerticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(text = sectionTitle, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    Text(text = sectionTitle, style = AreIptvTheme.typography.h3, color = colors.textPrimary)
                     if (sectionCountLabel != null) {
                         Text(text = sectionCountLabel(sectionCount ?: items.itemCount), style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                     }

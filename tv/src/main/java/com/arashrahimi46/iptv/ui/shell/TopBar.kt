@@ -66,7 +66,7 @@ fun AreTopBar(
         if (title != null) {
             Text(
                 text = title,
-                style = AreIptvTheme.typography.h1,
+                style = AreIptvTheme.typography.h2,
                 color = AreIptvTheme.colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

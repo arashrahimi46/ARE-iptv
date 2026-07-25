@@ -26,10 +26,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -67,6 +72,7 @@ enum class SettingsTab(val labelRes: Int) {
     ABOUT(R.string.settings_tab_about),
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -78,12 +84,22 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     val motion = AreIptvTheme.motion
     // rememberSaveable so the chosen tab survives the screen pausing while the player is on top.
     var selectedTab by rememberSaveable { mutableStateOf(SettingsTab.GENERAL) }
+    // Entering from the sidebar must land on the tab strip. The shell's default directional search
+    // otherwise resolves to whichever focusable happens to sit at the sidebar gear's height -- a row
+    // in the middle of the pane, skipping the tabs entirely. This has to be `enter` rather than the
+    // browse screens' request-on-first-frame trick: a LaunchedEffect races that search and loses.
+    val tabsFocus = remember { FocusRequester() }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = spacing.safeX).widthIn(max = 900.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = spacing.safeX)
+            .widthIn(max = 900.dp)
+            .focusGroup()
+            .focusProperties { enter = { tabsFocus } },
     ) {
         // Page title lives in the shell top bar; content starts straight in on the tab strip.
-        SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
+        SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it }, tabsFocus = tabsFocus)
         Box(Modifier.padding(top = spacing.sp5))
         // The visible pane cross-fades + slides slightly when the tab changes, so switching tabs
         // (and its new data appearing) reads as a smooth transition rather than a hard cut. Durations
@@ -114,7 +130,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 /** Horizontal tab strip -- a glass segmented control (design §6c). Padded so the focused segment's
  *  accent ring/glow has headroom, then offset back so it lines up with the title/cards. */
 @Composable
-private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit) {
+private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit, tabsFocus: FocusRequester) {
     Row(
         modifier = Modifier
             .offset(x = (-14).dp)
@@ -126,6 +142,7 @@ private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> U
             selected = selected,
             label = { stringResource(it.labelRes) },
             onSelect = onSelect,
+            selectedFocusRequester = tabsFocus,
         )
     }
 }

@@ -22,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -53,6 +55,13 @@ fun <T> AreSegmentedControl(
     label: @Composable (T) -> String,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Attached to the **selected** segment. Callers whose screen redirects D-pad entry into this
+     * control point their `focusProperties { enter }` here, so arriving from outside lands on the
+     * current tab rather than on whichever end the directional search reaches first (in RTL that
+     * was the far segment -- Settings opened focused on its last tab).
+     */
+    selectedFocusRequester: FocusRequester? = null,
 ) {
     val colors = AreIptvTheme.colors
     val pill = RoundedCornerShape(AreIptvTheme.radius.pill)
@@ -105,6 +114,7 @@ fun <T> AreSegmentedControl(
                     backgroundColor = Color.Transparent,
                     modifier = Modifier
                         .fillMaxHeight()
+                        .then(if (isSelected && selectedFocusRequester != null) Modifier.focusRequester(selectedFocusRequester) else Modifier)
                         .onGloballyPositioned {
                             bounds[index] = it.positionInParent().x to it.size.width.toFloat()
                         },

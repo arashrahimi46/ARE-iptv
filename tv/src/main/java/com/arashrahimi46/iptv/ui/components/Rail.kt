@@ -58,7 +58,7 @@ fun AreRail(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(text = title, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+            Text(text = title, style = AreIptvTheme.typography.h3, color = colors.textPrimary)
             if (smart) {
                 AreBadge(stringResource(R.string.badge_smart), tone = AreBadgeTone.Smart, glow = true)
             }
