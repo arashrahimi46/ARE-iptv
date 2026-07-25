@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
  * A single D-pad-focusable key -- originally built as a building block for a
@@ -28,7 +29,10 @@ fun AreKeyboardKey(label: String, onClick: () -> Unit, modifier: Modifier = Modi
             .height(48.dp)
             .width(if (wide) 120.dp else 48.dp),
         shape = RoundedCornerShape(AreIptvTheme.radius.sm),
-        backgroundColor = colors.surface2,
+        // A key needs its shape to read without a solid fill -- glass track treatment (tint + lit
+        // edge); the focus ring/glow still draws on top.
+        backgroundColor = colors.glassTrackTint,
+        borderBrush = glassBorderBrush(),
     ) { _, _ ->
         Box(Modifier.height(48.dp).width(if (wide) 120.dp else 48.dp), contentAlignment = Alignment.Center) {
             Text(text = label, style = AreIptvTheme.typography.label, color = colors.textPrimary)

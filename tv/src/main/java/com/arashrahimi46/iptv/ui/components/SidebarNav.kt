@@ -62,6 +62,7 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
@@ -125,9 +126,15 @@ fun AreSidebarNav(
             .fillMaxHeight()
             // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
             // lit hairline right edge (the glass seam separating rail from content). Drawn behind
-            // the nav rows. Over the solid page -- no blur (design §6).
+            // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
+            // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which is
+            // the most persistent chrome in the app and so the most visible place to get it wrong.
             .drawBehind {
-                drawRect(Brush.verticalGradient(listOf(colors.surface2, colors.surface1)))
+                drawRect(
+                    Brush.verticalGradient(
+                        listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
+                    ),
+                )
                 val edge = 1.dp.toPx()
                 drawRect(
                     brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
@@ -195,14 +202,13 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            // Accent-lens frosted tile (translucent accent + a brighter lens rim), echoing the same
-            // selection material as the rest of the shell. No glow: it read as a heavy pink halo;
-            // the lens fill + lit rim is enough.
-            .background(accentLensBrush(), shape)
-            .border(1.dp, lensBorderBrush(), shape),
+            // Solid accent gradient, NOT the selection lens: the brand mark is identity, not a
+            // selected state. Turning it translucent drained it in the light theme, where the lens
+            // is a white-over-accent wash. No glow: it read as a heavy halo.
+            .background(accentGradientBrush(), shape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = lensContentColor())
+        Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = colors.accentFg)
     }
 }
 

@@ -49,6 +49,8 @@ import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Step 1 — pick Xtream Codes vs M3U (Onboarding.jsx `SourceCard`). */
 @Composable
@@ -108,7 +110,7 @@ private fun SourceCard(
         modifier = modifier,
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = if (selected) colors.accentWash else colors.surface1,
+        backgroundColor = if (selected) colors.accentWash else colors.surfaceGlass,
     ) { _, _ ->
         Column(
             modifier = Modifier
@@ -123,7 +125,12 @@ private fun SourceCard(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(if (selected) colors.accent else colors.surface3, RoundedCornerShape(AreIptvTheme.radius.md)),
+                    // Selected: solid accent (the active emphasis). Unselected: glass child inside
+                    // the glass card -- tint + hairline, not a second opaque fill.
+                    .then(
+                        if (selected) Modifier.background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.md))
+                        else Modifier.glassChild(RoundedCornerShape(AreIptvTheme.radius.md)),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, contentDescription = null, tint = if (selected) colors.accentFg else colors.textSecondary, modifier = Modifier.size(22.dp))
@@ -234,8 +241,7 @@ fun EpgStep(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.md))
-                .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.md))
+                .glassSurface(RoundedCornerShape(AreIptvTheme.radius.md))
                 .padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -274,8 +280,7 @@ fun ConfirmStep(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
-                .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.lg))
+                .glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg))
                 .padding(horizontal = 18.dp, vertical = 14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {

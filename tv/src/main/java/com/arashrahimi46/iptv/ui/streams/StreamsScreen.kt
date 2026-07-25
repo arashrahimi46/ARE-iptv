@@ -2,7 +2,6 @@
 
 package com.arashrahimi46.iptv.ui.streams
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +50,8 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
@@ -183,8 +184,8 @@ private fun StreamBox(
         onLongClick = onLongClick,
         modifier = modifier,
         shape = shape,
-        backgroundColor = colors.surface2,
-        borderColor = colors.borderDefault,
+        backgroundColor = colors.surfaceGlass,
+        borderBrush = glassBorderBrush(),
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -192,7 +193,7 @@ private fun StreamBox(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(
-                modifier = Modifier.size(40.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.xs)),
+                modifier = Modifier.size(40.dp).glassChild(RoundedCornerShape(AreIptvTheme.radius.xs)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))

@@ -220,9 +220,14 @@ fun lensBorderBrush(): Brush {
     }
 }
 
-/** Label/icon colour that reads on [accentLensBrush] in the current theme (§6.2 contrast note). */
+/**
+ * Label/icon colour that reads on [accentLensBrush] (§6.2 contrast note).
+ *
+ * [textPrimary] in BOTH themes, which is also what Apple does: their light-mode segmented indicator
+ * is white glass with a *dark* label, not a tinted one. Measured on device first with an accent-hued
+ * label, which is where the lens's contrast risk actually bites -- `accent` on the pale light lens
+ * came out around 3:1 for the cooler presets (Cyan/Teal), and even `accentPress` only reached ~4.4:1.
+ * The hue cue lives in the lens FILL; the label doesn't have to carry it too.
+ */
 @Composable
-fun lensContentColor(): Color {
-    val c = AreIptvTheme.colors
-    return if (c.isDark) c.textPrimary else c.accent
-}
+fun lensContentColor(): Color = AreIptvTheme.colors.textPrimary

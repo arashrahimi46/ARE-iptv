@@ -39,7 +39,7 @@ fun AreStepIndicator(
                 val badgeBackground = when {
                     active -> colors.accent
                     done -> colors.accentWash
-                    else -> colors.surface2
+                    else -> colors.glassTrackTint
                 }
                 val badgeContent = when {
                     active -> colors.accentFg

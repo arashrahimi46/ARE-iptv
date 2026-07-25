@@ -69,6 +69,7 @@ import com.arashrahimi46.iptv.ui.player.StreamRetryPolicy
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import kotlinx.coroutines.delay
 
 /**
@@ -187,8 +188,8 @@ private fun EmptyPaneSlot(onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier,
         shape = shape,
         glowColor = colors.accent,
-        backgroundColor = colors.surface1,
-        borderColor = colors.borderDefault,
+        backgroundColor = colors.surfaceGlass,
+        borderBrush = glassBorderBrush(),
         disableScale = true,
     ) { _, _ ->
         Column(
@@ -277,8 +278,10 @@ private fun ChannelPickerDialog(
                         onClick = { onPick(channel) },
                         modifier = Modifier.fillMaxWidth(),
                         glowColor = colors.accent,
-                        backgroundColor = colors.surface1,
-                        borderColor = colors.borderDefault,
+                        // Nested inside the glass picker dialog -- child tint + glass hairline,
+                        // never a second fill (glass must not stack).
+                        backgroundColor = colors.glassChildTint,
+                        borderColor = colors.borderGlass,
                     ) { _, _ ->
                         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Text(channel.name, style = AreIptvTheme.typography.body, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)

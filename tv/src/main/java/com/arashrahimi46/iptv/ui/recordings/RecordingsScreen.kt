@@ -246,8 +246,7 @@ private fun RecordingThumb(uri: android.net.Uri, modifier: Modifier = Modifier) 
     Box(
         modifier = modifier
             .size(width = 150.dp, height = 84.dp)
-            .clip(shape)
-            .background(colors.surface2),
+            .glassChild(shape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(26.dp))

@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -19,6 +21,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.data.settings.AdultContentFilter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
 
 /**
  * Tile-level context for the parental "blur locked content" mode (Settings > Parental). When
@@ -40,19 +43,26 @@ data class ParentalBlurState(
 val LocalParentalBlur = staticCompositionLocalOf { ParentalBlurState() }
 
 /**
- * Scrim + centered lock icon drawn over an obscured tile's thumbnail. Sits ABOVE the blurred
- * content (blur is API 31+; the scrim guarantees the poster reads as "locked" on every device).
+ * Scrim + centered lock icon drawn over an obscured tile's thumbnail. The scrim guarantees the
+ * poster reads as "locked" on every device; on Tier A/B it is also a *real* frosted-glass blur so
+ * the plate reads as glass rather than a flat black card. [Modifier.blur] silently no-ops below
+ * API 31, so it is gated on [LocalGlassTier]'s `hasBackdropBlur` rather than an inline SDK check.
+ * The lock icon is a separate, un-blurred layer on top so it stays crisp.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ParentalLockOverlay(shape: Shape = RoundedCornerShape(0.dp)) {
+    val hasBlur = LocalGlassTier.current.hasBackdropBlur
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clip(shape)
-            .background(Color.Black.copy(alpha = 0.55f)),
+        modifier = Modifier.fillMaxSize().clip(shape),
         contentAlignment = Alignment.Center,
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (hasBlur) Modifier.blur(20.dp, BlurredEdgeTreatment(shape)) else Modifier)
+                .background(Color.Black.copy(alpha = 0.55f)),
+        )
         Icon(
             imageVector = Icons.Filled.Lock,
             contentDescription = null,

@@ -27,6 +27,7 @@ import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * First-run Privacy & Terms acceptance (Issue #11). Shown once, before onboarding/the main
@@ -66,7 +67,7 @@ fun PrivacyTermsStep(onAccepted: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
+                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg))
                     .padding(24.dp),
             ) {
                 // PLACEHOLDER: real Privacy Policy / Terms of Service copy is pending from
