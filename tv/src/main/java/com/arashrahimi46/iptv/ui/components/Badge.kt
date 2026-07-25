@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Status tone, mirrors Badge.jsx `tone` prop. */
@@ -38,15 +39,17 @@ fun AreBadge(
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.xs)
 
-    data class ToneStyle(val bg: Color, val fg: Color, val border: Color?, val glowColor: Color?)
+    // [glass] tones defer their fill + hairline to glassChild() (design §6.1) instead of a
+    // surfaceGlass fill that compounds when the badge sits on a glass surface; bg/border are ignored.
+    data class ToneStyle(val bg: Color, val fg: Color, val border: Color?, val glowColor: Color?, val glass: Boolean = false)
 
     val style = when (tone) {
         AreBadgeTone.Live -> ToneStyle(colors.live, Color.White, null, colors.live)
         AreBadgeTone.New -> ToneStyle(colors.accent, Color.White, null, colors.accent)
-        AreBadgeTone.Quality -> ToneStyle(colors.surfaceGlass, colors.textPrimary, colors.borderStrong, null)
+        AreBadgeTone.Quality -> ToneStyle(Color.Transparent, colors.textPrimary, null, null, glass = true)
         AreBadgeTone.Catchup -> ToneStyle(colors.success.copy(alpha = 0.16f), colors.catchupText, colors.success.copy(alpha = 0.4f), null)
         AreBadgeTone.Smart -> ToneStyle(colors.smart.copy(alpha = 0.16f), colors.violetText, colors.smart.copy(alpha = 0.45f), colors.smart)
-        AreBadgeTone.Neutral -> ToneStyle(colors.surfaceGlass, colors.textSecondary, colors.borderGlass, null)
+        AreBadgeTone.Neutral -> ToneStyle(Color.Transparent, colors.textSecondary, null, null, glass = true)
     }
 
     // LIVE reads as a compact status flag, not a chip — smaller than the other tones.
@@ -64,8 +67,15 @@ fun AreBadge(
                     Modifier
                 },
             )
-            .background(style.bg, shape)
-            .then(if (style.border != null) Modifier.border(1.dp, style.border, shape) else Modifier)
+            .then(
+                if (style.glass) {
+                    Modifier.glassChild(shape)
+                } else {
+                    Modifier
+                        .background(style.bg, shape)
+                        .then(if (style.border != null) Modifier.border(1.dp, style.border, shape) else Modifier)
+                },
+            )
             .padding(horizontal = if (compact) 6.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 5.dp),

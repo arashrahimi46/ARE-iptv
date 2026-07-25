@@ -25,8 +25,10 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
+import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 enum class AreChipSize { Small, Medium }
 
@@ -51,14 +53,17 @@ fun AreChip(
     val paddingH = if (size == AreChipSize.Small) 14.dp else 18.dp
     val shape = RoundedCornerShape(AreIptvTheme.radius.pill)
 
-    // Unselected chips are glass pills; selected is the accent-gradient chip (design §6b) that
-    // floats on a subtle shadow.
-    val selectedBrush = if (selected) accentGradientBrush() else null
-    val background = if (selected) Color.Transparent else colors.surfaceGlass
-    val contentColor = if (selected) colors.accentFg else colors.textSecondary
+    // Unselected chips are neutral glass tracks (design §6.1: glassTrack tint, not surfaceGlass which
+    // compounds when a chip sits on a glass surface); selected is the accent lens (§6.2) that floats
+    // on a subtle shadow.
+    val selectedBrush = if (selected) accentLensBrush() else null
+    val background = if (selected) Color.Transparent else colors.glassTrackTint
+    // §6.2 contrast note: the lens fill has far less contrast than the old solid gradient, so the
+    // selected label keeps full-weight lens content colour -- it must NOT drop to textSecondary.
+    val contentColor = if (selected) lensContentColor() else colors.textSecondary
     // The lit-edge gradient gives unselected pills their shape (incl. the light-mode edge the fill
-    // can't provide); selected accent chips need no border.
-    val glassBorder = if (selected) null else glassBorderBrush()
+    // can't provide); the selected lens carries its own brighter, more saturated rim.
+    val glassBorder = if (selected) lensBorderBrush() else glassBorderBrush()
 
     TvFocusable(
         onClick = onClick,

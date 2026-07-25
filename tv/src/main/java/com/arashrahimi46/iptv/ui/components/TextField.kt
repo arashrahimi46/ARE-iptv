@@ -1,6 +1,5 @@
 package com.arashrahimi46.iptv.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +46,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassTrack
 import com.arashrahimi46.iptv.ui.theme.tvFocusable
 
 /**
@@ -97,12 +97,11 @@ fun AreTextField(
         }
     }
 
-    // Resting/error border is always visible (even unfocused); the focus ring/glow/scale on
+    // The resting glass edge is always visible (even unfocused); the focus ring/glow/scale on
     // top of it comes from the shared tvFocusable() primitive below, driven by the same
     // interactionSource that BasicTextField owns. Scale is disabled -- growing a text input
     // 1.06x on focus reflows sibling layout and moves the caret; the ring/glow alone is the
     // correct treatment for inputs per the design system's focus-visible rule.
-    val restingBorderColor = if (error != null) colors.danger else colors.borderDefault
 
     Column(modifier = modifier) {
         if (label != null) {
@@ -135,8 +134,11 @@ fun AreTextField(
                         }
                     } else Modifier,
                 )
-                .background(colors.surfaceGlass, shape)
-                .border(1.dp, restingBorderColor, shape)
+                // V2 §6.1: nested inside glass Settings panels, so glassTrack (tint + lit edge)
+                // instead of an opaque surfaceGlass fill that would compound on the panel. The
+                // danger edge still overrides the lit edge when there's a validation error.
+                .glassTrack(shape)
+                .then(if (error != null) Modifier.border(1.dp, colors.danger, shape) else Modifier)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),

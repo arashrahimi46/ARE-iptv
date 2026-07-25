@@ -33,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,8 +45,11 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.glassTrack
 
 /**
  * PosterTile — portrait VOD tile for movies/series (PosterTile.jsx). Loads
@@ -86,6 +88,7 @@ fun ArePosterTile(
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
     val initials = title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     val focused by interactionSource.collectIsFocusedAsState()
+    val ambientArtwork = LocalAmbientArtwork.current
     // Parental "blur locked content": obscure the poster and route the click to a PIN prompt.
     val blur = LocalParentalBlur.current
     val obscured = blur.isObscured(lockCategory)
@@ -95,7 +98,12 @@ fun ArePosterTile(
     // clipped at the screen edge (and the 1.06x focus scale pushes them further down).
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     LaunchedEffect(focused) {
-        if (focused) bringIntoViewRequester.bringIntoView()
+        if (focused) {
+            // Publish the poster as the page's ambient artwork on focus gain; never cleared on
+            // focus loss, so the next focused tile overwrites it rather than flickering to empty.
+            if (posterUrl != null) ambientArtwork.value = posterUrl
+            bringIntoViewRequester.bringIntoView()
+        }
     }
 
     Column(
@@ -154,7 +162,7 @@ fun ArePosterTile(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(10.dp)
-                            .background(colors.surfaceOverlay, RoundedCornerShape(AreIptvTheme.radius.pill))
+                            .glassChild(RoundedCornerShape(AreIptvTheme.radius.pill))
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -173,8 +181,7 @@ fun ArePosterTile(
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 8.dp)
                             .height(5.dp)
-                            .clip(barShape)
-                            .background(Color.Black.copy(alpha = 0.45f)),
+                            .glassTrack(barShape),
                     ) {
                         Box(
                             modifier = Modifier

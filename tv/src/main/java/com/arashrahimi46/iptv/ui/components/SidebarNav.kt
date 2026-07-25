@@ -62,8 +62,10 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
+import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
 
@@ -193,14 +195,14 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            // Accent-gradient frosted tile (glossy top -> accent), with the glass lit edge on top --
-            // the app-mark echoes the same material as the rest of the shell. No glow: it read as a
-            // heavy pink halo; the gradient + lit edge is enough.
-            .background(accentGradientBrush(), shape)
-            .border(1.dp, glassBorderBrush(), shape),
+            // Accent-lens frosted tile (translucent accent + a brighter lens rim), echoing the same
+            // selection material as the rest of the shell. No glow: it read as a heavy pink halo;
+            // the lens fill + lit rim is enough.
+            .background(accentLensBrush(), shape)
+            .border(1.dp, lensBorderBrush(), shape),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = colors.accentFg)
+        Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = lensContentColor())
     }
 }
 
@@ -219,7 +221,7 @@ private fun SidebarNavRow(
     val colors = AreIptvTheme.colors
     val label = stringResource(item.labelRes)
     // Three visually-distinct states (design §6b): rest = transparent, focused = glass fill +
-    // lit-edge gradient (on top of the TvFocusable ring), current screen = accent chip.
+    // lit-edge gradient (on top of the TvFocusable ring), current screen = accent lens.
     val focused by interactionSource.collectIsFocusedAsState()
 
     TvFocusable(
@@ -233,11 +235,15 @@ private fun SidebarNavRow(
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.lg),
         // Three distinct states (design §6b): rest = transparent, focused = glass fill + lit edge,
-        // current screen = accent-gradient chip (denser than focus). No shadow -- the chip sits on
-        // the flat rail, so a drop shadow reads as heavy; the gradient alone marks it.
+        // current screen = accent lens (more glass + a brighter rim, not opaque paint). No shadow --
+        // the lens sits on the flat rail, so a drop shadow reads as heavy; the lens rim marks it.
         backgroundColor = if (focused && !active) colors.surfaceGlass else Color.Transparent,
-        backgroundBrush = if (active) accentGradientBrush() else null,
-        borderBrush = if (focused && !active) glassBorderBrush() else null,
+        backgroundBrush = if (active) accentLensBrush() else null,
+        borderBrush = when {
+            active -> lensBorderBrush()
+            focused -> glassBorderBrush()
+            else -> null
+        },
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
         Row(
@@ -265,7 +271,7 @@ private fun SidebarNavRow(
                 Icon(
                     item.icon,
                     contentDescription = label,
-                    tint = if (active) colors.accentFg else colors.textTertiary,
+                    tint = if (active) lensContentColor() else colors.textTertiary,
                     modifier = Modifier.size(22.dp),
                 )
                 // "!" attention badge -- e.g. the active playlist is overdue for a refresh. Amber,
@@ -291,7 +297,7 @@ private fun SidebarNavRow(
                     // fixed 212dp rail, so the legibility floor is relaxed here to keep long
                     // translations on one line.
                     style = AreIptvTheme.typography.label.copy(fontSize = 14.sp),
-                    color = if (active) colors.accentFg else colors.textSecondary,
+                    color = if (active) lensContentColor() else colors.textSecondary,
                 )
             }
         }

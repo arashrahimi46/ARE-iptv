@@ -25,7 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.accentLensBrush
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Switch — on/off toggle (theme, parental lock, PiP, autoplay) (Switch.jsx). */
@@ -39,9 +41,10 @@ fun AreSwitch(
 ) {
     val colors = AreIptvTheme.colors
     val motion = AreIptvTheme.motion
-    // ON = accent-gradient track + soft accent glow (design §5 Toggle); OFF = neutral surface.
-    val onBrush = if (checked && !disabled) accentGradientBrush() else null
-    val offColor = if (disabled) colors.surface3.copy(alpha = 0.5f) else colors.surface3
+    // ON = accent lens track + soft accent glow (design §6.2); OFF = glass track (§6.1: was an
+    // opaque surface3 slug punched through the glass Settings panel -- the canary defect of the spec).
+    val onBrush = if (checked && !disabled) accentLensBrush() else null
+    val offColor = if (disabled) colors.glassTrackTint.copy(alpha = 0.5f) else colors.glassTrackTint
     val thumbOffset by animateDpAsState(
         targetValue = if (checked) 28.dp else 4.dp,
         animationSpec = tween(motion.durFastMs, easing = motion.easeEmph),
@@ -64,6 +67,9 @@ fun AreSwitch(
         shape = CircleShape,
         backgroundColor = if (checked && !disabled) Color.Transparent else if (disabled && checked) colors.accent.copy(alpha = 0.5f) else offColor,
         backgroundBrush = onBrush,
+        // ON carries the lens's bright specular rim; OFF the neutral lit edge -- the track fill is
+        // translucent now, so it needs the hairline to read (esp. the near-white light theme).
+        borderBrush = if (checked && !disabled) lensBorderBrush() else glassBorderBrush(),
         enabled = !disabled,
     ) { _, _ ->
         Box(Modifier.padding(4.dp)) {

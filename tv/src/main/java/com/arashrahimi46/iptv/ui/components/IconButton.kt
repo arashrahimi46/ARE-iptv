@@ -24,7 +24,6 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.GlassElevation
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
 enum class AreIconButtonVariant { Solid, Glass, Ghost }
@@ -63,15 +62,18 @@ fun AreIconButton(
     val (background, contentColor) = when (variant) {
         AreIconButtonVariant.Solid -> colors.surface2 to colors.textPrimary
         // textPrimary (not a hardcoded white) so glass icons read on the frosted panel in BOTH
-        // themes -- white-on-60%-white was invisible in light mode (e.g. the player HUD).
-        AreIconButtonVariant.Glass -> colors.surfaceGlass to colors.textPrimary
+        // themes -- white-on-60%-white was invisible in light mode (e.g. the player HUD). Fill is
+        // glassChildTint, not surfaceGlass: a HUD button sits ON the glass HUD bar, and 55% over the
+        // 72% bar compounded to ~87% -- the opaque-square defect. Glass never nests (V2 §6).
+        AreIconButtonVariant.Glass -> colors.glassChildTint to colors.textPrimary
         AreIconButtonVariant.Ghost -> Color.Transparent to colors.textSecondary
     }
     // Active = the accent-gradient chip (design §6b), floating on a subtle shadow -- not a flat accent.
     val activeBrush = if (active && !disabled) accentGradientBrush() else null
     val resolvedContentColor = contentTint ?: if (active) colors.accentFg else contentColor
-    // Glass variant carries the "lit edge" gradient hairline (not when accent-active).
-    val glassBorder = if (variant == AreIconButtonVariant.Glass && !active) glassBorderBrush() else null
+    // Glass variant carries the glassChild hairline -- a solid borderGlass edge, not the lit-edge
+    // gradient: a nested control is tint + hairline only (V2 §6). Not when accent-active.
+    val glassBorder = if (variant == AreIconButtonVariant.Glass && !active) colors.borderGlass else null
 
     TvFocusable(
         onClick = onClick,
@@ -85,7 +87,7 @@ fun AreIconButton(
         },
         backgroundBrush = activeBrush,
         shadowElevation = if (activeBrush != null) GlassElevation else 0.dp,
-        borderBrush = glassBorder,
+        borderColor = glassBorder,
         enabled = !disabled,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {

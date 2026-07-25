@@ -55,6 +55,8 @@ import com.arashrahimi46.iptv.ui.components.AreIconButton
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * Movie/series detail overlay (Detail.jsx), content-id-driven: [contentId] is
@@ -222,7 +224,7 @@ private fun HeroArt(title: VodTitle) {
         modifier = Modifier
             .width(240.dp)
             .aspectRatio(2f / 3f)
-            .background(colors.surface3, shape),
+            .glassSurface(shape),
         contentAlignment = Alignment.Center,
     ) {
         // Initials show only until the poster resolves (avoids bleed-through on transparent/
@@ -412,10 +414,10 @@ private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit, modifier: Mo
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AreIptvTheme.radius.md),
-        backgroundColor = colors.surface1,
-        // Border so the white row reads as a distinct card on the off-white page in light
-        // theme when unfocused (focused rows already carry the accent ring).
-        borderColor = colors.borderDefault,
+        backgroundColor = colors.surfaceGlass,
+        // Lit-edge hairline so the glass row reads as a distinct card on the off-white page in
+        // light theme when unfocused (focused rows already carry the accent ring).
+        borderBrush = glassBorderBrush(),
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

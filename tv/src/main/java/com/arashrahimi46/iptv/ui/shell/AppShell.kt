@@ -14,6 +14,9 @@ import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
+import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 /**
  * App shell scaffold (app.jsx): persistent left [AreSidebarNav] rail at the
@@ -49,9 +52,15 @@ fun AreIptvAppShell(
     // into, and paints the ambient backdrop beneath everything. Without this, every glass surface in
     // the app is compositing over one flat opaque colour and can only ever come out a lighter grey.
     val artwork = remember { mutableStateOf<String?>(null) }
-    CompositionLocalProvider(LocalAmbientArtwork provides artwork) {
+    // The blur source (§4). Captures the ambient layer ONLY -- never the page content, which would
+    // feed each glass surface back into its own backdrop.
+    val backdrop = rememberLayerBackdrop { drawContent() }
+    CompositionLocalProvider(
+        LocalAmbientArtwork provides artwork,
+        LocalAppBackdrop provides backdrop,
+    ) {
         Box(modifier = modifier.fillMaxSize()) {
-            AmbientBackdrop()
+            AmbientBackdrop(Modifier.layerBackdrop(backdrop))
             Row(modifier = Modifier.fillMaxSize()) {
                 AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds)
                 Column(modifier = Modifier.weight(1f)) {

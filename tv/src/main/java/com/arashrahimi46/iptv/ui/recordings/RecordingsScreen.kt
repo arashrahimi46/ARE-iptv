@@ -1,7 +1,5 @@
 package com.arashrahimi46.iptv.ui.recordings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +44,8 @@ import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Order the grouped sections render in (design §7): live capture first, then the archive. */
 private val GROUP_ORDER = listOf(
@@ -166,8 +165,7 @@ private fun RecordingCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.lg))
-            .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.lg))
+            .glassSurface(RoundedCornerShape(AreIptvTheme.radius.lg))
             .padding(18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

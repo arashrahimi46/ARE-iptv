@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.kyant.backdrop.Backdrop
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -37,6 +38,14 @@ import kotlin.math.sin
 val LocalAmbientArtwork = staticCompositionLocalOf<MutableState<String?>> {
     error("LocalAmbientArtwork not provided -- AreIptvAppShell owns it")
 }
+
+/**
+ * The layer [Modifier.glassSurface] samples and blurs. Provided by [AreIptvAppShell] and captured
+ * from [AmbientBackdrop] **only** -- deliberately not from the page content, which would feed glass
+ * surfaces back into their own backdrop. Null outside the shell (dialogs, the player), where glass
+ * falls through to the V1 translucent-fill path.
+ */
+val LocalAppBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 
 /**
  * The thing glass refracts (design spec §3) -- **the single highest-value change in Glass V2**.

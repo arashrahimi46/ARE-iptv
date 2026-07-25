@@ -15,12 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 data class TabItem(val id: String, val label: String)
@@ -82,7 +82,13 @@ private fun AreTab(item: TabItem, active: Boolean, onClick: () -> Unit) {
                             Modifier
                         },
                     )
-                    .background(if (active) colors.accent else Color.Transparent, RoundedCornerShape(AreIptvTheme.radius.pill)),
+                    .then(
+                        if (active) {
+                            Modifier.background(accentLensBrush(), RoundedCornerShape(AreIptvTheme.radius.pill))
+                        } else {
+                            Modifier
+                        },
+                    ),
             )
         }
     }

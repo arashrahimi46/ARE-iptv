@@ -8,7 +8,9 @@ plugins {
 android {
     namespace = "com.arashrahimi46.iptv"
     compileSdk {
-        version = release(36) {
+        // 37 is required by io.github.kyant0:backdrop (AAR metadata gate), not a
+        // preference -- see docs/glass-v2-design.md §4. targetSdk stays 36.
+        version = release(37) {
             minorApiLevel = 1
         }
     }
@@ -112,6 +114,8 @@ dependencies {
     implementation(libs.coil.compose)
     // Extracts a still frame from a recorded video file so the Recordings list can show thumbnails.
     implementation(libs.coil.video)
+    // Liquid-glass optics (blur + vibrancy + lens) as tested AGSL -- see docs/glass-v2-design.md §4.
+    implementation(libs.backdrop)
     // QR code generation for the "Send feedback" screen — renders the phone-form link on the TV.
     implementation(libs.zxing.core)
     // Crash/ANR reporting + performance monitoring. DSN + auto-init flag live in the manifest;

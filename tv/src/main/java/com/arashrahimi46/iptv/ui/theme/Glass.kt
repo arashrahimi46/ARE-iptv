@@ -23,6 +23,9 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.vibrancy
 
 /** Sentinel "this surface should lift" value; the actual look comes from [softShadow], not from a
  *  hard platform elevation. Kept as a Dp so call sites read naturally (`shadowElevation = GlassElevation`). */
@@ -89,12 +92,39 @@ fun Modifier.glassSurface(
     shadow: Boolean = true,
 ): Modifier = composed {
     val c = AreIptvTheme.colors
-    this
-        .then(if (shadow) Modifier.softShadow(shape) else Modifier)
-        .background(if (elevated) c.surfaceGlassElevated else c.surfaceGlass, shape)
-        .border(1.dp, glassBorderBrush(), shape)
-        .clip(shape)
+    val tier = LocalGlassTier.current
+    val backdrop = LocalAppBackdrop.current
+    val fill = if (elevated) c.surfaceGlassElevated else c.surfaceGlass
+    val lifted = this.then(if (shadow) Modifier.softShadow(shape) else Modifier)
+
+    // V2: sample and blur what's actually behind this surface. Only possible where the shell has
+    // published a backdrop layer AND the device can render it -- Tier C falls through to the V1
+    // path, which is why its token alphas are deliberately left at V1's denser values (§7/§8).
+    if (backdrop != null && tier.hasBackdropBlur) {
+        lifted
+            .drawBackdrop(
+                backdrop = backdrop,
+                shape = { shape },
+                effects = {
+                    // Vibrancy is the "alive" ingredient -- a saturation boost on the blurred
+                    // content. AGSL, so Tier A only; Tier B gets blur alone.
+                    if (tier.hasShaders) vibrancy()
+                    blur(if (elevated) BlurElevatedDp.toPx() else BlurBaseDp.toPx())
+                },
+                onDrawSurface = { drawRect(fill) },
+            )
+            .border(1.dp, glassBorderBrush(), shape)
+            .clip(shape)
+    } else {
+        lifted
+            .background(fill, shape)
+            .border(1.dp, glassBorderBrush(), shape)
+            .clip(shape)
+    }
 }
+
+private val BlurBaseDp = 24.dp
+private val BlurElevatedDp = 32.dp
 
 /** The vertical "lit edge" gradient used by every glass surface and its border brush. */
 @Composable
