@@ -1,6 +1,5 @@
 package com.arashrahimi46.iptv.ui.shell
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,9 +7,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
+import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 
 /**
  * App shell scaffold (app.jsx): persistent left [AreSidebarNav] rail at the
@@ -42,15 +45,17 @@ fun AreIptvAppShell(
     badgedNavIds: Set<String> = emptySet(),
     content: @Composable () -> Unit,
 ) {
-    val colors = AreIptvTheme.colors
-    Row(
-        modifier = modifier
-            .fillMaxSize()
-            .background(colors.bgBase),
-    ) {
-        AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds)
-        Column(modifier = Modifier.weight(1f)) {
-            topBar()
+    // Glass V2 §3: the shell owns the artwork slot that browse screens publish their focused item
+    // into, and paints the ambient backdrop beneath everything. Without this, every glass surface in
+    // the app is compositing over one flat opaque colour and can only ever come out a lighter grey.
+    val artwork = remember { mutableStateOf<String?>(null) }
+    CompositionLocalProvider(LocalAmbientArtwork provides artwork) {
+        Box(modifier = modifier.fillMaxSize()) {
+            AmbientBackdrop()
+            Row(modifier = Modifier.fillMaxSize()) {
+                AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds)
+                Column(modifier = Modifier.weight(1f)) {
+                    topBar()
             // Bounded content area (no scroll here). The shell used to own a single
             // verticalScroll, but that can't host the tab NavHost -- each tab now
             // provides its own scroll (see MainActivity.ScrollableTab).
@@ -61,13 +66,15 @@ fun AreIptvAppShell(
             // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
             // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
             // so the group boundary is all the shell needs to provide.
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .focusGroup(),
-            ) {
-                content()
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .focusGroup(),
+                    ) {
+                        content()
+                    }
+                }
             }
         }
     }

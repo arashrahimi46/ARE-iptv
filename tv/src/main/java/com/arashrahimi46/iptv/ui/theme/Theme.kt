@@ -70,7 +70,11 @@ fun AreIptvTheme(
     content: @Composable () -> Unit,
 ) {
     val base = if (isDark) AreIptvDarkColors else AreIptvLightColors
-    val colors = base.withAccent(accent.tokens(isDark))
+    // Glass V2 §7/§8: the fill alphas only get lighter where a real blurred backdrop exists to carry
+    // legibility. Tier C keeps V1's numbers exactly, which is what makes it the known-good fallback.
+    val tier = rememberGlassTier()
+    val tuned = if (tier.hasBackdropBlur) base.withBlurredBackdrop() else base
+    val colors = tuned.withAccent(accent.tokens(isDark))
     val motion = if (reducedMotion) AreIptvMotionReduced else AreIptvMotionDefault
     // RTL locales (fa/ar) have no glyphs in the Latin brand fonts — swap the whole type scale to
     // Vazirmatn. LocalLayoutDirection is already RTL here, derived from the per-app locale.
@@ -122,6 +126,7 @@ fun AreIptvTheme(
         LocalAreIptvMotion provides motion,
         LocalReducedMotion provides reducedMotion,
         LocalThemeIsDark provides isDark,
+        LocalGlassTier provides tier,
     ) {
         MaterialTheme(
             colorScheme = tvColorScheme,
