@@ -33,7 +33,6 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreButton
-import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreChipSize
@@ -121,7 +120,6 @@ fun FeedbackDialog(onDismiss: () -> Unit) {
                 text = stringResource(R.string.action_close),
                 onClick = onDismiss,
                 variant = AreButtonVariant.Ghost,
-                size = AreButtonSize.Large,
             )
             if (submit != SubmitState.Sent) {
                 val sending = submit == SubmitState.Sending
@@ -131,7 +129,6 @@ fun FeedbackDialog(onDismiss: () -> Unit) {
                     // Nothing to send without at least a rating; also guard the unconfigured build.
                     disabled = sending || rating == 0 || !FeedbackConfig.isConfigured,
                     variant = AreButtonVariant.Primary,
-                    size = AreButtonSize.Large,
                     onClick = {
                         submit = SubmitState.Sending
                         scope.launch {
