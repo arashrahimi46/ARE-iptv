@@ -253,7 +253,11 @@ private fun SidebarNavRow(
                 // the 16dp column padding = 72dp; (72-26)/2 = 23). Kept static (not switched by
                 // `expanded`) so the icon stays put through the width animation -- a conditional
                 // arrangement made it jump between centred and left-aligned mid-animation.
-                .padding(horizontal = 23.dp),
+                // Trailing inset is much smaller than the leading one: the 23dp start inset exists
+                // only to centre the icon in the collapsed rail, and mirroring it on the end just
+                // stole width from the label -- enough that long RTL labels ("راهنمای تلویزیون")
+                // wrapped to two lines. Start-aligned content, so the icon does not move.
+                .padding(start = 23.dp, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -283,7 +287,10 @@ private fun SidebarNavRow(
             AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
                 Text(
                     text = label,
-                    style = AreIptvTheme.typography.label,
+                    // 14sp rather than the 16sp label role: nav labels are icon-paired and live in a
+                    // fixed 212dp rail, so the legibility floor is relaxed here to keep long
+                    // translations on one line.
+                    style = AreIptvTheme.typography.label.copy(fontSize = 14.sp),
                     color = if (active) colors.accentFg else colors.textSecondary,
                 )
             }

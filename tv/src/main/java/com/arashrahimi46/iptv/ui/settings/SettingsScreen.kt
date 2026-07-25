@@ -84,7 +84,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     ) {
         // Title sits high (design: pull the page title up to give the content more room).
         Box(Modifier.padding(top = spacing.sp2))
-        Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+        Text(text = stringResource(R.string.settings_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp4))
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it })
         Box(Modifier.padding(top = spacing.sp5))

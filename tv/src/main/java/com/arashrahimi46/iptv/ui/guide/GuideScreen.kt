@@ -105,14 +105,14 @@ fun GuideScreen(
     // "measured with an unbounded amount of height" -- a lazy layout can't live inside another
     // unbounded-height vertical scroll container (same-axis nesting), which is exactly what
     // wrapping this tab in a scrolling container would still do.
-    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
         // Header: title + day chips.
         Row(
             modifier = Modifier.padding(horizontal = spacing.safeX).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(text = stringResource(R.string.guide_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.guide_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
             Box(Modifier.weight(1f))
             AreSegmentedControl(
                 options = GuideDay.entries,

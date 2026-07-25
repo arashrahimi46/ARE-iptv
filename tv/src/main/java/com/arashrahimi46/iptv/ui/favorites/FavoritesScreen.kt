@@ -76,9 +76,9 @@ fun FavoritesScreen(
         return
     }
 
-    Column(modifier = modifier.padding(top = spacing.sp6, bottom = spacing.sp10)) {
+    Column(modifier = modifier.padding(top = spacing.sp2, bottom = spacing.sp10)) {
         Column(Modifier.padding(horizontal = spacing.safeX)) {
-            Text(text = stringResource(R.string.favorites_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(R.string.favorites_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
             Box(Modifier.padding(top = spacing.sp6))
             AreSegmentedControl(
                 options = listOf("channels", "movies", "series"),

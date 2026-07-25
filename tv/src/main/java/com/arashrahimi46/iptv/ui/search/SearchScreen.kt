@@ -83,8 +83,8 @@ fun SearchScreen(
     // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner field+
     // results Row alone (round 1) and on this outer root Column (round 2) were real fixes
     // but didn't touch the actual root cause -- see the BoxWithConstraints comment below.
-    Column(modifier = modifier.fillMaxWidth().padding(horizontal = spacing.safeX, vertical = spacing.sp6)) {
-        Text(text = stringResource(R.string.search_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+    Column(modifier = modifier.fillMaxWidth().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp2, bottom = spacing.sp6)) {
+        Text(text = stringResource(R.string.search_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
         Box(Modifier.padding(top = spacing.sp6))
 
         // Same class as the QA MEDIUM text-wrap defect elsewhere in this screen: neither

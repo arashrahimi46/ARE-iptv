@@ -143,7 +143,7 @@ fun <T : Any> BrowseLayout(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(text = title, style = AreIptvTheme.typography.display, color = colors.textPrimary, maxLines = 1)
+                Text(text = title, style = AreIptvTheme.typography.h1, color = colors.textPrimary, maxLines = 1)
                 titleAccessory?.invoke()
             }
             if (sectionTitle != null) {

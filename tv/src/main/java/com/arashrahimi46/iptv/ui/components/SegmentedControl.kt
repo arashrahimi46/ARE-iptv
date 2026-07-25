@@ -6,10 +6,10 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -82,7 +83,10 @@ fun <T> AreSegmentedControl(
         if (animW > 0f) {
             Box(
                 modifier = Modifier
-                    .offset { IntOffset(animX.roundToInt(), 0) }
+                    // Absolute alignment + absoluteOffset: the measured x from positionInParent is
+                    // always from the left edge, so the indicator must NOT be mirrored in RTL.
+                    .align(AbsoluteAlignment.TopLeft)
+                    .absoluteOffset { IntOffset(animX.roundToInt(), 0) }
                     .width(with(density) { animW.toDp() })
                     .fillMaxHeight()
                     .background(accentGradientBrush(), pill),
