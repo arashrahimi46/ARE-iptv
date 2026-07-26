@@ -50,6 +50,7 @@ import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
@@ -183,7 +184,10 @@ internal fun SettingsRow(icon: ImageVector, title: String, desc: String? = null,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(
-            modifier = Modifier.size(42.dp).glassSurface(RoundedCornerShape(AreIptvTheme.radius.sm), shadow = false),
+            // glassChild, not glassSurface: at 42dp the backdrop blur behind the icon is
+            // imperceptible but costs a full offscreen blur pass PER ROW -- ~a dozen extra passes on a
+            // dense pane. The tinted child reads identically here and the section card keeps real blur.
+            modifier = Modifier.size(42.dp).glassChild(RoundedCornerShape(AreIptvTheme.radius.sm)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(icon, contentDescription = null, tint = colors.textSecondary, modifier = Modifier.size(22.dp))

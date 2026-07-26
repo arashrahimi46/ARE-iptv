@@ -3,15 +3,17 @@ package com.arashrahimi46.iptv.ui.shell
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
@@ -57,36 +59,55 @@ fun AreIptvAppShell(
     // The blur source (§4). Captures the ambient layer ONLY -- never the page content, which would
     // feed each glass surface back into its own backdrop.
     val backdrop = rememberLayerBackdrop { drawContent() }
+    // The collapsed sidebar footprint the content reserves at the left. The sidebar OVERLAYS content
+    // when it expands rather than pushing it: animating the rail's real width in a Row remeasured and
+    // relayouted the entire content screen (a full movie grid / guide) on every animation frame, which
+    // is the single biggest source of expand/collapse jank on weaker TV SoCs. Reserving only the
+    // collapsed width and floating the expanding panel on top costs the content zero per-frame layout.
+    // FLOATING already hovers inset off the edge, so overlaying is visually identical; EDGE's expanded
+    // rail simply spills over the content's left strip while the sidebar holds focus.
+    val spacing = AreIptvTheme.spacing
+    val reservedWidth = when (sidebarStyle) {
+        SidebarStyle.FLOATING -> spacing.sidebarBoxWidth + spacing.sidebarInset * 2
+        SidebarStyle.EDGE -> spacing.sidebarWidth
+    }
     CompositionLocalProvider(
         LocalAmbientArtwork provides artwork,
         LocalAppBackdrop provides backdrop,
     ) {
         Box(modifier = modifier.fillMaxSize()) {
             AmbientBackdrop(Modifier.layerBackdrop(backdrop))
-            Row(modifier = Modifier.fillMaxSize()) {
-                AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds, style = sidebarStyle)
-                Column(modifier = Modifier.weight(1f)) {
-                    topBar()
-            // Bounded content area (no scroll here). The shell used to own a single
-            // verticalScroll, but that can't host the tab NavHost -- each tab now
-            // provides its own scroll (see MainActivity.ScrollableTab).
-            //
-            // focusGroup only -- deliberately NO focusRestorer here. A shell-level restorer intercepts
-            // right-arrow entry with a directional/nearest search and resolves it to whatever focusable
-            // sits at the sidebar icon's height (the reported "Settings lands on Dark theme, mid-page").
-            // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
-            // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
-            // so the group boundary is all the shell needs to provide.
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                            .focusGroup(),
-                    ) {
-                        content()
-                    }
+            Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {
+                topBar()
+                // Bounded content area (no scroll here). The shell used to own a single
+                // verticalScroll, but that can't host the tab NavHost -- each tab now
+                // provides its own scroll (see MainActivity.ScrollableTab).
+                //
+                // focusGroup only -- deliberately NO focusRestorer here. A shell-level restorer intercepts
+                // right-arrow entry with a directional/nearest search and resolves it to whatever focusable
+                // sits at the sidebar icon's height (the reported "Settings lands on Dark theme, mid-page").
+                // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
+                // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
+                // so the group boundary is all the shell needs to provide.
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .focusGroup(),
+                ) {
+                    content()
                 }
             }
+            // Drawn last so the expanding rail floats over the content's left strip. It sizes itself
+            // (fillMaxHeight + wrap width) and sits at the Box's top-start by default; its own style
+            // branch handles the inset (FLOATING) or flush edge (EDGE).
+            AreSidebarNav(
+                active = activeNav,
+                onSelect = onNavSelect,
+                badgedIds = badgedNavIds,
+                style = sidebarStyle,
+                modifier = Modifier.align(Alignment.TopStart),
+            )
         }
     }
 }

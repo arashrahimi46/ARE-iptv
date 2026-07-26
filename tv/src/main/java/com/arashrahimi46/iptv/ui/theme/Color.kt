@@ -77,6 +77,14 @@ data class AreIptvColors(
     // Glass surface language: an elevated (denser) fill for modals/HUD over media so text stays
     // legible, plus the two stops of the "lit edge" gradient border (bright top -> faint bottom).
     val surfaceGlassElevated: Color,
+    /**
+     * A far sheerer glass fill than [surfaceGlassElevated], for a large hero surface (the floating
+     * sidebar) that sits over real backdrop blur and should read as *true see-through* glass. Used
+     * ONLY on blur-capable tiers -- the blur itself carries legibility there, so the fill can drop to
+     * ~30% and let the blurred content behind actually show. Tier C never uses it (no blur to reveal).
+     * Default is the dark value; light overrides it.
+     */
+    val surfaceGlassSheer: Color = Color(0x4D1E222C), // rgba(30,34,44,0.30)
     val glassHighlight: Color,
     val borderGlass: Color,
     val textPrimary: Color,
@@ -176,6 +184,7 @@ val AreIptvLightColors = AreIptvColors(
     surfaceOverlay = Color(0xDBFFFFFF), // rgba(255,255,255,0.86)
     surfaceGlass = Color(0x99FFFFFF), // rgba(255,255,255,0.6)
     surfaceGlassElevated = Color(0xD1FFFFFF), // rgba(255,255,255,0.82)
+    surfaceGlassSheer = Color(0x80FFFFFF), // rgba(255,255,255,0.50) -- light glass reads on the bright page at ~50%
     glassHighlight = Color(0xB3FFFFFF), // white 0.70
     borderGlass = Color(0x240F141E), // ink 0.14 -- light needs a dark edge to read
     textPrimary = LightTextPrimary,

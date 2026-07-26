@@ -76,6 +76,7 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
@@ -160,7 +161,12 @@ fun AreSidebarNav(
                 modifier = Modifier
                     .width(width)
                     .fillMaxHeight()
-                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
+                    // sheer = true: the sidebar is a big hero surface floating on the ambient
+                    // backdrop, so on blur-capable TVs it drops to a ~30% fill and reads as TRUE
+                    // see-through glass -- the blurred content behind actually shows. Costs nothing
+                    // extra: the blur pass ran anyway, the dense fill was just hiding it. Tier C keeps
+                    // the legible dense fill (no blur there to reveal).
+                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true, sheer = true)
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
@@ -231,6 +237,10 @@ private fun ColumnScope.SidebarNavBody(
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    // Blur-capable tiers keep the true alpha-mask fade (the glass is translucent, so only DstIn can
+    // dissolve rows into it). Opaque tiers (older TVs) get the cheap equivalent -- a gradient in the
+    // surface fill painted over the edges -- so they never pay for a per-frame offscreen layer.
+    val fadeFill = if (LocalGlassTier.current.hasBackdropBlur) null else colors.surfaceGlassElevated
 
     Row(
         modifier = Modifier
@@ -271,7 +281,7 @@ private fun ColumnScope.SidebarNavBody(
             // the 28dp corner. An alpha mask on the scrolled content dissolves the rows INTO the glass
             // instead -- a solid fade colour can't, the surface is translucent, so the fade has to
             // subtract alpha (DstIn) and let the blurred backdrop show through.
-            .then(if (floating) Modifier.scrollEdgeFade(spacing.sp6) else Modifier)
+            .then(if (floating) Modifier.scrollEdgeFade(spacing.sp6, fadeFill) else Modifier)
             .verticalScroll(rememberScrollState())
             // vertical padding inside the scroll content so the first/last item's focus glow isn't
             // clipped at the viewport edge (the reported "top of the Home focus ring disappeared").
@@ -315,24 +325,47 @@ private fun ColumnScope.SidebarNavBody(
 /**
  * Fades the scrolled content to transparent over [fade] at the top and bottom edges, so nav rows
  * dissolve into the glass box at its rounded corners instead of being sliced by the surface clip.
- * An offscreen layer + a DstIn vertical-gradient mask: it subtracts alpha from the content, revealing
- * the blurred glass behind (a solid fade rectangle can't -- the surface is translucent).
+ *
+ * Two implementations by cost. When [opaqueFill] is null (blur-capable tiers, translucent glass) the
+ * only correct way is an offscreen layer + a DstIn vertical-gradient mask that subtracts alpha from
+ * the content so the blurred glass shows through -- a solid fade rectangle can't, the surface is
+ * translucent. When [opaqueFill] is set (opaque tiers) the surface is a flat colour, so painting that
+ * colour as a top/bottom gradient over the rows gives the same dissolve WITHOUT an offscreen layer --
+ * the per-frame render-to-texture that older TV GPUs pay for continuously, scrolling or not.
  */
-private fun Modifier.scrollEdgeFade(fade: Dp): Modifier = this
-    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-    .drawWithContent {
-        drawContent()
-        val f = (fade.toPx()).coerceAtMost(size.height / 2f)
-        if (f <= 0f) return@drawWithContent
-        drawRect(
-            brush = Brush.verticalGradient(
-                0f to Color.Transparent,
-                f / size.height to Color.Black,
-                1f - f / size.height to Color.Black,
-                1f to Color.Transparent,
-            ),
-            blendMode = BlendMode.DstIn,
-        )
+private fun Modifier.scrollEdgeFade(fade: Dp, opaqueFill: Color?): Modifier =
+    if (opaqueFill == null) {
+        this
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            .drawWithContent {
+                drawContent()
+                val f = (fade.toPx()).coerceAtMost(size.height / 2f)
+                if (f <= 0f) return@drawWithContent
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        f / size.height to Color.Black,
+                        1f - f / size.height to Color.Black,
+                        1f to Color.Transparent,
+                    ),
+                    blendMode = BlendMode.DstIn,
+                )
+            }
+    } else {
+        this.drawWithContent {
+            drawContent()
+            val f = (fade.toPx()).coerceAtMost(size.height / 2f)
+            if (f <= 0f) return@drawWithContent
+            drawRect(
+                brush = Brush.verticalGradient(0f to opaqueFill, f / size.height to Color.Transparent),
+                size = Size(size.width, f),
+            )
+            drawRect(
+                brush = Brush.verticalGradient(0f to Color.Transparent, 1f to opaqueFill),
+                topLeft = Offset(0f, size.height - f),
+                size = Size(size.width, f),
+            )
+        }
     }
 
 @Composable

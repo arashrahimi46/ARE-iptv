@@ -85,16 +85,27 @@ fun Modifier.softShadow(
  * @param elevated denser fill for modals/HUD over media so text stays legible.
  * @param shadow set false for surfaces that shouldn't lift (e.g. an inline track already inside a
  *   glass panel, or a divider) to avoid a shadow-on-shadow smudge.
+ * @param sheer a large hero surface (the floating sidebar) that should read as TRUE see-through
+ *   glass -- drops the fill to [AreIptvColors.surfaceGlassSheer] (~30%) on EVERY tier so the content
+ *   behind actually shows: on blur tiers the sampled backdrop shows through softened, and on Tier C
+ *   (no blur) the surface is still translucent over the dark ambient backdrop, just un-frosted. The
+ *   sidebar floats over the dark ambient veil, so it stays legible without the dense fill.
  */
 fun Modifier.glassSurface(
     shape: Shape,
     elevated: Boolean = false,
     shadow: Boolean = true,
+    sheer: Boolean = false,
 ): Modifier = composed {
     val c = AreIptvTheme.colors
     val tier = LocalGlassTier.current
     val backdrop = LocalAppBackdrop.current
-    val fill = if (elevated) c.surfaceGlassElevated else c.surfaceGlass
+    // A sheer surface uses the much lighter fill on every path so the content behind shows through.
+    val fill = when {
+        sheer -> c.surfaceGlassSheer
+        elevated -> c.surfaceGlassElevated
+        else -> c.surfaceGlass
+    }
     val lifted = this.then(if (shadow) Modifier.softShadow(shape) else Modifier)
 
     // V2: sample and blur what's actually behind this surface. Only possible where the shell has

@@ -1,18 +1,10 @@
 package com.arashrahimi46.iptv.ui.theme
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -70,22 +62,12 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
     val tier = LocalGlassTier.current
     val artwork by LocalAmbientArtwork.current
 
-    // Drift is decorative: Tier A only, and off entirely under reduced motion. The phase is read
-    // inside drawBehind's lambda so an animating value invalidates the draw phase only -- never
-    // recomposition of the shell.
-    val drift = if (tier.hasAmbientDrift && !LocalReducedMotion.current) {
-        rememberInfiniteTransition(label = "ambientDrift").animateFloat(
-            initialValue = 0f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 42_000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
-            label = "ambientPhase",
-        )
-    } else {
-        remember { mutableStateOf(0f) }
-    }
+    // V2 max-smoothness: the ambient mesh is STATIC. It used to drift on a 42s loop (Tier A only),
+    // but that animation invalidated this backdrop's draw every frame -- and since every glass surface
+    // in the app samples this layer, each one had to re-blur continuously, a constant GPU cost even on
+    // a fully idle screen, for a motion far too slow to perceive. A fixed phase keeps the exact mesh
+    // look while letting an idle screen do zero backdrop work (nothing invalidates, nothing re-blurs).
+    val t = 0f
 
     val meshA = colors.accent.copy(alpha = if (colors.isDark) 0.20f else 0.13f)
     val meshB = colors.accentHover.copy(alpha = if (colors.isDark) 0.13f else 0.09f)
@@ -102,8 +84,7 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
         }
         androidx.compose.foundation.layout.Box(
             Modifier.fillMaxSize().drawBehind {
-                val t = drift.value
-                // Two wide radial lobes tracking a slow circular path, sized well past the viewport
+                // Two wide radial lobes, sized well past the viewport
                 // so only their soft interiors are ever on screen -- no visible gradient edge.
                 val r = size.maxDimension * 0.85f
                 drawCircle(
