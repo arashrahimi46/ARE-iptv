@@ -18,6 +18,32 @@ import com.google.firebase.analytics.FirebaseAnalytics
  * Firebase's own collection flag AND short-circuits every log call, so a user who opts out sends
  * nothing.
  */
+/**
+ * User opt-out gate for Sentry crash/ANR diagnostics, and the reason the Privacy Policy can promise
+ * one at all: before this existed, crash reporting ran unconditionally with no way to refuse.
+ *
+ * Deliberately a volatile flag consulted from Sentry's `beforeSend` rather than a conditional
+ * `SentryAndroid.init`: the preference lives in DataStore (async), while Sentry has to be installed
+ * in `Application.onCreate` to catch early crashes at all. Blocking startup on a disk read to decide
+ * would cost cold-start time on every launch. So Sentry always installs, [enabled] starts at the
+ * default (on), and the persisted choice lands a few ms later -- same shape as [Analytics].
+ *
+ * The gap that leaves: a crash in the first few ms of a cold start, before the read completes, is
+ * still sent. It is bounded, it only ever applies to the default-on case, and closing it entirely
+ * would mean losing exactly the startup crashes that matter most.
+ */
+object CrashReporting {
+    @Volatile private var enabled: Boolean = true
+
+    /** True when the user has not opted out; consulted per-event by Sentry's beforeSend hook. */
+    fun isEnabled(): Boolean = enabled
+
+    /** Apply a live opt-out change from Settings, or the persisted choice read at startup. */
+    fun setEnabled(value: Boolean) {
+        enabled = value
+    }
+}
+
 object Analytics {
     private var fa: FirebaseAnalytics? = null
     @Volatile private var enabled: Boolean = true

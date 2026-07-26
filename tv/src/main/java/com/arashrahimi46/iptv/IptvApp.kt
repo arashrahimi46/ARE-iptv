@@ -3,6 +3,7 @@ package com.arashrahimi46.iptv
 import android.app.Application
 import io.sentry.android.core.SentryAndroid
 import com.arashrahimi46.iptv.analytics.Analytics
+import com.arashrahimi46.iptv.analytics.CrashReporting
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import coil.ImageLoader
 import kotlinx.coroutines.flow.first
@@ -49,6 +50,10 @@ class IptvApp : Application(), ImageLoaderFactory {
             options.tracesSampleRate = 0.2
             // TV app: attaching screenshots to events is heavy and rarely useful on a 10-foot UI.
             options.isAttachScreenshot = false
+            // User opt-out gate. Dropping the event here (rather than not installing Sentry) is what
+            // lets the handler still be in place from the very first line of onCreate -- see
+            // [CrashReporting] for why the check is per-event instead of per-init.
+            options.setBeforeSend { event, _ -> if (CrashReporting.isEnabled()) event else null }
         }
 
         // Product analytics: dormant until google-services.json is added (see Analytics doc). Seed
@@ -57,7 +62,9 @@ class IptvApp : Application(), ImageLoaderFactory {
 
         val crashReason = getString(R.string.recording_reason_crash)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            runCatching { Analytics.setEnabled(UserSettings(this@IptvApp).isAnalyticsEnabled.first()) }
+            val settings = UserSettings(this@IptvApp)
+            runCatching { CrashReporting.setEnabled(settings.isCrashReportingEnabled.first()) }
+            runCatching { Analytics.setEnabled(settings.isAnalyticsEnabled.first()) }
             runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
         }
     }

@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Конфіденційність та умови</string>
     <string name="privacy_subtitle">Будь ласка, ознайомтеся та прийміть перед продовженням.</string>
-    <string name="privacy_body">Політика конфіденційності та Умови використання ARE iptv\n\nARE iptv не збирає та не передає дані вашого плейлиста поза пристроєм. Продовжуючи, ви погоджуєтеся використовувати цей застосунок лише з джерелами контенту, до яких у вас є доступ, і приймаєте наші Умови використання та Політику конфіденційності в повному обсязі.</string>
     <string name="privacy_accept_label">Я прочитав(-ла) і приймаю Політику конфіденційності та Умови використання.</string>
+    <string name="privacy_summary">Ваші плейлисти, паролі та історія переглядів залишаються на цьому пристрої — ми їх ніколи не отримуємо. Ми збираємо анонімну діагностику збоїв і використання, яку можна вимкнути нижче або в Налаштуваннях будь-коли. ARE iptv не надає власних каналів чи вмісту: джерела додаєте ви.</string>
+    <string name="privacy_read_full">Читати повну Політику конфіденційності та Умови</string>
+    <string name="privacy_crash_label">Надсилати анонімні звіти про збої та дані про використання</string>
+    <string name="privacy_updated_note">Ми оновили Політику конфіденційності та Умови. Перегляньте та прийміть їх, щоб продовжити.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Виберіть плейлист</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Залишити відгук</string>
     <string name="settings_analytics_title">Статистика використання</string>
     <string name="settings_analytics_desc">Діліться анонімною статистикою використання, щоб допомогти нам покращити застосунок. Особисті дані не збираються.</string>
+    <string name="settings_crash_title">Звіти про збої</string>
+    <string name="settings_crash_desc">Надсилати діагностику, коли застосунок аварійно завершується або зависає. Ніколи не містить ваших плейлистів чи паролів.</string>
+    <string name="settings_legal_title">Конфіденційність та умови</string>
+    <string name="settings_legal_desc">Прочитайте документ, який ви прийняли під час налаштування застосунку.</string>
+    <string name="settings_legal_action">Читати</string>
     <string name="settings_recording_indicator_title">Індикатор запису</string>
     <string name="settings_recording_indicator_desc">Показувати пульсуючий значок REC у плеєрі під час запису.</string>
     <string name="settings_rearrange_hud">Змінити порядок елементів керування плеєра</string>

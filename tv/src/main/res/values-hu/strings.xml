@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Adatvédelem és feltételek</string>
     <string name="privacy_subtitle">A folytatás előtt tekintse át és fogadja el.</string>
-    <string name="privacy_body">ARE iptv adatvédelmi szabályzat és felhasználási feltételek\n\nAz ARE iptv nem gyűjti és nem továbbítja a lejátszási lista hitelesítő adatait a készüléken kívülre. A folytatással elfogadja, hogy ezt az alkalmazást csak olyan tartalomforrásokkal használja, amelyekhez jogosultsága van, és teljeskörűen elfogadja a felhasználási feltételeinket és az adatvédelmi szabályzatunkat.</string>
     <string name="privacy_accept_label">Elolvastam és elfogadom az adatvédelmi szabályzatot és a felhasználási feltételeket.</string>
+    <string name="privacy_summary">A lejátszási listái, jelszavai és megtekintési előzményei ezen az eszközön maradnak — mi soha nem kapjuk meg őket. Névtelen összeomlási és használati diagnosztikát gyűjtünk, amelyet lent vagy bármikor a Beállításokban kikapcsolhat. Az ARE iptv nem kínál saját csatornákat vagy tartalmat: a forrásokat Ön hozza.</string>
+    <string name="privacy_read_full">A teljes adatvédelmi szabályzat és feltételek elolvasása</string>
+    <string name="privacy_crash_label">Névtelen összeomlási jelentések és használati adatok küldése</string>
+    <string name="privacy_updated_note">Frissítettük az adatvédelmi szabályzatunkat és feltételeinket. A folytatáshoz tekintse át és fogadja el őket.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Válasszon lejátszási listát</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Visszajelzés adása</string>
     <string name="settings_analytics_title">Használati statisztika</string>
     <string name="settings_analytics_desc">Ossz meg anonim használati statisztikákat, hogy segíts nekünk fejleszteni az alkalmazást. Nem gyűjtünk személyes adatokat.</string>
+    <string name="settings_crash_title">Összeomlási jelentések</string>
+    <string name="settings_crash_desc">Diagnosztika küldése, ha az alkalmazás összeomlik vagy lefagy. Soha nem tartalmazza a listáit vagy jelszavait.</string>
+    <string name="settings_legal_title">Adatvédelem és feltételek</string>
+    <string name="settings_legal_desc">Olvassa el a dokumentumot, amelyet az alkalmazás beállításakor elfogadott.</string>
+    <string name="settings_legal_action">Elolvasás</string>
     <string name="settings_recording_indicator_title">Felvételjelző</string>
     <string name="settings_recording_indicator_desc">Pulzáló REC jelvény megjelenítése a lejátszóban felvétel közben.</string>
     <string name="settings_rearrange_hud">Lejátszó vezérlőinek átrendezése</string>

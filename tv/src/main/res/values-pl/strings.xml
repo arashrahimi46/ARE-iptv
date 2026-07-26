@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Prywatność &amp; Regulamin</string>
     <string name="privacy_subtitle">Zapoznaj się i zaakceptuj przed kontynuacją.</string>
-    <string name="privacy_body">Polityka prywatności &amp; Warunki korzystania z usługi ARE iptv\n\nARE iptv nie zbiera ani nie przesyła Twoich danych logowania do playlisty poza urządzeniem. Kontynuując, zgadzasz się korzystać z tej aplikacji wyłącznie ze źródłami treści, do których masz uprawnienia, oraz w pełni akceptujesz nasze Warunki korzystania z usługi i Politykę prywatności.</string>
     <string name="privacy_accept_label">Przeczytałem(-am) i akceptuję Politykę prywatności oraz Warunki korzystania z usługi.</string>
+    <string name="privacy_summary">Twoje playlisty, hasła i historia oglądania pozostają na tym urządzeniu — nigdy ich nie otrzymujemy. Zbieramy anonimowe dane o awariach i użyciu, które możesz wyłączyć poniżej lub w Ustawieniach w dowolnym momencie. ARE iptv nie udostępnia własnych kanałów ani treści: źródła zapewniasz Ty.</string>
+    <string name="privacy_read_full">Przeczytaj pełną Politykę prywatności i Regulamin</string>
+    <string name="privacy_crash_label">Wysyłaj anonimowe raporty o awariach i dane o użyciu</string>
+    <string name="privacy_updated_note">Zaktualizowaliśmy naszą Politykę prywatności i Regulamin. Zapoznaj się z nimi i zaakceptuj, aby kontynuować.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Wybierz playlistę</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Prześlij opinię</string>
     <string name="settings_analytics_title">Statystyki użytkowania</string>
     <string name="settings_analytics_desc">Udostępniaj anonimowe statystyki użytkowania, aby pomóc nam ulepszać aplikację. Nie zbieramy żadnych danych osobowych.</string>
+    <string name="settings_crash_title">Raporty o awariach</string>
+    <string name="settings_crash_desc">Wysyłaj diagnostykę, gdy aplikacja ulegnie awarii lub zawiesi się. Nigdy nie zawiera Twoich playlist ani haseł.</string>
+    <string name="settings_legal_title">Prywatność i regulamin</string>
+    <string name="settings_legal_desc">Przeczytaj dokument zaakceptowany podczas konfiguracji aplikacji.</string>
+    <string name="settings_legal_action">Czytaj</string>
     <string name="settings_recording_indicator_title">Wskaźnik nagrywania</string>
     <string name="settings_recording_indicator_desc">Pokazuj pulsującą plakietkę REC w odtwarzaczu podczas nagrywania.</string>
     <string name="settings_rearrange_hud">Zmień układ elementów sterujących odtwarzacza</string>

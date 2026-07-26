@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Confidențialitate &amp; Termeni</string>
     <string name="privacy_subtitle">Te rugăm să citești și să accepți înainte de a continua.</string>
-    <string name="privacy_body">Politica de confidențialitate &amp; Termenii de utilizare ARE iptv\n\nARE iptv nu colectează și nu transmite datele de acces ale listei tale în afara dispozitivului. Prin continuare, ești de acord să folosești această aplicație doar cu surse de conținut la care ești autorizat să ai acces și accepți integral Termenii de utilizare și Politica de confidențialitate.</string>
     <string name="privacy_accept_label">Am citit și accept Politica de confidențialitate și Termenii de utilizare.</string>
+    <string name="privacy_summary">Playlisturile, parolele și istoricul tău de vizionare rămân pe acest dispozitiv — nu le primim niciodată. Colectăm diagnostice anonime despre erori și utilizare, pe care le poți dezactiva mai jos sau în Setări oricând. ARE iptv nu oferă canale sau conținut propriu: sursele le aduci tu.</string>
+    <string name="privacy_read_full">Citește integral Politica de confidențialitate și Termenii</string>
+    <string name="privacy_crash_label">Trimite rapoarte de eroare și date de utilizare anonime</string>
+    <string name="privacy_updated_note">Ne-am actualizat Politica de confidențialitate și Termenii. Te rugăm să îi citești și să îi accepți pentru a continua.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Alege o listă de redare</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Oferă feedback</string>
     <string name="settings_analytics_title">Statistici de utilizare</string>
     <string name="settings_analytics_desc">Partajează statistici de utilizare anonime pentru a ne ajuta să îmbunătățim aplicația. Nu se colectează date personale.</string>
+    <string name="settings_crash_title">Rapoarte de eroare</string>
+    <string name="settings_crash_desc">Trimite diagnostice când aplicația se blochează sau se închide. Nu include niciodată playlisturile sau parolele tale.</string>
+    <string name="settings_legal_title">Confidențialitate și termeni</string>
+    <string name="settings_legal_desc">Citește documentul pe care l-ai acceptat la configurarea aplicației.</string>
+    <string name="settings_legal_action">Citește</string>
     <string name="settings_recording_indicator_title">Indicator de înregistrare</string>
     <string name="settings_recording_indicator_desc">Afișează o insignă REC pulsatorie în player în timpul unei înregistrări.</string>
     <string name="settings_rearrange_hud">Rearanjează comenzile playerului</string>

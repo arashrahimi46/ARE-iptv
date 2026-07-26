@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privatliv &amp; vilkår</string>
     <string name="privacy_subtitle">Gennemgå og accepter, før du fortsætter.</string>
-    <string name="privacy_body">ARE iptv privatlivspolitik &amp; servicevilkår\n\nARE iptv indsamler eller overfører ikke dine loginoplysninger til playlisten uden for enheden. Ved at fortsætte accepterer du kun at bruge denne app med indholdskilder, som du har tilladelse til at tilgå, og du accepterer vores servicevilkår og privatlivspolitik i deres helhed.</string>
     <string name="privacy_accept_label">Jeg har læst og accepterer privatlivspolitikken og servicevilkårene.</string>
+    <string name="privacy_summary">Dine afspilningslister, adgangskoder og seerhistorik bliver på denne enhed — vi modtager dem aldrig. Vi indsamler anonym diagnostik om nedbrud og brug, som du kan slå fra nedenfor eller i Indstillinger når som helst. ARE iptv leverer ingen egne kanaler eller indhold: du medbringer dine egne kilder.</string>
+    <string name="privacy_read_full">Læs hele privatlivspolitikken og betingelserne</string>
+    <string name="privacy_crash_label">Send anonyme nedbrudsrapporter og brugsdata</string>
+    <string name="privacy_updated_note">Vi har opdateret vores privatlivspolitik og betingelser. Gennemgå og accepter dem for at fortsætte.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Vælg en playliste</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Giv feedback</string>
     <string name="settings_analytics_title">Brugsstatistik</string>
     <string name="settings_analytics_desc">Del anonym brugsstatistik for at hjælpe os med at forbedre appen. Der indsamles ingen personlige oplysninger.</string>
+    <string name="settings_crash_title">Nedbrudsrapporter</string>
+    <string name="settings_crash_desc">Send diagnostik, når appen går ned eller fryser. Indeholder aldrig dine afspilningslister eller adgangskoder.</string>
+    <string name="settings_legal_title">Privatlivspolitik og betingelser</string>
+    <string name="settings_legal_desc">Læs det dokument, du accepterede, da du satte appen op.</string>
+    <string name="settings_legal_action">Læs</string>
     <string name="settings_recording_indicator_title">Optageindikator</string>
     <string name="settings_recording_indicator_desc">Vis et pulserende REC-mærke i afspilleren, mens der optages.</string>
     <string name="settings_rearrange_hud">Omarranger afspillerens knapper</string>

@@ -100,6 +100,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isParentalLockEnabled: StateFlow<Boolean> = flowState(settings.isParentalLockEnabled, false)
     val isBrowseListMode: StateFlow<Boolean> = flowState(settings.isBrowseListMode, false)
     val isAnalyticsEnabled: StateFlow<Boolean> = flowState(settings.isAnalyticsEnabled, true)
+    val isCrashReportingEnabled: StateFlow<Boolean> = flowState(settings.isCrashReportingEnabled, true)
     val isRecordingIndicatorEnabled: StateFlow<Boolean> = flowState(settings.isRecordingIndicatorEnabled, true)
     val hudLayout: StateFlow<List<com.arashrahimi46.iptv.ui.player.HudSlot>> =
         flowState(settings.hudLayout, com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT)
@@ -195,6 +196,12 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     fun setAnalyticsEnabled(enabled: Boolean) = viewModelScope.launch {
         settings.setAnalyticsEnabled(enabled)
         com.arashrahimi46.iptv.analytics.Analytics.setEnabled(enabled)
+    }
+
+    /** Persist the crash-reporting opt-out AND gate Sentry live, so it takes effect without a restart. */
+    fun setCrashReportingEnabled(enabled: Boolean) = viewModelScope.launch {
+        settings.setCrashReportingEnabled(enabled)
+        com.arashrahimi46.iptv.analytics.CrashReporting.setEnabled(enabled)
     }
 
     fun setSubtitleLanguage(code: String) = viewModelScope.launch { settings.setSubtitleLanguage(code) }

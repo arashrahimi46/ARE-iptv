@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Απόρρητο &amp; Όροι</string>
     <string name="privacy_subtitle">Παρακαλούμε ελέγξτε και αποδεχτείτε πριν συνεχίσετε.</string>
-    <string name="privacy_body">Πολιτική Απορρήτου &amp; Όροι Χρήσης του ARE iptv\n\nΤο ARE iptv δεν συλλέγει ούτε μεταδίδει τα διαπιστευτήρια της λίστας σας εκτός συσκευής. Συνεχίζοντας, συμφωνείτε να χρησιμοποιείτε αυτήν την εφαρμογή μόνο με πηγές περιεχομένου στις οποίες έχετε εξουσιοδοτημένη πρόσβαση, και αποδέχεστε πλήρως τους Όρους Χρήσης και την Πολιτική Απορρήτου μας.</string>
     <string name="privacy_accept_label">Έχω διαβάσει και αποδέχομαι την Πολιτική Απορρήτου και τους Όρους Χρήσης.</string>
+    <string name="privacy_summary">Οι λίστες, οι κωδικοί και το ιστορικό προβολής σας παραμένουν σε αυτή τη συσκευή — δεν τα λαμβάνουμε ποτέ. Συλλέγουμε ανώνυμα διαγνωστικά σφαλμάτων και χρήσης, τα οποία μπορείτε να απενεργοποιήσετε παρακάτω ή στις Ρυθμίσεις ανά πάσα στιγμή. Το ARE iptv δεν παρέχει δικά του κανάλια ή περιεχόμενο: τις πηγές τις φέρνετε εσείς.</string>
+    <string name="privacy_read_full">Διαβάστε ολόκληρη την Πολιτική Απορρήτου και τους Όρους</string>
+    <string name="privacy_crash_label">Αποστολή ανώνυμων αναφορών σφαλμάτων και δεδομένων χρήσης</string>
+    <string name="privacy_updated_note">Ενημερώσαμε την Πολιτική Απορρήτου και τους Όρους μας. Διαβάστε τα και αποδεχθείτε τα για να συνεχίσετε.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Επιλέξτε λίστα αναπαραγωγής</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Αφήστε σχόλια</string>
     <string name="settings_analytics_title">Στατιστικά χρήσης</string>
     <string name="settings_analytics_desc">Μοιραστείτε ανώνυμα στατιστικά χρήσης για να μας βοηθήσετε να βελτιώσουμε την εφαρμογή. Δεν συλλέγονται προσωπικά δεδομένα.</string>
+    <string name="settings_crash_title">Αναφορές σφαλμάτων</string>
+    <string name="settings_crash_desc">Αποστολή διαγνωστικών όταν η εφαρμογή καταρρέει ή παγώνει. Δεν περιλαμβάνει ποτέ τις λίστες ή τους κωδικούς σας.</string>
+    <string name="settings_legal_title">Πολιτική Απορρήτου και Όροι</string>
+    <string name="settings_legal_desc">Διαβάστε το έγγραφο που αποδεχθήκατε κατά τη ρύθμιση της εφαρμογής.</string>
+    <string name="settings_legal_action">Ανάγνωση</string>
     <string name="settings_recording_indicator_title">Ένδειξη εγγραφής</string>
     <string name="settings_recording_indicator_desc">Εμφάνιση ενός παλλόμενου σήματος REC στην αναπαραγωγή κατά τη διάρκεια της εγγραφής.</string>
     <string name="settings_rearrange_hud">Αναδιάταξη χειριστηρίων αναπαραγωγής</string>

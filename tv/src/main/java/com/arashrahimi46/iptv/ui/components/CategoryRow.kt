@@ -2,12 +2,14 @@ package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -27,6 +29,8 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassLens
+import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 /**
  * CategoryRow — compact list row for the category filter column (CategoryRow.jsx)
@@ -69,8 +73,22 @@ fun AreCategoryRow(
         ) {
             // Small pin marker for pinned categories (long-press OK to pin/unpin) -- floated
             // to the top of the column by the ViewModel. Leading so it reads before the name.
+            // Glass, not a bare accent glyph: a small lens chip, so the marker separates by being
+            // *more glass* than the row it sits in (V2 §6.2) instead of by punching an accent-
+            // coloured hole in it. The hue cue lives in the lens fill, so the pin itself takes
+            // lensContentColor rather than `accent`.
             if (pinned) {
-                Icon(Icons.Filled.PushPin, contentDescription = stringResource(R.string.browse_category_pinned_desc), tint = colors.accent, modifier = Modifier.size(16.dp))
+                Box(
+                    modifier = Modifier.size(24.dp).glassLens(CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.Filled.PushPin,
+                        contentDescription = stringResource(R.string.browse_category_pinned_desc),
+                        tint = lensContentColor(),
+                        modifier = Modifier.size(13.dp),
+                    )
+                }
             }
             // Icon and title count removed: the name now owns the full row width (was truncating
             // to "Arabic M..." in the 240dp column), and the selected category's total already

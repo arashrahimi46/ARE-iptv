@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Gizlilik ve Şartlar</string>
     <string name="privacy_subtitle">Devam etmeden önce lütfen inceleyip kabul edin.</string>
-    <string name="privacy_body">ARE iptv Gizlilik Politikası ve Hizmet Şartları\n\nARE iptv, oynatma listesi kimlik bilgilerinizi cihaz dışında toplamaz veya iletmez. Devam ederek, bu uygulamayı yalnızca erişim yetkiniz olan içerik kaynaklarıyla kullanmayı kabul eder ve Hizmet Şartlarımızı ile Gizlilik Politikamızı tam olarak kabul edersiniz.</string>
     <string name="privacy_accept_label">Gizlilik Politikası\'nı ve Hizmet Şartları\'nı okudum ve kabul ediyorum.</string>
+    <string name="privacy_summary">Oynatma listeleriniz, parolalarınız ve izleme geçmişiniz bu cihazda kalır — bunları asla almayız. Anonim çökme ve kullanım tanılamaları topluyoruz; bunu aşağıdan veya istediğiniz zaman Ayarlar\'dan kapatabilirsiniz. ARE iptv kendi kanallarını veya içeriğini sunmaz: kaynakları siz eklersiniz.</string>
+    <string name="privacy_read_full">Gizlilik Politikası ve Koşulların tamamını okuyun</string>
+    <string name="privacy_crash_label">Anonim çökme raporları ve kullanım verileri gönder</string>
+    <string name="privacy_updated_note">Gizlilik Politikamızı ve Koşullarımızı güncelledik. Devam etmek için lütfen inceleyip kabul edin.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Bir oynatma listesi seçin</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Geri bildirimde bulun</string>
     <string name="settings_analytics_title">Kullanım istatistikleri</string>
     <string name="settings_analytics_desc">Uygulamayı geliştirmemize yardımcı olmak için anonim kullanım istatistiklerini paylaşın. Kişisel veri toplanmaz.</string>
+    <string name="settings_crash_title">Çökme raporları</string>
+    <string name="settings_crash_desc">Uygulama çöktüğünde veya donduğunda tanılama gönderin. Oynatma listelerinizi veya parolalarınızı asla içermez.</string>
+    <string name="settings_legal_title">Gizlilik Politikası ve Koşullar</string>
+    <string name="settings_legal_desc">Uygulamayı kurarken kabul ettiğiniz belgeyi okuyun.</string>
+    <string name="settings_legal_action">Oku</string>
     <string name="settings_recording_indicator_title">Kayıt göstergesi</string>
     <string name="settings_recording_indicator_desc">Kayıt sürerken oynatıcıda yanıp sönen bir REC rozeti gösterin.</string>
     <string name="settings_rearrange_hud">Oynatıcı denetimlerini yeniden düzenle</string>

@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Soukromí a podmínky</string>
     <string name="privacy_subtitle">Před pokračováním si prosím přečtěte a přijměte.</string>
-    <string name="privacy_body">Zásady ochrany soukromí a podmínky služby ARE iptv\n\nARE iptv neshromažďuje ani nepřenáší vaše přihlašovací údaje k playlistu mimo zařízení. Pokračováním souhlasíte s používáním této aplikace pouze se zdroji obsahu, k nimž máte oprávněný přístup, a plně přijímáte naše Podmínky služby a Zásady ochrany soukromí.</string>
     <string name="privacy_accept_label">Přečetl(a) jsem si a přijímám Zásady ochrany soukromí a Podmínky služby.</string>
+    <string name="privacy_summary">Vaše playlisty, hesla a historie sledování zůstávají v tomto zařízení — nikdy je nedostáváme. Sbíráme anonymní diagnostiku pádů a používání, kterou můžete níže nebo kdykoli v Nastavení vypnout. ARE iptv neposkytuje žádné vlastní kanály ani obsah: zdroje si přinášíte sami.</string>
+    <string name="privacy_read_full">Přečíst celé Zásady ochrany osobních údajů a Podmínky</string>
+    <string name="privacy_crash_label">Odesílat anonymní hlášení o pádech a údaje o používání</string>
+    <string name="privacy_updated_note">Aktualizovali jsme Zásady ochrany osobních údajů a Podmínky. Před pokračováním si je prosím přečtěte a přijměte.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Zvolte playlist</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Zanechat zpětnou vazbu</string>
     <string name="settings_analytics_title">Statistiky používání</string>
     <string name="settings_analytics_desc">Sdílejte anonymní statistiky používání a pomozte nám vylepšit aplikaci. Nesbíráme žádné osobní údaje.</string>
+    <string name="settings_crash_title">Hlášení o pádech</string>
+    <string name="settings_crash_desc">Odesílat diagnostiku, když aplikace spadne nebo zamrzne. Nikdy neobsahuje vaše playlisty ani hesla.</string>
+    <string name="settings_legal_title">Zásady ochrany osobních údajů a Podmínky</string>
+    <string name="settings_legal_desc">Přečtěte si dokument, který jste přijali při nastavení aplikace.</string>
+    <string name="settings_legal_action">Číst</string>
     <string name="settings_recording_indicator_title">Indikátor nahrávání</string>
     <string name="settings_recording_indicator_desc">Zobrazovat pulzující odznak REC v přehrávači během nahrávání.</string>
     <string name="settings_rearrange_hud">Uspořádat ovládací prvky přehrávače</string>

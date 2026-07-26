@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Personvern &amp; vilkår</string>
     <string name="privacy_subtitle">Se gjennom og godta før du fortsetter.</string>
-    <string name="privacy_body">ARE iptv personvernerklæring &amp; vilkår for bruk\n\nARE iptv samler ikke inn eller overfører spilleliste-legitimasjonen din utenfor enheten. Ved å fortsette samtykker du i å bruke denne appen bare med innholdskilder du har tillatelse til å bruke, og du godtar våre vilkår for bruk og personvernerklæring i sin helhet.</string>
     <string name="privacy_accept_label">Jeg har lest og godtar personvernerklæringen og vilkårene for bruk.</string>
+    <string name="privacy_summary">Spillelistene, passordene og avspillingshistorikken din blir på denne enheten — vi mottar dem aldri. Vi samler inn anonym krasj- og bruksdiagnostikk, som du kan slå av nedenfor eller i Innstillinger når som helst. ARE iptv leverer ingen egne kanaler eller innhold: du tar med dine egne kilder.</string>
+    <string name="privacy_read_full">Les hele personvernerklæringen og vilkårene</string>
+    <string name="privacy_crash_label">Send anonyme krasjrapporter og bruksdata</string>
+    <string name="privacy_updated_note">Vi har oppdatert personvernerklæringen og vilkårene våre. Les gjennom og godta dem for å fortsette.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Velg en spilleliste</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Gi tilbakemelding</string>
     <string name="settings_analytics_title">Bruksstatistikk</string>
     <string name="settings_analytics_desc">Del anonym bruksstatistikk for å hjelpe oss med å forbedre appen. Ingen personopplysninger samles inn.</string>
+    <string name="settings_crash_title">Krasjrapporter</string>
+    <string name="settings_crash_desc">Send diagnostikk når appen krasjer eller fryser. Inneholder aldri spillelistene eller passordene dine.</string>
+    <string name="settings_legal_title">Personvern og vilkår</string>
+    <string name="settings_legal_desc">Les dokumentet du godtok da du satte opp appen.</string>
+    <string name="settings_legal_action">Les</string>
     <string name="settings_recording_indicator_title">Opptaksindikator</string>
     <string name="settings_recording_indicator_desc">Vis et pulserende REC-merke i spilleren mens et opptak pågår.</string>
     <string name="settings_rearrange_hud">Omorganiser spillerkontrollene</string>

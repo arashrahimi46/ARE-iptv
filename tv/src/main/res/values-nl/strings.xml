@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privacy &amp; Voorwaarden</string>
     <string name="privacy_subtitle">Lees en accepteer dit voordat je doorgaat.</string>
-    <string name="privacy_body">ARE iptv Privacybeleid &amp; Servicevoorwaarden\n\nARE iptv verzamelt of verzendt je afspeellijstgegevens niet buiten het apparaat. Door door te gaan ga je ermee akkoord deze app alleen te gebruiken met inhoudsbronnen waartoe je gemachtigd bent, en accepteer je onze Servicevoorwaarden en ons Privacybeleid volledig.</string>
     <string name="privacy_accept_label">Ik heb het Privacybeleid en de Servicevoorwaarden gelezen en accepteer deze.</string>
+    <string name="privacy_summary">Je afspeellijsten, wachtwoorden en kijkgeschiedenis blijven op dit apparaat — wij ontvangen ze nooit. We verzamelen anonieme crash- en gebruiksgegevens, die je hieronder of op elk moment in Instellingen kunt uitschakelen. ARE iptv levert geen eigen kanalen of content: de bronnen breng je zelf mee.</string>
+    <string name="privacy_read_full">Lees het volledige privacybeleid en de voorwaarden</string>
+    <string name="privacy_crash_label">Anonieme crashrapporten en gebruiksgegevens verzenden</string>
+    <string name="privacy_updated_note">We hebben ons privacybeleid en onze voorwaarden bijgewerkt. Bekijk en accepteer ze om door te gaan.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Kies een afspeellijst</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Feedback geven</string>
     <string name="settings_analytics_title">Gebruiksstatistieken</string>
     <string name="settings_analytics_desc">Deel anonieme gebruiksstatistieken om ons te helpen de app te verbeteren. Er worden geen persoonlijke gegevens verzameld.</string>
+    <string name="settings_crash_title">Crashrapporten</string>
+    <string name="settings_crash_desc">Diagnostiek verzenden wanneer de app crasht of vastloopt. Bevat nooit je afspeellijsten of wachtwoorden.</string>
+    <string name="settings_legal_title">Privacybeleid en voorwaarden</string>
+    <string name="settings_legal_desc">Lees het document dat je accepteerde bij het instellen van de app.</string>
+    <string name="settings_legal_action">Lezen</string>
     <string name="settings_recording_indicator_title">Opname-indicator</string>
     <string name="settings_recording_indicator_desc">Toon een pulserende REC-badge in de speler tijdens een opname.</string>
     <string name="settings_rearrange_hud">Spelerbediening herschikken</string>

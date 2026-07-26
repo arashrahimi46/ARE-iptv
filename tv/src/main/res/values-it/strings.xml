@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privacy e termini</string>
     <string name="privacy_subtitle">Leggi e accetta prima di continuare.</string>
-    <string name="privacy_body">Informativa sulla privacy e termini di servizio di ARE iptv\n\nARE iptv non raccoglie né trasmette le credenziali della tua playlist fuori dal dispositivo. Continuando, accetti di utilizzare questa app solo con fonti di contenuti a cui sei autorizzato ad accedere e accetti integralmente i nostri termini di servizio e l\'informativa sulla privacy.</string>
     <string name="privacy_accept_label">Ho letto e accetto l\'informativa sulla privacy e i termini di servizio.</string>
+    <string name="privacy_summary">Le tue playlist, le password e la cronologia di visione restano su questo dispositivo: non li riceviamo mai. Raccogliamo diagnostica anonima su crash e utilizzo, che puoi disattivare qui sotto o nelle Impostazioni in qualsiasi momento. ARE iptv non fornisce canali o contenuti propri: le fonti le porti tu.</string>
+    <string name="privacy_read_full">Leggi l\'informativa sulla privacy e i termini completi</string>
+    <string name="privacy_crash_label">Invia rapporti di arresto anomalo e dati di utilizzo anonimi</string>
+    <string name="privacy_updated_note">Abbiamo aggiornato la nostra informativa sulla privacy e i termini. Leggili e accettali per continuare.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Scegli una playlist</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Lascia un feedback</string>
     <string name="settings_analytics_title">Statistiche di utilizzo</string>
     <string name="settings_analytics_desc">Condividi statistiche di utilizzo anonime per aiutarci a migliorare l\'app. Non vengono raccolti dati personali.</string>
+    <string name="settings_crash_title">Rapporti di arresto anomalo</string>
+    <string name="settings_crash_desc">Invia diagnostica quando l\'app si blocca o va in crash. Non include mai le tue playlist o password.</string>
+    <string name="settings_legal_title">Privacy e termini</string>
+    <string name="settings_legal_desc">Leggi il documento che hai accettato durante la configurazione.</string>
+    <string name="settings_legal_action">Leggi</string>
     <string name="settings_recording_indicator_title">Indicatore di registrazione</string>
     <string name="settings_recording_indicator_desc">Mostra un badge REC lampeggiante nel lettore durante una registrazione.</string>
     <string name="settings_rearrange_hud">Riorganizza i comandi del lettore</string>

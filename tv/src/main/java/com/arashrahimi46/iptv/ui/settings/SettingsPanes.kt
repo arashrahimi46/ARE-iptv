@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Brightness4
@@ -100,6 +102,7 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreLanguageOptions
 import com.arashrahimi46.iptv.ui.components.AreLanguageSelector
 import com.arashrahimi46.iptv.ui.components.AreSwitch
+import com.arashrahimi46.iptv.ui.onboarding.LegalDocumentDialog
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.language.localizedConfirmCopy
 import com.arashrahimi46.iptv.ui.player.SUBTITLE_LANGUAGES
@@ -1131,8 +1134,10 @@ private fun ParentalKeywordsBlock(
 internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val isAnalyticsEnabled by viewModel.isAnalyticsEnabled.collectAsState()
+    val isCrashReportingEnabled by viewModel.isCrashReportingEnabled.collectAsState()
     var showFeedback by remember { mutableStateOf(false) }
     var showWhatsNew by remember { mutableStateOf(false) }
+    var showLegal by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
         item {
@@ -1179,9 +1184,32 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
                 ) {
                     AreSwitch(checked = isAnalyticsEnabled, onCheckedChange = viewModel::setAnalyticsEnabled)
                 }
+                // The opt-out the Privacy Policy promises. Without this row the policy would be
+                // describing a control that does not exist.
+                SettingsRow(
+                    icon = Icons.Filled.BugReport,
+                    title = stringResource(R.string.settings_crash_title),
+                    desc = stringResource(R.string.settings_crash_desc),
+                ) {
+                    AreSwitch(checked = isCrashReportingEnabled, onCheckedChange = viewModel::setCrashReportingEnabled)
+                }
+                SettingsRow(
+                    icon = Icons.Filled.Policy,
+                    title = stringResource(R.string.settings_legal_title),
+                    desc = stringResource(R.string.settings_legal_desc),
+                ) {
+                    AreButton(
+                        text = stringResource(R.string.settings_legal_action),
+                        onClick = { showLegal = true },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                }
             }
         }
     }
+
+    if (showLegal) LegalDocumentDialog(onDismiss = { showLegal = false })
 
     if (showFeedback) {
         Dialog(onDismissRequest = { showFeedback = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {

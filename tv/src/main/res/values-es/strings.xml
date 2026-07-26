@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privacidad y términos</string>
     <string name="privacy_subtitle">Revisa y acepta antes de continuar.</string>
-    <string name="privacy_body">Política de privacidad y términos de servicio de ARE iptv\n\nARE iptv no recopila ni transmite tus credenciales de listas fuera del dispositivo. Al continuar, aceptas usar esta app únicamente con fuentes de contenido a las que estés autorizado a acceder, y aceptas nuestros términos de servicio y política de privacidad en su totalidad.</string>
     <string name="privacy_accept_label">He leído y acepto la política de privacidad y los términos de servicio.</string>
+    <string name="privacy_summary">Tus listas, contraseñas e historial de reproducción se quedan en este dispositivo: nunca los recibimos. Recogemos diagnósticos anónimos de fallos y uso, que puedes desactivar abajo o en Ajustes cuando quieras. ARE iptv no ofrece canales ni contenido propio: las fuentes las pones tú.</string>
+    <string name="privacy_read_full">Leer la Política de Privacidad y los Términos completos</string>
+    <string name="privacy_crash_label">Enviar informes de fallos y datos de uso anónimos</string>
+    <string name="privacy_updated_note">Hemos actualizado nuestra Política de Privacidad y Términos. Revísalos y acéptalos para continuar.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Elige una lista</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Dar tu opinión</string>
     <string name="settings_analytics_title">Estadísticas de uso</string>
     <string name="settings_analytics_desc">Comparte estadísticas de uso anónimas para ayudarnos a mejorar la app. No se recopilan datos personales.</string>
+    <string name="settings_crash_title">Informes de fallos</string>
+    <string name="settings_crash_desc">Enviar diagnósticos cuando la app falla o se congela. Nunca incluye tus listas ni contraseñas.</string>
+    <string name="settings_legal_title">Política de Privacidad y Términos</string>
+    <string name="settings_legal_desc">Lee el documento que aceptaste al configurar la app.</string>
+    <string name="settings_legal_action">Leer</string>
     <string name="settings_recording_indicator_title">Indicador de grabación</string>
     <string name="settings_recording_indicator_desc">Muestra una insignia REC parpadeante en el reproductor mientras se graba.</string>
     <string name="settings_rearrange_hud">Reorganizar los controles del reproductor</string>

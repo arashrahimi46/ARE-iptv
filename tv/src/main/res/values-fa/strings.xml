@@ -80,8 +80,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">حریم خصوصی و شرایط</string>
     <string name="privacy_subtitle">لطفاً پیش از ادامه، بررسی و تأیید کنید.</string>
-    <string name="privacy_body">سیاست حریم خصوصی و شرایط استفاده از ARE iptv\n\nARE iptv اطلاعات ورود پلی‌لیست شما را خارج از دستگاه جمع‌آوری یا ارسال نمی‌کند. با ادامه دادن، می‌پذیرید که از این برنامه تنها با منابع محتوایی که مجاز به دسترسی به آن‌ها هستید استفاده کنید و شرایط استفاده و سیاست حریم خصوصی ما را به‌طور کامل می‌پذیرید.</string>
     <string name="privacy_accept_label">سیاست حریم خصوصی و شرایط استفاده را خوانده‌ام و می‌پذیرم.</string>
+    <string name="privacy_summary">پلی‌لیست‌ها، گذرواژه‌ها و تاریخچهٔ تماشای شما روی همین دستگاه می‌مانند — ما هرگز آن‌ها را دریافت نمی‌کنیم. ما داده‌های ناشناس خرابی و استفاده را جمع‌آوری می‌کنیم که می‌توانید در پایین یا هر زمان در تنظیمات خاموشش کنید. ARE iptv هیچ کانال یا محتوایی از خود ارائه نمی‌دهد: منابع را شما می‌آورید.</string>
+    <string name="privacy_read_full">خواندن کامل سیاست حریم خصوصی و شرایط</string>
+    <string name="privacy_crash_label">ارسال گزارش‌های ناشناس خرابی و داده‌های استفاده</string>
+    <string name="privacy_updated_note">سیاست حریم خصوصی و شرایط ما به‌روزرسانی شده است. لطفاً برای ادامه آن‌ها را بررسی و قبول کنید.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">یک پلی‌لیست انتخاب کنید</string>
@@ -570,6 +573,11 @@
     <string name="recording_volume_internal">حافظه داخلی</string>
     <string name="recording_volume_usb">درایو USB</string>
     <string name="settings_analytics_desc">برای کمک به بهبود برنامه، آمار استفاده ناشناس را به اشتراک بگذارید. هیچ داده شخصی جمع‌آوری نمی‌شود.</string>
+    <string name="settings_crash_title">گزارش‌های خرابی</string>
+    <string name="settings_crash_desc">ارسال اطلاعات تشخیصی هنگام خرابی یا هنگ کردن برنامه. هرگز شامل پلی‌لیست‌ها یا گذرواژه‌های شما نمی‌شود.</string>
+    <string name="settings_legal_title">سیاست حریم خصوصی و شرایط</string>
+    <string name="settings_legal_desc">سندی را که هنگام راه‌اندازی برنامه پذیرفتید بخوانید.</string>
+    <string name="settings_legal_action">خواندن</string>
     <string name="settings_analytics_title">آمار استفاده</string>
     <string name="settings_feedback_action">ارسال بازخورد</string>
     <string name="settings_feedback_desc">به ما بگویید چه چیزی را بهبود دهیم — فقط چند ثانیه طول می‌کشد.</string>

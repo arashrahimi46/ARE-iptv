@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privacidade &amp; Termos</string>
     <string name="privacy_subtitle">Reveja e aceite antes de continuar.</string>
-    <string name="privacy_body">Política de Privacidade &amp; Termos de Serviço do ARE iptv\n\nO ARE iptv não recolhe nem transmite as credenciais da sua lista fora do dispositivo. Ao continuar, concorda em usar esta aplicação apenas com fontes de conteúdo a que está autorizado a aceder, e aceita integralmente os nossos Termos de Serviço e Política de Privacidade.</string>
     <string name="privacy_accept_label">Li e aceito a Política de Privacidade e os Termos de Serviço.</string>
+    <string name="privacy_summary">As suas listas, palavras-passe e histórico de reprodução ficam neste dispositivo — nunca os recebemos. Recolhemos diagnósticos anónimos de falhas e utilização, que pode desativar abaixo ou nas Definições a qualquer momento. O ARE iptv não fornece canais nem conteúdos próprios: as fontes são suas.</string>
+    <string name="privacy_read_full">Ler a Política de Privacidade e os Termos completos</string>
+    <string name="privacy_crash_label">Enviar relatórios de falhas e dados de utilização anónimos</string>
+    <string name="privacy_updated_note">Atualizámos a nossa Política de Privacidade e Termos. Reveja-os e aceite para continuar.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Escolha uma lista de reprodução</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Dar feedback</string>
     <string name="settings_analytics_title">Análise de utilização</string>
     <string name="settings_analytics_desc">Partilhe estatísticas de utilização anónimas para nos ajudar a melhorar a aplicação. Não são recolhidos dados pessoais.</string>
+    <string name="settings_crash_title">Relatórios de falhas</string>
+    <string name="settings_crash_desc">Enviar diagnósticos quando a aplicação falha ou bloqueia. Nunca inclui as suas listas nem palavras-passe.</string>
+    <string name="settings_legal_title">Política de Privacidade e Termos</string>
+    <string name="settings_legal_desc">Leia o documento que aceitou ao configurar a aplicação.</string>
+    <string name="settings_legal_action">Ler</string>
     <string name="settings_recording_indicator_title">Indicador de gravação</string>
     <string name="settings_recording_indicator_desc">Mostrar um selo REC intermitente no leitor durante uma gravação.</string>
     <string name="settings_rearrange_hud">Reorganizar controlos do leitor</string>

@@ -87,8 +87,64 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Privacy &amp; Terms</string>
     <string name="privacy_subtitle">Please review and accept before continuing.</string>
-    <string name="privacy_body">ARE iptv Privacy Policy &amp; Terms of Service\n\nARE iptv does not collect or transmit your playlist credentials off-device. By continuing, you agree to use this app only with content sources you are authorized to access, and you accept our Terms of Service and Privacy Policy in full.</string>
     <string name="privacy_accept_label">I have read and accept the Privacy Policy and Terms of Service.</string>
+    <string name="privacy_summary">Your playlists, passwords and viewing history stay on this device — we never receive them. We do collect anonymous crash and usage diagnostics, which you can switch off below or in Settings at any time. ARE iptv provides no channels or content of its own: you bring your own sources.</string>
+    <string name="privacy_read_full">Read the full Privacy Policy and Terms</string>
+    <string name="privacy_crash_label">Send anonymous crash reports and usage data</string>
+    <string name="privacy_updated_note">We\'ve updated our Privacy Policy and Terms. Please review and accept them to continue.</string>
+
+    <!-- Privacy & Terms: the binding document. ENGLISH ONLY BY DESIGN — do NOT add these to
+         values-*/strings.xml. A machine-translated legal clause is still legally binding on us and
+         can contradict the English text; §13 states the English version governs. The surrounding
+         chrome (summary, buttons, Settings rows) IS translated, so no locale sees a broken screen.
+         BUMP CURRENT_TERMS_VERSION in UserSettings.kt whenever any of this changes materially. -->
+    <string name="legal_doc_title">Privacy Policy &amp; Terms of Service</string>
+    <string name="legal_doc_meta">Version 2 · 27 July 2026 · The English text is the binding version.</string>
+
+    <string name="legal_s1_title">1. Who we are</string>
+    <string name="legal_s1_body">ARE iptv (\"the app\") is published by [LEGAL_NAME], an individual developer established in the Netherlands. For the purposes of the EU General Data Protection Regulation (GDPR), [LEGAL_NAME] is the data controller for the limited personal data described in this document. You can reach us at [CONTACT_EMAIL].</string>
+
+    <string name="legal_s2_title">2. What ARE iptv is — and is not</string>
+    <string name="legal_s2_body">ARE iptv is a media player. It ships with no channels, no films, no series and no streams of any kind, and it is not a content service. It plays what you point it at: you supply your own playlist, provider account or portal, and you are responsible for having the right to access it. We have no relationship with, and no control over, the providers whose content you choose to play.</string>
+
+    <string name="legal_s3_title">3. What stays on your device</string>
+    <string name="legal_s3_body">Your playlist URLs, usernames, passwords, portal MAC addresses and API keys are stored only in this app\'s private storage on your device, with credentials held in encrypted form. Your channel catalogue, favourites, watch history, recordings and settings are likewise local. None of this is transmitted to us, and we have no server that could receive it.</string>
+
+    <string name="legal_s4_title">4. What we do collect</string>
+    <string name="legal_s4_body">Two optional diagnostic streams, both switchable off in Settings under About:\n\n• Crash and freeze diagnostics, processed by Sentry. A report contains the technical circumstances of the failure — stack trace, app version, device model, operating system version — and never your playlist credentials or what you were watching.\n\n• Anonymous usage events, processed by Google Firebase Analytics, recording which screens are opened and that a playback attempt occurred. This tells us which features are worth maintaining. It is not linked to your identity, and we do not build profiles or advertise to you.\n\nWe do not sell personal data, and we do not share it with data brokers or advertisers.</string>
+
+    <string name="legal_s5_title">5. Who else receives data when you use the app</string>
+    <string name="legal_s5_body">Using certain features causes your device to contact third parties directly. We do not route or see this traffic:\n\n• Your playlist or portal provider, which necessarily receives your IP address and credentials in order to serve you the stream you asked for.\n• OpenSubtitles, if you search for subtitles.\n• OMDb, if you enable enriched film and series metadata.\n• Google, if you submit feedback through the feedback form.\n• Buy Me a Coffee, if you choose to open the support page.\n\nEach of these is governed by its own privacy policy, not this one.</string>
+
+    <string name="legal_s6_title">6. Why we are allowed to process it</string>
+    <string name="legal_s6_body">Crash and usage diagnostics are processed on the basis of your consent (GDPR Article 6(1)(a)), given on first run and withdrawable at any time in Settings without losing access to any feature. Withdrawing consent does not affect processing carried out before you withdrew it.</string>
+
+    <string name="legal_s7_title">7. How long we keep it</string>
+    <string name="legal_s7_body">Crash reports are retained for up to 90 days and then deleted. Aggregated usage statistics are retained for up to 14 months. Data held on your device stays there until you delete it, clear the app\'s storage, or uninstall the app — uninstalling removes all of it permanently, including your playlists and history.</string>
+
+    <string name="legal_s8_title">8. Your rights</string>
+    <string name="legal_s8_body">Under the GDPR you have the right to access, correct, erase, restrict, port and object to the processing of your personal data, and to lodge a complaint with your national supervisory authority — in the Netherlands, the Autoriteit Persoonsgegevens. Because our diagnostic data is not tied to an account and carries no identifier we can look you up by, the most reliable way to exercise erasure is to switch diagnostics off, which stops all further collection immediately. For anything else, write to [CONTACT_EMAIL].</string>
+
+    <string name="legal_s9_title">9. Children</string>
+    <string name="legal_s9_body">ARE iptv is not directed at children and we do not knowingly collect data from anyone under 16. The app does not curate, rate or filter what your sources provide, so an adult should decide whether a given source is appropriate for a given viewer.</string>
+
+    <string name="legal_s10_title">10. Your responsibilities</string>
+    <string name="legal_s10_body">You agree to use ARE iptv only with content you are legally entitled to access in your country, and not to use it to infringe anyone\'s copyright or other rights. Whether a particular stream is lawful depends on the source and on where you are; that assessment is yours to make, and we cannot make it for you. You must not attempt to use the app to circumvent access controls or digital rights management.</string>
+
+    <string name="legal_s11_title">11. Copyright and takedown requests</string>
+    <string name="legal_s11_body">We host no content and operate no streaming infrastructure, so there is nothing on our side to take down. If you are a rights holder and believe the app itself is being presented in a way that infringes your rights, write to [CONTACT_EMAIL] identifying the work, the specific material at issue, and your authority to act for the rights holder. We will respond and, where a complaint is substantiated, act on it promptly.</string>
+
+    <string name="legal_s12_title">12. No warranty, and limits on liability</string>
+    <string name="legal_s12_body">The app is provided \"as is\", without warranty of any kind. We do not guarantee that any stream will play, that any provider will remain available, or that the app will be uninterrupted or error-free. To the fullest extent permitted by law, we are not liable for indirect or consequential loss, for lost data, or for anything arising from content obtained through sources you supplied. Nothing here limits liability that cannot lawfully be limited, including for death or personal injury caused by negligence, or for fraud. If you are a consumer in the EU, your mandatory statutory rights are unaffected.</string>
+
+    <string name="legal_s13_title">13. Changes to this document</string>
+    <string name="legal_s13_body">If we change this document materially, the app will show it to you again and ask you to accept the new version before you continue. This document may be translated for convenience; where a translation and the English text differ, the English text governs.</string>
+
+    <string name="legal_s14_title">14. Governing law</string>
+    <string name="legal_s14_body">This agreement is governed by the laws of the Netherlands. If you are a consumer, you keep the protection of the mandatory rules of the country in which you live, and you may bring proceedings in your own courts.</string>
+
+    <string name="legal_s15_title">15. Contact</string>
+    <string name="legal_s15_body">Questions, privacy requests and copyright notices: [CONTACT_EMAIL].</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Choose a playlist</string>
@@ -347,6 +403,11 @@
     <string name="settings_feedback_action">Give feedback</string>
     <string name="settings_analytics_title">Usage analytics</string>
     <string name="settings_analytics_desc">Share anonymous usage stats to help us improve the app. No personal data is collected.</string>
+    <string name="settings_crash_title">Crash reports</string>
+    <string name="settings_crash_desc">Send diagnostics when the app crashes or freezes. Never includes your playlists or passwords.</string>
+    <string name="settings_legal_title">Privacy Policy &amp; Terms</string>
+    <string name="settings_legal_desc">Read the document you accepted when you set up the app.</string>
+    <string name="settings_legal_action">Read</string>
     <string name="settings_recording_indicator_title">Recording indicator</string>
     <string name="settings_recording_indicator_desc">Show a pulsing REC badge in the player while a recording is in progress.</string>
     <!-- Rearrange-HUD editor (glass redesign V1) -->

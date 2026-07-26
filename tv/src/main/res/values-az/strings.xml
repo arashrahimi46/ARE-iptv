@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Məxfilik və Şərtlər</string>
     <string name="privacy_subtitle">Davam etməzdən əvvəl nəzərdən keçirin və qəbul edin.</string>
-    <string name="privacy_body">ARE iptv Məxfilik Siyasəti və Xidmət Şərtləri\n\nARE iptv pleylist giriş məlumatlarınızı toplamır və cihazdan kənara ötürmür. Davam etməklə, bu tətbiqi yalnız giriş icazəniz olan məzmun mənbələri ilə istifadə etməyə razılıq verir və Xidmət Şərtlərimizi və Məxfilik Siyasətimizi tam qəbul edirsiniz.</string>
     <string name="privacy_accept_label">Məxfilik Siyasətini və Xidmət Şərtlərini oxudum və qəbul edirəm.</string>
+    <string name="privacy_summary">Pleylistləriniz, parollarınız və baxış tarixçəniz bu cihazda qalır — biz onları heç vaxt almırıq. Anonim qəza və istifadə diaqnostikası toplayırıq; onu aşağıda və ya istənilən vaxt Ayarlarda söndürə bilərsiniz. ARE iptv özünün heç bir kanal və ya məzmununu təqdim etmir: mənbələri siz gətirirsiniz.</string>
+    <string name="privacy_read_full">Tam Məxfilik Siyasəti və Şərtləri oxuyun</string>
+    <string name="privacy_crash_label">Anonim qəza hesabatları və istifadə məlumatları göndər</string>
+    <string name="privacy_updated_note">Məxfilik Siyasəti və Şərtlərimizi yenilədik. Davam etmək üçün onları nəzərdən keçirib qəbul edin.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Pleylist seçin</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Rəy bildirin</string>
     <string name="settings_analytics_title">İstifadə statistikası</string>
     <string name="settings_analytics_desc">Tətbiqi təkmilləşdirməyimizə kömək etmək üçün anonim istifadə statistikasını paylaşın. Heç bir şəxsi məlumat toplanmır.</string>
+    <string name="settings_crash_title">Qəza hesabatları</string>
+    <string name="settings_crash_desc">Tətbiq çökdükdə və ya donduqda diaqnostika göndərin. Pleylistlərinizi və ya parollarınızı heç vaxt daxil etmir.</string>
+    <string name="settings_legal_title">Məxfilik Siyasəti və Şərtlər</string>
+    <string name="settings_legal_desc">Tətbiqi qurarkən qəbul etdiyiniz sənədi oxuyun.</string>
+    <string name="settings_legal_action">Oxu</string>
     <string name="settings_recording_indicator_title">Yazı göstəricisi</string>
     <string name="settings_recording_indicator_desc">Yazı gedərkən pleyerdə yanıb-sönən REC nişanı göstərin.</string>
     <string name="settings_rearrange_hud">Pleyer idarəetmələrini yenidən düz</string>

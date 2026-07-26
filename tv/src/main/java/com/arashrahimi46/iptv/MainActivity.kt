@@ -77,6 +77,7 @@ import com.arashrahimi46.iptv.ui.live.LiveScreen
 import com.arashrahimi46.iptv.ui.multiview.MultiViewScreen
 import com.arashrahimi46.iptv.ui.movies.MoviesScreen
 import com.arashrahimi46.iptv.ui.onboarding.OnboardingFlow
+import com.arashrahimi46.iptv.analytics.CrashReporting
 import com.arashrahimi46.iptv.ui.onboarding.PrivacyTermsStep
 import com.arashrahimi46.iptv.ui.player.LivePlayerScreen
 import com.arashrahimi46.iptv.ui.player.PlaybackSource
@@ -187,6 +188,8 @@ fun AreIptvApp() {
     // Issue #11: first-run Privacy & Terms acceptance gate. `null` distinguishes "DataStore
     // hasn't emitted yet" from a real false, same reasoning as UNKNOWN below for activeSourceId.
     val hasAcceptedTerms: Boolean? by settings.hasAcceptedTerms.collectAsState(initial = null)
+    // Which version they last accepted; only used to tell a first run from a terms update.
+    val acceptedTermsVersion: Int? by settings.acceptedTermsVersion.collectAsState(initial = null)
     // Round 1 multi-language support: first-run language selector gate, same "null = not loaded
     // yet" reasoning as hasAcceptedTerms above.
     val hasSelectedLanguage: Boolean? by settings.hasSelectedLanguage.collectAsState(initial = null)
@@ -266,9 +269,14 @@ fun AreIptvApp() {
         }
         composable("privacy") {
             val scope = androidx.compose.runtime.rememberCoroutineScope()
-            PrivacyTermsStep(onAccepted = {
+            PrivacyTermsStep(
+                // >0 means they accepted an earlier version, so this is a re-consent, not first run.
+                isUpdate = (acceptedTermsVersion ?: 0) > 0,
+                onAccepted = { crashReportingEnabled ->
                 scope.launch {
-                    settings.setTermsAccepted(true)
+                    settings.setCrashReportingEnabled(crashReportingEnabled)
+                    CrashReporting.setEnabled(crashReportingEnabled)
+                    settings.acceptCurrentTerms()
                     val destination = when {
                         activeSourceId == null -> "onboarding"
                         hasMultipleSources -> "sources"
@@ -278,7 +286,8 @@ fun AreIptvApp() {
                         popUpTo("privacy") { inclusive = true }
                     }
                 }
-            })
+                },
+            )
         }
         composable("onboarding") {
             OnboardingFlow(onFinished = {

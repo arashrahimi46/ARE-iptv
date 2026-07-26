@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Integritet &amp; villkor</string>
     <string name="privacy_subtitle">Läs igenom och acceptera innan du fortsätter.</string>
-    <string name="privacy_body">ARE iptv integritetspolicy &amp; användarvillkor\n\nARE iptv samlar inte in eller överför dina inloggningsuppgifter för spellistan utanför enheten. Genom att fortsätta godkänner du att endast använda den här appen med innehållskällor som du har behörighet att komma åt, och du accepterar våra användarvillkor och vår integritetspolicy i sin helhet.</string>
     <string name="privacy_accept_label">Jag har läst och accepterar integritetspolicyn och användarvillkoren.</string>
+    <string name="privacy_summary">Dina spellistor, lösenord och visningshistorik stannar på den här enheten — vi tar aldrig emot dem. Vi samlar in anonym krasch- och användningsdiagnostik, som du kan stänga av nedan eller i Inställningar när som helst. ARE iptv tillhandahåller inga egna kanaler eller innehåll: källorna tar du med själv.</string>
+    <string name="privacy_read_full">Läs hela integritetspolicyn och villkoren</string>
+    <string name="privacy_crash_label">Skicka anonyma kraschrapporter och användningsdata</string>
+    <string name="privacy_updated_note">Vi har uppdaterat vår integritetspolicy och våra villkor. Läs igenom och godkänn dem för att fortsätta.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Välj en spellista</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Ge feedback</string>
     <string name="settings_analytics_title">Användningsstatistik</string>
     <string name="settings_analytics_desc">Dela anonym användningsstatistik för att hjälpa oss att förbättra appen. Inga personuppgifter samlas in.</string>
+    <string name="settings_crash_title">Kraschrapporter</string>
+    <string name="settings_crash_desc">Skicka diagnostik när appen kraschar eller låser sig. Innehåller aldrig dina spellistor eller lösenord.</string>
+    <string name="settings_legal_title">Integritetspolicy och villkor</string>
+    <string name="settings_legal_desc">Läs dokumentet du godkände när du konfigurerade appen.</string>
+    <string name="settings_legal_action">Läs</string>
     <string name="settings_recording_indicator_title">Inspelningsindikator</string>
     <string name="settings_recording_indicator_desc">Visa ett pulserande REC-märke i spelaren under en inspelning.</string>
     <string name="settings_rearrange_hud">Ordna om spelarkontrollerna</string>

@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Конфиденциальность и условия</string>
     <string name="privacy_subtitle">Пожалуйста, ознакомьтесь и примите перед продолжением.</string>
-    <string name="privacy_body">Политика конфиденциальности и Условия использования ARE iptv\n\nARE iptv не собирает и не передаёт данные вашего плейлиста за пределы устройства. Продолжая, вы соглашаетесь использовать это приложение только с источниками контента, к которым у вас есть доступ, и принимаете наши Условия использования и Политику конфиденциальности в полном объёме.</string>
     <string name="privacy_accept_label">Я прочитал(а) и принимаю Политику конфиденциальности и Условия использования.</string>
+    <string name="privacy_summary">Ваши плейлисты, пароли и история просмотров остаются на этом устройстве — мы их никогда не получаем. Мы собираем анонимную диагностику сбоев и использования, которую можно отключить ниже или в Настройках в любое время. ARE iptv не предоставляет собственных каналов или контента: источники добавляете вы.</string>
+    <string name="privacy_read_full">Читать полную Политику конфиденциальности и Условия</string>
+    <string name="privacy_crash_label">Отправлять анонимные отчёты о сбоях и данные об использовании</string>
+    <string name="privacy_updated_note">Мы обновили Политику конфиденциальности и Условия. Пожалуйста, ознакомьтесь и примите их, чтобы продолжить.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Выберите плейлист</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Оставить отзыв</string>
     <string name="settings_analytics_title">Статистика использования</string>
     <string name="settings_analytics_desc">Делитесь анонимной статистикой использования, чтобы помочь нам улучшить приложение. Личные данные не собираются.</string>
+    <string name="settings_crash_title">Отчёты о сбоях</string>
+    <string name="settings_crash_desc">Отправлять диагностику при сбое или зависании приложения. Никогда не включает ваши плейлисты и пароли.</string>
+    <string name="settings_legal_title">Конфиденциальность и условия</string>
+    <string name="settings_legal_desc">Прочитайте документ, который вы приняли при настройке приложения.</string>
+    <string name="settings_legal_action">Читать</string>
     <string name="settings_recording_indicator_title">Индикатор записи</string>
     <string name="settings_recording_indicator_desc">Показывать пульсирующий значок REC в плеере во время записи.</string>
     <string name="settings_rearrange_hud">Изменить порядок элементов управления плеера</string>

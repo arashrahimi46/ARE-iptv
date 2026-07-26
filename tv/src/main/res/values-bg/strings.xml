@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Поверителност &amp; Условия</string>
     <string name="privacy_subtitle">Моля, прегледайте и приемете, преди да продължите.</string>
-    <string name="privacy_body">Политика за поверителност &amp; Общи условия на ARE iptv\n\nARE iptv не събира и не предава данните ви за вход в плейлиста извън устройството. Като продължавате, вие се съгласявате да използвате това приложение само с източници на съдържание, до които имате право на достъп, и приемате изцяло нашите Общи условия и Политика за поверителност.</string>
     <string name="privacy_accept_label">Прочетох и приемам Политиката за поверителност и Общите условия.</string>
+    <string name="privacy_summary">Вашите плейлисти, пароли и история на гледане остават на това устройство — ние никога не ги получаваме. Събираме анонимна диагностика за сривове и употреба, която можете да изключите по-долу или в Настройки по всяко време. ARE iptv не предоставя собствени канали или съдържание: източниците са ваши.</string>
+    <string name="privacy_read_full">Прочетете пълната Политика за поверителност и Условията</string>
+    <string name="privacy_crash_label">Изпращане на анонимни отчети за сривове и данни за употреба</string>
+    <string name="privacy_updated_note">Актуализирахме Политиката за поверителност и Условията. Моля, прегледайте ги и ги приемете, за да продължите.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Изберете плейлист</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Дайте отзив</string>
     <string name="settings_analytics_title">Статистика на използването</string>
     <string name="settings_analytics_desc">Споделяйте анонимна статистика за използване, за да ни помогнете да подобрим приложението. Не се събират лични данни.</string>
+    <string name="settings_crash_title">Отчети за сривове</string>
+    <string name="settings_crash_desc">Изпращане на диагностика при срив или блокиране на приложението. Никога не включва плейлистите или паролите ви.</string>
+    <string name="settings_legal_title">Политика за поверителност и Условия</string>
+    <string name="settings_legal_desc">Прочетете документа, който приехте при настройването на приложението.</string>
+    <string name="settings_legal_action">Прочети</string>
     <string name="settings_recording_indicator_title">Индикатор за запис</string>
     <string name="settings_recording_indicator_desc">Показвайте пулсиращ REC знак в плейъра, докато тече запис.</string>
     <string name="settings_rearrange_hud">Пренареждане на контролите на плейъра</string>

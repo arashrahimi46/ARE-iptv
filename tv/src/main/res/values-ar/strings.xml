@@ -80,8 +80,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">الخصوصية والشروط</string>
     <string name="privacy_subtitle">يرجى المراجعة والقبول قبل المتابعة.</string>
-    <string name="privacy_body">سياسة الخصوصية وشروط الخدمة لـ ARE iptv\n\nلا يجمع ARE iptv بيانات دخول قائمة تشغيلك أو يرسلها خارج الجهاز. بالمتابعة، فإنك توافق على استخدام هذا التطبيق فقط مع مصادر المحتوى المصرّح لك بالوصول إليها، وتقبل شروط الخدمة وسياسة الخصوصية بالكامل.</string>
     <string name="privacy_accept_label">لقد قرأت سياسة الخصوصية وشروط الخدمة وأوافق عليها.</string>
+    <string name="privacy_summary">تبقى قوائم التشغيل وكلمات المرور وسجل المشاهدة على هذا الجهاز — nحن لا نتلقاها أبدًا. نجمع تشخيصات مجهولة للأعطال والاستخدام، ويمكنك إيقافها أدناه أو من الإعدادات في أي وقت. لا يوفّر ARE iptv أي قنوات أو محتوى خاص به: أنت من يضيف مصادرك.</string>
+    <string name="privacy_read_full">اقرأ سياسة الخصوصية والشروط كاملة</string>
+    <string name="privacy_crash_label">إرسال تقارير أعطال وبيانات استخدام مجهولة</string>
+    <string name="privacy_updated_note">لقد حدّثنا سياسة الخصوصية والشروط. يُرجى مراجعتها وقبولها للمتابعة.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">اختر قائمة تشغيل</string>
@@ -570,6 +573,11 @@
     <string name="recording_volume_internal">التخزين الداخلي</string>
     <string name="recording_volume_usb">محرك USB</string>
     <string name="settings_analytics_desc">شارك إحصاءات استخدام مجهولة لمساعدتنا في تحسين التطبيق. لا يتم جمع أي بيانات شخصية.</string>
+    <string name="settings_crash_title">تقارير الأعطال</string>
+    <string name="settings_crash_desc">إرسال تشخيصات عند تعطّل التطبيق أو تجمّده. لا تتضمن أبدًا قوائم التشغيل أو كلمات المرور.</string>
+    <string name="settings_legal_title">سياسة الخصوصية والشروط</string>
+    <string name="settings_legal_desc">اقرأ المستند الذي قبلته عند إعداد التطبيق.</string>
+    <string name="settings_legal_action">اقرأ</string>
     <string name="settings_analytics_title">تحليلات الاستخدام</string>
     <string name="settings_feedback_action">إرسال ملاحظات</string>
     <string name="settings_feedback_desc">أخبرنا بما يمكن تحسينه — لا يستغرق سوى بضع ثوانٍ.</string>

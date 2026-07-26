@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Datenschutz &amp; Bedingungen</string>
     <string name="privacy_subtitle">Bitte lesen und akzeptieren Sie diese, bevor Sie fortfahren.</string>
-    <string name="privacy_body">ARE iptv Datenschutzerklärung &amp; Nutzungsbedingungen\n\nARE iptv erfasst oder überträgt Ihre Playlist-Zugangsdaten nicht außerhalb des Geräts. Mit der Fortsetzung erklären Sie sich damit einverstanden, diese App nur mit Inhaltsquellen zu nutzen, auf die Sie zugreifen dürfen, und akzeptieren unsere Nutzungsbedingungen und Datenschutzerklärung vollständig.</string>
     <string name="privacy_accept_label">Ich habe die Datenschutzerklärung und die Nutzungsbedingungen gelesen und akzeptiere sie.</string>
+    <string name="privacy_summary">Ihre Playlists, Passwörter und Ihr Wiedergabeverlauf bleiben auf diesem Gerät — wir erhalten sie nie. Wir erfassen anonyme Absturz- und Nutzungsdiagnosen, die Sie unten oder jederzeit in den Einstellungen abschalten können. ARE iptv liefert keine eigenen Sender oder Inhalte: Die Quellen bringen Sie mit.</string>
+    <string name="privacy_read_full">Vollständige Datenschutzerklärung und Nutzungsbedingungen lesen</string>
+    <string name="privacy_crash_label">Anonyme Absturzberichte und Nutzungsdaten senden</string>
+    <string name="privacy_updated_note">Wir haben unsere Datenschutzerklärung und Nutzungsbedingungen aktualisiert. Bitte lesen und akzeptieren Sie sie, um fortzufahren.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Playlist auswählen</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Feedback geben</string>
     <string name="settings_analytics_title">Nutzungsstatistik</string>
     <string name="settings_analytics_desc">Teile anonyme Nutzungsstatistiken, um uns bei der Verbesserung der App zu helfen. Es werden keine personenbezogenen Daten erfasst.</string>
+    <string name="settings_crash_title">Absturzberichte</string>
+    <string name="settings_crash_desc">Diagnosen senden, wenn die App abstürzt oder einfriert. Enthält nie Ihre Playlists oder Passwörter.</string>
+    <string name="settings_legal_title">Datenschutz und Nutzungsbedingungen</string>
+    <string name="settings_legal_desc">Lesen Sie das Dokument, das Sie bei der Einrichtung akzeptiert haben.</string>
+    <string name="settings_legal_action">Lesen</string>
     <string name="settings_recording_indicator_title">Aufnahmeanzeige</string>
     <string name="settings_recording_indicator_desc">Ein pulsierendes REC-Symbol im Player anzeigen, während eine Aufnahme läuft.</string>
     <string name="settings_rearrange_hud">Player-Steuerung neu anordnen</string>

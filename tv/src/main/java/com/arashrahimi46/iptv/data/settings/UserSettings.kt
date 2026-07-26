@@ -3,6 +3,7 @@ package com.arashrahimi46.iptv.data.settings
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -127,7 +128,9 @@ class UserSettings(private val context: Context) {
         val GUIDE_SELECTED_CATEGORY = stringPreferencesKey("guide_selected_category")
         val BROWSE_LIST_MODE = booleanPreferencesKey("browse_list_mode")
         val TERMS_ACCEPTED = booleanPreferencesKey("terms_accepted")
+        val TERMS_VERSION = intPreferencesKey("terms_version")
         val ANALYTICS_ENABLED = booleanPreferencesKey("analytics_enabled")
+        val CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         val RECORDING_INDICATOR = booleanPreferencesKey("recording_indicator")
         val OPENSUBS_CRED = stringPreferencesKey("opensubs_cred")
         val SUBTITLE_LANGUAGE = stringPreferencesKey("subtitle_language")
@@ -273,12 +276,28 @@ class UserSettings(private val context: Context) {
     /** Last channel-group filter picked on the Guide screen (see [com.arashrahimi46.iptv.ui.guide.GuideViewModel]); "All" when unset. */
     val guideSelectedCategory: Flow<String> = context.dataStore.data.map { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
 
-    /** First-run Privacy & Terms acceptance (Issue #11) -- false until the user explicitly accepts once. */
-    val hasAcceptedTerms: Flow<Boolean> = context.dataStore.data.map { it[Keys.TERMS_ACCEPTED] ?: false }
+    /**
+     * Which version of the Privacy Policy / Terms this user has accepted; 0 = never accepted.
+     *
+     * Replaces the original boolean: acceptance has to be per-VERSION, because a user who agreed
+     * to the old text has not agreed to the new one. The legacy [Keys.TERMS_ACCEPTED] boolean is
+     * read as version 1, so existing installs are re-prompted exactly once when
+     * [CURRENT_TERMS_VERSION] moves past it, and every future revision reuses the same mechanism.
+     */
+    val acceptedTermsVersion: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[Keys.TERMS_VERSION] ?: if (prefs[Keys.TERMS_ACCEPTED] == true) 1 else 0
+    }
+
+    /** True once the user has accepted the CURRENT terms; drives the first-run gate. */
+    val hasAcceptedTerms: Flow<Boolean> = acceptedTermsVersion.map { it >= CURRENT_TERMS_VERSION }
 
     /** Anonymous usage analytics (Firebase/GA4) opt-out; on by default, a Settings switch flips it.
      * Read once at startup to seed [com.arashrahimi46.iptv.analytics.Analytics] collection state. */
     val isAnalyticsEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.ANALYTICS_ENABLED] ?: true }
+
+    /** Crash + ANR diagnostics (Sentry) opt-out; on by default. Read at startup to seed
+     * [com.arashrahimi46.iptv.analytics.CrashReporting], which gates every outgoing event. */
+    val isCrashReportingEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.CRASH_REPORTING_ENABLED] ?: true }
 
     /** Show the pulsing "REC" badge in the player HUD while recording; on by default (see
      * [com.arashrahimi46.iptv.ui.components.RecordingIndicator]). */
@@ -548,12 +567,21 @@ class UserSettings(private val context: Context) {
         }
     }
 
-    suspend fun setTermsAccepted(accepted: Boolean) {
-        context.dataStore.edit { it[Keys.TERMS_ACCEPTED] = accepted }
+    /** Records acceptance of [CURRENT_TERMS_VERSION]. Also keeps the legacy boolean in step so a
+     *  downgrade to an older build doesn't re-prompt someone who has already accepted. */
+    suspend fun acceptCurrentTerms() {
+        context.dataStore.edit {
+            it[Keys.TERMS_VERSION] = CURRENT_TERMS_VERSION
+            it[Keys.TERMS_ACCEPTED] = true
+        }
     }
 
     suspend fun setAnalyticsEnabled(enabled: Boolean) {
         context.dataStore.edit { it[Keys.ANALYTICS_ENABLED] = enabled }
+    }
+
+    suspend fun setCrashReportingEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.CRASH_REPORTING_ENABLED] = enabled }
     }
 
     suspend fun setRecordingIndicatorEnabled(enabled: Boolean) {
@@ -620,6 +648,15 @@ class UserSettings(private val context: Context) {
         }
     }
 }
+
+/**
+ * Version of the Privacy Policy / Terms of Service currently shipped in the app.
+ *
+ * BUMP THIS whenever the legal text changes materially -- every user is then re-prompted once and
+ * their acceptance is recorded against the new number. v1 was the placeholder copy; v2 is the first
+ * real document.
+ */
+const val CURRENT_TERMS_VERSION = 2
 
 private fun String?.parseIdCsv(): List<Long> =
     this?.split(',')?.mapNotNull(String::toLongOrNull) ?: emptyList()

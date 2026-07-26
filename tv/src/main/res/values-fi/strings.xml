@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Tietosuoja &amp; ehdot</string>
     <string name="privacy_subtitle">Tarkista ja hyväksy ennen jatkamista.</string>
-    <string name="privacy_body">ARE iptv:n tietosuojakäytäntö &amp; käyttöehdot\n\nARE iptv ei kerää tai lähetä soittolistan kirjautumistietojasi laitteen ulkopuolelle. Jatkamalla sitoudut käyttämään tätä sovellusta vain sisältölähteiden kanssa, joihin sinulla on käyttöoikeus, ja hyväksyt käyttöehtomme ja tietosuojakäytäntömme kokonaisuudessaan.</string>
     <string name="privacy_accept_label">Olen lukenut ja hyväksyn tietosuojakäytännön ja käyttöehdot.</string>
+    <string name="privacy_summary">Soittolistasi, salasanasi ja katseluhistoriasi pysyvät tällä laitteella — emme saa niitä koskaan. Keräämme nimettömiä kaatumis- ja käyttötietoja, jotka voit kytkeä pois alta tai Asetuksista milloin tahansa. ARE iptv ei tarjoa omia kanavia tai sisältöä: lähteet tuot itse.</string>
+    <string name="privacy_read_full">Lue koko tietosuojakäytäntö ja käyttöehdot</string>
+    <string name="privacy_crash_label">Lähetä nimettömiä kaatumisraportteja ja käyttötietoja</string>
+    <string name="privacy_updated_note">Olemme päivittäneet tietosuojakäytäntömme ja käyttöehtomme. Lue ne ja hyväksy jatkaaksesi.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Valitse soittolista</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Anna palautetta</string>
     <string name="settings_analytics_title">Käyttötilastot</string>
     <string name="settings_analytics_desc">Jaa anonyymejä käyttötilastoja, jotta voimme parantaa sovellusta. Henkilötietoja ei kerätä.</string>
+    <string name="settings_crash_title">Kaatumisraportit</string>
+    <string name="settings_crash_desc">Lähetä diagnostiikkaa, kun sovellus kaatuu tai jumittuu. Ei koskaan sisällä soittolistojasi tai salasanojasi.</string>
+    <string name="settings_legal_title">Tietosuoja ja käyttöehdot</string>
+    <string name="settings_legal_desc">Lue asiakirja, jonka hyväksyit sovellusta määrittäessäsi.</string>
+    <string name="settings_legal_action">Lue</string>
     <string name="settings_recording_indicator_title">Tallennuksen ilmaisin</string>
     <string name="settings_recording_indicator_desc">Näytä sykkivä REC-merkki soittimessa tallennuksen aikana.</string>
     <string name="settings_rearrange_hud">Järjestä soittimen säätimet</string>

@@ -79,8 +79,11 @@
     <!-- Privacy & Terms -->
     <string name="privacy_title">Confidentialité et conditions</string>
     <string name="privacy_subtitle">Merci de lire et d\'accepter avant de continuer.</string>
-    <string name="privacy_body">Politique de confidentialité et conditions d\'utilisation d\'ARE iptv\n\nARE iptv ne collecte ni ne transmet vos identifiants de playlist hors de l\'appareil. En continuant, vous acceptez d\'utiliser cette application uniquement avec des sources de contenu auxquelles vous êtes autorisé à accéder, et vous acceptez intégralement nos conditions d\'utilisation et notre politique de confidentialité.</string>
     <string name="privacy_accept_label">J\'ai lu et j\'accepte la politique de confidentialité et les conditions d\'utilisation.</string>
+    <string name="privacy_summary">Vos playlists, mots de passe et historique de lecture restent sur cet appareil — nous ne les recevons jamais. Nous collectons des diagnostics anonymes de plantage et d\'utilisation, que vous pouvez désactiver ci-dessous ou dans les Réglages à tout moment. ARE iptv ne fournit aucune chaîne ni contenu : vous apportez vos propres sources.</string>
+    <string name="privacy_read_full">Lire l\'intégralité de la politique de confidentialité et des conditions</string>
+    <string name="privacy_crash_label">Envoyer des rapports de plantage et données d\'utilisation anonymes</string>
+    <string name="privacy_updated_note">Nous avons mis à jour notre politique de confidentialité et nos conditions. Veuillez les lire et les accepter pour continuer.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Choisir une playlist</string>
@@ -269,6 +272,11 @@
     <string name="settings_feedback_action">Donner mon avis</string>
     <string name="settings_analytics_title">Statistiques d\'utilisation</string>
     <string name="settings_analytics_desc">Partagez des statistiques d\'utilisation anonymes pour nous aider à améliorer l\'application. Aucune donnée personnelle n\'est collectée.</string>
+    <string name="settings_crash_title">Rapports de plantage</string>
+    <string name="settings_crash_desc">Envoyer des diagnostics quand l\'application plante ou se fige. N\'inclut jamais vos playlists ni mots de passe.</string>
+    <string name="settings_legal_title">Confidentialité et conditions</string>
+    <string name="settings_legal_desc">Lisez le document que vous avez accepté lors de la configuration.</string>
+    <string name="settings_legal_action">Lire</string>
     <string name="settings_recording_indicator_title">Indicateur d\'enregistrement</string>
     <string name="settings_recording_indicator_desc">Afficher un badge REC clignotant dans le lecteur pendant un enregistrement.</string>
     <string name="settings_rearrange_hud">Réorganiser les commandes du lecteur</string>
