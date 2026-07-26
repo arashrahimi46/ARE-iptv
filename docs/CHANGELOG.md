@@ -2,6 +2,22 @@
 
 All notable user-facing changes to the ARE iptv TV app.
 
+## 1.6.0 (2026-07-26)
+
+### New
+
+- **Glass sidebar.** The left navigation is now a translucent glass object. Pick
+  its shape in **Settings → Appearance → Sidebar style**: a **Floating** glass
+  box that hovers inset off the screen edge (the new default), or a **Full
+  height** rail flush to the edge like before. Either way it samples and blurs
+  the wallpaper behind it and carries the app's lit-edge glass finish.
+
+### Changed
+
+- Sidebar selection now **glides** — a springy glass lens slides between items
+  when you switch tabs, instead of jumping.
+- Nav rows fade softly into the glass at the box's rounded corners.
+
 ## 1.5.0 (2026-07-24)
 
 ### New
