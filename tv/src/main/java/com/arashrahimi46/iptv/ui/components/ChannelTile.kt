@@ -208,7 +208,7 @@ fun AreChannelTile(
                         contentDescription = if (isFavorite == true) stringResource(R.string.detail_remove_from_favorites) else stringResource(R.string.detail_add_to_favorites),
                         onClick = onToggleFavorite,
                         variant = AreIconButtonVariant.Glass,
-                        size = AreIconButtonSize.Small,
+                        size = AreIconButtonSize.ExtraSmall,
                         modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
                     )
                 }

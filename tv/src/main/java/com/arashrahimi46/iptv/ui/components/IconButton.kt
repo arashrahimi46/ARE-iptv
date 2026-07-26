@@ -28,12 +28,23 @@ import com.arashrahimi46.iptv.ui.theme.controlSkin
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
 enum class AreIconButtonVariant { Solid, Glass, Ghost }
 
-enum class AreIconButtonSize { Small, Medium, Large }
+enum class AreIconButtonSize { ExtraSmall, Small, Medium, Large }
 
 private fun dimsFor(size: AreIconButtonSize) = when (size) {
+    // ExtraSmall is for overlay affordances on top of a tile (e.g. the favorite heart), where
+    // Small's 40dp toolbar footprint reads as oversized against the artwork behind it.
+    AreIconButtonSize.ExtraSmall -> 32.dp
     AreIconButtonSize.Small -> 40.dp
     AreIconButtonSize.Medium -> 52.dp
     AreIconButtonSize.Large -> 64.dp
+}
+
+/** Glyph size kept proportional to the box so the icon doesn't crowd the smaller footprints. */
+private fun glyphFor(size: AreIconButtonSize) = when (size) {
+    AreIconButtonSize.ExtraSmall -> 18.dp
+    AreIconButtonSize.Small -> 24.dp
+    AreIconButtonSize.Medium -> 24.dp
+    AreIconButtonSize.Large -> 28.dp
 }
 
 /**
@@ -84,13 +95,14 @@ fun AreIconButton(
         borderColor = skin.borderColor,
         borderBrush = skin.borderBrush,
         enabled = !disabled,
+        showFocusSheen = false,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {
             Icon(
                 icon,
                 contentDescription = contentDescription,
                 tint = if (disabled) resolvedContentColor.copy(alpha = 0.4f) else resolvedContentColor,
-                modifier = Modifier.size(if (size == AreIconButtonSize.Large) 28.dp else 24.dp),
+                modifier = Modifier.size(glyphFor(size)),
             )
         }
     }

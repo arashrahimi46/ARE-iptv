@@ -33,9 +33,14 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
+import com.arashrahimi46.iptv.ui.theme.tileWash
 
 /** Content kind, drives the folder icon/watermark (CategoryCard.jsx `kind`) and the localized
  * count-unit string ("%1$d channels" etc.) shown under the name. */
@@ -71,6 +76,10 @@ fun AreCategoryCard(
     // category is obscured under the parental "blur" mode; see [LocalParentalBlur]).
     val blur = LocalParentalBlur.current
     val obscured = blur.isObscured(name)
+    // Category tiles carry no artwork, so the flat surfaceGlass fill read as a dead grey slab. A
+    // name-seeded wash (§6.3) gives each card its own faint refractive tint -- the same cheap glass
+    // the channel tile uses -- so the surface looks alive without a per-tile backdrop blur.
+    val washHue = rememberTileWashHue(logoUrl = null, seed = name)
 
     TvFocusable(
         onClick = if (obscured) blur.onReveal else onClick,
@@ -82,7 +91,7 @@ fun AreCategoryCard(
         backgroundColor = colors.surfaceGlass,
         borderBrush = glassBorderBrush(),
     ) { _, _ ->
-      Box(Modifier.fillMaxSize()) {
+      Box(Modifier.fillMaxSize().clip(shape).tileWash(RectangleShape, washHue)) {
         Box(Modifier.fillMaxSize().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {
             Icon(
                 kind.icon,
@@ -97,7 +106,9 @@ fun AreCategoryCard(
                     .align(Alignment.TopStart)
                     .padding(10.dp)
                     .size(if (compact) 30.dp else 36.dp)
-                    .background(colors.accentWash, RoundedCornerShape(AreIptvTheme.radius.sm)),
+                    // Was a solid accentWash square -- the one opaque sticker on a translucent card.
+                    // Frosted glassChild tint keeps the accent glyph but lets the card read through it.
+                    .glassChild(RoundedCornerShape(AreIptvTheme.radius.sm)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(kind.icon, contentDescription = null, tint = colors.accent, modifier = Modifier.size(if (compact) 16.dp else 20.dp))

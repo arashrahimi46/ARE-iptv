@@ -94,6 +94,7 @@ fun AreButton(
         borderBrush = skin.borderBrush,
         onLongClick = onLongClick,
         enabled = !disabled,
+        showFocusSheen = false,
     ) { _, _ ->
         // QA regression root cause (onboarding Continue engulfed by Skip's hit-region, Settings
         // PIN row squeezed to near-zero): this Row unconditionally called .fillMaxWidth(),

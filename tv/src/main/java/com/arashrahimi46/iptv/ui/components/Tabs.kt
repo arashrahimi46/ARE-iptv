@@ -67,6 +67,7 @@ private fun AreTab(item: TabItem, active: Boolean, onClick: () -> Unit) {
         shadowElevation = skin.elevation,
         borderColor = skin.borderColor,
         borderBrush = skin.borderBrush,
+        showFocusSheen = false,
     ) { _, _ ->
         Text(
             text = item.label,

@@ -168,6 +168,33 @@ fun Modifier.tvGlowCached(
 }
 
 /**
+ * The focus *material* response (V2 focus ask: "make focus more glassy"). The ring + glow + scale
+ * are a decal drawn AROUND the element; on real glass the light also catches the surface itself when
+ * it comes forward. This fades a soft top-lit specular sheen INTO the fill on focus -- so the focused
+ * card/button visibly brightens as glass would, not just gains an outline. Built once via
+ * [drawWithCache]; [alpha] is a lambda read at draw time so the per-frame focus animation never
+ * rebuilds the brush. Draw AFTER the fill and BEFORE the content so it lifts the surface, not the label.
+ */
+fun Modifier.focusSheen(shape: Shape, alpha: () -> Float): Modifier = drawWithCache {
+    val path = Path().apply {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
+            is Outline.Rounded -> addRoundRect(o.roundRect)
+            is Outline.Rectangle -> addRect(o.rect)
+            is Outline.Generic -> addPath(o.path)
+        }
+    }
+    val brush = Brush.verticalGradient(
+        0f to Color.White.copy(alpha = 0.09f),
+        0.5f to Color.White.copy(alpha = 0.02f),
+        1f to Color.Transparent,
+    )
+    onDrawBehind {
+        val a = alpha()
+        if (a > 0f) drawPath(path, brush, alpha = a)
+    }
+}
+
+/**
  * Symmetric accent glow matching the design system's box-shadow glow tokens
  * (`--focus-glow-tight`, `--glow-accent`, `--glow-live`, `--glow-smart` — all
  * `0 0 <blur>`, i.e. zero offset). Draws the [shape]'s outline several times
@@ -288,10 +315,23 @@ fun TvFocusable(
     /** Suppress the focus scale-up (ring + glow still track focus). For large tiles -- e.g. the
      *  multi-view video panes -- whose 6% growth would overlap tightly-packed neighbours. */
     disableScale: Boolean = false,
+    /** The focus specular sheen that brightens the surface as it comes forward. On the large media
+     *  tiles/cards it reads as glass catching the light; on small buttons it was too heavy-handed,
+     *  so those opt out (the ring + glow already carry their focus). */
+    showFocusSheen: Boolean = true,
     content: @Composable BoxScope.(focused: Boolean, pressed: Boolean) -> Unit,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()
+    // Only surfaces with an actual fill have a material for the light to catch; a ghost/transparent
+    // control would just show the sheen as a floating smudge.
+    val hasFill = backgroundBrush != null || backgroundColor != Color.Transparent
+    val motion = AreIptvTheme.motion
+    val sheen by animateFloatAsState(
+        targetValue = if (focused) 1f else 0f,
+        animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeOut),
+        label = "tvFocusSheen",
+    )
     Box(
         modifier = modifier
             .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
@@ -300,6 +340,7 @@ fun TvFocusable(
                 if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
                 else Modifier.background(backgroundColor, shape),
             )
+            .then(if (hasFill && showFocusSheen) Modifier.focusSheen(shape) { sheen } else Modifier)
             .then(
                 when {
                     borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)

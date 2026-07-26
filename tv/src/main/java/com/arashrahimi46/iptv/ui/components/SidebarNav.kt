@@ -250,6 +250,7 @@ private fun SidebarNavRow(
             focused -> glassBorderBrush()
             else -> null
         },
+        showFocusSheen = false,
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
         Row(
