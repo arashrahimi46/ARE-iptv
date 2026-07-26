@@ -115,6 +115,26 @@ data class AreIptvColors(
     // fallback colour, which must read on that dark well.
     val logoWell: Color = Ink800,
     val logoWellText: Color = White,
+    // ---- Glass V2 (see docs/glass-v2-design.md §7) ----
+    /** Nested-control tint. A control INSIDE glass gets tint + hairline and never a second fill. */
+    val glassChildTint: Color = Color(0x0FFFFFFF), // white .06
+    /** Same rule as [glassChildTint] but for a *track* or *chip* whose shape has to stay legible. */
+    val glassTrackTint: Color = Color(0x1CFFFFFF), // white .11
+    /** Contrast floor drawn under the ambient backdrop's artwork/mesh layers. */
+    val backdropVeil: Color = Color(0x8C06070A), // ink .55
+    /**
+     * Luminance floor under the now-translucent channel-tile logo well. Deliberately the SAME dark
+     * value in both themes, for exactly the reason [logoWell] is: provider logos are overwhelmingly
+     * white-on-transparent PNGs and vanish on a light plate.
+     */
+    val logoWellScrim: Color = Color(0x8C0A0C11), // ink .55, both themes
+    /** Strength of the per-tile artwork wash (§6.3.1). */
+    val tileWashAlpha: Float = 0.22f,
+    /**
+     * Fill for an input well. Goes DARKER than its parent surface, unlike every other glass token --
+     * a field is recessed into the glass, not sitting on it (see [Modifier.glassWell]).
+     */
+    val glassWellTint: Color = Color(0x3D000000), // black .24
 )
 
 val AreIptvDarkColors = AreIptvColors(
@@ -173,7 +193,32 @@ val AreIptvLightColors = AreIptvColors(
     accentFg = Color(0xFFFFFFFF),
     focusRing = Blue600,
     violetText = Violet400,
+    glassChildTint = Color(0x0D0F141E), // ink .05
+    glassTrackTint = Color(0x170F141E), // ink .09
+    backdropVeil = Color(0x00000000), // light needs no darkening veil; the page is already bright
+    tileWashAlpha = 0.16f,
+    glassWellTint = Color(0x0F0F141E), // ink .06 -- a light-theme well darkens only slightly
 )
+
+/**
+ * Glass V2 §7: V1's fill alphas were tuned to compensate for having *nothing* behind the glass. Once
+ * a real blurred backdrop is there (Tier A/B, §8) the same alphas read as opaque slabs, so the fills
+ * get lighter and the specular top stop gets stronger. Tier C keeps the V1 numbers exactly -- it has
+ * no blur, so it still needs the density to stay legible.
+ */
+fun AreIptvColors.withBlurredBackdrop(): AreIptvColors = if (isDark) {
+    copy(
+        surfaceGlass = Color(0x611E222C), // .55 -> .38
+        surfaceGlassElevated = Color(0x9414161C), // .72 -> .58
+        glassHighlight = Color(0x47FFFFFF), // .22 -> .28
+    )
+} else {
+    copy(
+        surfaceGlass = Color(0x6BFFFFFF), // .60 -> .42
+        surfaceGlassElevated = Color(0xA8FFFFFF), // .82 -> .66
+        glassHighlight = Color(0xC7FFFFFF), // .70 -> .78
+    )
+}
 
 // ---- Selectable accent presets ----
 // Each preset is a 5-shade ramp (300..700, Tailwind-style, matching the Blue ramp above).

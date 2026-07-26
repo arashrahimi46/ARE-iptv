@@ -68,8 +68,10 @@ import com.arashrahimi46.iptv.ui.player.HudGroup
 import com.arashrahimi46.iptv.ui.player.HudSlot
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
+import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassSurface
+import com.arashrahimi46.iptv.ui.theme.glassTrack
 
 /**
  * PlayerControls — glass transport HUD overlaid on live video / VOD
@@ -176,6 +178,11 @@ fun ArePlayerControls(
             .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
             .padding(AreIptvTheme.spacing.sp6),
     ) {
+        // The HUD bar is a glass surface, so its controls are nested children (§6): every icon button
+        // resolves to tint + hairline instead of laying a second glass fill on the bar (the opaque-
+        // square defect). The provider logo well below stays a solid dark plate on purpose -- it sits
+        // over arbitrary video, not over the glass, so it keeps its own explicit surfaceOverlay fill.
+        ProvideOnGlass {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Box(
                 modifier = Modifier
@@ -272,7 +279,10 @@ fun ArePlayerControls(
                 ),
             contentAlignment = Alignment.CenterStart,
         ) {
-            Box(Modifier.fillMaxWidth().height(trackHeight).background(colors.surface3, pill))
+            // The empty rail is nested in the glass HUD, so it's glassTrack (tint + lit edge), not
+            // an opaque surface3 slug punched through the panel (V2 §6). The buffered/accent fills
+            // below keep their solid colours -- they're the meaningful, high-contrast layer.
+            Box(Modifier.fillMaxWidth().height(trackHeight).glassTrack(pill))
             Box(
                 Modifier
                     .fillMaxWidth(buffered.coerceIn(0f, 1f))
@@ -416,6 +426,7 @@ fun ArePlayerControls(
             }
             Box(Modifier.weight(1f))
             utilities.forEach { HudButton(it.control) }
+        }
         }
     }
     }

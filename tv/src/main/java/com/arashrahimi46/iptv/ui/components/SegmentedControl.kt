@@ -32,14 +32,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.ControlTone
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.controlSkin
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import kotlin.math.roundToInt
 
 /**
  * Segmented control — one glass track holding a small fixed set of options, with the selected one
- * marked by an accent-gradient indicator pill that **slides** between segments (a spring, so it
+ * marked by a glass-lens indicator pill that **slides** between segments (a spring, so it
  * settles smoothly) when the selection changes (design §6b/§6c). D-pad Left/Right moves between
  * segments; OK selects. For long or dynamic option lists (e.g. Guide's channel groups) keep [AreChip].
  *
@@ -65,6 +66,12 @@ fun <T> AreSegmentedControl(
 ) {
     val colors = AreIptvTheme.colors
     val pill = RoundedCornerShape(AreIptvTheme.radius.pill)
+    // ONE funnel for the sliding indicator + labels (see ControlSkin.kt): the indicator is the
+    // "selected" accent lens (§6.2) and unselected labels take the neutral content colour, so a
+    // change to the lens recipe reaches this control too. The slide/spring geometry below is
+    // untouched -- only the *appearance* is sourced from the funnel.
+    val lensSkin = controlSkin(ControlTone.Neutral, selected = true)
+    val restSkin = controlSkin(ControlTone.Neutral, selected = false)
     // Measured geometry of each segment (index -> x, width in px), captured post-layout.
     val bounds = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
     val selectedIndex = options.indexOf(selected)
@@ -82,13 +89,14 @@ fun <T> AreSegmentedControl(
             .height(54.dp)
             // Manual fill + border (NOT glassSurface) so the track does NOT clip its children --
             // a focused segment's ring/glow can extend past the edge. Generous padding gives the
-            // accent pill room to sit inside the glass track (the "glassy vibe").
+            // lens pill room to sit inside the glass track (the "glassy vibe").
             .background(colors.surfaceGlass, pill)
             .border(1.dp, glassBorderBrush(), pill)
             .padding(8.dp),
     ) {
-        // The sliding accent-gradient indicator, behind the labels. No shadow: it lives INSIDE the
-        // glass track, so a drop shadow reads as a hard smudge -- the gradient alone is the marker.
+        // The sliding glass-lens indicator, behind the labels. No shadow: it lives INSIDE the glass
+        // track, so a drop shadow reads as a hard smudge -- the lens (more glass + a brighter rim,
+        // not opaque paint) is the marker.
         if (animW > 0f) {
             Box(
                 modifier = Modifier
@@ -98,7 +106,17 @@ fun <T> AreSegmentedControl(
                     .absoluteOffset { IntOffset(animX.roundToInt(), 0) }
                     .width(with(density) { animW.toDp() })
                     .fillMaxHeight()
-                    .background(accentGradientBrush(), pill),
+                    .then(
+                        if (lensSkin.fillBrush != null) Modifier.background(lensSkin.fillBrush, pill)
+                        else Modifier.background(lensSkin.fillColor, pill),
+                    )
+                    .then(
+                        when {
+                            lensSkin.borderBrush != null -> Modifier.border(1.dp, lensSkin.borderBrush, pill)
+                            lensSkin.borderColor != null -> Modifier.border(1.dp, lensSkin.borderColor, pill)
+                            else -> Modifier
+                        },
+                    ),
             )
         }
         Row(
@@ -126,7 +144,7 @@ fun <T> AreSegmentedControl(
                         Text(
                             text = label(option),
                             style = AreIptvTheme.typography.label,
-                            color = if (isSelected) colors.accentFg else colors.textSecondary,
+                            color = if (isSelected) lensSkin.content else restSkin.content,
                         )
                     }
                 }

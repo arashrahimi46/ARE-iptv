@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.Ink950
 
 /**
  * "Recording in progress" badge — the camcorder metaphor: a pulsing red dot + REC + a live elapsed
@@ -33,8 +32,8 @@ import com.arashrahimi46.iptv.ui.theme.Ink950
  * stalls ([reconnecting]) so a silent drop isn't mistaken for a healthy recording. The dot's
  * bump-and-shrink pulse is dropped to a steady dot when [reducedMotion] is on (accessibility).
  *
- * Deliberately theme-independent (Ink950 pill + white text like the rest of the player HUD scrims),
- * since it always overlays video, not an app surface.
+ * Deliberately theme-independent (dark [AreIptvColors.logoWellScrim] pill + white text like the rest
+ * of the player HUD scrims), since it always overlays video, not an app surface.
  */
 @Composable
 fun RecordingIndicator(
@@ -62,7 +61,7 @@ fun RecordingIndicator(
 
     Row(
         modifier = modifier
-            .background(Ink950.copy(alpha = 0.55f), RoundedCornerShape(AreIptvTheme.radius.pill))
+            .background(colors.logoWellScrim, RoundedCornerShape(AreIptvTheme.radius.pill))
             .padding(horizontal = 14.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),

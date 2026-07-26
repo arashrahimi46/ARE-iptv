@@ -21,6 +21,7 @@ ksp = "2.3.2"
 media3 = "1.10.0"
 securityCrypto = "1.1.0-alpha06"
 coil = "2.7.0"
+backdrop = "2.0.0"
 robolectric = "4.14.1"
 paging = "3.3.5"
 baselineprofile = "1.5.0-alpha07"
@@ -69,6 +70,7 @@ androidx-media3-common = { group = "androidx.media3", name = "media3-common", ve
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-video = { group = "io.coil-kt", name = "coil-video", version.ref = "coil" }
+backdrop = { group = "io.github.kyant0", name = "backdrop", version.ref = "backdrop" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

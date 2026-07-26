@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
  * Hero — full-bleed featured banner for the top of Home / a detail page
@@ -45,8 +45,7 @@ fun AreHero(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .clip(RoundedCornerShape(AreIptvTheme.radius.xl))
-            .background(Brush.linearGradient(listOf(colors.surface2, colors.bgSunken))),
+            .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl)),
     ) {
         Box(
             modifier = Modifier

@@ -1,7 +1,6 @@
 package com.arashrahimi46.iptv.ui.player
 
 import android.text.format.Formatter
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,6 +30,7 @@ import com.arashrahimi46.iptv.data.recording.RecordingStorage
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassChild
 
 /**
  * "Record to …" drive chooser for Live TV Recording. Replaces SAF's `ACTION_OPEN_DOCUMENT_TREE`
@@ -81,9 +80,11 @@ private fun VolumeRow(label: String, modifier: Modifier = Modifier, onClick: () 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    if (focused) colors.surfaceOverlay else Color.Transparent,
-                    RoundedCornerShape(AreIptvTheme.radius.md),
+                // Nested in the glass volume panel: a focused row gets glassChild (tint + hairline),
+                // not an opaque surfaceOverlay slug that would compound on the panel (V2 §6).
+                .then(
+                    if (focused) Modifier.glassChild(RoundedCornerShape(AreIptvTheme.radius.md))
+                    else Modifier,
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,

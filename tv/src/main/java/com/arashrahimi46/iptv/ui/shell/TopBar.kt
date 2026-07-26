@@ -22,6 +22,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreIconButton
+import com.arashrahimi46.iptv.ui.components.AreIconButtonSize
 import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
@@ -78,15 +79,15 @@ fun AreTopBar(
         // Customize (edit Home layout) -- only present on Home (onCustomize != null); accent-lit
         // while edit mode is active, matching the old inline "Customize/Done" toggle.
         if (onCustomize != null) {
-            AreIconButton(Icons.Filled.Edit, stringResource(R.string.shell_customize), onClick = onCustomize, variant = AreIconButtonVariant.Glass, active = customizeActive)
+            AreIconButton(Icons.Filled.Edit, stringResource(R.string.shell_customize), onClick = onCustomize, variant = AreIconButtonVariant.Glass, size = AreIconButtonSize.Small, active = customizeActive)
         }
         // Multi-view: opens the multi-channel grid (route + screen already shipped). A free
         // differentiator vs. paywalled rivals, so it gets a permanent entry point here.
-        AreIconButton(Icons.Filled.Splitscreen, stringResource(R.string.shell_multi_view_desc), onClick = onMultiView, variant = AreIconButtonVariant.Glass)
-        AreIconButton(Icons.Filled.Search, stringResource(R.string.action_search), onClick = onSearch, variant = AreIconButtonVariant.Glass)
+        AreIconButton(Icons.Filled.Splitscreen, stringResource(R.string.shell_multi_view_desc), onClick = onMultiView, variant = AreIconButtonVariant.Glass, size = AreIconButtonSize.Small)
+        AreIconButton(Icons.Filled.Search, stringResource(R.string.action_search), onClick = onSearch, variant = AreIconButtonVariant.Glass, size = AreIconButtonSize.Small)
         // Add playlist -- opens the onboarding/add-source flow. (v1 has no multi-playlist
         // management UI, so this effectively adds/replaces the active source.)
-        AreIconButton(Icons.Filled.Add, stringResource(R.string.shell_add_playlist_desc), onClick = onAddPlaylist, variant = AreIconButtonVariant.Glass)
+        AreIconButton(Icons.Filled.Add, stringResource(R.string.shell_add_playlist_desc), onClick = onAddPlaylist, variant = AreIconButtonVariant.Glass, size = AreIconButtonSize.Small)
         // Avatar removed: it only re-routed to Settings, already reachable via the sidebar gear --
         // a redundant, non-functional profile glyph (no account/profile screen exists).
     }

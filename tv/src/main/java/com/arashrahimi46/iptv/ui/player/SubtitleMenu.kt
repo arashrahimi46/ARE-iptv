@@ -53,6 +53,7 @@ import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -537,9 +538,11 @@ private fun SubtitleRow(label: String, selected: Boolean, onClick: () -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    if (focused) colors.surfaceOverlay else androidx.compose.ui.graphics.Color.Transparent,
-                    RoundedCornerShape(AreIptvTheme.radius.md),
+                // Nested in the glass menu panel: a focused row gets glassChild (tint + hairline),
+                // not an opaque surfaceOverlay slug that would compound on the panel (V2 §6).
+                .then(
+                    if (focused) Modifier.glassChild(RoundedCornerShape(AreIptvTheme.radius.md))
+                    else Modifier,
                 )
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,

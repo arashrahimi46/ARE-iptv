@@ -1,0 +1,1148 @@
+<title>Glass V2 — are-iptv</title>
+<style>
+  /* ============================================================
+     PAGE CHROME TOKENS  (independent of the mockup tokens below)
+     ============================================================ */
+  :root {
+    --ground:      #F4F6FA;
+    --ground-2:    #EAEEF5;
+    --panel:       #FFFFFF;
+    --ink:         #0C0F16;
+    --ink-2:       #444C5E;
+    --ink-3:       #6E7688;
+    --rule:        rgba(12,15,22,.12);
+    --rule-soft:   rgba(12,15,22,.07);
+    --accent:      #2563EB;
+    --accent-soft: rgba(37,99,235,.10);
+    --before:      #7D869B;
+    --amber:       #A16207;
+    --amber-soft:  rgba(161,98,7,.10);
+    --good:        #15803D;
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(20px, 5vw, 64px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #08090D;
+      --ground-2:    #0E1016;
+      --panel:       #101319;
+      --ink:         #EEF1F7;
+      --ink-2:       #A2AABB;
+      --ink-3:       #767E90;
+      --rule:        rgba(255,255,255,.13);
+      --rule-soft:   rgba(255,255,255,.07);
+      --accent:      #60A5FA;
+      --accent-soft: rgba(96,165,250,.13);
+      --before:      #7D869B;
+      --amber:       #FACC15;
+      --amber-soft:  rgba(250,204,21,.11);
+      --good:        #4ADE80;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #08090D;
+    --ground-2:    #0E1016;
+    --panel:       #101319;
+    --ink:         #EEF1F7;
+    --ink-2:       #A2AABB;
+    --ink-3:       #767E90;
+    --rule:        rgba(255,255,255,.13);
+    --rule-soft:   rgba(255,255,255,.07);
+    --accent:      #60A5FA;
+    --accent-soft: rgba(96,165,250,.13);
+    --before:      #7D869B;
+    --amber:       #FACC15;
+    --amber-soft:  rgba(250,204,21,.11);
+    --good:        #4ADE80;
+  }
+  :root[data-theme="light"] {
+    --ground:      #F4F6FA;
+    --ground-2:    #EAEEF5;
+    --panel:       #FFFFFF;
+    --ink:         #0C0F16;
+    --ink-2:       #444C5E;
+    --ink-3:       #6E7688;
+    --rule:        rgba(12,15,22,.12);
+    --rule-soft:   rgba(12,15,22,.07);
+    --accent:      #2563EB;
+    --accent-soft: rgba(37,99,235,.10);
+    --before:      #7D869B;
+    --amber:       #A16207;
+    --amber-soft:  rgba(161,98,7,.10);
+    --good:        #15803D;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 var(--pad); }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.02; letter-spacing: -.02em; }
+  h2 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); line-height: 1.12; letter-spacing: -.015em; }
+  h3 { font-size: 1.14rem; line-height: 1.3; }
+  p  { margin: 0; max-width: var(--measure); }
+
+  .eyebrow {
+    font-family: var(--mono); font-size: .69rem; letter-spacing: .17em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .lede { font-size: clamp(1.03rem, 1.7vw, 1.22rem); color: var(--ink-2); }
+  code, .mono { font-family: var(--mono); font-size: .87em; font-variant-numeric: tabular-nums; }
+  .k { color: var(--ink); background: var(--rule-soft); padding: .12em .4em; border-radius: 4px; }
+
+  section { padding: clamp(56px, 8vw, 104px) 0; border-top: 1px solid var(--rule-soft); }
+  section:first-of-type { border-top: 0; }
+  .stack { display: flex; flex-direction: column; gap: 20px; }
+  .stack-sm { display: flex; flex-direction: column; gap: 10px; }
+  .head { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+  /* ---------- theme toggle ---------- */
+  .bar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 11px var(--pad);
+    background: color-mix(in srgb, var(--ground) 86%, transparent);
+    backdrop-filter: blur(14px) saturate(150%);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .bar-id { font-family: var(--mono); font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3); }
+  .seg { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--rule); border-radius: 999px; background: var(--panel); }
+  .seg button {
+    font: inherit; font-size: .77rem; font-family: var(--mono); letter-spacing: .06em;
+    padding: 5px 13px; border-radius: 999px; border: 0; cursor: pointer;
+    background: transparent; color: var(--ink-3);
+  }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ============================================================
+     MOCKUP TOKENS — literal values from ui/theme/Color.kt
+     ============================================================ */
+  .app {
+    --a-bg:        #0A0B0F;   /* bgBase   Ink900 */
+    --a-sunken:    #06070A;   /* bgSunken Ink950 */
+    --a-s1:        #14161C;   /* surface1 Ink800 */
+    --a-s2:        #1F232C;   /* surface2 Ink700 */
+    --a-s3:        #262A34;   /* surface3 Ink600 */
+    --a-text:      #F6F8FC;
+    --a-text2:     #9AA2B1;
+    --a-text3:     #8C92A3;
+    --a-accent:    #3B82F6;
+    --a-accent-hi: #60A5FA;
+    --a-live:      #EF4444;
+    --a-border:    rgba(255,255,255,.10);
+    /* v1 glass */
+    --a-glass-v1:  rgba(30,34,44,.55);
+    --a-glassE-v1: rgba(20,22,28,.72);
+    /* v2 glass — lighter, because blur now carries legibility */
+    --a-glass-v2:  rgba(30,34,44,.38);
+    --a-glassE-v2: rgba(20,22,28,.58);
+    --a-hi:        rgba(255,255,255,.28);
+    --a-logowell:  #14161C;
+    color-scheme: dark;
+  }
+  .app.light {
+    --a-bg:        #F3F5F9;
+    --a-sunken:    #E9EDF3;
+    --a-s1:        #FFFFFF;
+    --a-s2:        #F7F9FC;
+    --a-s3:        #EEF1F6;
+    --a-text:      #0D1017;
+    --a-text2:     #4A5163;
+    --a-text3:     #6B7280;
+    --a-accent:    #2563EB;
+    --a-accent-hi: #3B82F6;
+    --a-live:      #EF4444;
+    --a-border:    rgba(15,20,30,.12);
+    --a-glass-v1:  rgba(255,255,255,.60);
+    --a-glassE-v1: rgba(255,255,255,.82);
+    --a-glass-v2:  rgba(255,255,255,.44);
+    --a-glassE-v2: rgba(255,255,255,.66);
+    --a-hi:        rgba(255,255,255,.85);
+    --a-logowell:  #14161C;
+    color-scheme: light;
+  }
+
+  /* ---------- the TV frame ---------- */
+  .tv {
+    position: relative; aspect-ratio: 16/9; width: 100%;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--rule);
+    background: var(--a-bg);
+    container-type: inline-size;
+  }
+  .screen { position: absolute; inset: 0; display: flex; overflow: hidden; }
+
+  /* BEFORE: flat opaque page, no backdrop at all */
+  .screen.before { background: var(--a-bg); }
+  /* AFTER: the ambient backdrop layer (§3) */
+  .screen.after { background: var(--a-bg); }
+  .screen.after::before {
+    content: ""; position: absolute; inset: -12%;
+    background:
+      radial-gradient(46% 58% at 14% 22%, rgba(59,130,246,.44), transparent 68%),
+      radial-gradient(40% 52% at 84% 12%, rgba(139,92,246,.34), transparent 66%),
+      radial-gradient(52% 62% at 66% 88%, rgba(20,184,166,.26), transparent 70%),
+      radial-gradient(38% 46% at 34% 74%, rgba(239,68,68,.20), transparent 68%);
+    filter: blur(34px) saturate(135%);
+    animation: drift 34s ease-in-out infinite alternate;
+  }
+  .app.light .screen.after::before {
+    background:
+      radial-gradient(46% 58% at 14% 22%, rgba(59,130,246,.34), transparent 68%),
+      radial-gradient(40% 52% at 84% 12%, rgba(139,92,246,.24), transparent 66%),
+      radial-gradient(52% 62% at 66% 88%, rgba(20,184,166,.22), transparent 70%),
+      radial-gradient(38% 46% at 34% 74%, rgba(244,114,182,.18), transparent 68%);
+  }
+  /* vignette keeps a contrast anchor at the edges */
+  .screen.after::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 100% at 50% 45%, transparent 34%, rgba(6,7,10,.60) 100%);
+  }
+  .app.light .screen.after::after {
+    background: radial-gradient(120% 100% at 50% 45%, transparent 40%, rgba(15,20,30,.13) 100%);
+  }
+  @keyframes drift {
+    from { transform: translate3d(-2%, -1%, 0) scale(1.04); }
+    to   { transform: translate3d(3%, 2%, 0) scale(1.12); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .screen.after::before { animation: none; }
+  }
+  .screen > * { position: relative; z-index: 2; }
+
+  /* ---------- glass recipes ---------- */
+  .g-v1 {
+    background: var(--a-glass-v1);
+    border: 1px solid var(--a-border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
+  }
+  .g-v2 {
+    background: var(--a-glass-v2);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--a-border);
+    box-shadow: inset 0 1px 0 var(--a-hi), 0 8px 26px rgba(0,0,0,.24);
+  }
+  .g-v2-e {
+    background: var(--a-glassE-v2);
+    backdrop-filter: blur(30px) saturate(185%);
+    -webkit-backdrop-filter: blur(30px) saturate(185%);
+    border: 1px solid var(--a-border);
+    box-shadow: inset 0 1px 0 var(--a-hi), 0 14px 44px rgba(0,0,0,.34);
+  }
+  /* nested control: tint + hairline only, never a second fill and never a second blur (§6) */
+  .g-child {
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--a-border);
+  }
+  .app.light .g-child { background: rgba(15,20,30,.05); }
+  /* a nested control that still needs to read as a *track* or *chip* — slightly
+     more tint than g-child so the shape is legible, still no fill, still no blur */
+  .g-track {
+    background: rgba(255,255,255,.11);
+    border: 1px solid var(--a-border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.13);
+  }
+  .app.light .g-track {
+    background: rgba(15,20,30,.09);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  /* tonal glass chip: hue at low alpha + a hue-400 hairline + lit edge */
+  .g-chip {
+    background: rgba(59,130,246,.20);
+    border: 1px solid rgba(96,165,250,.42);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.20);
+  }
+  .app.light .g-chip {
+    background: rgba(37,99,235,.13);
+    border: 1px solid rgba(37,99,235,.34);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  /* SELECTION LENS — the sliding indicator / selected chip / switch-on track.
+     Apple's move: the marker is *clearer and brighter* than the track it sits in,
+     not a paint chip laid on top. Accent at ~30% keeps the semantics; the bright
+     specular rim + the outward accent glow do the separating. Tier A adds real
+     lens() refraction here — this is where it's most visible, because it moves. */
+  .g-lens {
+    background: linear-gradient(180deg, rgba(96,165,250,.40), rgba(59,130,246,.26));
+    border: 1px solid rgba(147,197,253,.60);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.46),
+      inset 0 -1px 0 rgba(147,197,253,.22),
+      0 .3cqw 1cqw rgba(59,130,246,.30);
+    color: #fff;
+  }
+  .app.light .g-lens {
+    background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(96,165,250,.26));
+    border: 1px solid rgba(37,99,235,.42);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.9),
+      0 .3cqw 1cqw rgba(37,99,235,.18);
+    color: var(--a-accent);
+  }
+
+  /* ---------- app furniture ---------- */
+  .rail {
+    width: 15.5%; flex: none; display: flex; flex-direction: column;
+    gap: 2.6cqw; padding: 2.4cqw 1.2cqw; align-items: center;
+  }
+  .rail.flat { background: linear-gradient(180deg, var(--a-s2), var(--a-s1)); border-right: 1px solid var(--a-border); }
+  .rail.glass { border-right: 1px solid var(--a-border); }
+  .mark {
+    width: 3.4cqw; height: 3.4cqw; border-radius: .9cqw; flex: none;
+    background: linear-gradient(160deg, var(--a-accent-hi), var(--a-accent));
+    display: grid; place-items: center; color: #fff;
+    font-weight: 700; font-size: 1.9cqw;
+    box-shadow: 0 .5cqw 1.4cqw rgba(59,130,246,.42);
+  }
+  .navitem {
+    width: 100%; height: 3.1cqw; border-radius: .8cqw; flex: none;
+    display: flex; align-items: center; gap: .9cqw; padding: 0 .9cqw;
+    color: var(--a-text2); font-size: 1.32cqw;
+  }
+  .navitem .ico { width: 1.7cqw; height: 1.7cqw; flex: none; opacity: .85; }
+  .navitem.sel { color: #fff; background: linear-gradient(180deg, var(--a-accent-hi), var(--a-accent)); box-shadow: 0 .4cqw 1.2cqw rgba(59,130,246,.4); }
+  .navitem.foc { color: var(--a-text); outline: .22cqw solid var(--a-accent-hi); outline-offset: .1cqw; }
+
+  .main { flex: 1; display: flex; flex-direction: column; padding: 2.4cqw 2.4cqw 0; gap: 1.9cqw; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 1cqw; }
+  .tbtn { width: 3.1cqw; height: 3.1cqw; border-radius: .8cqw; display: grid; place-items: center; color: var(--a-text2); }
+  .tbtn.flat { background: var(--a-s1); border: 1px solid var(--a-border); }
+  .tbtn svg { width: 1.6cqw; height: 1.6cqw; }
+  .spacer { flex: 1; }
+
+  .rowlabel { font-size: 1.5cqw; font-weight: 650; color: var(--a-text); letter-spacing: -.01em; }
+  .rowsub { font-size: 1.16cqw; color: var(--a-text3); }
+  .cards { display: flex; gap: 1.5cqw; }
+  .card { flex: 1; border-radius: 1.2cqw; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+  .card.flat { background: var(--a-s1); border: 1px solid var(--a-border); }
+  .thumb { aspect-ratio: 16/9; position: relative; display: grid; place-items: center; }
+  .thumb.flat { background: var(--a-s2); }
+  .thumb.art1 { background: linear-gradient(140deg, #1D4ED8, #7C3AED 58%, #0F766E); }
+  .thumb.art2 { background: linear-gradient(140deg, #B91C1C, #EA580C 55%, #A16207); }
+  .thumb.art3 { background: linear-gradient(140deg, #0F766E, #0369A1 56%, #4338CA); }
+  .logowell {
+    width: 26%; aspect-ratio: 1; border-radius: .7cqw; background: var(--a-logowell);
+    display: grid; place-items: center; color: #F6F8FC; font-weight: 700; font-size: 1.5cqw;
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  /* TILE WASH — two gradient stops in the hue sampled from the tile's own logo.
+     No bitmap, no blur, no shader: cheap enough for a 40-tile scrolling grid, and
+     cheap enough to ship on Tier C too (§6.3.1). */
+  .thumb.wash { background: var(--a-s1); }
+  .thumb.wash::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(142deg, var(--w) 0%, transparent 72%);
+    opacity: .22;
+  }
+  .app.light .thumb.wash::before { opacity: .16; }
+  /* the well stops being a plate: a scrim floor for legibility, glass tint above it */
+  .logowell.g-well {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
+      rgba(10,12,17,.55);
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.20);
+  }
+  .cardfoot { padding: .95cqw 1.1cqw 1.15cqw; display: flex; flex-direction: column; gap: .28cqw; }
+  .cardtitle { font-size: 1.28cqw; font-weight: 620; color: var(--a-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cardmeta { font-size: 1.06cqw; color: var(--a-text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge {
+    position: absolute; top: .7cqw; right: .7cqw; z-index: 3;
+    background: var(--a-live); color: #fff; font-size: .95cqw; font-weight: 700;
+    letter-spacing: .06em; padding: .2cqw .6cqw; border-radius: .4cqw;
+    display: flex; align-items: center; gap: .35cqw;
+  }
+  .badge i { width: .5cqw; height: .5cqw; border-radius: 50%; background: #fff; display: block; }
+  .focusring { outline: .26cqw solid var(--a-accent-hi); outline-offset: .12cqw; box-shadow: 0 0 2.6cqw rgba(59,130,246,.34); }
+
+  /* segmented tabs */
+  .tabs { display: inline-flex; gap: .3cqw; padding: .35cqw; border-radius: 999px; align-self: flex-start; }
+  .tabs.flat { background: var(--a-s1); border: 1px solid var(--a-border); }
+  .tab { font-size: 1.16cqw; padding: .55cqw 1.5cqw; border-radius: 999px; color: var(--a-text2); white-space: nowrap; }
+  .tab.on { background: linear-gradient(180deg, var(--a-accent-hi), var(--a-accent)); color: #fff; }
+
+  /* settings rows */
+  .setgroup { border-radius: 1.2cqw; overflow: hidden; }
+  .setgroup.flat { background: var(--a-s1); border: 1px solid var(--a-border); }
+  .setrow { display: flex; align-items: center; gap: 1.1cqw; padding: 1.15cqw 1.3cqw; }
+  .setrow + .setrow { border-top: 1px solid var(--a-border); }
+  .setico { width: 3cqw; height: 3cqw; border-radius: .7cqw; display: grid; place-items: center; color: var(--a-text2); flex: none; font-size: 1.1cqw; font-weight: 700; }
+  .setico.flat { background: var(--a-s3); }
+  .settext { flex: 1; min-width: 0; }
+  .settitle { font-size: 1.28cqw; font-weight: 600; color: var(--a-text); }
+  .setdesc { font-size: 1.04cqw; color: var(--a-text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sw { width: 3.6cqw; height: 2cqw; border-radius: 999px; flex: none; position: relative; background: var(--a-s3); }
+  .sw.on { background: linear-gradient(180deg, var(--a-accent-hi), var(--a-accent)); box-shadow: 0 0 1.4cqw rgba(59,130,246,.44); }
+  .sw::after { content: ""; position: absolute; top: .28cqw; left: .28cqw; width: 1.44cqw; height: 1.44cqw; border-radius: 50%; background: #fff; box-shadow: 0 .1cqw .3cqw rgba(0,0,0,.3); }
+  .sw.on::after { left: auto; right: .28cqw; }
+  /* V2 OFF track: glass, not an opaque slug punched into the panel */
+  .sw.g-track { background: rgba(255,255,255,.11); }
+  .app.light .sw.g-track { background: rgba(15,20,30,.09); }
+
+  /* segmented control: a glass track holding a sliding selection lens */
+  .segdemo { display: flex; align-items: center; gap: .9cqw; padding: .38cqw; border-radius: 999px; align-self: flex-start; }
+  .segdemo span { font-size: 1cqw; padding: .42cqw 1.5cqw; border-radius: 999px; color: var(--a-text2); white-space: nowrap; }
+  .segdemo span.sel { color: #fff; }
+  .app.light .segdemo span.sel { color: var(--a-accent); }
+  .segdemo.flat { background: var(--a-s3); border: 1px solid var(--a-border); }
+  .segdemo.flat span.sel { background: linear-gradient(180deg, var(--a-accent-hi), var(--a-accent)); }
+
+  /* ---------- small-control matrix ---------- */
+  .ctlgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.2cqw 1.6cqw; }
+  .ctl { display: flex; flex-direction: column; gap: .75cqw; align-items: flex-start; min-width: 0; }
+  .ctln {
+    font-size: .92cqw; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--a-text3); white-space: nowrap;
+  }
+  .track { width: 100%; height: .8cqw; border-radius: 999px; position: relative; overflow: hidden; }
+  .track.flat { background: var(--a-s3); }
+  .track i {
+    position: absolute; inset: 0 46% 0 0; border-radius: 999px; display: block;
+    background: linear-gradient(90deg, var(--a-accent-hi), var(--a-accent));
+  }
+
+  /* ---------- player mockup ---------- */
+  .video { position: absolute; inset: 0; }
+  .bars { position: absolute; inset: 0; display: flex; }
+  .bars span { flex: 1; }
+  .videodiag {
+    position: absolute; inset: 0;
+    background: linear-gradient(107deg, transparent 42%, rgba(255,255,255,.55) 47%, rgba(255,0,128,.75) 50%, rgba(255,255,255,.5) 53%, transparent 58%);
+  }
+  .hud { position: absolute; left: 3%; right: 3%; bottom: 4.5%; border-radius: 1.4cqw; padding: 1.5cqw 1.7cqw; display: flex; flex-direction: column; gap: 1.2cqw; z-index: 4; }
+  .hud.flat { background: var(--a-glassE-v1); border: 1px solid var(--a-border); box-shadow: inset 0 1px 0 rgba(255,255,255,.16); }
+  .hudtop { display: flex; align-items: center; gap: 1.1cqw; }
+  .hudmeta { display: flex; flex-direction: column; gap: .3cqw; min-width: 0; }
+  .hudtitle { font-size: 1.7cqw; font-weight: 680; color: var(--a-text); display: flex; align-items: center; gap: .7cqw; }
+  .chip { font-size: 1cqw; color: var(--a-accent-hi); padding: .22cqw .7cqw; border-radius: .45cqw; align-self: flex-start; }
+  .chip.flat { background: var(--a-s3); border: 1px solid var(--a-border); color: var(--a-text2); }
+  .app.light .chip { color: var(--a-accent); }
+  .hudbtns { display: flex; gap: .75cqw; align-items: center; }
+  .hb { width: 3.4cqw; height: 3.4cqw; border-radius: .75cqw; display: grid; place-items: center; color: var(--a-text); flex: none; }
+  .hb.opaque { background: rgba(6,7,10,.94); border: 1px solid var(--a-border); }
+  .hb svg { width: 1.7cqw; height: 1.7cqw; }
+  .hb.play { background: linear-gradient(180deg, var(--a-accent-hi), var(--a-accent)); color: #fff; box-shadow: 0 0 2.2cqw rgba(59,130,246,.5); }
+  .hbdiv { width: 1px; height: 2.2cqw; background: var(--a-border); flex: none; margin: 0 .3cqw; }
+
+  /* ---------- before/after comparator ---------- */
+  .cmp { position: relative; --pos: 50%; }
+  .cmp .layer-after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--pos)); z-index: 3; }
+  .cmp .divider {
+    position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; z-index: 5;
+    background: rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.35); transform: translateX(-1px); pointer-events: none;
+  }
+  .cmp .knob {
+    position: absolute; top: 50%; left: var(--pos); z-index: 6;
+    width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;
+    background: rgba(255,255,255,.95); box-shadow: 0 2px 12px rgba(0,0,0,.4);
+    display: grid; place-items: center; color: #0C0F16; font-size: 13px; pointer-events: none;
+  }
+  .cmp input[type="range"] {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7;
+    margin: 0; opacity: 0; cursor: ew-resize;
+  }
+  .cmp input[type="range"]:focus-visible ~ .divider { background: var(--a-accent-hi); box-shadow: 0 0 0 2px rgba(0,0,0,.5); }
+  .tag {
+    position: absolute; top: 12px; z-index: 8; pointer-events: none;
+    font-family: var(--mono); font-size: .66rem; letter-spacing: .13em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 5px; backdrop-filter: blur(8px);
+  }
+  .tag.l { left: 12px; background: rgba(8,9,13,.72); color: #C8CEDA; border: 1px solid rgba(255,255,255,.16); }
+  .tag.r { right: 12px; background: rgba(59,130,246,.86); color: #fff; border: 1px solid rgba(255,255,255,.24); }
+
+  .cap { display: flex; gap: 12px; align-items: baseline; margin-top: 14px; flex-wrap: wrap; }
+  .cap .n { font-family: var(--mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); flex: none; }
+  .cap p { font-size: .93rem; color: var(--ink-2); }
+
+  /* ---------- the arithmetic proof ---------- */
+  .proof {
+    display: flex; align-items: center; gap: clamp(10px, 2.4vw, 26px); flex-wrap: wrap;
+    padding: clamp(22px, 4vw, 40px); border-radius: 14px;
+    background: var(--panel); border: 1px solid var(--rule);
+  }
+  .sw-big { display: flex; flex-direction: column; gap: 9px; align-items: flex-start; }
+  .sw-chip { width: clamp(74px, 12vw, 116px); aspect-ratio: 1; border-radius: 11px; border: 1px solid var(--rule); }
+  .sw-lab { font-family: var(--mono); font-size: .74rem; color: var(--ink-3); letter-spacing: .04em; }
+  .sw-val { font-family: var(--mono); font-size: .84rem; color: var(--ink); font-weight: 600; }
+  .op { font-family: var(--serif); font-size: clamp(1.7rem, 4vw, 2.7rem); color: var(--ink-3); flex: none; }
+  .verdict { flex: 1; min-width: 210px; }
+  .verdict strong { font-family: var(--serif); font-size: 1.28rem; font-weight: 600; display: block; margin-bottom: 6px; }
+
+  /* ---------- generic blocks ---------- */
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(288px, 1fr)); gap: clamp(18px, 3vw, 34px); }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 18px; }
+  .cardbox { padding: 22px; border-radius: 12px; background: var(--panel); border: 1px solid var(--rule); }
+  .cardbox h3 { margin-bottom: 8px; }
+  .cardbox p { font-size: .93rem; color: var(--ink-2); }
+
+  .cause { display: flex; gap: 18px; padding: 20px 0; border-top: 1px solid var(--rule-soft); }
+  .cause:first-child { border-top: 0; }
+  .cause .idx { font-family: var(--mono); font-size: .78rem; color: var(--accent); flex: none; width: 30px; padding-top: 3px; font-weight: 600; }
+  .cause p { font-size: .95rem; color: var(--ink-2); }
+  .cause h3 { margin-bottom: 5px; }
+
+  .ladder { display: flex; flex-direction: column; }
+  .rung {
+    display: grid; grid-template-columns: 84px 1fr auto; gap: 18px; align-items: center;
+    padding: 17px 0; border-top: 1px solid var(--rule-soft);
+  }
+  .rung:first-child { border-top: 0; }
+  .rung .ph { font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+  .rung .what strong { display: block; font-size: 1rem; margin-bottom: 2px; }
+  .rung .what span { font-size: .89rem; color: var(--ink-2); }
+  .pill {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill.done { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+  .pill.next { background: var(--accent-soft); color: var(--accent); }
+  .pill.todo { background: var(--rule-soft); color: var(--ink-3); }
+  .pill.risk { background: var(--amber-soft); color: var(--amber); }
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th { font-family: var(--mono); font-size: .69rem; letter-spacing: .11em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  td:first-child { font-family: var(--mono); font-size: .85rem; white-space: nowrap; }
+  .scroller { overflow-x: auto; }
+
+  .note {
+    border-left: 2px solid var(--amber); background: var(--amber-soft);
+    padding: 15px 19px; border-radius: 0 8px 8px 0;
+  }
+  .note p { font-size: .93rem; }
+  .note .lbl { font-family: var(--mono); font-size: .68rem; letter-spacing: .13em; text-transform: uppercase; color: var(--amber); display: block; margin-bottom: 5px; }
+
+  footer { padding: 54px 0 76px; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: .88rem; }
+  footer a { color: var(--accent); }
+
+  @container (max-width: 620px) {
+    .rowsub, .cardmeta, .setdesc { display: none; }
+  }
+
+  /* .g-lens has to beat the earlier, more specific solid-accent rules it replaces */
+  .sw.on.g-lens {
+    background: linear-gradient(180deg, rgba(96,165,250,.44), rgba(59,130,246,.28));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.46), 0 0 1.2cqw rgba(59,130,246,.34);
+  }
+  .app.light .sw.on.g-lens {
+    background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(96,165,250,.34));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 0 1.2cqw rgba(37,99,235,.2);
+  }
+  .navitem.sel.g-lens, .tab.on.g-lens {
+    background: linear-gradient(180deg, rgba(96,165,250,.40), rgba(59,130,246,.26));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.46), 0 .3cqw 1cqw rgba(59,130,246,.30);
+    color: #fff;
+  }
+  .app.light .navitem.sel.g-lens, .app.light .tab.on.g-lens {
+    background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(96,165,250,.26));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 .3cqw 1cqw rgba(37,99,235,.18);
+    color: var(--a-accent);
+  }
+  .chip.g-lens { color: #fff; }
+  .app.light .chip.g-lens { color: var(--a-accent); }
+  .segdemo span.sel.g-lens { color: #fff; }
+  .app.light .segdemo span.sel.g-lens { color: var(--a-accent); }
+</style>
+
+<div class="bar">
+  <span class="bar-id">are-iptv · glass v2</span>
+  <div class="seg" role="group" aria-label="Mockup theme">
+    <button type="button" data-app="dark" aria-pressed="true">Dark</button>
+    <button type="button" data-app="light" aria-pressed="false">Light</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Design spec companion · v2</span>
+      <h1>V1 gave us the vocabulary.<br>V2 gives it something to&nbsp;refract.</h1>
+      <p class="lede">The glass redesign shipped translucent fills and lit edges on nearly every surface. On screen it still reads as flat charcoal — because translucency over an opaque page is arithmetically just a lighter grey. Drag to compare.</p>
+    </div>
+
+    <div class="app" id="hero-app">
+      <div class="tv cmp" data-cmp>
+        <!-- BEFORE -->
+        <div class="screen before">
+          <nav class="rail flat">
+            <div class="mark">A</div>
+            <div class="navitem sel"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v9h6v-6h2v6h6v-9h3z"/></svg><span>Home</span></div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7.6l3.3-3.3-1.4-1.4L12 4.6 8.7 1.3 7.3 2.7 10.6 6H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m0 14H3V8h18z"/></svg><span>Live TV</span></div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v4H3zm0 6h8v12H3zm10 0h8v5h-8zm0 7h8v5h-8z"/></svg><span>TV Guide</span></div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4z"/></svg><span>Movies</span></div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3zM8 17H6v-2h2zm0-4H6v-2h2zm0-4H6V7h2zm10 8h-2v-2h2zm0-4h-2v-2h2zm0-4h-2V7h2z"/></svg><span>Series</span></div>
+          </nav>
+          <div class="main">
+            <div class="topbar">
+              <div class="tbtn flat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg></div>
+              <div class="tbtn flat"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9"/></svg></div>
+              <div class="spacer"></div>
+            </div>
+            <div class="stack-sm" style="gap:.5cqw">
+              <div class="rowlabel">Live now</div>
+              <div class="rowsub">24 channels · updated a moment ago</div>
+            </div>
+            <div class="cards">
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">SP</div></div><div class="cardfoot"><div class="cardtitle">Sky Sports Main</div><div class="cardmeta">Premier League · Now</div></div></div>
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">MX</div></div><div class="cardfoot"><div class="cardtitle">MTV Max</div><div class="cardmeta">Top 40 Countdown</div></div></div>
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">CN</div></div><div class="cardfoot"><div class="cardtitle">Cinema One</div><div class="cardmeta">Heat · 21:00</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AFTER -->
+        <div class="layer-after">
+          <div class="screen after">
+            <nav class="rail glass g-v2">
+              <div class="mark">A</div>
+              <div class="navitem sel g-lens"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v9h6v-6h2v6h6v-9h3z"/></svg><span>Home</span></div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7.6l3.3-3.3-1.4-1.4L12 4.6 8.7 1.3 7.3 2.7 10.6 6H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m0 14H3V8h18z"/></svg><span>Live TV</span></div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v4H3zm0 6h8v12H3zm10 0h8v5h-8zm0 7h8v5h-8z"/></svg><span>TV Guide</span></div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4z"/></svg><span>Movies</span></div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3zM8 17H6v-2h2zm0-4H6v-2h2zm0-4H6V7h2zm10 8h-2v-2h2zm0-4h-2v-2h2zm0-4h-2V7h2z"/></svg><span>Series</span></div>
+            </nav>
+            <div class="main">
+              <div class="topbar">
+                <div class="tbtn g-v2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg></div>
+                <div class="tbtn g-v2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9"/></svg></div>
+                <div class="spacer"></div>
+              </div>
+              <div class="stack-sm" style="gap:.5cqw">
+                <div class="rowlabel">Live now</div>
+                <div class="rowsub">24 channels · updated a moment ago</div>
+              </div>
+              <div class="cards">
+                <div class="card g-v2"><div class="thumb art1"><span class="badge"><i></i>LIVE</span><div class="logowell">SP</div></div><div class="cardfoot"><div class="cardtitle">Sky Sports Main</div><div class="cardmeta">Premier League · Now</div></div></div>
+                <div class="card g-v2 focusring"><div class="thumb art2"><span class="badge"><i></i>LIVE</span><div class="logowell">MX</div></div><div class="cardfoot"><div class="cardtitle">MTV Max</div><div class="cardmeta">Top 40 Countdown</div></div></div>
+                <div class="card g-v2"><div class="thumb art3"><span class="badge"><i></i>LIVE</span><div class="logowell">CN</div></div><div class="cardfoot"><div class="cardtitle">Cinema One</div><div class="cardmeta">Heat · 21:00</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="tag l">Shipped v1.5.0</span>
+        <span class="tag r">V2</span>
+        <div class="divider"></div>
+        <div class="knob">◄►</div>
+        <input type="range" min="0" max="100" value="50" aria-label="Compare shipped design with V2">
+      </div>
+    </div>
+    <div class="cap">
+      <span class="n">Home</span>
+      <p>Same layout, same components, same tokens. The only structural difference is that V2 puts an ambient backdrop behind the shell — so the glass finally has something to be glass <em>against</em>.</p>
+    </div>
+  </section>
+
+  <!-- ============ THE ARITHMETIC ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Root cause</span>
+      <h2>Glass over an opaque page is just grey</h2>
+      <p class="lede">This is not a tuning problem. It is a compositing result, and it holds for every browse screen in the app.</p>
+    </div>
+
+    <div class="proof">
+      <div class="sw-big">
+        <div class="sw-chip" style="background:#0A0B0F"></div>
+        <span class="sw-lab">bgBase</span><span class="sw-val">#0A0B0F</span>
+      </div>
+      <span class="op">+</span>
+      <div class="sw-big">
+        <div class="sw-chip" style="background:rgba(30,34,44,.55)"></div>
+        <span class="sw-lab">surfaceGlass</span><span class="sw-val">rgba(30,34,44,.55)</span>
+      </div>
+      <span class="op">=</span>
+      <div class="sw-big">
+        <div class="sw-chip" style="background:#14171E"></div>
+        <span class="sw-lab">composited</span><span class="sw-val">#14171E</span>
+      </div>
+      <div class="verdict">
+        <strong>A flat grey card.</strong>
+        <p>No border, shadow, blur or shader can recover depth that was never in the buffer. The fix has to be behind the glass, not on it.</p>
+      </div>
+    </div>
+
+    <div style="height:34px"></div>
+
+    <div>
+      <div class="cause">
+        <span class="idx">01</span>
+        <div class="stack-sm">
+          <h3>Nothing behind the glass</h3>
+          <p><code class="k">AppShell.kt:49</code> paints one opaque <code class="k">bgBase</code>. Every browse screen — Home, Settings, Movies, Series, Favorites, Guide — is in the state above. That's most of the app.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <span class="idx">02</span>
+        <div class="stack-sm">
+          <h3>Blur over video is impossible today</h3>
+          <p>All three player surfaces use media3's default <strong>SurfaceView</strong>, which composites on its own layer and punches a hole through the window. Compose draws above it and can never sample those pixels — so the HUD is translucent but razor-sharp.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <span class="idx">03</span>
+        <div class="stack-sm">
+          <h3>Glass nested in glass compounds to opaque</h3>
+          <p>HUD buttons at 55% sit on a HUD bar at 72%. Alpha multiplies to roughly <strong>87% effective opacity</strong> — which is why they render as solid black tiles floating on a translucent bar.</p>
+        </div>
+      </div>
+      <div class="cause">
+        <span class="idx">04</span>
+        <div class="stack-sm">
+          <h3>Two of seven optical ingredients</h3>
+          <p>V1 shipped translucent fill and a lit edge. Missing: backdrop blur, vibrancy, specular rim, refraction, adaptive tint.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:30px"></div>
+    <div class="note">
+      <span class="lbl">Worth saying out loud</span>
+      <p>The V1 companion mockup used <code>backdrop-filter</code> 24 times. The browser rendered real blur; the Kotlin never could. That gap between the pitch and the build is exactly what V2 closes — and it's why every mockup below is annotated with what actually makes it work on device.</p>
+    </div>
+  </section>
+
+  <!-- ============ PLAYER HUD ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Screen · Player HUD</span>
+      <h2>The surface that gives the trick away</h2>
+      <p class="lede">Over video the current HUD is honest cellophane: you can see through it, but the image behind stays perfectly sharp. Nothing in the physical world does that.</p>
+    </div>
+
+    <div class="app" id="hud-app">
+      <div class="tv cmp" data-cmp>
+        <div class="screen before" style="background:#000">
+          <div class="video">
+            <div class="bars">
+              <span style="background:#C00000"></span><span style="background:#00C000"></span>
+              <span style="background:#C8C800"></span><span style="background:#0000C8"></span>
+              <span style="background:#C000C8"></span><span style="background:#00C8C8"></span>
+            </div>
+            <div class="videodiag"></div>
+          </div>
+          <div class="hud flat">
+            <div class="hudtop">
+              <div class="logowell" style="width:5cqw">SP</div>
+              <div class="hudmeta">
+                <div class="hudtitle"><span class="badge" style="position:static"><i></i>LIVE</span>Sky Sports Main</div>
+                <div class="rowsub">Premier League · Matchweek 4</div>
+                <div class="chip flat">1080p · 50fps</div>
+              </div>
+            </div>
+            <div class="hudbtns">
+              <div class="hb opaque"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6 8.5 6V6z"/></svg></div>
+              <div class="hb play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg></div>
+              <div class="hb opaque"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg></div>
+              <div class="hbdiv"></div>
+              <div class="hb opaque"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></div>
+              <div class="hb opaque"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m-8 7H9.5v-.5h-2v3h2V13H11v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1zm7 0h-1.5v-.5h-2v3h2V13H18v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1z"/></svg></div>
+              <div class="hb opaque"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-after">
+          <div class="screen before" style="background:#000">
+            <div class="video">
+              <div class="bars">
+                <span style="background:#C00000"></span><span style="background:#00C000"></span>
+                <span style="background:#C8C800"></span><span style="background:#0000C8"></span>
+                <span style="background:#C000C8"></span><span style="background:#00C8C8"></span>
+              </div>
+              <div class="videodiag"></div>
+            </div>
+            <div class="hud g-v2-e">
+              <div class="hudtop">
+                <div class="logowell" style="width:5cqw">SP</div>
+                <div class="hudmeta">
+                  <div class="hudtitle"><span class="badge" style="position:static"><i></i>LIVE</span>Sky Sports Main</div>
+                  <div class="rowsub">Premier League · Matchweek 4</div>
+                  <div class="chip g-chip">1080p · 50fps</div>
+                </div>
+              </div>
+              <div class="hudbtns">
+                <div class="hb g-child"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6 8.5 6V6z"/></svg></div>
+                <div class="hb play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg></div>
+                <div class="hb g-child"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-12v12l8.5-6z"/></svg></div>
+                <div class="hbdiv"></div>
+                <div class="hb g-child"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"/></svg></div>
+                <div class="hb g-child"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m-8 7H9.5v-.5h-2v3h2V13H11v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1zm7 0h-1.5v-.5h-2v3h2V13H18v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1z"/></svg></div>
+                <div class="hb g-child"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="tag l">Shipped — sharp through the glass</span>
+        <span class="tag r">V2 — TextureView + blur</span>
+        <div class="divider"></div>
+        <div class="knob">◄►</div>
+        <input type="range" min="0" max="100" value="50" aria-label="Compare shipped player HUD with V2">
+      </div>
+    </div>
+    <div class="cap">
+      <span class="n">Two fixes</span>
+      <p>The bar blurs because the player moves to a <strong>TextureView</strong>, putting video pixels inside the Compose draw pass. The buttons stop being black bricks because nested controls drop to tint-and-hairline instead of a second fill.</p>
+    </div>
+
+    <div style="height:22px"></div>
+    <div class="note">
+      <span class="lbl">The one real risk in this plan</span>
+      <p>TextureView costs an extra GPU texture copy and renders on the UI thread's context. On a Fire TV Stick or a weak Amlogic box at 4K that is measurable. It ships behind a Settings toggle, default on only for API 31+ non-low-RAM devices, and it is the only phase that can regress playback.</p>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Screen · Settings</span>
+      <h2>The screen with no artwork to lean on</h2>
+      <p class="lede">Settings has no posters, so it's the honest test of the ambient layer: the accent mesh has to carry the whole page on its own. Switch the mockup theme in the header — light is where glass is hardest, and it gets equal billing in this spec.</p>
+    </div>
+
+    <div class="app" id="set-app">
+      <div class="tv cmp" data-cmp>
+        <div class="screen before">
+          <nav class="rail flat">
+            <div class="mark">A</div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v9h6v-6h2v6h6v-9h3z"/></svg><span>Home</span></div>
+            <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7.6l3.3-3.3-1.4-1.4L12 4.6 8.7 1.3 7.3 2.7 10.6 6H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m0 14H3V8h18z"/></svg><span>Live TV</span></div>
+            <div class="navitem sel"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m8.9 4a7 7 0 0 1-.1 1.2l2 1.6-2 3.4-2.4-1a7 7 0 0 1-2 1.2l-.4 2.6h-4l-.4-2.6a7 7 0 0 1-2-1.2l-2.4 1-2-3.4 2-1.6a7 7 0 0 1 0-2.4l-2-1.6 2-3.4 2.4 1a7 7 0 0 1 2-1.2L10 2h4l.4 2.6a7 7 0 0 1 2 1.2l2.4-1 2 3.4-2 1.6q.1.6.1 1.2"/></svg><span>Settings</span></div>
+          </nav>
+          <div class="main">
+            <div class="tabs flat">
+              <span class="tab">General</span><span class="tab">Display</span>
+              <span class="tab on">Playback</span><span class="tab">Subtitles</span><span class="tab">About</span>
+            </div>
+            <div class="setgroup flat">
+              <div class="setrow"><div class="setico flat">HD</div><div class="settext"><div class="settitle">Hardware decoding</div><div class="setdesc">Prefer hardware decoders; fall back to software when needed</div></div><div class="sw on"></div></div>
+              <div class="setrow"><div class="setico flat">AU</div><div class="settext"><div class="settitle">Preferred audio</div><div class="setdesc">Select this language automatically when available</div></div><div class="sw"></div></div>
+              <div class="setrow"><div class="setico flat">EP</div><div class="settext"><div class="settitle">Autoplay next episode</div><div class="setdesc">Continue to the next episode when one finishes</div></div><div class="sw on"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-after">
+          <div class="screen after">
+            <nav class="rail glass g-v2">
+              <div class="mark">A</div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2 12h3v9h6v-6h2v6h6v-9h3z"/></svg><span>Home</span></div>
+              <div class="navitem"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7.6l3.3-3.3-1.4-1.4L12 4.6 8.7 1.3 7.3 2.7 10.6 6H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2m0 14H3V8h18z"/></svg><span>Live TV</span></div>
+              <div class="navitem sel g-lens"><svg class="ico" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8m8.9 4a7 7 0 0 1-.1 1.2l2 1.6-2 3.4-2.4-1a7 7 0 0 1-2 1.2l-.4 2.6h-4l-.4-2.6a7 7 0 0 1-2-1.2l-2.4 1-2-3.4 2-1.6a7 7 0 0 1 0-2.4l-2-1.6 2-3.4 2.4 1a7 7 0 0 1 2-1.2L10 2h4l.4 2.6a7 7 0 0 1 2 1.2l2.4-1 2 3.4-2 1.6q.1.6.1 1.2"/></svg><span>Settings</span></div>
+            </nav>
+            <div class="main">
+              <div class="tabs g-v2">
+                <span class="tab">General</span><span class="tab">Display</span>
+                <span class="tab on g-lens">Playback</span><span class="tab">Subtitles</span><span class="tab">About</span>
+              </div>
+              <div class="setgroup g-v2">
+                <div class="setrow"><div class="setico g-child">HD</div><div class="settext"><div class="settitle">Hardware decoding</div><div class="setdesc">Prefer hardware decoders; fall back to software when needed</div></div><div class="sw on"></div></div>
+                <div class="setrow"><div class="setico g-child">AU</div><div class="settext"><div class="settitle">Preferred audio</div><div class="setdesc">Select this language automatically when available</div></div><div class="sw g-track"></div></div>
+                <div class="setrow"><div class="setico g-child">EP</div><div class="settext"><div class="settitle">Autoplay next episode</div><div class="setdesc">Continue to the next episode when one finishes</div></div><div class="sw on"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="tag l">Shipped v1.5.0</span>
+        <span class="tag r">V2</span>
+        <div class="divider"></div>
+        <div class="knob">◄►</div>
+        <input type="range" min="0" max="100" value="50" aria-label="Compare shipped Settings with V2">
+      </div>
+    </div>
+    <div class="cap">
+      <span class="n">Light theme</span>
+      <p>In light mode <code class="k">borderGlass</code> stays a <em>dark</em> ink edge — a white card with a white edge on a near-white page disappears. Vibrancy is also dialled back: saturation boost on an already bright backdrop pushes text contrast below AA fast.</p>
+    </div>
+  </section>
+
+  <!-- ============ SMALL CONTROLS ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Component family · chips, switches, badges</span>
+      <h2>The small controls give it away fastest</h2>
+      <p class="lede">A glass panel is only as convincing as the smallest thing sitting on it. An opaque switch track or a solid chip reads as a hole punched through the material — and because these repeat down every Settings list and across every HUD, one wrong recipe undoes the whole surface.</p>
+    </div>
+
+    <div class="app" id="chip-app">
+      <div class="tv cmp" data-cmp style="aspect-ratio:21/9">
+        <!-- BEFORE -->
+        <div class="screen before">
+          <div class="main" style="justify-content:center">
+            <div class="setgroup flat" style="padding:2.2cqw">
+              <div class="ctlgrid">
+                <div class="ctl"><span class="ctln">Switch · off</span><div class="sw"></div></div>
+                <div class="ctl"><span class="ctln">Switch · on</span><div class="sw on"></div></div>
+                <div class="ctl"><span class="ctln">Chip</span><div class="chip flat">1080p · 50fps</div></div>
+                <div class="ctl"><span class="ctln">Chip · selected</span><div class="chip" style="background:var(--a-accent);color:#fff">Sports</div></div>
+                <div class="ctl"><span class="ctln">Badge · live</span><span class="badge" style="position:static"><i></i>LIVE</span></div>
+                <div class="ctl"><span class="ctln">Badge · quality</span><div class="chip flat">4K</div></div>
+                <div class="ctl"><span class="ctln">Icon well</span><div class="setico flat">HD</div></div>
+                <div class="ctl"><span class="ctln">Seek track</span><div class="track flat"><i></i></div></div>
+                <div class="ctl" style="grid-column:1/-1"><span class="ctln">Segmented · sliding indicator</span>
+                  <div class="segdemo flat"><span class="sel">Live TV</span><span>Movies</span><span>Series</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AFTER -->
+        <div class="layer-after">
+          <div class="screen after">
+            <div class="main" style="justify-content:center">
+              <div class="setgroup g-v2" style="padding:2.2cqw">
+                <div class="ctlgrid">
+                  <div class="ctl"><span class="ctln">Switch · off</span><div class="sw g-track"></div></div>
+                  <div class="ctl"><span class="ctln">Switch · on</span><div class="sw on g-lens"></div></div>
+                  <div class="ctl"><span class="ctln">Chip</span><div class="chip g-chip">1080p · 50fps</div></div>
+                  <div class="ctl"><span class="ctln">Chip · selected</span><div class="chip g-lens">Sports</div></div>
+                  <div class="ctl"><span class="ctln">Badge · live</span><span class="badge" style="position:static"><i></i>LIVE</span></div>
+                  <div class="ctl"><span class="ctln">Badge · quality</span><div class="chip g-child" style="color:var(--a-text)">4K</div></div>
+                  <div class="ctl"><span class="ctln">Icon well</span><div class="setico g-child">HD</div></div>
+                  <div class="ctl"><span class="ctln">Seek track</span><div class="track g-track"><i></i></div></div>
+                  <div class="ctl" style="grid-column:1/-1"><span class="ctln">Segmented · sliding indicator</span>
+                    <div class="segdemo g-track"><span class="sel g-lens">Live TV</span><span>Movies</span><span>Series</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="tag l">Shipped — opaque slugs</span>
+        <span class="tag r">V2 — glass children</span>
+        <div class="divider"></div>
+        <div class="knob">◄►</div>
+        <input type="range" min="0" max="100" value="50" aria-label="Compare shipped small controls with V2">
+      </div>
+    </div>
+    <div class="cap">
+      <span class="n">Look at</span>
+      <p>The <strong>off switch</strong> and the <strong>segmented indicator</strong>. On the left the switch track is solid <code class="k">surface3</code> and the indicator is a flat accent pill — two opaque slugs with nothing behind them. On the right the backdrop reads straight through both: the track holds its shape on a hairline, and the indicator became a <em>lens</em> — brighter and clearer than the glass it slides in, not paint laid on top.</p>
+    </div>
+
+    <div style="height:34px"></div>
+
+    <div class="grid3">
+      <div class="cardbox">
+        <h3>Tint, never a fill</h3>
+        <p>A nested control gets white at ~11% plus the hairline. It must not get its own blur either — stacking blur inside blur is the same compounding mistake as stacking fills, just more expensive.</p>
+      </div>
+      <div class="cardbox">
+        <h3>Tonal chips keep their hue</h3>
+        <p>A chip carrying meaning stays tinted with its own hue at low alpha and a hue-400 hairline, so <em>quality</em>, <em>catch-up</em> and <em>selected</em> stay distinguishable at three metres.</p>
+      </div>
+      <div class="cardbox">
+        <h3>The indicator is a lens</h3>
+        <p>Selection is the one place Apple never paints. The marker is <em>clearer</em> than its track — accent at ~30%, a bright specular rim, a soft accent glow outward. It's also the single best place to spend the <code class="k">lens()</code> refraction, because it <em>moves</em>: the backdrop bends as the pill slides between segments, which is the effect people actually recognise as liquid glass.</p>
+      </div>
+      <div class="cardbox">
+        <h3>Two things stay solid</h3>
+        <p><strong>LIVE</strong> keeps a solid red fill and the provider logo well keeps its dark plate in both themes — both carry white content that has to survive any backdrop. Legibility outranks material consistency.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TILES ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Component family · channel tiles</span>
+      <h2>Every tile becomes its own backdrop</h2>
+      <p class="lede">The ambient layer gives the <em>page</em> something behind its glass. A tile needs the same thing one level down — and the material is already loaded. Sample one dominant colour from the logo Coil has already decoded, and the tile has a backdrop that can never clash with its own contents.</p>
+    </div>
+
+    <div class="app" id="tile-app">
+      <div class="tv cmp" data-cmp style="aspect-ratio:21/9">
+        <!-- BEFORE -->
+        <div class="screen before">
+          <div class="main" style="justify-content:center;gap:1.4cqw">
+            <div class="rowlabel">Live TV</div>
+            <div class="cards">
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">SS</div></div>
+                <div class="cardfoot"><div class="cardtitle">Sky Sports HD</div><div class="cardmeta">Premier League Live</div></div></div>
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">BB</div></div>
+                <div class="cardfoot"><div class="cardtitle">BBC One</div><div class="cardmeta">The Six O'Clock News</div></div></div>
+              <div class="card flat"><div class="thumb flat"><span class="badge"><i></i>LIVE</span><div class="logowell">EU</div></div>
+                <div class="cardfoot"><div class="cardtitle">Eurosport 1</div><div class="cardmeta">Cycling · Stage 14</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AFTER -->
+        <div class="layer-after">
+          <div class="screen after">
+            <div class="main" style="justify-content:center;gap:1.4cqw">
+              <div class="rowlabel">Live TV</div>
+              <div class="cards">
+                <div class="card g-v2"><div class="thumb wash" style="--w:#1D4ED8"><span class="badge"><i></i>LIVE</span><div class="logowell g-well">SS</div></div>
+                  <div class="cardfoot"><div class="cardtitle">Sky Sports HD</div><div class="cardmeta">Premier League Live</div></div></div>
+                <div class="card g-v2"><div class="thumb wash" style="--w:#B91C1C"><span class="badge"><i></i>LIVE</span><div class="logowell g-well">BB</div></div>
+                  <div class="cardfoot"><div class="cardtitle">BBC One</div><div class="cardmeta">The Six O'Clock News</div></div></div>
+                <div class="card g-v2"><div class="thumb wash" style="--w:#0F766E"><span class="badge"><i></i>LIVE</span><div class="logowell g-well">EU</div></div>
+                  <div class="cardfoot"><div class="cardtitle">Eurosport 1</div><div class="cardmeta">Cycling · Stage 14</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="tag l">Shipped — flat tile, plate well</span>
+        <span class="tag r">V2 — washed tile, glass well</span>
+        <div class="divider"></div>
+        <div class="knob">◄►</div>
+        <input type="range" min="0" max="100" value="50" aria-label="Compare shipped channel tiles with V2">
+      </div>
+    </div>
+    <div class="cap">
+      <span class="n">Look at</span>
+      <p>Three tiles, three different washes — each sampled from its own channel. On the left every thumb is the same grey <code class="k">surface2</code> with a dark <code class="k">logoWell</code> plate dropped in the middle. On the right the well turned translucent and the tile carries a hint of the channel's own identity, so a row of tiles finally reads as a row of <em>different things</em>.</p>
+    </div>
+
+    <div style="height:34px"></div>
+
+    <div class="grid3">
+      <div class="cardbox">
+        <h3>The well keeps a floor</h3>
+        <p>It becomes glass over a fixed dark scrim, not pure glass. <code class="k">Color.kt:112</code> already records why it's pinned dark in <em>both</em> themes — provider logos are overwhelmingly white-on-transparent PNGs, and a light well made them vanish. That constraint doesn't go away.</p>
+      </div>
+      <div class="cardbox">
+        <h3>Sampled, so it can't clash</h3>
+        <p>An arbitrary backdrop behind an arbitrary logo is a gamble. A backdrop derived from <em>that same logo</em> is not — which is exactly why the tile well can go translucent while the player HUD's well stays a solid plate over arbitrary video.</p>
+      </div>
+      <div class="cardbox">
+        <h3>Two stops, not a blur</h3>
+        <p>A gradient, never a blurred bitmap. A live grid holds 40+ tiles; forty blurred bitmaps mid-scroll is the whole jank budget, and at tile size a blurred logo is mud rather than colour. Being this cheap is also why it's the one thing here that ships on Tier C.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PHASES ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Sequence</span>
+      <h2>What each phase actually buys</h2>
+      <p class="lede">Phase 1 alone changes how the whole app feels, and it needs no new dependency. Everything after it is refinement on a foundation that already works.</p>
+    </div>
+
+    <div class="ladder">
+      <div class="rung">
+        <span class="ph">Phase 0</span>
+        <div class="what"><strong>Library spike</strong><span>Proved <code>io.github.kyant0:backdrop:2.0.0</code> needs <code>compileSdk 37</code>, that the bump works, and that the app still launches clean.</span></div>
+        <span class="pill done">Done</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 1</span>
+        <div class="what"><strong>Ambient backdrop</strong><span>Artwork wash + accent mesh + vignette behind the shell. The go/no-go for everything else — and the single biggest visual change.</span></div>
+        <span class="pill next">Next</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 2</span>
+        <div class="what"><strong>Real glass</strong><span><code>glassSurface()</code> gains blur + vibrancy + specular. All ~30 existing call sites inherit it for free.</span></div>
+        <span class="pill todo">Planned</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 3</span>
+        <div class="what"><strong>Stop nesting</strong><span>New <code>glassChild()</code>, <code>glassTrack()</code> and <code>glassLens()</code>: tint and hairline, never a second fill; selection stops being paint.</span></div>
+        <span class="pill todo">Planned</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 3b</span>
+        <div class="what"><strong>Tile washes</strong><span>Dominant-colour extractor with an LRU, the per-tile wash, and a translucent logo well. Ships on every tier.</span></div>
+        <span class="pill todo">Planned</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 4</span>
+        <div class="what"><strong>Blur over video</strong><span>TextureView behind a toggle. The only phase that can regress playback on weak hardware.</span></div>
+        <span class="pill risk">Carries risk</span>
+      </div>
+      <div class="rung">
+        <span class="ph">Phase 5–6</span>
+        <div class="what"><strong>Coverage &amp; polish</strong><span>The ~10 screens V1 never reached, light-theme contrast pass, 22-locale string sanity, perf sweep.</span></div>
+        <span class="pill todo">Planned</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TIERS ============ -->
+  <section>
+    <div class="head">
+      <span class="eyebrow">Degradation</span>
+      <h2>Three tiers, and the floor is today</h2>
+      <p class="lede">The app ships to <code class="k">minSdk 23</code>. Nothing here can be allowed to break a cheap box, so the worst case is defined as exactly what ships now.</p>
+    </div>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Tier</th><th>Condition</th><th>What renders</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td>API 33+, not low-RAM</td><td>Ambient backdrop, blur, vibrancy, specular rim — plus optional <code>lens()</code> refraction, flag-off until reviewed on a real TV</td></tr>
+          <tr><td>B</td><td>API 31–32, or low-RAM</td><td>Ambient backdrop, blur, vibrancy. No runtime shaders, no drift animation</td></tr>
+          <tr><td>C</td><td>API ≤ 30</td><td>Exactly today's look. Static ambient gradient only — the known-good fallback for the entire spec</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="height:30px"></div>
+    <div class="grid3">
+      <div class="cardbox"><h3>Contrast is the gate</h3><p>Any surface dropping below 4.5:1 over its real backdrop gets a scrim stop or a denser fill. Measured on device, both themes — not judged by eye.</p></div>
+      <div class="cardbox"><h3>Motion is optional</h3><p>Reduced-motion stops the drift and the artwork cross-fade. The layers stay; only the animation halts.</p></div>
+      <div class="cardbox"><h3>Focus stays on top</h3><p>Every focusable still composes <code>TvFocusable</code>. The accent ring draws above the glass and is never baked into it.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="stack-sm">
+      <p><strong style="color:var(--ink)">Open decision blocking Phase 1:</strong> should the ambient artwork follow the focused item only (cheaper, more responsive) or the row's dominant palette (calmer, less flicker during fast D-pad scroll)?</p>
+      <p>Companion to <code>docs/glass-v2-design.md</code> · supersedes <code>docs/glass-redesign-v1.html</code> · mockups use literal <code>ui/theme/Color.kt</code> token values. Rendered with CSS <code>backdrop-filter</code>, which maps to the library's <code>blur()</code> + <code>vibrancy()</code> on API 31+.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // --- mockup theme toggle (independent of the page theme) ---
+  var appRoots = document.querySelectorAll('.app');
+  document.querySelectorAll('.seg button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mode = btn.dataset.app;
+      document.querySelectorAll('.seg button').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      appRoots.forEach(function (r) { r.classList.toggle('light', mode === 'light'); });
+    });
+  });
+
+  // --- before/after comparators ---
+  document.querySelectorAll('[data-cmp]').forEach(function (cmp) {
+    var input = cmp.querySelector('input[type="range"]');
+    function sync() { cmp.style.setProperty('--pos', input.value + '%'); }
+    input.addEventListener('input', sync);
+    // dragging anywhere on the frame scrubs, not just the thumb
+    cmp.addEventListener('pointerdown', function (e) { move(e); cmp.setPointerCapture(e.pointerId); });
+    cmp.addEventListener('pointermove', function (e) { if (e.buttons) move(e); });
+    function move(e) {
+      var r = cmp.getBoundingClientRect();
+      var pct = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+      input.value = String(pct);
+      sync();
+    }
+    sync();
+  });
+</script>

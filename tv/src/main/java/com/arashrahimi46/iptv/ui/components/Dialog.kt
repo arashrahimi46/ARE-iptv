@@ -30,6 +30,7 @@ import androidx.compose.ui.window.DialogWindowProvider
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
+import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /**
@@ -63,18 +64,23 @@ fun AreDialog(
                 .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
                 .padding(AreIptvTheme.spacing.sp8),
         ) {
-            if (title != null) {
-                Text(text = title, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
-                Box(Modifier.height(AreIptvTheme.spacing.sp4))
-            }
-            content()
-            if (actions != null) {
-                Box(Modifier.height(AreIptvTheme.spacing.sp8))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-                ) {
-                    actions()
+            // The card is a glass surface, so everything inside it is a nested child (§6): controls
+            // switch to tint + hairline instead of laying a second glass fill on the panel, and the
+            // action-row's neutral buttons read as glass chips rather than as a full opaque square.
+            ProvideOnGlass {
+                if (title != null) {
+                    Text(text = title, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                    Box(Modifier.height(AreIptvTheme.spacing.sp4))
+                }
+                content()
+                if (actions != null) {
+                    Box(Modifier.height(AreIptvTheme.spacing.sp8))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+                    ) {
+                        actions()
+                    }
                 }
             }
         }
@@ -113,7 +119,7 @@ private fun AreDialogPreview() {
             onDismiss = {},
             title = "Remove playlist?",
             actions = {
-                AreButton("Cancel", onClick = {}, variant = AreButtonVariant.Ghost)
+                AreButton("Cancel", onClick = {}, variant = AreButtonVariant.Secondary)
                 AreButton("Remove", onClick = {}, variant = AreButtonVariant.Danger)
             },
         ) {

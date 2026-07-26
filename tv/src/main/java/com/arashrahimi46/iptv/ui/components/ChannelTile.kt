@@ -22,12 +22,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -41,8 +43,13 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
+import com.arashrahimi46.iptv.ui.theme.sampleTileWashHue
+import com.arashrahimi46.iptv.ui.theme.tileWash
 
 /**
  * ChannelTile — logo-first live-TV tile (ChannelTile.jsx). IPTV providers
@@ -78,6 +85,8 @@ fun AreChannelTile(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    val washHue = rememberTileWashHue(logoUrl, seed = channel)
+    val ambientArtwork = LocalAmbientArtwork.current
     val blur = LocalParentalBlur.current
     val obscured = blur.isObscured(lockCategory)
     val initials = channel.replace(Regex(" ?HD$", RegexOption.IGNORE_CASE), "")
@@ -98,6 +107,12 @@ fun AreChannelTile(
         // light-theme page (replacing the old solid border).
         borderBrush = glassBorderBrush(),
     ) { focused, _ ->
+      // Publish this tile's logo as the page's ambient artwork on focus gain. Fires only on the
+      // transition, never per recomposition, and never clears on focus loss -- the next focused
+      // tile overwrites it, so a fast D-pad move doesn't flicker back to the empty state.
+      LaunchedEffect(focused) {
+          if (focused && logoUrl != null) ambientArtwork.value = logoUrl
+      }
       Box(Modifier.fillMaxWidth().clip(shape)) {
         // Clip the content to the tile shape so the info panel's square surface1 background
         // doesn't poke square corners through the rounded focus ring.
@@ -106,7 +121,10 @@ fun AreChannelTile(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(16f / 8f),
+                    .aspectRatio(16f / 8f)
+                    // Two-stop wash in the logo's own dominant hue (§6.3) -- gives the tile's glass
+                    // something to refract. Rectangle here; the outer Box already clips to `shape`.
+                    .tileWash(RectangleShape, washHue),
             ) {
                 Row(
                     modifier = Modifier.align(Alignment.TopStart).padding(10.dp),
@@ -152,7 +170,11 @@ fun AreChannelTile(
                         // in the middle of the card): ~78% of the logo zone's height, kept square.
                         .fillMaxHeight(0.78f)
                         .aspectRatio(1f)
-                        .background(colors.logoWell, RoundedCornerShape(AreIptvTheme.radius.sm)),
+                        // Glass well over a fixed dark scrim floor (§6.3): the scrim is the
+                        // luminance floor that keeps white-on-transparent provider logos visible
+                        // (Color.kt:logoWell), the glass tint above lets the wash read through.
+                        .background(colors.logoWellScrim, RoundedCornerShape(AreIptvTheme.radius.sm))
+                        .glassChild(RoundedCornerShape(AreIptvTheme.radius.sm)),
                     contentAlignment = Alignment.Center,
                 ) {
                     // Initials show only until the logo resolves -- logos often have transparent
@@ -168,7 +190,14 @@ fun AreChannelTile(
                             model = logoUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
-                            onState = { logoLoaded.value = it is AsyncImagePainter.State.Success },
+                            onState = { state ->
+                                logoLoaded.value = state is AsyncImagePainter.State.Success
+                                // Wash hue comes from the logo we just decoded -- never a second
+                                // request; the provider rate-limits by IP (see sampleTileWashHue).
+                                if (state is AsyncImagePainter.State.Success) {
+                                    sampleTileWashHue(logoUrl, state.result.drawable)
+                                }
+                            },
                             modifier = Modifier.fillMaxSize().padding(6.dp),
                         )
                     }
