@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Audio</string>
     <string name="multiview_add_to">Adaugă la Vizualizare multiplă</string>
     <string name="multiview_add_channel">Adaugă canal</string>
+    <string name="multiview_pane_watch">Vizionează pe tot ecranul</string>
+    <string name="multiview_pane_remove">Elimină din multi-vizualizare</string>
+    <string name="multiview_pane_menu_body">Deschide acest canal pe tot ecranul sau elimină-l din multi-vizualizare.</string>
     <string name="multiview_added_toast">Adăugat la Vizualizare multiplă</string>
 
     <!-- Shell / top bar / sidebar -->

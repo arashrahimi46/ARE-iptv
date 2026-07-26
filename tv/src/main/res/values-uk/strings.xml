@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Звук</string>
     <string name="multiview_add_to">Додати до Мультиперегляду</string>
     <string name="multiview_add_channel">Додати канал</string>
+    <string name="multiview_pane_watch">Дивитися на весь екран</string>
+    <string name="multiview_pane_remove">Прибрати з мультиекрана</string>
+    <string name="multiview_pane_menu_body">Відкрийте цей канал на весь екран або приберіть його з мультиекрана.</string>
     <string name="multiview_added_toast">Додано до Мультиперегляду</string>
 
     <!-- Shell / top bar / sidebar -->

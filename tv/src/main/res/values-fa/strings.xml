@@ -490,6 +490,9 @@
     <string name="multiview_audio_badge">صدا</string>
     <string name="multiview_add_to">افزودن به چند نمایی</string>
     <string name="multiview_add_channel">افزودن کانال</string>
+    <string name="multiview_pane_watch">تماشا در تمام‌صفحه</string>
+    <string name="multiview_pane_remove">حذف از نمای چندگانه</string>
+    <string name="multiview_pane_menu_body">این کانال را تمام‌صفحه باز کنید یا از نمای چندگانه حذف کنید.</string>
     <string name="multiview_added_toast">به چند نمایی افزوده شد</string>
 
     <!-- Shell / top bar / sidebar -->

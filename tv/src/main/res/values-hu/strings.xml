@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Hang</string>
     <string name="multiview_add_to">Hozzáadás a Többnézeteshez</string>
     <string name="multiview_add_channel">Csatorna hozzáadása</string>
+    <string name="multiview_pane_watch">Megtekintés teljes képernyőn</string>
+    <string name="multiview_pane_remove">Eltávolítás a többnézetből</string>
+    <string name="multiview_pane_menu_body">Nyissa meg ezt a csatornát teljes képernyőn, vagy távolítsa el a többnézetből.</string>
     <string name="multiview_added_toast">Hozzáadva a Többnézeteshez</string>
 
     <!-- Shell / top bar / sidebar -->

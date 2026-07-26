@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Ton</string>
     <string name="multiview_add_to">Zur Multi-Ansicht hinzufügen</string>
     <string name="multiview_add_channel">Kanal hinzufügen</string>
+    <string name="multiview_pane_watch">Vollbild ansehen</string>
+    <string name="multiview_pane_remove">Aus Multi-View entfernen</string>
+    <string name="multiview_pane_menu_body">Diesen Sender im Vollbild öffnen oder aus der Multi-View entfernen.</string>
     <string name="multiview_added_toast">Zur Multi-Ansicht hinzugefügt</string>
 
     <!-- Shell / top bar / sidebar -->

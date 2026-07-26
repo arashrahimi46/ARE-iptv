@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Ήχος</string>
     <string name="multiview_add_to">Προσθήκη στην Πολλαπλή προβολή</string>
     <string name="multiview_add_channel">Προσθήκη καναλιού</string>
+    <string name="multiview_pane_watch">Πλήρης οθόνη</string>
+    <string name="multiview_pane_remove">Κατάργηση από την πολλαπλή προβολή</string>
+    <string name="multiview_pane_menu_body">Ανοίξτε αυτό το κανάλι σε πλήρη οθόνη ή καταργήστε το από την πολλαπλή προβολή.</string>
     <string name="multiview_added_toast">Προστέθηκε στην Πολλαπλή προβολή</string>
 
     <!-- Shell / top bar / sidebar -->

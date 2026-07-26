@@ -683,6 +683,9 @@
     <string name="multiview_audio_badge">Audio</string>
     <string name="multiview_add_to">Add to multi-view</string>
     <string name="multiview_add_channel">Add channel</string>
+    <string name="multiview_pane_watch">Watch full screen</string>
+    <string name="multiview_pane_remove">Remove from multi-view</string>
+    <string name="multiview_pane_menu_body">Open this channel full screen, or remove it from multi-view.</string>
     <string name="multiview_added_toast">Added to multi-view</string>
 
     <!-- Shell / top bar / sidebar -->

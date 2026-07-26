@@ -35,6 +35,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -62,6 +64,8 @@ import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.ui.components.AreBadge
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreIconButton
@@ -88,11 +92,14 @@ import kotlinx.coroutines.delay
  * active (audio); long-press removes it from multi-view.
  */
 @Composable
-fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: MultiViewViewModel = viewModel(factory = MultiViewViewModel.factory(context.applicationContext as android.app.Application))
     val state by viewModel.uiState.collectAsState()
     var pickerOpen by remember { mutableStateOf(false) }
+    // Long-press used to remove the pane outright; a mis-held OK silently deleted a channel and
+    // there was no way to promote a pane to full screen. Non-null = that pane's menu is open.
+    var paneMenu by remember { mutableStateOf<Channel?>(null) }
 
     BackHandler(onBack = onBack)
 
@@ -155,7 +162,7 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                                             active = index == state.activeIndex,
                                             concurrentPanes = state.paneCount,
                                             onClick = { viewModel.setActive(index) },
-                                            onRemove = { viewModel.removeChannel(channel.id) },
+                                            onLongClick = { paneMenu = channel },
                                             modifier = Modifier.weight(1f).fillMaxSize(),
                                         )
                                     } else {
@@ -178,6 +185,54 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 loadChannels = viewModel::channelsFor,
                 onPick = { viewModel.addChannel(it); pickerOpen = false },
                 onDismiss = { pickerOpen = false },
+            )
+        }
+
+        paneMenu?.let { channel ->
+            PaneMenuDialog(
+                channel = channel,
+                onWatch = { paneMenu = null; onOpenChannel(channel.id) },
+                onRemove = { paneMenu = null; viewModel.removeChannel(channel.id) },
+                onDismiss = { paneMenu = null },
+            )
+        }
+    }
+}
+
+/** Long-press menu for a filled pane: promote it to full screen, or drop it from multi-view. */
+@Composable
+private fun PaneMenuDialog(
+    channel: Channel,
+    onWatch: () -> Unit,
+    onRemove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    // Watch is the safe default and takes focus, so a second stray OK can't delete the pane.
+    val watchFocus = remember { FocusRequester() }
+    LaunchedEffect(channel.id) { watchFocus.requestFocus() }
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = channel.name,
+            width = 460.dp,
+            actions = {
+                AreButton(
+                    text = stringResource(R.string.multiview_pane_watch),
+                    onClick = onWatch,
+                    variant = AreButtonVariant.Primary,
+                    modifier = Modifier.focusRequester(watchFocus),
+                )
+                AreButton(
+                    text = stringResource(R.string.multiview_pane_remove),
+                    onClick = onRemove,
+                    variant = AreButtonVariant.Danger,
+                )
+            },
+        ) {
+            Text(
+                text = stringResource(R.string.multiview_pane_menu_body),
+                style = AreIptvTheme.typography.body,
+                color = AreIptvTheme.colors.textSecondary,
             )
         }
     }
@@ -307,7 +362,7 @@ private fun MultiViewPane(
     active: Boolean,
     concurrentPanes: Int,
     onClick: () -> Unit,
-    onRemove: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -443,10 +498,10 @@ private fun MultiViewPane(
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
     // Fill the grid cell (already sized by the row/column weights). disableScale: these big panes
     // sit in a tight 2x2 grid, so a 6% focus-scale grew them into their neighbours (the reported
-    // clipping) -- the ring + glow alone are the focus indicator here. Long-press removes the pane.
+    // clipping) -- the ring + glow alone are the focus indicator here. Long-press opens the pane menu.
     TvFocusable(
         onClick = onClick,
-        onLongClick = onRemove,
+        onLongClick = onLongClick,
         modifier = modifier,
         shape = shape,
         glowColor = colors.accent,

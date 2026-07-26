@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Ljud</string>
     <string name="multiview_add_to">Lägg till i Multivy</string>
     <string name="multiview_add_channel">Lägg till kanal</string>
+    <string name="multiview_pane_watch">Titta i helskärm</string>
+    <string name="multiview_pane_remove">Ta bort från multivy</string>
+    <string name="multiview_pane_menu_body">Öppna den här kanalen i helskärm eller ta bort den från multivyn.</string>
     <string name="multiview_added_toast">Tillagd i Multivy</string>
 
     <!-- Shell / top bar / sidebar -->

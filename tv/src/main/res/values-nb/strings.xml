@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Lyd</string>
     <string name="multiview_add_to">Legg til i Multi-visning</string>
     <string name="multiview_add_channel">Legg til kanal</string>
+    <string name="multiview_pane_watch">Se i fullskjerm</string>
+    <string name="multiview_pane_remove">Fjern fra multivisning</string>
+    <string name="multiview_pane_menu_body">Åpne denne kanalen i fullskjerm, eller fjern den fra multivisningen.</string>
     <string name="multiview_added_toast">Lagt til i Multi-visning</string>
 
     <!-- Shell / top bar / sidebar -->

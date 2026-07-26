@@ -441,7 +441,10 @@ fun AreIptvApp() {
             )
         }
         composable("multiview") {
-            MultiViewScreen(onBack = { navController.popBackStack() })
+            MultiViewScreen(
+                onBack = { navController.popBackStack() },
+                onOpenChannel = { navController.navigate("player/$it") },
+            )
         }
     }
     }

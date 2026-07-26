@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Ses</string>
     <string name="multiview_add_to">Çoklu görünüme ekle</string>
     <string name="multiview_add_channel">Kanal ekle</string>
+    <string name="multiview_pane_watch">Tam ekran izle</string>
+    <string name="multiview_pane_remove">Çoklu görünümden kaldır</string>
+    <string name="multiview_pane_menu_body">Bu kanalı tam ekran açın veya çoklu görünümden kaldırın.</string>
     <string name="multiview_added_toast">Çoklu görünüme eklendi</string>
 
     <!-- Shell / top bar / sidebar -->

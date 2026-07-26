@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Аудио</string>
     <string name="multiview_add_to">Добавяне към Мулти-изглед</string>
     <string name="multiview_add_channel">Добавяне на канал</string>
+    <string name="multiview_pane_watch">Гледане на цял екран</string>
+    <string name="multiview_pane_remove">Премахване от мулти-изглед</string>
+    <string name="multiview_pane_menu_body">Отворете този канал на цял екран или го премахнете от мулти-изгледа.</string>
     <string name="multiview_added_toast">Добавено към Мулти-изглед</string>
 
     <!-- Shell / top bar / sidebar -->

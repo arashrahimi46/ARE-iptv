@@ -511,6 +511,9 @@
     <string name="multiview_audio_badge">Audio</string>
     <string name="multiview_add_to">Toevoegen aan Multiweergave</string>
     <string name="multiview_add_channel">Kanaal toevoegen</string>
+    <string name="multiview_pane_watch">Bekijk op volledig scherm</string>
+    <string name="multiview_pane_remove">Verwijderen uit multi-view</string>
+    <string name="multiview_pane_menu_body">Open dit kanaal op volledig scherm of verwijder het uit de multi-view.</string>
     <string name="multiview_added_toast">Toegevoegd aan Multiweergave</string>
 
     <!-- Shell / top bar / sidebar -->
