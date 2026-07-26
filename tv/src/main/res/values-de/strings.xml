@@ -10,6 +10,8 @@
     <string name="action_close">Schließen</string>
     <string name="action_remove">Entfernen</string>
     <string name="action_clear">Löschen</string>
+    <string name="action_rename">Umbenennen</string>
+    <string name="action_save">Speichern</string>
     <string name="action_connect">Verbinden</string>
     <string name="action_disconnect">Trennen</string>
     <string name="action_sign_in">Anmelden</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Unbegrenzt</string>
     <string name="sources_delete_title">Playlist löschen?</string>
     <string name="sources_delete_body">Dadurch werden „%1$s“ und alle Inhalte – Sender, Filme, Serien, Favoriten und Wiedergabeverlauf – dauerhaft von diesem Gerät gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
-    <string name="sources_delete_hint">OK auf einer Playlist gedrückt halten, um sie zu löschen.</string>
+    <string name="sources_delete_hint">OK auf einer Playlist gedrückt halten für weitere Optionen.</string>
+    <string name="sources_options_body">Wählen Sie, was mit dieser Playlist geschehen soll.</string>
+    <string name="sources_rename_title">Playlist umbenennen</string>
+    <string name="sources_rename_body">Das ändert nur, wie die Playlist in Ihrer Liste angezeigt wird. Ihre Sender, Favoriten und der Wiedergabeverlauf bleiben unverändert.</string>
+    <string name="sources_rename_label">Playlist-Name</string>
     <string name="nav_streams">Streams</string>
     <string name="streams_open">Netzwerkstream öffnen</string>
     <string name="streams_empty">Noch keine Streams. Öffne einen Netzwerkstream, um zu beginnen.</string>

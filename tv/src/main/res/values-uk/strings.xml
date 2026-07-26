@@ -10,6 +10,8 @@
     <string name="action_close">Закрити</string>
     <string name="action_remove">Видалити</string>
     <string name="action_clear">Очистити</string>
+    <string name="action_rename">Перейменувати</string>
+    <string name="action_save">Зберегти</string>
     <string name="action_connect">Підключити</string>
     <string name="action_disconnect">Відключити</string>
     <string name="action_sign_in">Увійти</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Без обмежень</string>
     <string name="sources_delete_title">Видалити плейлист?</string>
     <string name="sources_delete_body">Це назавжди видалить «%1$s» і весь його вміст — канали, фільми, серіали, вибране та історію переглядів — із цього пристрою. Цю дію не можна скасувати.</string>
-    <string name="sources_delete_hint">Утримуйте OK на плейлисті, щоб видалити його.</string>
+    <string name="sources_delete_hint">Утримуйте OK на плейлисті, щоб побачити більше дій.</string>
+    <string name="sources_options_body">Виберіть, що зробити з цим плейлистом.</string>
+    <string name="sources_rename_title">Перейменувати плейлист</string>
+    <string name="sources_rename_body">Це змінює лише те, як плейлист відображається у вашому списку. Його канали, обране та історія переглядів залишаються незмінними.</string>
+    <string name="sources_rename_label">Назва плейлиста</string>
     <string name="nav_streams">Потоки</string>
     <string name="streams_open">Відкрити мережевий потік</string>
     <string name="streams_empty">Потоків ще немає. Відкрийте мережевий потік, щоб почати.</string>

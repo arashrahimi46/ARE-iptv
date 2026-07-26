@@ -10,6 +10,8 @@
     <string name="action_close">Fechar</string>
     <string name="action_remove">Remover</string>
     <string name="action_clear">Limpar</string>
+    <string name="action_rename">Renomear</string>
+    <string name="action_save">Salvar</string>
     <string name="action_connect">Conectar</string>
     <string name="action_disconnect">Desconectar</string>
     <string name="action_sign_in">Entrar</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Ilimitado</string>
     <string name="sources_delete_title">Excluir playlist?</string>
     <string name="sources_delete_body">Isso exclui permanentemente “%1$s” e tudo o que há nela — canais, filmes, séries, favoritos e histórico de reprodução — deste dispositivo. Isso não pode ser desfeito.</string>
-    <string name="sources_delete_hint">Segure OK em uma playlist para excluí-la.</string>
+    <string name="sources_delete_hint">Segure OK em uma playlist para mais opções.</string>
+    <string name="sources_options_body">Escolha o que fazer com esta playlist.</string>
+    <string name="sources_rename_title">Renomear playlist</string>
+    <string name="sources_rename_body">Isso muda apenas como a playlist aparece na sua lista. Os canais, favoritos e o histórico de reprodução permanecem exatamente como estão.</string>
+    <string name="sources_rename_label">Nome da playlist</string>
     <string name="nav_streams">Transmissões</string>
     <string name="streams_open">Abrir transmissão de rede</string>
     <string name="streams_empty">Nenhuma transmissão ainda. Abra uma transmissão de rede para começar.</string>

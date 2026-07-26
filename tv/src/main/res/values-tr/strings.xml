@@ -10,6 +10,8 @@
     <string name="action_close">Kapat</string>
     <string name="action_remove">Kaldır</string>
     <string name="action_clear">Temizle</string>
+    <string name="action_rename">Yeniden adlandır</string>
+    <string name="action_save">Kaydet</string>
     <string name="action_connect">Bağlan</string>
     <string name="action_disconnect">Bağlantıyı kes</string>
     <string name="action_sign_in">Oturum aç</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Sınırsız</string>
     <string name="sources_delete_title">Oynatma listesi silinsin mi?</string>
     <string name="sources_delete_body">Bu, \"%1$s\" ve içindeki her şeyi — kanallar, filmler, diziler, favoriler ve izleme geçmişi — bu cihazdan kalıcı olarak siler. Bu işlem geri alınamaz.</string>
-    <string name="sources_delete_hint">Silmek için bir oynatma listesinde OK tuşunu basılı tutun.</string>
+    <string name="sources_delete_hint">Daha fazla seçenek için bir oynatma listesinde OK tuşunu basılı tutun.</string>
+    <string name="sources_options_body">Bu oynatma listesiyle ne yapmak istediğinizi seçin.</string>
+    <string name="sources_rename_title">Oynatma listesini yeniden adlandır</string>
+    <string name="sources_rename_body">Bu yalnızca oynatma listesinin listenizde nasıl göründüğünü değiştirir. Kanalları, favorileri ve izleme geçmişi aynen kalır.</string>
+    <string name="sources_rename_label">Oynatma listesi adı</string>
     <string name="nav_streams">Yayınlar</string>
     <string name="streams_open">Ağ yayını aç</string>
     <string name="streams_empty">Henüz yayın yok. Başlamak için bir ağ yayını açın.</string>

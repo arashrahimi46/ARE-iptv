@@ -10,6 +10,8 @@
     <string name="action_close">بستن</string>
     <string name="action_remove">حذف</string>
     <string name="action_clear">پاک کردن</string>
+    <string name="action_rename">تغییر نام</string>
+    <string name="action_save">ذخیره</string>
     <string name="action_connect">اتصال</string>
     <string name="action_disconnect">قطع اتصال</string>
     <string name="action_sign_in">ورود</string>
@@ -89,7 +91,11 @@
     <string name="sources_add_new_playlist">افزودن پلی‌لیست جدید</string>
     <string name="sources_delete_title">پلی‌لیست حذف شود؟</string>
     <string name="sources_delete_body">این کار «%1$s» و همهٔ محتوای آن — کانال‌ها، فیلم‌ها، سریال‌ها، علاقه‌مندی‌ها و تاریخچهٔ تماشا — را برای همیشه از این دستگاه حذف می‌کند. این عمل قابل بازگشت نیست.</string>
-    <string name="sources_delete_hint">برای حذف یک پلی‌لیست، دکمهٔ OK را روی آن نگه دارید.</string>
+    <string name="sources_delete_hint">برای گزینه‌های بیشتر، دکمهٔ OK را روی پلی‌لیست نگه دارید.</string>
+    <string name="sources_options_body">انتخاب کنید با این پلی‌لیست چه کاری انجام شود.</string>
+    <string name="sources_rename_title">تغییر نام پلی‌لیست</string>
+    <string name="sources_rename_body">این فقط نحوهٔ نمایش پلی‌لیست در فهرست شما را تغییر می‌دهد. کانال‌ها، علاقه‌مندی‌ها و تاریخچهٔ تماشا دقیقاً به همان شکل باقی می‌مانند.</string>
+    <string name="sources_rename_label">نام پلی‌لیست</string>
     <string name="action_delete">حذف</string>
 
     <!-- Language selector / first run -->

@@ -10,6 +10,8 @@
     <string name="action_close">Zavřít</string>
     <string name="action_remove">Odebrat</string>
     <string name="action_clear">Vymazat</string>
+    <string name="action_rename">Přejmenovat</string>
+    <string name="action_save">Uložit</string>
     <string name="action_connect">Připojit</string>
     <string name="action_disconnect">Odpojit</string>
     <string name="action_sign_in">Přihlásit se</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Neomezeně</string>
     <string name="sources_delete_title">Smazat playlist?</string>
     <string name="sources_delete_body">Tímto trvale odstraníte „%1$s“ a vše v něm — kanály, filmy, seriály, oblíbené a historii sledování — z tohoto zařízení. Tuto akci nelze vrátit zpět.</string>
-    <string name="sources_delete_hint">Podržením OK na playlistu jej smažete.</string>
+    <string name="sources_delete_hint">Podržením OK na playlistu zobrazíte další možnosti.</string>
+    <string name="sources_options_body">Vyberte, co chcete s tímto playlistem udělat.</string>
+    <string name="sources_rename_title">Přejmenovat playlist</string>
+    <string name="sources_rename_body">Změní se pouze to, jak se playlist zobrazuje ve vašem seznamu. Jeho kanály, oblíbené položky a historie sledování zůstanou beze změny.</string>
+    <string name="sources_rename_label">Název playlistu</string>
     <string name="nav_streams">Streamy</string>
     <string name="streams_open">Otevřít síťový stream</string>
     <string name="streams_empty">Zatím žádné streamy. Začněte otevřením síťového streamu.</string>

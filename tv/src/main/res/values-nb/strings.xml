@@ -10,6 +10,8 @@
     <string name="action_close">Lukk</string>
     <string name="action_remove">Fjern</string>
     <string name="action_clear">Tøm</string>
+    <string name="action_rename">Gi nytt navn</string>
+    <string name="action_save">Lagre</string>
     <string name="action_connect">Koble til</string>
     <string name="action_disconnect">Koble fra</string>
     <string name="action_sign_in">Logg inn</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Ubegrenset</string>
     <string name="sources_delete_title">Slette spillelisten?</string>
     <string name="sources_delete_body">Dette sletter «%1$s» og alt i den — kanaler, filmer, serier, favoritter og avspillingshistorikk — permanent fra denne enheten. Dette kan ikke angres.</string>
-    <string name="sources_delete_hint">Hold inne OK på en spilleliste for å slette den.</string>
+    <string name="sources_delete_hint">Hold inne OK på en spilleliste for flere valg.</string>
+    <string name="sources_options_body">Velg hva du vil gjøre med denne spillelisten.</string>
+    <string name="sources_rename_title">Gi spillelisten nytt navn</string>
+    <string name="sources_rename_body">Dette endrer bare hvordan spillelisten vises i listen din. Kanalene, favorittene og avspillingshistorikken forblir som de er.</string>
+    <string name="sources_rename_label">Navn på spilleliste</string>
     <string name="nav_streams">Strømmer</string>
     <string name="streams_open">Åpne nettverksstrøm</string>
     <string name="streams_empty">Ingen strømmer ennå. Åpne en nettverksstrøm for å komme i gang.</string>

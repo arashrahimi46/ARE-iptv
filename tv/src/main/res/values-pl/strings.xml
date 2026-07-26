@@ -10,6 +10,8 @@
     <string name="action_close">Zamknij</string>
     <string name="action_remove">Usuń</string>
     <string name="action_clear">Wyczyść</string>
+    <string name="action_rename">Zmień nazwę</string>
+    <string name="action_save">Zapisz</string>
     <string name="action_connect">Połącz</string>
     <string name="action_disconnect">Rozłącz</string>
     <string name="action_sign_in">Zaloguj się</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Bez limitu</string>
     <string name="sources_delete_title">Usunąć playlistę?</string>
     <string name="sources_delete_body">Spowoduje to trwałe usunięcie „%1$s” i całej jej zawartości — kanałów, filmów, seriali, ulubionych i historii oglądania — z tego urządzenia. Tej operacji nie można cofnąć.</string>
-    <string name="sources_delete_hint">Przytrzymaj OK na playliście, aby ją usunąć.</string>
+    <string name="sources_delete_hint">Przytrzymaj OK na playliście, aby zobaczyć więcej opcji.</string>
+    <string name="sources_options_body">Wybierz, co chcesz zrobić z tą playlistą.</string>
+    <string name="sources_rename_title">Zmień nazwę playlisty</string>
+    <string name="sources_rename_body">Zmieni się tylko sposób wyświetlania playlisty na liście. Jej kanały, ulubione i historia oglądania pozostaną bez zmian.</string>
+    <string name="sources_rename_label">Nazwa playlisty</string>
     <string name="nav_streams">Strumienie</string>
     <string name="streams_open">Otwórz strumień sieciowy</string>
     <string name="streams_empty">Brak strumieni. Otwórz strumień sieciowy, aby rozpocząć.</string>

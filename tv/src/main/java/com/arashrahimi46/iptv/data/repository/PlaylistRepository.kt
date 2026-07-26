@@ -230,6 +230,13 @@ interface PlaylistRepository {
      * pointer is cleared so nothing references a gone source. No-op if the id doesn't exist.
      */
     suspend fun deleteSource(sourceId: Long)
+
+    /**
+     * Changes a playlist's display name. Catalog rows, favorites and continue-watching all key off
+     * [PlaylistSource.id], never the name, so this is a single-column write with nothing to
+     * invalidate or re-import. [name] is trimmed; a blank name is ignored.
+     */
+    suspend fun renameSource(sourceId: Long, name: String)
 }
 
 class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
@@ -838,6 +845,11 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         }
 
         ImportSummary(channels = channels.size, movies = movies.size, series = series.size)
+    }
+
+    override suspend fun renameSource(sourceId: Long, name: String): Unit = withContext(Dispatchers.IO) {
+        val trimmed = name.trim()
+        if (trimmed.isNotEmpty()) db.playlistSourceDao().setName(sourceId, trimmed)
     }
 
     override suspend fun deleteSource(sourceId: Long): Unit = withContext(Dispatchers.IO) {

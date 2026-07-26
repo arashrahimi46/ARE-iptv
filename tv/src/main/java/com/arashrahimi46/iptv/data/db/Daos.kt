@@ -68,6 +68,10 @@ interface PlaylistSourceDao {
     @Query("UPDATE playlist_sources SET epgUrl = :epgUrl WHERE id = :id")
     suspend fun setEpgUrl(id: Long, epgUrl: String?)
 
+    /** Display-name only. Everything else is keyed by id, so a rename touches nothing downstream. */
+    @Query("UPDATE playlist_sources SET name = :name WHERE id = :id")
+    suspend fun setName(id: Long, name: String)
+
     @Delete
     suspend fun delete(source: PlaylistSource)
 }

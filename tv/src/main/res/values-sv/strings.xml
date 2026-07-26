@@ -10,6 +10,8 @@
     <string name="action_close">Stäng</string>
     <string name="action_remove">Ta bort</string>
     <string name="action_clear">Rensa</string>
+    <string name="action_rename">Byt namn</string>
+    <string name="action_save">Spara</string>
     <string name="action_connect">Anslut</string>
     <string name="action_disconnect">Koppla från</string>
     <string name="action_sign_in">Logga in</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Obegränsat</string>
     <string name="sources_delete_title">Ta bort spellistan?</string>
     <string name="sources_delete_body">Detta tar permanent bort ”%1$s” och allt i den — kanaler, filmer, serier, favoriter och visningshistorik — från den här enheten. Detta kan inte ångras.</string>
-    <string name="sources_delete_hint">Håll ned OK på en spellista för att ta bort den.</string>
+    <string name="sources_delete_hint">Håll ned OK på en spellista för fler alternativ.</string>
+    <string name="sources_options_body">Välj vad du vill göra med den här spellistan.</string>
+    <string name="sources_rename_title">Byt namn på spellista</string>
+    <string name="sources_rename_body">Detta ändrar bara hur spellistan visas i din lista. Dess kanaler, favoriter och visningshistorik förblir precis som de är.</string>
+    <string name="sources_rename_label">Spellistans namn</string>
     <string name="nav_streams">Strömmar</string>
     <string name="streams_open">Öppna nätverksström</string>
     <string name="streams_empty">Inga strömmar ännu. Öppna en nätverksström för att komma igång.</string>

@@ -41,6 +41,11 @@ class SelectSourceViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repository.deleteSource(id) }
     }
 
+    /** Renames a playlist; [sources] refreshes itself via its Flow. Blank names are ignored. */
+    fun rename(id: Long, name: String) {
+        viewModelScope.launch { repository.renameSource(id, name) }
+    }
+
     companion object {
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {

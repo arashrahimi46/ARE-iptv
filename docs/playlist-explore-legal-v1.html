@@ -1,0 +1,650 @@
+<title>Edit · Explore · Legal — ARE iptv v1 design</title>
+<style>
+  :root {
+    --ground:      #F4F6FA;
+    --ground-2:    #EAEEF5;
+    --panel:       #FFFFFF;
+    --ink:         #0C0F16;
+    --ink-2:       #444C5E;
+    --ink-3:       #6E7688;
+    --rule:        rgba(12,15,22,.12);
+    --rule-soft:   rgba(12,15,22,.07);
+    --accent:      #2563EB;
+    --accent-soft: rgba(37,99,235,.10);
+    --amber:       #A16207;
+    --amber-soft:  rgba(161,98,7,.10);
+    --good:        #15803D;
+    --good-soft:   rgba(21,128,61,.10);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(20px, 5vw, 64px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #08090D; --ground-2: #0E1016; --panel: #101319;
+      --ink: #EEF1F7; --ink-2: #A2AABB; --ink-3: #767E90;
+      --rule: rgba(255,255,255,.13); --rule-soft: rgba(255,255,255,.07);
+      --accent: #60A5FA; --accent-soft: rgba(96,165,250,.13);
+      --amber: #FBBF24; --amber-soft: rgba(251,191,36,.12);
+      --good: #4ADE80; --good-soft: rgba(74,222,128,.12);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #08090D; --ground-2: #0E1016; --panel: #101319;
+    --ink: #EEF1F7; --ink-2: #A2AABB; --ink-3: #767E90;
+    --rule: rgba(255,255,255,.13); --rule-soft: rgba(255,255,255,.07);
+    --accent: #60A5FA; --accent-soft: rgba(96,165,250,.13);
+    --amber: #FBBF24; --amber-soft: rgba(251,191,36,.12);
+    --good: #4ADE80; --good-soft: rgba(74,222,128,.12);
+  }
+  :root[data-theme="light"] {
+    --ground: #F4F6FA; --ground-2: #EAEEF5; --panel: #FFFFFF;
+    --ink: #0C0F16; --ink-2: #444C5E; --ink-3: #6E7688;
+    --rule: rgba(12,15,22,.12); --rule-soft: rgba(12,15,22,.07);
+    --accent: #2563EB; --accent-soft: rgba(37,99,235,.10);
+    --amber: #A16207; --amber-soft: rgba(161,98,7,.10);
+    --good: #15803D; --good-soft: rgba(21,128,61,.10);
+  }
+
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--pad); }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 5vw, 3.3rem); line-height: 1.08; letter-spacing: -.015em; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2.05rem); line-height: 1.15; }
+  h3 { font-size: 1.12rem; line-height: 1.3; }
+  p { margin: 0; max-width: var(--measure); color: var(--ink-2); }
+  p.lead { font-size: 1.12rem; color: var(--ink-2); }
+  strong { color: var(--ink); font-weight: 600; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .69rem; letter-spacing: .17em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  code, .mono { font-family: var(--mono); font-size: .87em; font-variant-numeric: tabular-nums; }
+  code { background: var(--ground-2); border: 1px solid var(--rule-soft); border-radius: 4px; padding: .1em .38em; }
+
+  header.masthead { border-bottom: 1px solid var(--rule); padding-bottom: 34px; margin-bottom: 8px; }
+  .masthead .stack { display: flex; flex-direction: column; gap: 16px; }
+  .metarow { display: flex; flex-wrap: wrap; gap: 10px 26px; padding-top: 6px; }
+  .metarow div { display: flex; flex-direction: column; gap: 2px; }
+  .metarow .k { font-family: var(--mono); font-size: .64rem; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); }
+  .metarow .v { font-size: .92rem; color: var(--ink); }
+
+  section { padding: 56px 0; border-bottom: 1px solid var(--rule-soft); }
+  section:last-of-type { border-bottom: 0; }
+  .sechead { display: flex; flex-direction: column; gap: 12px; margin-bottom: 34px; }
+  .sechead .bar { display: flex; align-items: baseline; gap: 14px; }
+  .bar-id { font-family: var(--mono); font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3); }
+
+  /* ---- decisions table ---- */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: .93rem; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th { font-family: var(--mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+  td:last-child { color: var(--ink-2); }
+
+  .pill { display: inline-block; font-family: var(--mono); font-size: .63rem; letter-spacing: .1em;
+          text-transform: uppercase; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .pill.new  { background: var(--accent-soft); color: var(--accent); }
+  .pill.risk { background: var(--amber-soft);  color: var(--amber); }
+  .pill.ok   { background: var(--good-soft);   color: var(--good); }
+
+  /* ================= TV MOCKUPS ================= */
+  .screens { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); }
+  .screens.single { grid-template-columns: minmax(0, 1fr); max-width: 720px; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  figcaption { font-size: .87rem; color: var(--ink-3); }
+  figcaption b { color: var(--ink-2); font-weight: 600; }
+
+  .tv {
+    position: relative; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden;
+    container-type: inline-size; font-size: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 14px 34px -18px rgba(0,0,0,.5);
+  }
+  @container (max-width: 700px) { .tv { font-size: 13px; } }
+  @container (max-width: 520px) { .tv { font-size: 10.5px; } }
+
+  /* app tokens, mirrored from ui/theme/Color.kt */
+  .tv--dark {
+    --bg: #0A0B0F; --sunken: #06070A; --s1: #14161C; --s2: #1F232C;
+    --glass: rgba(30,34,44,.55); --glass-hi: rgba(255,255,255,.22); --glass-edge: rgba(255,255,255,.10);
+    --overlay: rgba(14,16,21,.82);
+    --tp: #F6F8FC; --ts: #9AA2B1; --tt: #8C92A3;
+    --bd: rgba(255,255,255,.10); --bs: rgba(255,255,255,.20);
+    --acc: #3B82F6; --ring: #60A5FA; --wash: rgba(59,130,246,.14); --accfg: #fff;
+    --veil: rgba(0,0,0,.55);
+    color-scheme: dark;
+  }
+  .tv--light {
+    --bg: #F3F5F9; --sunken: #E9EDF3; --s1: #FFFFFF; --s2: #F7F9FC;
+    --glass: rgba(255,255,255,.60); --glass-hi: rgba(255,255,255,.70); --glass-edge: rgba(15,20,30,.14);
+    --overlay: rgba(255,255,255,.86);
+    --tp: #0D1017; --ts: #4A5163; --tt: #6B7280;
+    --bd: rgba(15,20,30,.12); --bs: rgba(15,20,30,.20);
+    --acc: #2563EB; --ring: #2563EB; --wash: rgba(37,99,235,.10); --accfg: #fff;
+    --veil: rgba(15,20,30,.28);
+    color-scheme: light;
+  }
+  .tv { background: var(--bg); color: var(--tp); font-family: var(--sans); line-height: 1.45; }
+  .tv * { box-sizing: border-box; }
+
+  .tvpad { position: absolute; inset: 0; padding: 2.6em 3.2em; display: flex; gap: 2.6em; }
+  .col { display: flex; flex-direction: column; min-width: 0; }
+  .grow { flex: 1; }
+
+  .brandrow { display: flex; align-items: center; gap: .75em; }
+  .mark { width: 2.1em; height: 2.1em; border-radius: .45em; background: var(--acc); color: var(--accfg);
+          display: grid; place-items: center; font-weight: 700; font-size: .95em; }
+  .brand { font-size: 1.15em; font-weight: 600; letter-spacing: -.01em; }
+  .h-disp { font-size: 1.7em; font-weight: 600; letter-spacing: -.015em; line-height: 1.12; margin-top: .75em; }
+  .h-sub { font-size: .92em; color: var(--ts); margin-top: .35em; max-width: 22em; }
+  .hint { font-size: .78em; color: var(--tt); margin-top: .7em; }
+
+  /* list rows */
+  .rows { display: flex; flex-direction: column; gap: .85em; }
+  .row {
+    display: flex; align-items: center; gap: .9em; padding: .95em 1.1em; border-radius: .7em;
+    background: var(--glass); border: 1px solid var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi);
+  }
+  .row .ico { width: 2.2em; height: 2.2em; border-radius: .4em; background: var(--wash); color: var(--acc);
+              display: grid; place-items: center; font-size: .8em; font-weight: 700; flex: none; }
+  .row .txt { min-width: 0; }
+  .row .t1 { font-size: .95em; font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .t2 { font-size: .76em; color: var(--tt); display: flex; gap: .5em; align-items: center; flex-wrap: wrap; }
+  .row.focused { border-color: var(--ring); box-shadow: 0 0 0 .16em var(--ring), 0 0 2.2em -.3em var(--ring), inset 0 1px 0 var(--glass-hi); }
+  .row.dim { opacity: .5; }
+  .tag { font-size: .88em; padding: .12em .5em; border-radius: 999px; background: var(--wash); color: var(--acc); font-weight: 600; letter-spacing: .02em; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+         padding: .7em 1.3em; border-radius: .55em; font-size: .88em; font-weight: 600;
+         background: var(--s2); color: var(--tp); border: 1px solid var(--bd); }
+  .btn.primary { background: var(--acc); color: var(--accfg); border-color: transparent; }
+  .btn.focused { box-shadow: 0 0 0 .16em var(--ring), 0 0 2em -.4em var(--ring); border-color: var(--ring); }
+  .btn.ghost { background: transparent; }
+  .btn.disabled { opacity: .42; }
+
+  .linkrow { display: inline-flex; align-items: center; gap: .55em; font-size: .88em; color: var(--acc); font-weight: 600; }
+  .linkrow .chev { opacity: .8; }
+
+  /* modal / overlay */
+  .scrim { position: absolute; inset: 0; background: var(--veil); backdrop-filter: blur(3px); }
+  .modal {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    width: 62%; border-radius: .85em; padding: 1.9em 2em;
+    background: var(--overlay); border: 1px solid var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 1.6em 3em -1em rgba(0,0,0,.5);
+    display: flex; flex-direction: column; gap: 1em;
+  }
+  .modal.tall { width: 72%; height: 78%; }
+  .modal .mtitle { font-size: 1.15em; font-weight: 600; }
+  .modal .msub { font-size: .82em; color: var(--ts); }
+  .field { display: flex; align-items: center; padding: .8em 1em; border-radius: .5em;
+           background: var(--s1); border: 1px solid var(--bd); font-size: .95em; }
+  .field.focused { border-color: var(--ring); box-shadow: 0 0 0 .14em var(--ring); }
+  .caret { display: inline-block; width: 1px; height: 1.15em; background: var(--acc); margin-left: 1px; }
+  .actions { display: flex; gap: .7em; justify-content: flex-end; margin-top: auto; }
+
+  /* context menu */
+  .menu { position: absolute; border-radius: .6em; padding: .45em; min-width: 11em;
+          background: var(--overlay); border: 1px solid var(--glass-edge);
+          box-shadow: inset 0 1px 0 var(--glass-hi), 0 1.2em 2.4em -.9em rgba(0,0,0,.55);
+          display: flex; flex-direction: column; gap: .2em; }
+  .menu .mi { display: flex; align-items: center; gap: .65em; padding: .6em .8em; border-radius: .42em; font-size: .87em; }
+  .menu .mi.focused { background: var(--wash); box-shadow: 0 0 0 .12em var(--ring) inset; color: var(--acc); font-weight: 600; }
+  .menu .mi.danger { color: #F87171; }
+  .tv--light .menu .mi.danger { color: #B91C1C; }
+
+  /* explore grid */
+  .egrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85em; }
+  .card { border-radius: .65em; padding: .9em 1em; background: var(--glass); border: 1px solid var(--glass-edge);
+          box-shadow: inset 0 1px 0 var(--glass-hi); display: flex; flex-direction: column; gap: .3em; min-width: 0; }
+  .card.focused { border-color: var(--ring); box-shadow: 0 0 0 .16em var(--ring), 0 0 2.2em -.4em var(--ring), inset 0 1px 0 var(--glass-hi); }
+  .card .flag { font-size: 1.3em; line-height: 1; }
+  .card .cn { font-size: .9em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .cm { font-size: .74em; color: var(--tt); font-variant-numeric: tabular-nums; }
+
+  /* legal box + scroll doc */
+  .legalbox { border-radius: .7em; padding: 1.3em 1.5em; background: var(--glass);
+              border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi); }
+  .legalbox.focused { border-color: var(--ring); box-shadow: 0 0 0 .16em var(--ring), 0 0 2.2em -.4em var(--ring), inset 0 1px 0 var(--glass-hi); }
+  .legalbox p { font-size: .86em; color: var(--ts); margin: 0; max-width: none; }
+  .switchrow { display: flex; align-items: center; gap: .9em; }
+  .sw { width: 2.6em; height: 1.45em; border-radius: 999px; background: var(--acc); position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: .17em; right: .17em; width: 1.1em; height: 1.1em; border-radius: 50%; background: #fff; }
+  .sw.off { background: var(--s2); border: 1px solid var(--bd); }
+  .sw.off::after { right: auto; left: .17em; background: var(--tt); }
+
+  .doc { overflow: hidden; display: flex; gap: 1.4em; flex: 1; min-height: 0; }
+  .docbody { flex: 1; display: flex; flex-direction: column; gap: .6em; min-width: 0; }
+  .docbody h4 { margin: 0; font-size: .95em; font-weight: 600; font-family: var(--sans); }
+  .docbody p { font-size: .8em; color: var(--ts); margin: 0; max-width: none; }
+  .scrollbar { width: .28em; border-radius: 999px; background: var(--bd); position: relative; flex: none; }
+  .scrollbar i { position: absolute; top: 0; left: 0; right: 0; height: 34%; border-radius: 999px; background: var(--acc); }
+  .kbar { display: flex; gap: 1.4em; font-size: .74em; color: var(--tt); }
+  .kbar b { color: var(--ts); font-weight: 600; }
+
+  .settingsrow { display: flex; align-items: center; justify-content: space-between; gap: 1em;
+                 padding: .95em 1.1em; border-radius: .6em; background: var(--glass);
+                 border: 1px solid var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi); }
+  .settingsrow .sv { font-size: .82em; color: var(--tt); }
+
+  /* prose lists */
+  ul.clean { margin: 0; padding-left: 1.15em; color: var(--ink-2); max-width: var(--measure); }
+  ul.clean li { margin: .3em 0; }
+  ul.clean li::marker { color: var(--ink-3); }
+  .notes { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+  .note { border-left: 2px solid var(--rule); padding-left: 16px; display: flex; flex-direction: column; gap: 5px; }
+  .note.warn { border-left-color: var(--amber); }
+  .note .nt { font-size: .93rem; color: var(--ink); font-weight: 600; }
+  .note p { font-size: .93rem; }
+
+  .phases { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .phase { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px;
+           display: flex; flex-direction: column; gap: 8px; }
+  .phase .ph { display: flex; align-items: center; gap: 10px; }
+  .phase ul { margin: 0; padding-left: 1.1em; font-size: .9rem; color: var(--ink-2); }
+  .phase li { margin: .25em 0; }
+  .stack-24 { display: flex; flex-direction: column; gap: 24px; }
+  .stack-16 { display: flex; flex-direction: column; gap: 16px; }
+  a { color: var(--accent); }
+  a:focus-visible, .tv:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="stack">
+    <div class="eyebrow">ARE iptv · v1 design · 26 Jul 2026</div>
+    <h1>Edit, Explore, and a legal page that would survive review</h1>
+    <p class="lead">Three changes to the front door of the app: let people rename a playlist they already added, let them find good free ones without typing a URL, and replace 60 words of placeholder legal text with a document that is actually true.</p>
+    <div class="metarow">
+      <div><span class="k">Module</span><span class="v">:tv</span></div>
+      <div><span class="k">Schema</span><span class="v">v11 → v12</span></div>
+      <div><span class="k">New screens</span><span class="v">1 (Explore)</span></div>
+      <div><span class="k">Hosting</span><span class="v">None — bundled</span></div>
+      <div><span class="k">Status</span><span class="v">Design agreed, not built</span></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">Locked decisions</span></div>
+    <p>Settled in review. Treat these as fixed; reopen only with a reason that did not exist at the time.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Decision</th><th>Choice</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Edit entry point</td><td>Long-press on a playlist in the picker</td><td>Replaces today's hold-OK-to-delete with a proper two-choice menu. No new Settings surface.</td></tr>
+        <tr><td>Edit scope</td><td>Name only</td><td>A rename touches nothing else. Changing a URL means re-auth and re-importing the catalog — a separate feature.</td></tr>
+        <tr><td>Explore catalog</td><td>Curated picks, bundled in the APK</td><td>~20 hand-vetted entries in <code>assets/</code>. Each points at an iptv-org–maintained M3U, so the channels stay fresh even though our list is static.</td></tr>
+        <tr><td>Explore action</td><td>Name it, then add as a normal M3U source</td><td>Reuses the entire existing import and playback pipeline. Zero new browse or player code.</td></tr>
+        <tr><td>Provenance</td><td><code>origin</code> column, migration 11→12</td><td>Marks the source as From Explore and records which entry it came from. One <code>ADD COLUMN</code>.</td></tr>
+        <tr><td>Playlist cap</td><td>10 total</td><td>Applies to every playlist, not just Explore ones. Keeps the picker navigable by remote and the DB sane.</td></tr>
+        <tr><td>Legal delivery</td><td>Same small box, now selectable → modal</td><td>Onboarding layout is unchanged. The box becomes a focusable control that opens the full scrollable document.</td></tr>
+        <tr><td>Legal language</td><td>English binding, UI chrome translated</td><td>Machine-translated terms create conflicting obligations you are bound by. Titles, buttons and the summary get all 21 locales.</td></tr>
+        <tr><td>Re-consent</td><td>Versioned, re-prompt once</td><td><code>acceptedTermsVersion</code> replaces the boolean. Nobody has consented to the real terms yet.</td></tr>
+        <tr><td>Telemetry</td><td>Crash-report toggle, default on</td><td>Sentry currently has no opt-out at all. This is the gap most likely to be flagged.</td></tr>
+        <tr><td>Copyright stance</td><td>Player, not provider + takedown process</td><td>The app ships no content. Explore links only to publicly listed free streams, with a named removal path.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 1. EDIT ============ -->
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">01</span><h2>Rename a playlist</h2><span class="pill new">New</span></div>
+    <p>Today the picker only offers destructive action: hold OK and the playlist is gone. The same gesture now opens a menu, so <strong>hold-to-delete becomes hold-to-choose</strong> — which also makes deletion harder to trigger by accident.</p>
+  </div>
+
+  <div class="screens">
+    <figure>
+      <div class="tv tv--dark">
+        <div class="tvpad">
+          <div class="col grow">
+            <div class="brandrow"><div class="mark">A</div><div class="brand">ARE iptv</div></div>
+            <div class="h-disp">Choose a playlist</div>
+            <div class="h-sub">Pick which of your playlists to open.</div>
+            <div class="hint">Hold OK on a playlist for more options</div>
+          </div>
+          <div class="col grow" style="justify-content:center">
+            <div class="rows">
+              <div class="row"><div class="ico">X</div><div class="txt"><div class="t1">Main provider</div><div class="t2">Xtream · 8,412 channels</div></div></div>
+              <div class="row focused"><div class="ico">M</div><div class="txt"><div class="t1">Sports backup</div><div class="t2">M3U · 240 channels</div></div></div>
+              <div class="row"><div class="ico">M</div><div class="txt"><div class="t1">Netherlands Free</div><div class="t2">M3U · 118 channels <span class="tag">From Explore</span></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="menu" style="right:9%; top:44%">
+          <div class="mi focused">✎&nbsp; Rename</div>
+          <div class="mi danger">🗑&nbsp; Delete</div>
+        </div>
+      </div>
+      <figcaption><b>Hold OK → menu.</b> Anchored to the row, focus lands on the safe action. Back dismisses.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="tv tv--light">
+        <div class="tvpad">
+          <div class="col grow">
+            <div class="brandrow"><div class="mark">A</div><div class="brand">ARE iptv</div></div>
+            <div class="h-disp">Choose a playlist</div>
+            <div class="h-sub">Pick which of your playlists to open.</div>
+            <div class="hint">Hold OK on a playlist for more options</div>
+          </div>
+          <div class="col grow" style="justify-content:center">
+            <div class="rows">
+              <div class="row"><div class="ico">X</div><div class="txt"><div class="t1">Main provider</div><div class="t2">Xtream · 8,412 channels</div></div></div>
+              <div class="row"><div class="ico">M</div><div class="txt"><div class="t1">Sports backup</div><div class="t2">M3U · 240 channels</div></div></div>
+              <div class="row"><div class="ico">M</div><div class="txt"><div class="t1">Netherlands Free</div><div class="t2">M3U · 118 channels <span class="tag">From Explore</span></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="modal">
+          <div>
+            <div class="mtitle">Rename playlist</div>
+            <div class="msub">This only changes how it appears in your list.</div>
+          </div>
+          <div class="field focused">Sports backup<span class="caret"></span></div>
+          <div class="actions"><div class="btn ghost">Cancel</div><div class="btn primary focused">Save</div></div>
+        </div>
+      </div>
+      <figcaption><b>Rename modal, light theme.</b> A real <code>Dialog</code> window so D-pad focus cannot leak to the list behind it. Save is disabled while the name is blank.</figcaption>
+    </figure>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <div class="nt">Nothing else moves</div>
+      <p>Channels, favourites and continue-watching are keyed by <code>sourceId</code>, not by name. A rename is a single-column update with no re-import and no cache invalidation.</p>
+    </div>
+    <div class="note">
+      <div class="nt">Delete keeps its confirmation</div>
+      <p>Choosing Delete from the menu still shows the existing confirm step. The menu adds a choice, it does not remove a safeguard.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. EXPLORE ============ -->
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">02</span><h2>Explore free IPTV</h2><span class="pill new">New screen</span></div>
+    <p>Adding a playlist today means having a URL already. Most people do not. Explore offers around twenty vetted, publicly listed free playlists — pick one, name it, and it imports exactly like a playlist you pasted yourself.</p>
+  </div>
+
+  <div class="screens">
+    <figure>
+      <div class="tv tv--dark">
+        <div class="tvpad" style="flex-direction:column; gap:1.6em">
+          <div>
+            <div class="h-disp" style="margin-top:0">Add a playlist</div>
+            <div class="h-sub">Choose how you want to connect.</div>
+          </div>
+          <div class="rows" style="max-width:26em">
+            <div class="row focused"><div class="ico">X</div><div class="txt"><div class="t1">Xtream Codes</div><div class="t2">Portal URL, username and password</div></div></div>
+            <div class="row"><div class="ico">M</div><div class="txt"><div class="t1">M3U playlist</div><div class="t2">A playlist URL or a file on this device</div></div></div>
+            <div class="row"><div class="ico">S</div><div class="txt"><div class="t1">Stalker portal</div><div class="t2">Portal URL and MAC address</div></div></div>
+          </div>
+          <div style="margin-top:auto; display:flex; align-items:center; gap:1.2em">
+            <div class="linkrow">🧭&nbsp; Explore free IPTV playlists <span class="chev">›</span></div>
+            <div style="font-size:.78em; color:var(--tt)">No account needed</div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>The entry point.</b> A quiet link below the three source types — discoverable, but it never competes with the user's own provider.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="tv tv--light">
+        <div class="tvpad" style="flex-direction:column; gap:1.3em">
+          <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:1em">
+            <div>
+              <div class="h-disp" style="margin-top:0">Explore free IPTV</div>
+              <div class="h-sub" style="max-width:30em">Publicly listed, free-to-air playlists maintained by the community. ARE iptv does not host or control these streams.</div>
+            </div>
+            <div style="font-size:.78em; color:var(--tt); white-space:nowrap">3 of 10 playlists used</div>
+          </div>
+          <div class="egrid">
+            <div class="card focused"><div class="flag">🇳🇱</div><div class="cn">Netherlands</div><div class="cm">118 channels</div></div>
+            <div class="card"><div class="flag">🇬🇧</div><div class="cn">United Kingdom</div><div class="cm">96 channels</div></div>
+            <div class="card"><div class="flag">🇩🇪</div><div class="cn">Germany</div><div class="cm">204 channels</div></div>
+            <div class="card"><div class="flag">📰</div><div class="cn">World News</div><div class="cm">73 channels</div></div>
+            <div class="card"><div class="flag">🎬</div><div class="cn">Movies</div><div class="cm">61 channels</div></div>
+            <div class="card"><div class="flag">🎵</div><div class="cn">Music</div><div class="cm">45 channels</div></div>
+          </div>
+          <div class="kbar" style="margin-top:auto"><span><b>OK</b> Add playlist</span><span><b>Back</b> Return</span><span>Channel counts are approximate</span></div>
+        </div>
+      </div>
+      <figcaption><b>Curated grid, light theme.</b> Countries first, then themed bundles. White cards need the <code>borderDefault</code> edge to separate from the off-white page.</figcaption>
+    </figure>
+  </div>
+
+  <div class="screens" style="margin-top:28px">
+    <figure>
+      <div class="tv tv--dark">
+        <div class="tvpad" style="flex-direction:column; gap:1.3em">
+          <div><div class="h-disp" style="margin-top:0">Explore free IPTV</div></div>
+          <div class="egrid">
+            <div class="card"><div class="flag">🇳🇱</div><div class="cn">Netherlands</div><div class="cm">118 channels</div></div>
+            <div class="card"><div class="flag">🇬🇧</div><div class="cn">United Kingdom</div><div class="cm">96 channels</div></div>
+            <div class="card"><div class="flag">🇩🇪</div><div class="cn">Germany</div><div class="cm">204 channels</div></div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="modal">
+          <div>
+            <div class="mtitle">Add “Netherlands”</div>
+            <div class="msub">Name it however you like — you can rename it later.</div>
+          </div>
+          <div class="field focused">Netherlands Free<span class="caret"></span></div>
+          <div style="font-size:.78em; color:var(--tt)">118 channels · updated by iptv-org</div>
+          <div class="actions"><div class="btn ghost">Cancel</div><div class="btn primary">Add playlist</div></div>
+        </div>
+      </div>
+      <figcaption><b>Name before adding.</b> Pre-filled with the entry name so OK-OK is the fast path, but the name is the user's from the start.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="tv tv--light">
+        <div class="tvpad" style="flex-direction:column; gap:1.3em">
+          <div><div class="h-disp" style="margin-top:0">Explore free IPTV</div></div>
+          <div class="egrid">
+            <div class="card dim"><div class="flag">🇳🇱</div><div class="cn">Netherlands</div><div class="cm">118 channels</div></div>
+            <div class="card dim"><div class="flag">🇬🇧</div><div class="cn">United Kingdom</div><div class="cm">96 channels</div></div>
+            <div class="card dim"><div class="flag">🇩🇪</div><div class="cn">Germany</div><div class="cm">204 channels</div></div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="modal">
+          <div>
+            <div class="mtitle">You have 10 playlists</div>
+            <div class="msub">That is the maximum. Remove one from the playlist list to add another.</div>
+          </div>
+          <div class="actions"><div class="btn primary focused">Got it</div></div>
+        </div>
+      </div>
+      <figcaption><b>At the cap.</b> The error names the limit and the exact way out. No dead-end.</figcaption>
+    </figure>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <div class="nt">How it stays fresh with no backend</div>
+      <p>Our list is only names and URLs — it changes rarely. The <em>channels</em> behind each URL are maintained continuously by iptv-org, so a bundled manifest still serves live content. The loader reads <code>assets/explore.json</code> through a single source constant, so pointing it at a hosted URL later is a one-line change.</p>
+    </div>
+    <div class="note warn">
+      <div class="nt">The honest cost of bundling</div>
+      <p>If an entry's URL dies, it stays broken until the next app release. Mitigation: the import already reports failure, and the failure message should name Explore so the user knows the playlist — not their TV — is the problem.</p>
+    </div>
+    <div class="note">
+      <div class="nt">Vetting bar for an entry</div>
+      <p>Free-to-air or public-domain only, publicly listed by a known community index, no paywalled or scrambled content, and it must resolve at the time of curation. Anything ambiguous does not go in the list.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. LEGAL ============ -->
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">03</span><h2>Privacy &amp; Terms</h2><span class="pill risk">Accuracy gap</span></div>
+    <p>The current text says the app <em>“does not collect or transmit”</em>. The app ships Sentry crash reporting with no opt-out, Firebase analytics on by default, and calls OpenSubtitles, OMDb and Google Forms. <strong>The problem is not that the policy is short — it is that it is not true.</strong> Fixing the text without fixing the opt-out only makes the inaccuracy formal.</p>
+  </div>
+
+  <div class="screens">
+    <figure>
+      <div class="tv tv--dark">
+        <div class="tvpad" style="flex-direction:column; gap:1.1em">
+          <div>
+            <div class="h-disp" style="margin-top:0">Privacy &amp; Terms</div>
+            <div class="h-sub">Please review and accept before continuing.</div>
+          </div>
+          <div class="legalbox focused">
+            <p><b style="color:var(--tp)">In short:</b> your playlists and credentials stay on this device. We collect anonymous crash and usage diagnostics, which you can switch off. ARE iptv provides no channels or content — you bring your own sources.</p>
+            <div style="margin-top:.9em" class="linkrow">Read the full Privacy Policy and Terms <span class="chev">›</span></div>
+          </div>
+          <div class="switchrow"><div class="sw off"></div><div style="font-size:.86em">I have read and accept the Privacy Policy and Terms of Service.</div></div>
+          <div class="switchrow"><div class="sw"></div><div style="font-size:.86em">Send anonymous crash reports and usage data <span style="color:var(--tt)">· optional</span></div></div>
+          <div style="margin-top:auto; display:flex; justify-content:flex-end"><div class="btn primary disabled">Continue</div></div>
+        </div>
+      </div>
+      <figcaption><b>Same box, now a control.</b> Layout and size unchanged — it gains a focus ring and opens the full document. The telemetry switch is the fix for the accuracy gap.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="tv tv--light">
+        <div class="tvpad" style="flex-direction:column; gap:1.1em">
+          <div>
+            <div class="h-disp" style="margin-top:0">Privacy &amp; Terms</div>
+            <div class="h-sub">Please review and accept before continuing.</div>
+          </div>
+          <div class="legalbox">
+            <p><b style="color:var(--tp)">In short:</b> your playlists and credentials stay on this device. We collect anonymous crash and usage diagnostics, which you can switch off.</p>
+          </div>
+          <div class="switchrow"><div class="sw"></div><div style="font-size:.86em">I have read and accept the Privacy Policy and Terms of Service.</div></div>
+        </div>
+        <div class="scrim"></div>
+        <div class="modal tall">
+          <div>
+            <div class="mtitle">Privacy Policy &amp; Terms of Service</div>
+            <div class="msub">Version 2 · 26 July 2026 · English version governs</div>
+          </div>
+          <div class="doc">
+            <div class="docbody">
+              <h4>1. Who we are</h4>
+              <p>ARE iptv is published by an individual developer established in the Netherlands, acting as data controller under the GDPR.</p>
+              <h4>2. What stays on your device</h4>
+              <p>Playlist URLs, usernames, passwords and MAC addresses are stored only in this app's private storage. They are never sent to us.</p>
+              <h4>3. What we do collect</h4>
+              <p>Crash diagnostics via Sentry and anonymous usage events via Firebase Analytics, both switchable off in Settings. Neither includes your playlist credentials.</p>
+              <h4>4. Who else receives data</h4>
+              <p>When you use them: your playlist provider, OpenSubtitles, OMDb…</p>
+            </div>
+            <div class="scrollbar"><i></i></div>
+          </div>
+          <div class="kbar"><span><b>Up / Down</b> Scroll</span><span><b>Back</b> Close</span></div>
+        </div>
+      </div>
+      <figcaption><b>The full document as a scrollable modal.</b> Numbered clauses because a legal document genuinely is a numbered sequence that gets cited by number.</figcaption>
+    </figure>
+  </div>
+
+  <div class="screens single" style="margin-top:28px">
+    <figure>
+      <div class="tv tv--dark">
+        <div class="tvpad" style="flex-direction:column; gap:1.1em">
+          <div><div class="h-disp" style="margin-top:0">About</div></div>
+          <div class="stack-16" style="display:flex; flex-direction:column; gap:.8em; max-width:34em">
+            <div class="settingsrow"><div><div style="font-size:.95em">Version</div><div class="sv">1.6.0 · What's new</div></div><div style="color:var(--tt)">›</div></div>
+            <div class="settingsrow"><div><div style="font-size:.95em">Send crash reports and usage data</div><div class="sv">Helps fix crashes. Never includes your credentials.</div></div><div class="sw"></div></div>
+            <div class="settingsrow focused" style="border-color:var(--ring); box-shadow:0 0 0 .16em var(--ring), 0 0 2.2em -.4em var(--ring)"><div><div style="font-size:.95em">Privacy Policy &amp; Terms</div><div class="sv">Version 2 · accepted 26 Jul 2026</div></div><div style="color:var(--acc)">›</div></div>
+            <div class="settingsrow"><div><div style="font-size:.95em">Report a content issue</div><div class="sv">Takedown and removal requests</div></div><div style="color:var(--tt)">›</div></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>Settings → About.</b> Re-reading the document is one row, following the existing Version → changelog modal pattern. The takedown row is what makes the removal process real rather than a sentence in a document.</figcaption>
+    </figure>
+  </div>
+
+  <div class="notes">
+    <div class="note warn">
+      <div class="nt">Ship the toggle in the same release as the text</div>
+      <p>A policy that promises an opt-out which does not exist is worse than the current placeholder. <code>SentryAndroid.init</code> must read the persisted preference before the text goes live.</p>
+    </div>
+    <div class="note">
+      <div class="nt">Versioned acceptance</div>
+      <p><code>hasAcceptedTerms: Boolean</code> becomes <code>acceptedTermsVersion: Int</code>. Existing users are re-prompted once with a “We have updated our terms” note. Every future update reuses the mechanism.</p>
+    </div>
+    <div class="note">
+      <div class="nt">Translation policy in practice</div>
+      <p>Section titles, the short summary, buttons and the Settings rows go into all 21 locales. The clause bodies stay English with an “English version governs” line. A Turkish user never sees a broken screen, and you are never bound by a translation you cannot read.</p>
+    </div>
+    <div class="note warn">
+      <div class="nt">Still blocking Play submission</div>
+      <p>Play requires a publicly reachable privacy policy URL. Bundling satisfies users but not the Console. The document is being written in Markdown precisely so it can be published later without a rewrite.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">Build order</span></div>
+    <p>Sequenced so each phase is independently shippable and the riskiest item is not last.</p>
+  </div>
+  <div class="phases">
+    <div class="phase">
+      <div class="ph"><span class="pill ok">Phase 1</span><h3>Rename</h3></div>
+      <ul>
+        <li>Long-press menu in the picker</li>
+        <li>Rename dialog + ViewModel update</li>
+        <li>3 new strings × 22 locales</li>
+      </ul>
+      <p style="font-size:.87rem">Self-contained, no schema change. Ships alone.</p>
+    </div>
+    <div class="phase">
+      <div class="ph"><span class="pill risk">Phase 2</span><h3>Telemetry &amp; legal</h3></div>
+      <ul>
+        <li>Crash-report toggle wired into Sentry init</li>
+        <li>Versioned acceptance + re-prompt</li>
+        <li>Full policy text, scroll modal, About rows</li>
+      </ul>
+      <p style="font-size:.87rem">Highest exposure, so it goes before Explore — which adds exposure.</p>
+    </div>
+    <div class="phase">
+      <div class="ph"><span class="pill new">Phase 3</span><h3>Explore</h3></div>
+      <ul>
+        <li>Migration 11→12, <code>origin</code> column</li>
+        <li>Bundled manifest + loader</li>
+        <li>Explore screen, name dialog, 10-playlist cap</li>
+      </ul>
+      <p style="font-size:.87rem">Lands after the takedown process exists to back it.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">Open</span><h2>What still needs an answer</h2></div>
+  </div>
+  <ul class="clean">
+    <li><strong>Legal identity.</strong> The document needs a real name, country and contact address before it can ship. Currently placeholdered.</li>
+    <li><strong>Takedown contact.</strong> The Report a content issue row needs a destination — reusing the existing Google Form is the cheap option, but it appears in the policy as the official channel.</li>
+    <li><strong>The curated twenty.</strong> The entry list itself has not been chosen or vetted.</li>
+    <li><strong>Public hosting.</strong> Deferred, not solved. It returns the moment Play submission does.</li>
+  </ul>
+</section>
+
+</div>

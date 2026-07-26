@@ -10,6 +10,8 @@
     <string name="action_close">إغلاق</string>
     <string name="action_remove">إزالة</string>
     <string name="action_clear">مسح</string>
+    <string name="action_rename">إعادة تسمية</string>
+    <string name="action_save">حفظ</string>
     <string name="action_connect">اتصال</string>
     <string name="action_disconnect">قطع الاتصال</string>
     <string name="action_sign_in">تسجيل الدخول</string>
@@ -89,7 +91,11 @@
     <string name="sources_add_new_playlist">إضافة قائمة تشغيل جديدة</string>
     <string name="sources_delete_title">حذف قائمة التشغيل؟</string>
     <string name="sources_delete_body">يؤدي هذا إلى حذف «%1$s» وكل ما فيها — القنوات والأفلام والمسلسلات والمفضّلة وسجل المشاهدة — نهائيًا من هذا الجهاز. لا يمكن التراجع عن ذلك.</string>
-    <string name="sources_delete_hint">اضغط مطوّلًا على زر OK فوق قائمة تشغيل لحذفها.</string>
+    <string name="sources_delete_hint">اضغط مطوّلًا على زر OK فوق قائمة تشغيل لمزيد من الخيارات.</string>
+    <string name="sources_options_body">اختر ما تريد فعله بقائمة التشغيل هذه.</string>
+    <string name="sources_rename_title">إعادة تسمية قائمة التشغيل</string>
+    <string name="sources_rename_body">هذا يغيّر طريقة ظهور قائمة التشغيل في قائمتك فقط. تبقى قنواتها ومفضّلاتها وسجل المشاهدة كما هي تمامًا.</string>
+    <string name="sources_rename_label">اسم قائمة التشغيل</string>
     <string name="action_delete">حذف</string>
 
     <!-- Language selector / first run -->

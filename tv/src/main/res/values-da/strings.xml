@@ -10,6 +10,8 @@
     <string name="action_close">Luk</string>
     <string name="action_remove">Fjern</string>
     <string name="action_clear">Ryd</string>
+    <string name="action_rename">Omdøb</string>
+    <string name="action_save">Gem</string>
     <string name="action_connect">Opret forbindelse</string>
     <string name="action_disconnect">Afbryd forbindelse</string>
     <string name="action_sign_in">Log ind</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Ubegrænset</string>
     <string name="sources_delete_title">Slet afspilningsliste?</string>
     <string name="sources_delete_body">Dette sletter permanent “%1$s” og alt i den — kanaler, film, serier, favoritter og afspilningshistorik — fra denne enhed. Dette kan ikke fortrydes.</string>
-    <string name="sources_delete_hint">Hold OK nede på en afspilningsliste for at slette den.</string>
+    <string name="sources_delete_hint">Hold OK nede på en afspilningsliste for flere valgmuligheder.</string>
+    <string name="sources_options_body">Vælg, hvad du vil gøre med denne afspilningsliste.</string>
+    <string name="sources_rename_title">Omdøb afspilningsliste</string>
+    <string name="sources_rename_body">Dette ændrer kun, hvordan afspilningslisten vises på din liste. Dens kanaler, favoritter og seerhistorik forbliver præcis som de er.</string>
+    <string name="sources_rename_label">Navn på afspilningsliste</string>
     <string name="nav_streams">Streams</string>
     <string name="streams_open">Åbn netværksstream</string>
     <string name="streams_empty">Ingen streams endnu. Åbn en netværksstream for at komme i gang.</string>

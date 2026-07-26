@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -37,6 +38,7 @@ import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /**
@@ -61,7 +63,10 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     val xtreamLabel = stringResource(R.string.sources_type_xtream)
     val m3uLabel = stringResource(R.string.sources_type_m3u)
     val stalkerLabel = stringResource(R.string.sources_type_stalker)
-    // Non-null while the hold-OK delete confirmation is open for that playlist.
+    // At most one of these is non-null at a time -- they are the three steps of the hold-OK flow:
+    // options menu -> rename dialog OR delete confirmation.
+    var pendingOptions by remember { mutableStateOf<PlaylistSource?>(null) }
+    var pendingRename by remember { mutableStateOf<PlaylistSource?>(null) }
     var pendingDelete by remember { mutableStateOf<PlaylistSource?>(null) }
 
     // Two-pane landscape layout: a fixed header on the left, the playlist list scrolling on the
@@ -128,7 +133,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                     variant = AreButtonVariant.Secondary,
                     size = AreButtonSize.Large,
                     full = true,
-                    onLongClick = { pendingDelete = source },
+                    onLongClick = { pendingOptions = source },
                     modifier = if (index == 0) Modifier.focusRequester(firstItemFocus) else Modifier,
                 )
             }
@@ -150,9 +155,86 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
         runCatching { firstItemFocus.requestFocus() }
     }
 
-    // Hold-OK delete confirmation. AreDialog is only the visual scrim+card, so it's wrapped in a real
-    // Dialog to pop above the screen (same pattern as HomeAddSectionDialog). Cancel is listed first so
-    // the platform's default focus lands on it, not the destructive Delete.
+    // Hold-OK options menu. Hold used to delete outright; it now offers the choice, which also means
+    // a stray long-press can no longer start a destructive flow. Rename is listed first so the
+    // platform's default focus lands on the safe action.
+    pendingOptions?.let { target ->
+        Dialog(
+            onDismissRequest = { pendingOptions = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            AreDialog(
+                onDismiss = { pendingOptions = null },
+                title = target.name,
+                actions = {
+                    AreButton(
+                        stringResource(R.string.action_rename),
+                        onClick = { pendingRename = target; pendingOptions = null },
+                        variant = AreButtonVariant.Secondary,
+                    )
+                    AreButton(
+                        stringResource(R.string.action_delete),
+                        onClick = { pendingDelete = target; pendingOptions = null },
+                        variant = AreButtonVariant.Danger,
+                    )
+                },
+            ) {
+                Text(
+                    text = stringResource(R.string.sources_options_body),
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+            }
+        }
+    }
+
+    // Rename. Name-only by design: the URL and credentials define the catalog, so changing them
+    // would mean re-auth + a full re-import -- a separate flow, not an edit of this row.
+    pendingRename?.let { target ->
+        var draft by remember(target.id) { mutableStateOf(target.name) }
+        val saveFocus = remember { FocusRequester() }
+        Dialog(
+            onDismissRequest = { pendingRename = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            AreDialog(
+                onDismiss = { pendingRename = null },
+                title = stringResource(R.string.sources_rename_title),
+                actions = {
+                    AreButton(stringResource(R.string.action_cancel), onClick = { pendingRename = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(
+                        stringResource(R.string.action_save),
+                        onClick = { viewModel.rename(target.id, draft); pendingRename = null },
+                        disabled = draft.isBlank(),
+                        modifier = Modifier.focusRequester(saveFocus),
+                    )
+                },
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text(
+                        text = stringResource(R.string.sources_rename_body),
+                        style = AreIptvTheme.typography.body,
+                        color = colors.textSecondary,
+                    )
+                    // activateOnClick keeps the IME from auto-popping (OK enters edit, Done/Back
+                    // leaves). The explicit `down` target pins the one path that must never break:
+                    // typing a name and being unable to reach Save would strand the user mid-edit.
+                    AreTextField(
+                        value = draft,
+                        onValueChange = { draft = it },
+                        label = stringResource(R.string.sources_rename_label),
+                        activateOnClick = true,
+                        modifier = Modifier.focusProperties { down = saveFocus },
+                    )
+                }
+            }
+        }
+    }
+
+    // Delete confirmation, now reached from the options menu rather than straight from the hold.
+    // AreDialog is only the visual scrim+card, so it's wrapped in a real Dialog to pop above the
+    // screen (same pattern as HomeAddSectionDialog). Cancel is listed first so the platform's
+    // default focus lands on it, not the destructive Delete.
     pendingDelete?.let { target ->
         Dialog(
             onDismissRequest = { pendingDelete = null },

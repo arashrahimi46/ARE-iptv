@@ -10,6 +10,8 @@
     <string name="action_close">Close</string>
     <string name="action_remove">Remove</string>
     <string name="action_clear">Clear</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_save">Save</string>
     <string name="action_connect">Connect</string>
     <string name="action_disconnect">Disconnect</string>
     <string name="action_sign_in">Sign in</string>
@@ -97,7 +99,11 @@
     <string name="sources_add_new_playlist">Add new playlist</string>
     <string name="sources_delete_title">Delete playlist?</string>
     <string name="sources_delete_body">This permanently deletes “%1$s” and everything in it — channels, movies, series, favorites and watch history — from this device. This can\'t be undone.</string>
-    <string name="sources_delete_hint">Hold OK on a playlist to delete it.</string>
+    <string name="sources_delete_hint">Hold OK on a playlist for more options.</string>
+    <string name="sources_options_body">Choose what to do with this playlist.</string>
+    <string name="sources_rename_title">Rename playlist</string>
+    <string name="sources_rename_body">This only changes how the playlist appears in your list. Its channels, favorites and watch history stay exactly as they are.</string>
+    <string name="sources_rename_label">Playlist name</string>
     <string name="action_delete">Delete</string>
 
     <!-- Language selector / first run -->

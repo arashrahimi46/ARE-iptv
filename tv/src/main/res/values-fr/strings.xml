@@ -10,6 +10,8 @@
     <string name="action_close">Fermer</string>
     <string name="action_remove">Supprimer</string>
     <string name="action_clear">Effacer</string>
+    <string name="action_rename">Renommer</string>
+    <string name="action_save">Enregistrer</string>
     <string name="action_connect">Connecter</string>
     <string name="action_disconnect">Déconnecter</string>
     <string name="action_sign_in">Se connecter</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Illimité</string>
     <string name="sources_delete_title">Supprimer la playlist ?</string>
     <string name="sources_delete_body">Cela supprime définitivement « %1$s » et tout son contenu — chaînes, films, séries, favoris et historique de lecture — de cet appareil. Cette action est irréversible.</string>
-    <string name="sources_delete_hint">Maintenez OK sur une playlist pour la supprimer.</string>
+    <string name="sources_delete_hint">Maintenez OK sur une playlist pour plus d\'options.</string>
+    <string name="sources_options_body">Choisissez ce que vous voulez faire avec cette playlist.</string>
+    <string name="sources_rename_title">Renommer la playlist</string>
+    <string name="sources_rename_body">Cela change uniquement la façon dont la playlist apparaît dans votre liste. Ses chaînes, favoris et historique de lecture restent inchangés.</string>
+    <string name="sources_rename_label">Nom de la playlist</string>
     <string name="nav_streams">Flux</string>
     <string name="streams_open">Ouvrir un flux réseau</string>
     <string name="streams_empty">Aucun flux pour l’instant. Ouvrez un flux réseau pour commencer.</string>

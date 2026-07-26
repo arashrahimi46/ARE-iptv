@@ -10,6 +10,8 @@
     <string name="action_close">Fechar</string>
     <string name="action_remove">Remover</string>
     <string name="action_clear">Limpar</string>
+    <string name="action_rename">Mudar o nome</string>
+    <string name="action_save">Guardar</string>
     <string name="action_connect">Ligar</string>
     <string name="action_disconnect">Desligar</string>
     <string name="action_sign_in">Iniciar sessão</string>
@@ -542,7 +544,11 @@
     <string name="settings_provider_unlimited">Ilimitado</string>
     <string name="sources_delete_title">Eliminar a lista?</string>
     <string name="sources_delete_body">Isto elimina permanentemente “%1$s” e tudo o que contém — canais, filmes, séries, favoritos e histórico de reprodução — deste dispositivo. Esta ação não pode ser anulada.</string>
-    <string name="sources_delete_hint">Mantenha OK numa lista para a eliminar.</string>
+    <string name="sources_delete_hint">Mantenha OK numa lista para mais opções.</string>
+    <string name="sources_options_body">Escolha o que pretende fazer com esta lista.</string>
+    <string name="sources_rename_title">Mudar o nome da lista</string>
+    <string name="sources_rename_body">Isto altera apenas a forma como a lista aparece no seu conjunto de listas. Os canais, favoritos e o histórico de reprodução mantêm-se exatamente como estão.</string>
+    <string name="sources_rename_label">Nome da lista</string>
     <string name="nav_streams">Transmissões</string>
     <string name="streams_open">Abrir transmissão de rede</string>
     <string name="streams_empty">Ainda não há transmissões. Abra uma transmissão de rede para começar.</string>
