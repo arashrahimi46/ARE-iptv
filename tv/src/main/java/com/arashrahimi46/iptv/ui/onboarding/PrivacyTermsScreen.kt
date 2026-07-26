@@ -1,5 +1,14 @@
 package com.arashrahimi46.iptv.ui.onboarding
 
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +23,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -33,6 +45,9 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassSurface
+
+/** One D-pad press of travel through the document, in px. Roughly two thirds of the visible body. */
+private const val PAGE_SCROLL_PX = 380f
 
 /**
  * Every numbered clause of the shipped Privacy Policy / Terms, in order. Kept as one list so the
@@ -76,10 +91,39 @@ fun LegalDocumentDialog(onDismiss: () -> Unit) {
             width = 900.dp,
             actions = { AreButton(stringResource(R.string.action_close), onClick = onDismiss) },
         ) {
+            val bodyFocus = remember { FocusRequester() }
+            val scroll = rememberScrollState()
+            val scope = rememberCoroutineScope()
+            // Focus the body on open so Up/Down read the document immediately, rather than starting
+            // on Close -- the whole point of opening this is to read it.
+            LaunchedEffect(Unit) { runCatching { bodyFocus.requestFocus() } }
             Column(
-                // Bounded so the actions row stays on screen: the document is far taller than a
-                // 1080p panel, so the body scrolls inside the card rather than the card growing.
-                modifier = Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
+                modifier = Modifier
+                    // A 1080p TV panel is only ~540dp tall, so the body has to stay well under that
+                    // for the title and Close button to survive alongside it.
+                    .heightIn(max = 300.dp)
+                    .focusRequester(bodyFocus)
+                    // A scrolling container with no focusable CHILDREN never scrolls on a remote:
+                    // Compose only scrolls to reveal focus, and plain Text isn't focusable. So the
+                    // container takes focus itself and drives the scroll from the D-pad directly --
+                    // without this the reader is stranded on clause 3 of 15.
+                    .focusable()
+                    .onKeyEvent { ev ->
+                        if (ev.type != KeyEventType.KeyDown) return@onKeyEvent false
+                        val delta = when (ev.key) {
+                            Key.DirectionDown -> PAGE_SCROLL_PX
+                            Key.DirectionUp -> -PAGE_SCROLL_PX
+                            else -> return@onKeyEvent false
+                        }
+                        // Let focus escape once the edge is reached, so Down at the bottom still
+                        // gets you to Close instead of trapping you in the document.
+                        val atEdge = (delta > 0 && scroll.value >= scroll.maxValue) ||
+                            (delta < 0 && scroll.value <= 0)
+                        if (atEdge) return@onKeyEvent false
+                        scope.launch { scroll.animateScrollBy(delta) }
+                        true
+                    }
+                    .verticalScroll(scroll),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Text(
