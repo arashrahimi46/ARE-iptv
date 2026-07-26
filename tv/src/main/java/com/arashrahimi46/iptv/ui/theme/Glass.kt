@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
@@ -24,7 +25,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.vibrancy
 
 /** Sentinel "this surface should lift" value; the actual look comes from [softShadow], not from a
@@ -36,6 +36,13 @@ val GlassElevation: Dp = 6.dp
  * nudged down a few dp. Deliberately NOT [androidx.compose.ui.draw.shadow]: the platform elevation
  * shadow reads too hard/dark for glass ("still strong shadows"). This is a whisper of depth that
  * mostly shows in light mode; in dark the lit edge carries the separation. Draw BEFORE the fill.
+ *
+ * PERF: built with [drawWithCache], so the shadow [Path] and the [BlurMaskFilter] paint are created
+ * ONCE per size/shape and reused every frame. The old `drawBehind` version allocated a Path, a
+ * NativePaint and a BlurMaskFilter on EVERY draw pass of EVERY glass surface -- a dense Settings pane
+ * carries ~7 of them, so any repaint (the sidebar expanding over the page, a focus move) churned the
+ * GC and re-uploaded a fresh blur mask instead of hitting HWUI's paint cache. This was the single
+ * largest per-frame CPU cost in the glass language, and the one weak TV SoCs felt most.
  */
 fun Modifier.softShadow(
     shape: Shape,
@@ -43,8 +50,7 @@ fun Modifier.softShadow(
     alpha: Float = 0.10f,
     blur: Dp = 18.dp,
     offsetY: Dp = 4.dp,
-): Modifier = drawBehind {
-    if (alpha <= 0f) return@drawBehind
+): Modifier = if (alpha <= 0f) this else drawWithCache {
     val offPx = offsetY.toPx()
     val paint = NativePaint().apply {
         isAntiAlias = true
@@ -52,7 +58,7 @@ fun Modifier.softShadow(
         maskFilter = BlurMaskFilter(blur.toPx(), BlurMaskFilter.Blur.NORMAL)
     }
     val path = Path().apply {
-        when (val o = shape.createOutline(size, layoutDirection, this@drawBehind)) {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
             is Outline.Rounded -> {
                 val rr = o.roundRect
                 addRoundRect(
@@ -69,7 +75,7 @@ fun Modifier.softShadow(
             is Outline.Generic -> addPath(o.path, Offset(0f, offPx))
         }
     }.asAndroidPath()
-    drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) }
+    onDrawBehind { drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) } }
 }
 
 /**
@@ -87,9 +93,10 @@ fun Modifier.softShadow(
  *   glass panel, or a divider) to avoid a shadow-on-shadow smudge.
  * @param sheer a large hero surface (the floating sidebar) that should read as TRUE see-through
  *   glass -- drops the fill to [AreIptvColors.surfaceGlassSheer] (~30%) on EVERY tier so the content
- *   behind actually shows: on blur tiers the sampled backdrop shows through softened, and on Tier C
- *   (no blur) the surface is still translucent over the dark ambient backdrop, just un-frosted. The
- *   sidebar floats over the dark ambient veil, so it stays legible without the dense fill.
+ *   behind actually shows: the sampled ambient backdrop reads through it (and it is already a soft
+ *   wash -- see the blur note below), and on Tier C the surface is still translucent over the dark
+ *   ambient backdrop. The sidebar floats over the dark ambient veil, so it stays legible without the
+ *   dense fill.
  */
 fun Modifier.glassSurface(
     shape: Shape,
@@ -117,10 +124,19 @@ fun Modifier.glassSurface(
                 backdrop = backdrop,
                 shape = { shape },
                 effects = {
-                    // Vibrancy is the "alive" ingredient -- a saturation boost on the blurred
-                    // content. AGSL, so Tier A only; Tier B gets blur alone.
+                    // Vibrancy is the "alive" ingredient -- a saturation boost on the sampled
+                    // content. AGSL, so Tier A only.
                     if (tier.hasShaders) vibrancy()
-                    blur(if (elevated) BlurElevatedDp.toPx() else BlurBaseDp.toPx())
+                    // PERF (§4 retune): NO per-surface blur pass. The layer this samples is
+                    // [AmbientBackdrop], which is low-frequency by construction -- a flat base, two
+                    // wide radial gradient lobes, a veil and a vignette, plus artwork that is ALREADY
+                    // blurred at 72dp. Blurring that again is arithmetically a near-identity op, so
+                    // every surface was paying a full offscreen blur render to reproduce the pixels it
+                    // sampled. A dense Settings pane ran ~7 of these per repaint. Dropping the effect
+                    // turns each surface into a plain clipped texture sample and leaves exactly one
+                    // blur in the app -- the artwork's -- which is where the softening actually comes
+                    // from. If a glass surface ever has to sit over sharp content, blur belongs on
+                    // THAT layer's capture, not re-derived per surface.
                 },
                 onDrawSurface = { drawRect(fill) },
             )
@@ -133,9 +149,6 @@ fun Modifier.glassSurface(
             .clip(shape)
     }
 }
-
-private val BlurBaseDp = 24.dp
-private val BlurElevatedDp = 32.dp
 
 /** The vertical "lit edge" gradient used by every glass surface and its border brush. */
 @Composable

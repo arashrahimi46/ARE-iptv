@@ -1,13 +1,10 @@
 package com.arashrahimi46.iptv.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
@@ -41,6 +38,8 @@ import androidx.compose.material.icons.outlined.Theaters
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +59,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.stringResource
@@ -136,7 +136,11 @@ fun AreSidebarNav(
     // touches nothing here -- do not add a restorer.
     val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
     val expanded = focusedItemId != null
-    val width by animateDpAsState(
+    val openWidth = if (floating) spacing.sidebarBoxWidthOpen else spacing.sidebarWidthOpen
+    // NOTE: deliberately NOT `by` -- the State is passed down and read at LAYOUT/DRAW time. Reading
+    // an animated Dp in composition recomposes this whole composable on every one of the ~13 frames
+    // of an expand, which is what made the rail stutter on weak TV SoCs.
+    val width = animateDpAsState(
         targetValue = when {
             floating && expanded -> spacing.sidebarBoxWidthOpen
             floating -> spacing.sidebarBoxWidth
@@ -145,6 +149,15 @@ fun AreSidebarNav(
         },
         animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
         label = "sidebarWidth",
+    )
+    // Same trick for the label reveal: ONE shared alpha read inside `graphicsLayer` at draw time,
+    // replacing the 11 per-row `AnimatedVisibility` containers. Those each ran their own animation
+    // AND animated their own layout size, so an expand kicked off 11 concurrent layout animations
+    // inside a subtree that was already being remeasured by the width animation.
+    val labelAlpha = animateFloatAsState(
+        targetValue = if (expanded) 1f else 0f,
+        animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
+        label = "sidebarLabelAlpha",
     )
     val onFocusedChanged: (String, Boolean) -> Unit = { id, focused ->
         focusedItemId = if (focused) id else focusedItemId.takeUnless { it == id }
@@ -157,16 +170,28 @@ fun AreSidebarNav(
         // exactly as dialogs do (Tier A/B); Tier C falls through to the denser opaque fill and still
         // reads via the inset + shape + shadow.
         Box(modifier = modifier.fillMaxHeight().padding(spacing.sidebarInset)) {
-            Column(
-                modifier = Modifier
-                    .width(width)
+            // The animating glass panel is CHILDLESS, and the nav content below is pinned at the open
+            // width. That split is the whole fix for expand/collapse jank: previously the animated
+            // width was the content's own container, so every frame remeasured the scroll viewport,
+            // all 10 rows, their icons and their labels -- and rebuilt the panel's shadow path and
+            // backdrop shape on top. Now a frame measures exactly one empty node; the rows are laid
+            // out once and the reveal is pure alpha (a draw-time property). Visually identical: the
+            // rail's content is start-aligned with a static icon inset, so it never moved during the
+            // animation anyway -- only the panel edge did.
+            Box(
+                Modifier
+                    .widthFrom(width)
                     .fillMaxHeight()
                     // sheer = true: the sidebar is a big hero surface floating on the ambient
                     // backdrop, so on blur-capable TVs it drops to a ~30% fill and reads as TRUE
-                    // see-through glass -- the blurred content behind actually shows. Costs nothing
-                    // extra: the blur pass ran anyway, the dense fill was just hiding it. Tier C keeps
-                    // the legible dense fill (no blur there to reveal).
-                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true, sheer = true)
+                    // see-through glass -- the ambient backdrop behind actually shows. Tier C keeps the
+                    // legible dense fill (no sampled backdrop there to reveal).
+                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true, sheer = true),
+            )
+            Column(
+                modifier = Modifier
+                    .width(openWidth)
+                    .fillMaxHeight()
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
@@ -177,49 +202,75 @@ fun AreSidebarNav(
                     brand = brand,
                     badgedIds = badgedIds,
                     focusRequesters = focusRequesters,
+                    panelWidth = width,
+                    labelAlpha = labelAlpha,
                     onSelect = onSelect,
                     onFocusedChanged = onFocusedChanged,
                 )
             }
         }
     } else {
-        Column(
-            modifier = modifier
-                .width(width)
-                .fillMaxHeight()
-                // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
-                // lit hairline right edge (the glass seam separating rail from content). Drawn behind
-                // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
-                // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which
-                // is the most persistent chrome in the app and so the most visible place to get wrong.
-                .drawBehind {
-                    drawRect(
-                        Brush.verticalGradient(
-                            listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
-                        ),
-                    )
-                    val edge = 1.dp.toPx()
-                    drawRect(
-                        brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
-                        topLeft = Offset(size.width - edge, 0f),
-                        size = Size(edge, size.height),
-                    )
-                }
-                .padding(vertical = spacing.sp8),
-        ) {
-            SidebarNavBody(
-                expanded = expanded,
-                floating = false,
-                items = items,
-                active = active,
-                brand = brand,
-                badgedIds = badgedIds,
-                focusRequesters = focusRequesters,
-                onSelect = onSelect,
-                onFocusedChanged = onFocusedChanged,
+        Box(modifier = modifier.fillMaxHeight()) {
+            // Same childless-panel split as FLOATING (see the comment above).
+            Box(
+                Modifier
+                    .widthFrom(width)
+                    .fillMaxHeight()
+                    // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
+                    // lit hairline right edge (the glass seam separating rail from content). Drawn behind
+                    // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
+                    // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which
+                    // is the most persistent chrome in the app and so the most visible place to get wrong.
+                    .drawBehind {
+                        drawRect(
+                            Brush.verticalGradient(
+                                listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
+                            ),
+                        )
+                        val edge = 1.dp.toPx()
+                        drawRect(
+                            brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
+                            topLeft = Offset(size.width - edge, 0f),
+                            size = Size(edge, size.height),
+                        )
+                    },
             )
+            Column(
+                modifier = Modifier
+                    .width(openWidth)
+                    .fillMaxHeight()
+                    .padding(vertical = spacing.sp8),
+            ) {
+                SidebarNavBody(
+                    expanded = expanded,
+                    floating = false,
+                    items = items,
+                    active = active,
+                    brand = brand,
+                    badgedIds = badgedIds,
+                    focusRequesters = focusRequesters,
+                    panelWidth = width,
+                    labelAlpha = labelAlpha,
+                    onSelect = onSelect,
+                    onFocusedChanged = onFocusedChanged,
+                )
+            }
         }
     }
+}
+
+/**
+ * Fixes this node's width from [width] at LAYOUT time, minus [inset].
+ *
+ * The point is what it does NOT do: reading an animated `Dp` via `by` and passing it to
+ * `Modifier.width()` makes the *composable* recompose on every animation frame. Reading the [State]
+ * inside a `layout` block moves that read into the measure pass, so an animation frame invalidates
+ * one node's measurement and nothing recomposes.
+ */
+private fun Modifier.widthFrom(width: State<Dp>, inset: Dp = 0.dp): Modifier = layout { measurable, constraints ->
+    val w = (width.value - inset).roundToPx().coerceAtLeast(0)
+    val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
+    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
 }
 
 /** Brand header + the scrolling item column, shared by both container styles. */
@@ -232,11 +283,17 @@ private fun ColumnScope.SidebarNavBody(
     brand: String,
     badgedIds: Set<String>,
     focusRequesters: Map<String, FocusRequester>,
+    /** The animating panel width, read at layout time so the selection lens tracks the panel edge
+     *  without the content being remeasured (see [widthFrom]). */
+    panelWidth: State<Dp>,
+    /** Shared 0..1 label reveal, read at draw time inside `graphicsLayer`. */
+    labelAlpha: State<Float>,
     onSelect: (String) -> Unit,
     onFocusedChanged: (String, Boolean) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
+    val hPad = if (floating) 10.dp else 16.dp
     // Blur-capable tiers keep the true alpha-mask fade (the glass is translucent, so only DstIn can
     // dissolve rows into it). Opaque tiers (older TVs) get the cheap equivalent -- a gradient in the
     // surface fill painted over the edges -- so they never pay for a per-frame offscreen layer.
@@ -254,9 +311,13 @@ private fun ColumnScope.SidebarNavBody(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         BrandMark(brand = brand, colors = colors)
-        AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
-            Text(text = "$brand iptv", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
-        }
+        Text(
+            text = "$brand iptv",
+            style = AreIptvTheme.typography.h3,
+            color = colors.textPrimary,
+            maxLines = 1,
+            modifier = Modifier.graphicsLayer { alpha = labelAlpha.value },
+        )
     }
 
     Box(Modifier.height(spacing.sp10))
@@ -267,7 +328,14 @@ private fun ColumnScope.SidebarNavBody(
     // Buttery bit: a single glass-lens pill that SPRINGS between rows when the active tab changes,
     // instead of the lens hard-cutting to the new row. Same feel as AreSegmentedControl's indicator.
     val slide = spring<Float>(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow)
-    val lensY by animateFloatAsState(activeTop ?: 0f, animationSpec = slide, label = "sidebarLensY")
+    // Not `by`: read inside the `offset` lambda below, i.e. at layout time. The spring settles over
+    // ~20 frames and each one would otherwise recompose this whole body.
+    val lensY = animateFloatAsState(activeTop ?: 0f, animationSpec = slide, label = "sidebarLensY")
+    val scrollState = rememberScrollState()
+    // The offscreen compositing layer the alpha-mask fade needs is a per-frame render-to-texture, and
+    // 10 items fit above the fold on most TV viewports -- so there is usually nothing to dissolve.
+    // Pay for the layer only when the list can actually scroll.
+    val overflows by remember { derivedStateOf { scrollState.maxValue > 0 } }
 
     // HIGH QA defect: a fixed-height Column with no scroll clips/hides items (Settings included)
     // below the fold on shorter/denser TV viewports (e.g. the 540dp-effective Television_1080p AVD).
@@ -281,11 +349,11 @@ private fun ColumnScope.SidebarNavBody(
             // the 28dp corner. An alpha mask on the scrolled content dissolves the rows INTO the glass
             // instead -- a solid fade colour can't, the surface is translucent, so the fade has to
             // subtract alpha (DstIn) and let the blurred backdrop show through.
-            .then(if (floating) Modifier.scrollEdgeFade(spacing.sp6, fadeFill) else Modifier)
-            .verticalScroll(rememberScrollState())
+            .then(if (floating && overflows) Modifier.scrollEdgeFade(spacing.sp6, fadeFill) else Modifier)
+            .verticalScroll(scrollState)
             // vertical padding inside the scroll content so the first/last item's focus glow isn't
             // clipped at the viewport edge (the reported "top of the Home focus ring disappeared").
-            .padding(horizontal = if (floating) 10.dp else 16.dp, vertical = 14.dp),
+            .padding(horizontal = hPad, vertical = 14.dp),
     ) {
         Box(Modifier.fillMaxWidth()) {
             // The sliding selection lens, BEHIND the rows. Rows carry a transparent fill so it shows
@@ -294,8 +362,11 @@ private fun ColumnScope.SidebarNavBody(
             if (activeTop != null) {
                 Box(
                     modifier = Modifier
-                        .offset { IntOffset(0, lensY.roundToInt()) }
-                        .fillMaxWidth()
+                        .offset { IntOffset(0, lensY.value.roundToInt()) }
+                        // Tracks the panel edge instead of the (now fixed, open-width) content, so a
+                        // collapsed rail still shows the lens as a pill inside the glass rather than a
+                        // full-width bar spilling out of it.
+                        .widthFrom(panelWidth, inset = hPad * 2)
                         .height(44.dp)
                         .glassLens(RoundedCornerShape(AreIptvTheme.radius.lg)),
                 )
@@ -306,7 +377,7 @@ private fun ColumnScope.SidebarNavBody(
                     SidebarNavRow(
                         item = item,
                         active = item.id == active,
-                        expanded = expanded,
+                        labelAlpha = labelAlpha,
                         badged = item.id in badgedIds,
                         // Start inset centres the 22dp icon in each container's own collapsed width.
                         startInset = if (floating) 26.dp else 23.dp,
@@ -314,7 +385,10 @@ private fun ColumnScope.SidebarNavBody(
                         focusRequester = focusRequesters.getValue(item.id),
                         onClick = { onSelect(item.id) },
                         onFocusedChanged = { focused -> onFocusedChanged(item.id, focused) },
-                        onPositioned = { top -> rowTops[item.id] = top },
+                        // Guarded: onGloballyPositioned fires on every layout pass, and an
+                        // unconditional put into a SnapshotStateMap records a write even for an
+                        // unchanged value -- recomposing this body (and re-reading rowTops) each time.
+                        onPositioned = { top -> if (rowTops[item.id] != top) rowTops[item.id] = top },
                     )
                 }
             }
@@ -389,7 +463,7 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
 private fun SidebarNavRow(
     item: SidebarNavItem,
     active: Boolean,
-    expanded: Boolean,
+    labelAlpha: State<Float>,
     badged: Boolean,
     startInset: Dp,
     interactionSource: MutableInteractionSource,
@@ -473,16 +547,19 @@ private fun SidebarNavRow(
                     }
                 }
             }
-            AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
-                Text(
-                    text = label,
-                    // 14sp rather than the 16sp label role: nav labels are icon-paired and live in a
-                    // fixed 212dp rail, so the legibility floor is relaxed here to keep long
-                    // translations on one line.
-                    style = AreIptvTheme.typography.label.copy(fontSize = 14.sp),
-                    color = if (active) lensContentColor() else colors.textSecondary,
-                )
-            }
+            Text(
+                text = label,
+                // 14sp rather than the 16sp label role: nav labels are icon-paired and live in a
+                // fixed 212dp rail, so the legibility floor is relaxed here to keep long
+                // translations on one line.
+                style = AreIptvTheme.typography.label.copy(fontSize = 14.sp),
+                color = if (active) lensContentColor() else colors.textSecondary,
+                maxLines = 1,
+                // Always in the tree at the rail's open width, revealed by alpha alone. See the
+                // `labelAlpha` note in AreSidebarNav: this replaces a per-row AnimatedVisibility whose
+                // layout animation fought the container's width animation every frame.
+                modifier = Modifier.graphicsLayer { alpha = labelAlpha.value },
+            )
         }
     }
 }
