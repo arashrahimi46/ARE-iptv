@@ -53,11 +53,19 @@ class RecordingSupervisor(
 
     enum class Phase { Idle, Recording, Reconnecting, Stopped }
 
+    /**
+     * The recording's *phase*, which changes only on real transitions (start / stall / stop).
+     *
+     * PERF: deliberately carries NO running counters. `elapsedMs`/`sizeBytes` used to live here and
+     * were rewritten by [watchdogLoop] every second, so this StateFlow emitted a new value 1/s while
+     * recording. LivePlayerScreen collects it at the very top of the screen function, which made the
+     * *whole screen* -- every settings read, the media-source factory's remember, the entire player
+     * subtree -- the invalidation scope for a counter that only one small badge renders. The counter
+     * now lives in [elapsedMs] and is collected by that badge alone.
+     */
     data class RecordingState(
         val phase: Phase = Phase.Idle,
         val recordingId: Long? = null,
-        val elapsedMs: Long = 0,
-        val sizeBytes: Long = 0,
         /** Set when the last session ended on a fault -- surfaced to the user, then cleared on next start. */
         val stoppedReason: String? = null,
     )
@@ -71,6 +79,11 @@ class RecordingSupervisor(
 
     private val _state = MutableStateFlow(RecordingState())
     val state: StateFlow<RecordingState> = _state.asStateFlow()
+
+    /** The running recording's elapsed wall-clock, ticked 1/s by [watchdogLoop]. Collected only by
+     *  the recording badge -- see the note on [RecordingState]. */
+    private val _elapsedMs = MutableStateFlow(0L)
+    val elapsedMs: StateFlow<Long> = _elapsedMs.asStateFlow()
 
     val isRecording: Boolean get() = session != null
 
@@ -171,6 +184,7 @@ class RecordingSupervisor(
         session = s
         startWriter(s)
         s.watchdog = scope.launch { watchdogLoop(s) }
+        _elapsedMs.value = 0
         _state.value = RecordingState(phase = Phase.Recording, recordingId = id)
         StartResult.Started(id)
     }
@@ -255,10 +269,13 @@ class RecordingSupervisor(
             val size = s.bytesTotal.get()
             val sinceBytes = SystemClock.elapsedRealtime() - s.lastByteAt.get()
             // Byte-flow state machine.
+            // The counter goes to its own flow; `phase` is assigned through a StateFlow, which drops
+            // an identical value -- so a steady recording now emits ONE phase value, not 3600/hour.
+            _elapsedMs.value = elapsed
             when {
                 sinceBytes > GIVEUP_MS -> { faultFinalize(s, STREAM_LOST); break }
-                sinceBytes > STALL_MS -> _state.value = _state.value.copy(phase = Phase.Reconnecting, elapsedMs = elapsed, sizeBytes = size)
-                else -> _state.value = _state.value.copy(phase = Phase.Recording, elapsedMs = elapsed, sizeBytes = size)
+                sinceBytes > STALL_MS -> _state.value = _state.value.copy(phase = Phase.Reconnecting)
+                else -> _state.value = _state.value.copy(phase = Phase.Recording)
             }
             // Persist running totals every ~3s.
             if (++dbTick >= 3) {

@@ -182,6 +182,10 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
 
     val recordingState: StateFlow<RecordingSupervisor.RecordingState> = recordingSupervisor.state
 
+    /** Ticks 1/s while recording. Kept separate from [recordingState] so only the badge that renders
+     *  it recomposes -- see the note on [RecordingSupervisor.RecordingState]. */
+    val recordingElapsedMs: StateFlow<Long> = recordingSupervisor.elapsedMs
+
     init {
         loadMedia(initialSource)
         observeUpNext()

@@ -724,9 +724,15 @@ fun LivePlayerScreen(
             // ExoPlayer has no position-changed callback, so this polls at a UI-refresh
             // cadence -- cheap reads (currentPosition/duration/bufferedPosition are all
             // non-blocking getters), stopped via onDispose when the composable leaves.
-            var positionMs by remember { mutableStateOf(0L) }
-            var durationMs by remember { mutableStateOf(C.TIME_UNSET) }
-            var bufferedPositionMs by remember { mutableStateOf(0L) }
+            //
+            // PERF: these live in a holder object rather than as `by remember { mutableStateOf }`
+            // locals. As locals they were WRITTEN by the poll below and READ further down in this
+            // same lambda (effectiveDurationMs/seekPosition/elapsedLabel), which made the enclosing
+            // Box content lambda the invalidation scope -- so every 500ms tick recomposed the
+            // AndroidView, both full-screen gradients, the scrim, the top bar and the whole
+            // ArePlayerControls call, over live video. Held in a stable object and read only inside
+            // lambdas passed to the HUD leaves, the same poll now touches only the seek bar.
+            val progress = remember { PlaybackProgress() }
             // Live only: the real decoded resolution + frame rate ("1080p · 50fps"), read from the
             // player's current video Format in the poll below. Null until the format is known.
             var streamInfo by remember(media.streamUrl) { mutableStateOf<String?>(null) }
@@ -747,9 +753,15 @@ fun LivePlayerScreen(
                 var lastFpsAt = SystemClock.elapsedRealtime()
                 var measuredFps = 0
                 while (true) {
-                    positionMs = exoPlayer.currentPosition
-                    durationMs = exoPlayer.duration
-                    bufferedPositionMs = exoPlayer.bufferedPosition
+                    // Live renders neither the seek bar nor the elapsed/total label (both are
+                    // `if (!live)` in ArePlayerControls), so polling position/duration/buffered on a
+                    // live channel updated state that nothing displays. Skip it there and let the
+                    // holder stay at its defaults.
+                    if (!media.isLive) {
+                        progress.positionMs = exoPlayer.currentPosition
+                        progress.durationMs = exoPlayer.duration
+                        progress.bufferedPositionMs = exoPlayer.bufferedPosition
+                    }
                     if (media.isLive) {
                         if (++fpsTick >= 4) {
                             val now = SystemClock.elapsedRealtime()
@@ -765,7 +777,10 @@ fun LivePlayerScreen(
                     // Throttle the bookmark write to ~5s (every 10th 500ms poll); VM gates it to VOD.
                     if (++saveTick >= 10) {
                         saveTick = 0
-                        viewModel.saveProgress(positionMs, durationMs)
+                        // Read straight off the player rather than from the holder: on live the
+                        // holder is deliberately never updated (above), and the VM gates the write
+                        // to VOD anyway.
+                        viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                     }
                     delay(500)
                 }
@@ -844,12 +859,22 @@ fun LivePlayerScreen(
             // over ExoPlayer's own estimate -- the latter is garbage for a raw recorded live-TS
             // (PTS resets on ad loops), which is what made a 57-min recording read as a few seconds.
             // Real VOD has no knownDurationMs, so it still uses the player's (accurate) duration.
-            val effectiveDurationMs = media.knownDurationMs ?: durationMs
-            val hasKnownDuration = effectiveDurationMs > 0 && effectiveDurationMs != C.TIME_UNSET
-            val seekPosition = if (hasKnownDuration) (positionMs.toFloat() / effectiveDurationMs).coerceIn(0f, 1f) else 1f
-            val seekBuffered = if (hasKnownDuration) (bufferedPositionMs.toFloat() / effectiveDurationMs).coerceIn(0f, 1f) else 1f
-            val elapsedLabel = formatPlaybackTime(positionMs)
-            val totalLabel = if (hasKnownDuration) formatPlaybackTime(effectiveDurationMs) else elapsedLabel
+            //
+            // Each of these is a LAMBDA, so the progress reads happen inside the HUD's seek-bar
+            // leaves at recomposition time rather than here in the Box's content lambda. Computing
+            // them eagerly is what tied the 500ms poll to the whole player subtree.
+            val effectiveDuration = { media.knownDurationMs ?: progress.durationMs }
+            val hasKnownDuration = { effectiveDuration().let { it > 0 && it != C.TIME_UNSET } }
+            val seekPosition = {
+                if (hasKnownDuration()) (progress.positionMs.toFloat() / effectiveDuration()).coerceIn(0f, 1f) else 1f
+            }
+            val seekBuffered = {
+                if (hasKnownDuration()) (progress.bufferedPositionMs.toFloat() / effectiveDuration()).coerceIn(0f, 1f) else 1f
+            }
+            val elapsedLabel = { formatPlaybackTime(progress.positionMs) }
+            val totalLabel = {
+                if (hasKnownDuration()) formatPlaybackTime(effectiveDuration()) else formatPlaybackTime(progress.positionMs)
+            }
 
             // ⏮/⏭ transport-skip pair, resolved per content type:
             //  - live: previous/next channel (switchChannel wraps the sibling list).
@@ -886,7 +911,7 @@ fun LivePlayerScreen(
                     skipPrevious = { exoPlayer.seekTo((exoPlayer.currentPosition - 600_000).coerceAtLeast(0)) }
                     skipNext = {
                         val target = exoPlayer.currentPosition + 600_000
-                        exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(effectiveDurationMs) else target)
+                        exoPlayer.seekTo(if (hasKnownDuration()) target.coerceAtMost(effectiveDuration()) else target)
                     }
                     skipPreviousLabel = back10MinLabel
                     skipNextLabel = forward10MinLabel
@@ -1067,7 +1092,7 @@ fun LivePlayerScreen(
                         },
                         onFastForward = {
                             val target = exoPlayer.currentPosition + 10_000
-                            exoPlayer.seekTo(if (hasKnownDuration) target.coerceAtMost(effectiveDurationMs) else target)
+                            exoPlayer.seekTo(if (hasKnownDuration()) target.coerceAtMost(effectiveDuration()) else target)
                         },
                         // ⏮/⏭ are context-dependent: live -> prev/next channel; series episode ->
                         // prev/next episode (hidden at the first/last); movie -> −10min/+10min. See
@@ -1179,9 +1204,9 @@ fun LivePlayerScreen(
                 (recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Recording ||
                     recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting)
             ) {
-                RecordingIndicator(
+                TickingRecordingIndicator(
+                    elapsedMsFlow = viewModel.recordingElapsedMs,
                     reconnecting = recordingState.phase == com.arashrahimi46.iptv.data.recording.RecordingSupervisor.Phase.Reconnecting,
-                    elapsedMs = recordingState.elapsedMs,
                     reducedMotion = reducedMotion,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 24.dp),
                 )
@@ -1359,6 +1384,44 @@ private fun formatStreamInfo(format: androidx.media3.common.Format?, measuredFps
     val height = format?.height?.takeIf { it > 0 } ?: return null
     val fps = format.frameRate.takeIf { it > 0f }?.roundToInt() ?: measuredFps.takeIf { it > 0 }
     return if (fps != null) "${height}p · ${fps}fps" else "${height}p"
+}
+
+/**
+ * The recording badge, with the 1/s elapsed tick collected HERE rather than at screen scope.
+ *
+ * It has to be its own `@Composable` function, not an inline `collectAsState()` next to the call: an
+ * `if` block is not a recomposition scope, so collecting in the screen's body -- even inside the
+ * `if (showRecordingIndicator)` guard -- would still make the whole enclosing lambda the invalidation
+ * scope, which is the exact bug being fixed. A separate function gives the tick its own scope.
+ */
+@Composable
+private fun TickingRecordingIndicator(
+    elapsedMsFlow: kotlinx.coroutines.flow.StateFlow<Long>,
+    reconnecting: Boolean,
+    reducedMotion: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val elapsedMs by elapsedMsFlow.collectAsState()
+    RecordingIndicator(
+        reconnecting = reconnecting,
+        elapsedMs = elapsedMs,
+        reducedMotion = reducedMotion,
+        modifier = modifier,
+    )
+}
+
+/**
+ * The player's polled position/duration/buffered position, held in one stable object.
+ *
+ * A holder rather than three `by remember { mutableStateOf(...) }` locals purely for invalidation
+ * scope: Compose invalidates whatever *lambda* read a state value, and the screen's locals were read
+ * in the outer content lambda, so a twice-a-second poll dragged the entire player subtree with it.
+ * Fields stay individually snapshot-backed, so the seek bar still updates; only the scope changes.
+ */
+private class PlaybackProgress {
+    var positionMs by mutableStateOf(0L)
+    var durationMs by mutableStateOf(C.TIME_UNSET)
+    var bufferedPositionMs by mutableStateOf(0L)
 }
 
 /** Formats a millisecond duration as `m:ss` (or `h:mm:ss` past an hour) for the transport HUD's elapsed/total labels. */

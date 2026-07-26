@@ -52,9 +52,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
@@ -94,10 +96,18 @@ fun ArePlayerControls(
      * button -- only present during catch-up playback. */
     onGoLive: (() -> Unit)? = null,
     playing: Boolean = true,
-    position: Float = 0.62f,
-    buffered: Float = 0.8f,
-    elapsed: String = "20:28",
-    total: String = "20:45",
+    /**
+     * PERF: progress is passed as LAMBDAS, not values. The screen polls the player every 500ms, and
+     * a plain `Float` param meant that poll invalidated whatever scope read it. Reading it here, in
+     * [ArePlayerControls]' own body, recomposed the entire HUD -- ~45 arguments plus 10-14 focusable
+     * glass buttons, each with a focus ring, glow and blurred shadow -- twice a second, over live
+     * video. As lambdas the reads happen inside [SeekTimeLabel] / [SeekFills] instead, so only those
+     * leaves recompose. (On live they are never invoked at all: both call sites are `if (!live)`.)
+     */
+    position: () -> Float = { 0.62f },
+    buffered: () -> Float = { 0.8f },
+    elapsed: () -> String = { "20:28" },
+    total: () -> String = { "20:45" },
     channelLogoInitials: String = "SKY",
     onPlayPause: () -> Unit = {},
     onRewind: () -> Unit = {},
@@ -226,13 +236,7 @@ fun ArePlayerControls(
             }
             // Live has no fixed duration -- an HLS DVR window reports a rolling "total" that reads
             // as a meaningless 0:33 / 1:00 countdown. Only VOD (movies/series) shows the time label.
-            if (!live) {
-                Text(
-                    text = "$elapsed / $total",
-                    style = AreIptvTheme.typography.mono,
-                    color = colors.textSecondary,
-                )
-            }
+            if (!live) SeekTimeLabel(elapsed, total)
         }
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
@@ -246,7 +250,6 @@ fun ArePlayerControls(
         val pill = RoundedCornerShape(AreIptvTheme.radius.pill)
         val interactive = seekBarFocusRequester != null
         val trackHeight = if (barFocused) 8.dp else 6.dp
-        val pos = position.coerceIn(0f, 1f)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -283,29 +286,7 @@ fun ArePlayerControls(
             // an opaque surface3 slug punched through the panel (V2 §6). The buffered/accent fills
             // below keep their solid colours -- they're the meaningful, high-contrast layer.
             Box(Modifier.fillMaxWidth().height(trackHeight).glassTrack(pill))
-            Box(
-                Modifier
-                    .fillMaxWidth(buffered.coerceIn(0f, 1f))
-                    .height(trackHeight)
-                    .background(colors.borderStrong, pill),
-            )
-            Box(
-                Modifier
-                    .fillMaxWidth(pos)
-                    .height(trackHeight)
-                    .background(colors.accent, pill),
-            )
-            // Thumb at the end of the blue fill -- only while the bar is focused (selected).
-            if (barFocused) {
-                Box(Modifier.fillMaxWidth(pos).fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
-                    Box(
-                        Modifier
-                            .size(16.dp)
-                            .background(colors.accent, CircleShape)
-                            .border(2.dp, colors.textPrimary, CircleShape),
-                    )
-                }
-            }
+            SeekFills(position, buffered, trackHeight, pill, showThumb = barFocused)
         }
 
         Box(Modifier.height(AreIptvTheme.spacing.sp4))
@@ -476,6 +457,59 @@ private fun DisabledHintGlyph(icon: androidx.compose.ui.graphics.vector.ImageVec
                     Text(text = hint, style = AreIptvTheme.typography.caption, color = Color.White)
                 }
             }
+        }
+    }
+}
+
+/**
+ * "12:03 / 45:10" -- its own composable purely so the twice-a-second `elapsed`/`total` reads
+ * invalidate one Text and not the whole HUD. VOD only; live has no meaningful total.
+ */
+@Composable
+private fun SeekTimeLabel(elapsed: () -> String, total: () -> String) {
+    Text(
+        text = "${elapsed()} / ${total()}",
+        style = AreIptvTheme.typography.mono,
+        color = AreIptvTheme.colors.textSecondary,
+    )
+}
+
+/**
+ * The buffered + played fills (and the scrub thumb). Separated from [ArePlayerControls] for the same
+ * reason as [SeekTimeLabel]: this is where the per-poll progress reads belong, so a position update
+ * recomposes three Boxes instead of the entire transport HUD.
+ */
+@Composable
+private fun SeekFills(
+    position: () -> Float,
+    buffered: () -> Float,
+    trackHeight: Dp,
+    pill: Shape,
+    showThumb: Boolean,
+) {
+    val colors = AreIptvTheme.colors
+    val pos = position().coerceIn(0f, 1f)
+    Box(
+        Modifier
+            .fillMaxWidth(buffered().coerceIn(0f, 1f))
+            .height(trackHeight)
+            .background(colors.borderStrong, pill),
+    )
+    Box(
+        Modifier
+            .fillMaxWidth(pos)
+            .height(trackHeight)
+            .background(colors.accent, pill),
+    )
+    // Thumb at the end of the blue fill -- only while the bar is focused (selected).
+    if (showThumb) {
+        Box(Modifier.fillMaxWidth(pos).fillMaxHeight(), contentAlignment = Alignment.CenterEnd) {
+            Box(
+                Modifier
+                    .size(16.dp)
+                    .background(colors.accent, CircleShape)
+                    .border(2.dp, colors.textPrimary, CircleShape),
+            )
         }
     }
 }
