@@ -69,6 +69,14 @@ fun controlSkin(
     tone: ControlTone,
     selected: Boolean = false,
     disabled: Boolean = false,
+    /**
+     * True when this control is **one option among several** -- a tab, a chip in a group, a segment.
+     * Such a control at rest means "not the current one" and must recede, whereas a plain button is
+     * always fully active and keeps primary-weight text. Without this distinction, routing tabs
+     * through the funnel promoted every unselected tab label to [AreIptvColors.textPrimary] and the
+     * strip lost its hierarchy -- selected and unselected read identically.
+     */
+    selectable: Boolean = false,
 ): ControlSkin {
     val c = AreIptvTheme.colors
     val onGlass = LocalOnGlass.current
@@ -129,7 +137,7 @@ fun controlSkin(
                 fillColor = c.glassChildTint,
                 borderBrush = null,
                 borderColor = c.borderGlass,
-                content = c.textPrimary,
+                content = if (selectable) c.textSecondary else c.textPrimary,
                 elevation = 0.dp,
             )
         } else {
@@ -138,7 +146,7 @@ fun controlSkin(
                 fillColor = c.surfaceGlass,
                 borderBrush = glassBorderBrush(),
                 borderColor = null,
-                content = c.textPrimary,
+                content = if (selectable) c.textSecondary else c.textPrimary,
                 elevation = GlassElevation,
             )
         }

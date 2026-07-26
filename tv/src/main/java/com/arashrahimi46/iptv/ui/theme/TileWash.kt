@@ -2,11 +2,9 @@ package com.arashrahimi46.iptv.ui.theme
 
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.util.LruCache
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -14,12 +12,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.platform.LocalContext
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.size.Scale
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
 /**
@@ -54,43 +46,52 @@ fun Modifier.tileWash(shape: Shape, hue: Color): Modifier = composed {
  */
 @Composable
 fun rememberTileWashHue(logoUrl: String?, seed: String): Color {
-    val context = LocalContext.current
     val fallback = remember(seed) { hueFromSeed(seed) }
-    // Seed from the cache so an already-sampled logo paints on the very first frame; produceState is
-    // called unconditionally either way, so the composition's slot table stays stable.
-    val cached = logoUrl?.let { DominantColorCache.get(it) }
-    val hue by produceState(initialValue = cached?.let(::Color) ?: fallback, logoUrl, fallback) {
-        if (logoUrl == null || cached != null) return@produceState
-        val argb = withContext(Dispatchers.Default) {
-            runCatching {
-                val request = ImageRequest.Builder(context)
-                    .data(logoUrl)
-                    .size(SAMPLE_PX, SAMPLE_PX)
-                    .scale(Scale.FIT)
-                    .allowHardware(false) // getPixels() needs a software bitmap
-                    .build()
-                val bitmap = (context.imageLoader.execute(request).drawable as? BitmapDrawable)?.bitmap
-                bitmap?.let(::dominantColorOf)
-            }.getOrNull()
-        }
-        if (argb != null) {
-            DominantColorCache.put(logoUrl, argb)
-            value = Color(argb)
-        }
+    // Reads an observable cache that [sampleTileWashHue] fills from the logo the tile ALREADY
+    // loaded, so a hue that arrives later recomposes just this tile.
+    return logoUrl?.let { DominantColorCache.observe(it) } ?: fallback
+}
+
+/**
+ * Derive the wash hue from a logo Coil has **already** decoded for this tile. Call from
+ * `AsyncImage`'s `onState` on success.
+ *
+ * The first cut of this issued its own 48px `imageLoader.execute()` per tile to sample from. That
+ * doubled the number of requests hitting the provider, and Xtream/M3U servers rate-limit by IP --
+ * on a real playlist the logos stopped loading altogether and every tile fell back to initials.
+ * Sampling the drawable we were handed costs one bitmap read and zero requests.
+ */
+fun sampleTileWashHue(logoUrl: String?, drawable: android.graphics.drawable.Drawable?) {
+    if (logoUrl == null || DominantColorCache.peek(logoUrl) != null) return
+    val bitmap = (drawable as? BitmapDrawable)?.bitmap ?: return
+    // A hardware bitmap has no pixels to read on the CPU; copying one back is allowed but costs a
+    // GPU readback, so skip it and keep the seeded fallback rather than stall a scrolling grid.
+    if (bitmap.config == Bitmap.Config.HARDWARE) return
+    runCatching { dominantColorOf(bitmap) }.getOrNull()?.let {
+        DominantColorCache.put(logoUrl, Color(it))
     }
-    return hue
+}
+
+/**
+ * Snapshot-backed so a late-arriving hue recomposes the tile, and bounded so a 20k-channel playlist
+ * can't grow it without limit.
+ */
+private object DominantColorCache {
+    private const val MAX = 1024
+    private val cache = mutableStateMapOf<String, Color>()
+
+    fun peek(key: String): Color? = cache[key]
+
+    @Composable
+    fun observe(key: String): Color? = cache[key]
+
+    fun put(key: String, value: Color) {
+        if (cache.size >= MAX) cache.clear()
+        cache[key] = value
+    }
 }
 
 private const val SAMPLE_PX = 48
-
-/** Bounded so a 20k-channel playlist can't grow this without limit. */
-private object DominantColorCache {
-    private val cache = LruCache<String, Int>(512)
-    fun get(key: String): Int? = cache[key]
-    fun put(key: String, value: Int) {
-        cache.put(key, value)
-    }
-}
 
 /**
  * The average of the bitmap's saturated, non-transparent pixels, then pushed back to a usable

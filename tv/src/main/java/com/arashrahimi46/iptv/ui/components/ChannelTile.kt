@@ -48,6 +48,7 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
+import com.arashrahimi46.iptv.ui.theme.sampleTileWashHue
 import com.arashrahimi46.iptv.ui.theme.tileWash
 
 /**
@@ -189,7 +190,14 @@ fun AreChannelTile(
                             model = logoUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
-                            onState = { logoLoaded.value = it is AsyncImagePainter.State.Success },
+                            onState = { state ->
+                                logoLoaded.value = state is AsyncImagePainter.State.Success
+                                // Wash hue comes from the logo we just decoded -- never a second
+                                // request; the provider rate-limits by IP (see sampleTileWashHue).
+                                if (state is AsyncImagePainter.State.Success) {
+                                    sampleTileWashHue(logoUrl, state.result.drawable)
+                                }
+                            },
                             modifier = Modifier.fillMaxSize().padding(6.dp),
                         )
                     }
