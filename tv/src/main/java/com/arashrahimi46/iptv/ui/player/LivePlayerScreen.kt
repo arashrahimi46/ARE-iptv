@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -968,13 +969,21 @@ fun LivePlayerScreen(
                 },
             )
 
+            // Top scrim, bounded to the strip it actually darkens. The gradient reaches alpha 0 at
+            // y=400px and is clamped transparent below that, so this used to paint a SCREEN-SIZED
+            // alpha-blended quad over the video SurfaceView every frame to tint its top 400px. Same
+            // pixels, ~1/3 the fill rate -- and a smaller composited overlay leaves the video
+            // surface a better candidate for the display pipeline's overlay path on weak GPUs.
+            val topScrimPx = 400f
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(with(LocalDensity.current) { topScrimPx.toDp() })
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(Ink950.copy(alpha = 0.70f), Ink950.copy(alpha = 0f)),
-                            endY = 400f,
+                            endY = topScrimPx,
                         ),
                     ),
             )

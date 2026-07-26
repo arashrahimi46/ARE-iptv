@@ -47,6 +47,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
@@ -149,6 +153,7 @@ fun MultiViewScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                                         MultiViewPane(
                                             channel = channel,
                                             active = index == state.activeIndex,
+                                            concurrentPanes = state.paneCount,
                                             onClick = { viewModel.setActive(index) },
                                             onRemove = { viewModel.removeChannel(channel.id) },
                                             modifier = Modifier.weight(1f).fillMaxSize(),
@@ -297,7 +302,14 @@ private fun ChannelPickerDialog(
 }
 
 @Composable
-private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit, onRemove: () -> Unit, modifier: Modifier = Modifier) {
+private fun MultiViewPane(
+    channel: Channel,
+    active: Boolean,
+    concurrentPanes: Int,
+    onClick: () -> Unit,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val colors = AreIptvTheme.colors
     // P0.1: the pane was previously a dead end on failure -- a static red dot, no recovery.
@@ -313,18 +325,53 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
     val exoPlayer = remember(currentSource.streamUrl, retryCount) {
         // Multi-view runs up to 4 decoders at once, but a TV box has only a handful of hardware
         // decoders. A pane that can't acquire one previously rendered BLACK (the reported bug --
-        // player-added streams that play fine fullscreen were black here). Mirror LivePlayerScreen:
-        // enable decoder fallback so an overflow pane drops to a software decoder instead of black,
-        // and allow extension decoders for codecs the platform decoder can't handle.
+        // player-added streams that play fine fullscreen were black here). `setEnableDecoderFallback`
+        // is what fixes that: an overflow pane drops to a software decoder instead of going black.
+        //
+        // PERF: EXTENSION_RENDERER_MODE_ON is deliberately NOT set. Decoder fallback already delivers
+        // the overflow recovery above; the extension mode additionally makes the ffmpeg/libvpx
+        // software decoders *eligible from the start*, so on a box with two hardware decoders a 4-up
+        // grid could land on 2 hardware + 2 software 1080p decodes -- on exactly the weak CPUs this
+        // screen is hardest on. The fullscreen player wires this to the user's hardware-decoding
+        // preference (LivePlayerScreen) rather than forcing it; multiview now simply leaves it at the
+        // platform default and lets fallback handle the exception case.
         val renderersFactory = DefaultRenderersFactory(context).apply {
-            setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
             setEnableDecoderFallback(true)
         }
-        ExoPlayer.Builder(context, renderersFactory).build().apply {
-            setMediaItem(MediaItem.fromUri(currentSource.streamUrl))
-            playWhenReady = true
-            prepare()
+        // PERF: DefaultLoadControl's defaults allow ~50s of buffer per player. That is a reasonable
+        // bet for ONE player on a slow line, but four of them each claiming that much buffer (and
+        // each churning its own DefaultAllocator) is a GC-then-OOM shape on a low-RAM TV. Multiview
+        // trades buffer depth for headroom: enough to ride out a hiccup, not enough to hoard.
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(1_500, 15_000, 1_000, 2_000)
+            .setTargetBufferBytes(8 * 1024 * 1024)
+            .setPrioritizeTimeOverSizeThresholds(false)
+            .build()
+        ExoPlayer.Builder(context, renderersFactory)
+            .setLoadControl(loadControl)
+            .build().apply {
+                setMediaItem(MediaItem.fromUri(currentSource.streamUrl))
+                playWhenReady = true
+                prepare()
+            }
+    }
+
+    // Backgrounding must stop the decoders. Without this, pressing HOME left all four panes decoding
+    // AND pulling four streams off the network indefinitely -- the composable never leaves the tree,
+    // so the DisposableEffect below never runs. The fullscreen player has always torn down on
+    // ON_STOP; multiview simply never got the same treatment. Pause rather than release so returning
+    // to the app resumes in place instead of rebuilding four players at once.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, exoPlayer) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> exoPlayer.pause()
+                Lifecycle.Event.ON_START -> exoPlayer.play()
+                else -> Unit
+            }
         }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     DisposableEffect(exoPlayer) {
@@ -373,7 +420,16 @@ private fun MultiViewPane(channel: Channel, active: Boolean, onClick: () -> Unit
             }
             return@LaunchedEffect
         }
-        delay(if (health == AreStreamHealthLevel.Poor) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
+        // A pure-buffering pane gets a grace period scaled by how many players are starting at once
+        // -- a flat 8s is shorter than four concurrent cold starts on a weak box, so the retry logic
+        // used to tear down and rebuild all four players exactly when the device was most loaded.
+        delay(
+            if (health == AreStreamHealthLevel.Poor) {
+                StreamRetryPolicy.backoffMillis(autoRetryAttempt)
+            } else {
+                StreamRetryPolicy.bufferingGraceMillis(concurrentPanes)
+            },
+        )
         autoRetryAttempt++
         retryCount++
     }

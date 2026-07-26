@@ -15,6 +15,19 @@ object StreamRetryPolicy {
      * health and enters the same retry/backoff cycle as a hard playback error. */
     const val BUFFERING_GRACE_MS = 8_000L
 
+    /**
+     * [BUFFERING_GRACE_MS] scaled for N players starting at once (multiview).
+     *
+     * A flat 8s is fine for one player but is *shorter than four concurrent cold starts* on a weak
+     * box, so every pane tripped the grace, bumped its retry counter, and had its ExoPlayer released
+     * and rebuilt -- a release/allocate/decoder-acquire storm at the precise moment the device was
+     * most loaded, which then reset the clock and could repeat up to [MAX_RETRIES] times per source
+     * before falling back and starting over. The recovery mechanism was manufacturing the failure it
+     * was meant to recover from. Scaling by pane count lets four cold starts finish.
+     */
+    fun bufferingGraceMillis(concurrentPlayers: Int): Long =
+        BUFFERING_GRACE_MS * concurrentPlayers.coerceAtLeast(1)
+
     /** attempt 0 -> 1s, 1 -> 2s, 2 -> 4s -- the only values ever requested given
      * [MAX_RETRIES] = 3 (attempt is always < MAX_RETRIES when this is called). Coerced
      * defensively in case MAX_RETRIES grows without this comment being updated. */
