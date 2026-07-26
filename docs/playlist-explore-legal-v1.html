@@ -288,22 +288,83 @@
       <tbody>
         <tr><td>1 · Rename</td><td><span class="pill ok">Shipped</span> <code>c5590d7</code></td><td>Driven on the TV emulator: hold-OK menu, rename, persists. Hold-OK no longer deletes outright.</td></tr>
         <tr><td>2 · Telemetry &amp; legal</td><td><span class="pill ok">Shipped</span> <code>c29d705</code> + <code>56ad142</code></td><td>Crash opt-out gates Sentry per-event; versioned consent re-prompts once; 15-clause document scrolls by D-pad. Verified in Hungarian.</td></tr>
-        <tr><td>3 · Explore</td><td><span class="pill new">In build</span></td><td>Migration 11→12, bundled manifest, curated grid, 10-playlist cap.</td></tr>
+        <tr><td>3 · Explore</td><td><span class="pill ok">Shipped</span> <code>94f171e</code></td><td>Driven end to end: link → grid → name → import → shell playing real Dutch channels. DB shows <code>(1,'Netherlands','M3U','nl')</code>, 166 channels, <code>user_version 13</code>.</td></tr>
       </tbody>
     </table>
   </div>
+  <p style="margin-top:18px">Schema went <strong>12 → 13</strong>, not 11 → 12: catch-up had already taken v12 since this was written. The locked-decisions table below still says 11 → 12 and is stale on that one point.</p>
   <div class="notes">
-    <div class="note warn">
-      <div class="nt">Blocker 1 — the document ships with placeholders</div>
-      <p><code>[LEGAL_NAME]</code> and <code>[CONTACT_EMAIL]</code> are on screen right now, in clauses 1, 8, 11 and 15. A real name, country and contact address are needed before any release reaches users.</p>
+    <div class="note">
+      <div class="nt">Three defects that only showed up when driven by a remote</div>
+      <p>The legal card overflowed a 540dp TV panel and clipped Close; the scroll area had no focusable child, so the D-pad did nothing and the reader was stuck on clause 3 of 15; and naively consuming those keys would have trapped focus in the document. The Explore entry point was clipped the same way. None of it is visible to a compile or a unit test.</p>
     </div>
-    <div class="note warn">
-      <div class="nt">Blocker 2 — no public policy URL</div>
-      <p>Play requires one and bundling does not satisfy it. Deferred deliberately; the text is structured so it can be published without a rewrite.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">Remaining work</span><span class="pill ok">no release blockers</span></div>
+    <p>Everything designed here is built, and the controller identity is filled in: <strong>Arash Rahimi, Germany, contact@arashrahimi.me</strong>. Germany being in the EU means the GDPR stance of §1/§6/§8 is correct as written, so no legal rework is needed. What follows is quality work, not gating work.</p>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>#</th><th>Item</th><th>Why it matters</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Audit the 20 curated Explore URLs</td>
+          <td>Only <code>nl.m3u</code> is proven to resolve — that one was imported on device. The other 19 were written from the iptv-org URL scheme. A dead entry stays dead until the next release, which is the accepted cost of bundling.</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Enforce the 10-playlist cap on the normal add path</td>
+          <td>The cap is real inside Explore only. Adding an 11th through onboarding still succeeds, so the limit the UI promises isn't actually a limit.</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Translate the 17 Explore strings</td>
+          <td>English-only across the other 23 locales. Falls back cleanly so nothing looks broken, but it's the only untranslated user-facing surface in the app.</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Drive Settings → About on device</td>
+          <td>The crash-report toggle and the "Read" row that opens the document are built and compile, but were never exercised by a remote — reaching them needs a playlist, which the emulator lacked at the time. Everything else in phases 1–3 was driven.</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Public policy URL</td>
+          <td>Play requires one; bundling doesn't satisfy it. Deferred deliberately — the text is structured to publish without a rewrite.</td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Decide the takedown destination</td>
+          <td>§11 and §15 route copyright notices to <strong>contact@arashrahimi.me</strong>, which is now the official channel whether or not anything else exists — that inbox has to be watched. The pitch also showed a "Report a content issue" row in Settings; it was <strong>not built</strong>. Optional now, since the email route is live.</td>
+          <td>You</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Replace the Buy Me a Coffee placeholder</td>
+          <td>Pre-existing, not from this work: the support URL is still <code>buymeacoffee.com/change-me</code>, and §5 of the policy names Buy Me a Coffee as a third party the device contacts.</td>
+          <td>You</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <div class="nt">Why filling the identity did NOT bump the terms version</div>
+      <p>Re-consent exists for people who accepted an earlier text. Version 2 has never reached one: <code>versionName</code> is still 1.6.0, cut before the policy landed, and there is no release commit since. So v2 ships for the first time already carrying the real identity, and bumping to 3 would re-prompt nobody while implying a change that never happened. <strong>The rule still stands for every future edit</strong> — once v2 is released, any material change to the document means <code>CURRENT_TERMS_VERSION</code> goes to 3.</p>
     </div>
     <div class="note">
-      <div class="nt">Three defects the build caught only by being driven</div>
-      <p>The legal card overflowed a 540dp TV panel and clipped Close; the scroll area had no focusable child, so the D-pad did nothing and the reader was stuck on clause 3 of 15; and naively consuming those keys would have trapped focus in the document. None of it is visible to a compile or a unit test — only to a remote.</p>
+      <div class="nt">Commit provenance is unreliable for this work</div>
+      <p>A concurrent agent committed part of phase 2 under its own message (<code>c29d705</code> says "13-section"; the document has 15) and twice left the tree non-compiling — a <code>QrCode</code> parameter shadowing <code>DrawScope.size</code>, and 20 missing <code>guide_*</code> strings. Read the diffs rather than the log for this range.</p>
     </div>
   </div>
 </section>
