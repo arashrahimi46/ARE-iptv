@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
@@ -18,6 +20,7 @@ import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
+import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
@@ -59,6 +62,15 @@ fun AreIptvAppShell(
     // The blur source (§4). Captures the ambient layer ONLY -- never the page content, which would
     // feed each glass surface back into its own backdrop.
     val backdrop = rememberLayerBackdrop { drawContent() }
+    // The expanded sidebar's frost source: ambient AND page content (see LocalPageBackdrop).
+    val pageBackdrop = rememberLayerBackdrop { drawContent() }
+    // Gated, because `layerBackdrop` draws its subtree TWICE per frame (once to the screen, once into
+    // the layer) -- capturing the whole page unconditionally would double the draw cost of every rail
+    // scroll and focus move, which is exactly what weak TV SoCs feel. The sidebar is only expanded
+    // while it holds focus, i.e. while the content behind is idle and redrawing nothing, so the extra
+    // capture is close to free precisely when it's switched on. Collapsed, the rail sits over the
+    // reserved strip with no content behind it, so it has nothing to frost anyway.
+    var sidebarExpanded by remember { mutableStateOf(false) }
     // The collapsed sidebar footprint the content reserves at the left. The sidebar OVERLAYS content
     // when it expands rather than pushing it: animating the rail's real width in a Row remeasured and
     // relayouted the entire content screen (a full movie grid / guide) on every animation frame, which
@@ -74,31 +86,39 @@ fun AreIptvAppShell(
     CompositionLocalProvider(
         LocalAmbientArtwork provides artwork,
         LocalAppBackdrop provides backdrop,
+        LocalPageBackdrop provides pageBackdrop.takeIf { sidebarExpanded },
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            AmbientBackdrop(Modifier.layerBackdrop(backdrop))
-            Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {
-                topBar()
-                // Bounded content area (no scroll here). The shell used to own a single
-                // verticalScroll, but that can't host the tab NavHost -- each tab now
-                // provides its own scroll (see MainActivity.ScrollableTab).
-                //
-                // focusGroup only -- deliberately NO focusRestorer here. A shell-level restorer intercepts
-                // right-arrow entry with a directional/nearest search and resolves it to whatever focusable
-                // sits at the sidebar icon's height (the reported "Settings lands on Dark theme, mid-page").
-                // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
-                // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
-                // so the group boundary is all the shell needs to provide.
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .focusGroup(),
-                ) {
-                    content()
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .then(if (sidebarExpanded) Modifier.layerBackdrop(pageBackdrop) else Modifier),
+            ) {
+                AmbientBackdrop(Modifier.layerBackdrop(backdrop))
+                Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {
+                    topBar()
+                    // Bounded content area (no scroll here). The shell used to own a single
+                    // verticalScroll, but that can't host the tab NavHost -- each tab now
+                    // provides its own scroll (see MainActivity.ScrollableTab).
+                    //
+                    // focusGroup only -- deliberately NO focusRestorer here. A shell-level restorer intercepts
+                    // right-arrow entry with a directional/nearest search and resolves it to whatever focusable
+                    // sits at the sidebar icon's height (the reported "Settings lands on Dark theme, mid-page").
+                    // It also overrode each screen's own focusProperties{enter}. Every content screen manages its
+                    // own entry focus (Settings pins enter->first row; browse screens request their index-0 tile),
+                    // so the group boundary is all the shell needs to provide.
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .focusGroup(),
+                    ) {
+                        content()
+                    }
                 }
             }
-            // Drawn last so the expanding rail floats over the content's left strip. It sizes itself
+            // Drawn last so the expanding rail floats over the content's left strip -- and OUTSIDE the
+            // captured page layer above, so the panel never samples itself. It sizes itself
             // (fillMaxHeight + wrap width) and sits at the Box's top-start by default; its own style
             // branch handles the inset (FLOATING) or flush edge (EDGE).
             AreSidebarNav(
@@ -106,6 +126,7 @@ fun AreIptvAppShell(
                 onSelect = onNavSelect,
                 badgedIds = badgedNavIds,
                 style = sidebarStyle,
+                onExpandedChange = { sidebarExpanded = it },
                 modifier = Modifier.align(Alignment.TopStart),
             )
         }

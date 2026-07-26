@@ -77,12 +77,15 @@ import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
+import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
+import com.arashrahimi46.iptv.ui.theme.frostedPanel
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassLens
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
+import kotlinx.coroutines.delay
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
 
@@ -118,6 +121,9 @@ fun AreSidebarNav(
      * active playlist hasn't been refreshed in over two weeks). */
     badgedIds: Set<String> = emptySet(),
     style: SidebarStyle = SidebarStyle.FLOATING,
+    /** Fires when the rail expands/collapses, so the shell can publish the page-content backdrop the
+     *  expanded panel frosts (only while it's open -- see [LocalPageBackdrop]). */
+    onExpandedChange: (Boolean) -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
@@ -136,6 +142,13 @@ fun AreSidebarNav(
     // touches nothing here -- do not add a restorer.
     val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
     val expanded = focusedItemId != null
+    // On expand, tell the shell straight away so the panel frosts the content it starts covering. On
+    // collapse, hold the report until the width animation has actually finished -- dropping the page
+    // layer the instant focus leaves would snap the still-open overhang back to ambient mid-slide.
+    LaunchedEffect(expanded) {
+        if (!expanded) delay(motion.durBaseMs.toLong())
+        onExpandedChange(expanded)
+    }
     val openWidth = if (floating) spacing.sidebarBoxWidthOpen else spacing.sidebarWidthOpen
     // NOTE: deliberately NOT `by` -- the State is passed down and read at LAYOUT/DRAW time. Reading
     // an animated Dp in composition recomposes this whole composable on every one of the ~13 frames
@@ -182,11 +195,11 @@ fun AreSidebarNav(
                 Modifier
                     .widthFrom(width)
                     .fillMaxHeight()
-                    // sheer = true: the sidebar is a big hero surface floating on the ambient
-                    // backdrop, so on blur-capable TVs it drops to a ~30% fill and reads as TRUE
-                    // see-through glass -- the ambient backdrop behind actually shows. Tier C keeps the
-                    // legible dense fill (no sampled backdrop there to reveal).
-                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true, sheer = true),
+                    // Frosted, not merely translucent: while expanded the shell publishes the page
+                    // layer and this panel samples + blurs it, so the rails and artwork the overhang
+                    // covers are genuinely visible through the glass. Collapsed (or Tier C) it falls
+                    // back to the sheer ambient fill -- see [Modifier.frostedPanel].
+                    .frostedPanel(RoundedCornerShape(AreIptvTheme.radius.xl)),
             )
             Column(
                 modifier = Modifier

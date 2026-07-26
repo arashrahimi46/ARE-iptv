@@ -40,6 +40,23 @@ val LocalAmbientArtwork = staticCompositionLocalOf<MutableState<String?>> {
 val LocalAppBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 
 /**
+ * The ambient backdrop **plus the page content** -- for the one surface class that genuinely floats
+ * OVER the page: the expanded sidebar. Only ever provided while the sidebar is expanded (the shell
+ * gates it), and only ever sampled by that panel, so there is no feedback: the sidebar is drawn as a
+ * sibling *outside* this layer and so is never inside its own backdrop.
+ *
+ * Why it exists: [LocalAppBackdrop] captures the ambient wash only, and that wash starts with an
+ * opaque `bgBase`. A surface sampling it therefore *repaints the page's own background over the page*
+ * inside its bounds -- so however sheer the fill, the expanded sidebar could never show the rails it
+ * covers. Arithmetic, not tuning: there was nothing but ambient behind it in the buffer.
+ *
+ * This is also the one place a per-surface blur is warranted (§4 says blur belongs on the layer that
+ * captures *sharp* content, not re-derived per surface): posters and text behind the panel are sharp,
+ * and the blur is what turns "transparent window" into frosted glass while keeping the labels legible.
+ */
+val LocalPageBackdrop = staticCompositionLocalOf<Backdrop?> { null }
+
+/**
  * The thing glass refracts (design spec §3) -- **the single highest-value change in Glass V2**.
  *
  * V1 painted one flat opaque `bgBase` behind everything, so `surfaceGlass` at 55% composited to a

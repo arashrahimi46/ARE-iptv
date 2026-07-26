@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.vibrancy
 
 /** Sentinel "this surface should lift" value; the actual look comes from [softShadow], not from a
@@ -147,6 +148,42 @@ fun Modifier.glassSurface(
             .background(fill, shape)
             .border(1.dp, glassBorderBrush(), shape)
             .clip(shape)
+    }
+}
+
+/**
+ * TRUE frosted glass -- a panel that floats over the page and shows the **page content** softly
+ * blurred behind it. Currently the expanded sidebar, and deliberately nothing else.
+ *
+ * [glassSurface] can't do this: it samples [LocalAppBackdrop], the ambient wash, whose first draw op
+ * is an opaque `bgBase`. Sampling it paints the page's background back over the page inside the
+ * panel's bounds, so the rails the panel covers can never show through no matter how sheer the fill.
+ * This samples [LocalPageBackdrop] instead -- ambient *and* content -- and blurs it.
+ *
+ * The blur is the whole point and is the sanctioned exception to §4's "no per-surface blur": what is
+ * behind here is sharp artwork and text, so without it the panel reads as a transparent window and
+ * the nav labels fight the posters underneath. One surface, one blur.
+ *
+ * Falls back to sheer [glassSurface] when the shell hasn't published a page layer (i.e. the sidebar is
+ * collapsed, where there is no content behind it anyway) or the TV can't render one (Tier C).
+ */
+fun Modifier.frostedPanel(shape: Shape): Modifier = composed {
+    val c = AreIptvTheme.colors
+    val tier = LocalGlassTier.current
+    val page = LocalPageBackdrop.current
+    if (page != null && tier.hasBackdropBlur) {
+        this
+            .softShadow(shape)
+            .drawBackdrop(
+                backdrop = page,
+                shape = { shape },
+                effects = { blur(28.dp.toPx()) },
+                onDrawSurface = { drawRect(c.surfaceGlassSheer) },
+            )
+            .border(1.dp, glassBorderBrush(), shape)
+            .clip(shape)
+    } else {
+        this.glassSurface(shape, elevated = true, sheer = true)
     }
 }
 
