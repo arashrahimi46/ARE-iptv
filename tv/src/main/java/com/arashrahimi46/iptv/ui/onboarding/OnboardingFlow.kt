@@ -53,7 +53,7 @@ private val stepRoutes = listOf("source", "credentials", "epg", "confirm")
  *   user chooses "Skip for now"), with the new source id if one was created.
  */
 @Composable
-fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
+fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit)? = null) {
     val context = LocalContext.current
     val viewModel: OnboardingViewModel = viewModel(
         factory = OnboardingViewModel.factory(context.applicationContext as android.app.Application),
@@ -126,7 +126,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit) {
             ) {
                 NavHost(navController = navController, startDestination = "source") {
                     composable("source") {
-                        SourceStep(selected = uiState.sourceType, onSelect = viewModel::setSourceType)
+                        SourceStep(selected = uiState.sourceType, onSelect = viewModel::setSourceType, onExplore = onExplore)
                     }
                     composable("credentials") {
                         CredentialsStep(

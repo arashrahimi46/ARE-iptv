@@ -146,6 +146,25 @@
     <string name="legal_s15_title">15. Contact</string>
     <string name="legal_s15_body">Questions, privacy requests and copyright notices: [CONTACT_EMAIL].</string>
 
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Explore free IPTV playlists</string>
+    <string name="sources_from_explore">From Explore</string>
+    <string name="explore_title">Explore free IPTV</string>
+    <string name="explore_subtitle">Publicly listed, free-to-air playlists maintained by the community. ARE iptv does not host or control these streams, and availability varies by country.</string>
+    <string name="explore_used_count">%1$d of %2$d playlists used</string>
+    <string name="explore_channels_approx">~%1$d channels</string>
+    <string name="explore_hint">Channel counts are approximate and change often.</string>
+    <string name="explore_add_title">Add “%1$s”</string>
+    <string name="explore_add_body">Name it however you like — you can rename it later.</string>
+    <string name="explore_add_action">Add playlist</string>
+    <string name="explore_name_label">Playlist name</string>
+    <string name="explore_adding_title">Adding playlist…</string>
+    <string name="explore_adding_body">Fetching “%1$s”. This can take a moment on a large list.</string>
+    <string name="explore_failed_title">Couldn\'t add that playlist</string>
+    <string name="explore_failed_body">“%1$s” couldn\'t be loaded. The list may have moved or be temporarily unavailable — this is a problem with the playlist, not with your device. Try another one.</string>
+    <string name="explore_cap_title">You have %1$d playlists</string>
+    <string name="explore_cap_body">That\'s the maximum. Remove one from your playlist list to add another.</string>
+
     <!-- Select source -->
     <string name="sources_choose_title">Choose a playlist</string>
     <string name="sources_choose_subtitle">Pick which of your added playlists to open.</string>

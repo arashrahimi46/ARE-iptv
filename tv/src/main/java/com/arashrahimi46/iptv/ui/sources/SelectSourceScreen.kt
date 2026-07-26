@@ -63,6 +63,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     val xtreamLabel = stringResource(R.string.sources_type_xtream)
     val m3uLabel = stringResource(R.string.sources_type_m3u)
     val stalkerLabel = stringResource(R.string.sources_type_stalker)
+    val exploreLabel = stringResource(R.string.sources_from_explore)
     // At most one of these is non-null at a time -- they are the three steps of the hold-OK flow:
     // options menu -> rename dialog OR delete confirmation.
     var pendingOptions by remember { mutableStateOf<PlaylistSource?>(null) }
@@ -126,7 +127,13 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                     SourceType.STALKER -> stalkerLabel
                     SourceType.M3U -> m3uLabel
                 }
-                val label = "${source.name}  ·  $typeLabel"
+                // Provenance, not decoration: it tells the user this list came from our curated
+                // catalogue rather than something they typed, which is why it can break on its own.
+                val label = if (source.origin != null) {
+                    "${source.name}  ·  $typeLabel  ·  $exploreLabel"
+                } else {
+                    "${source.name}  ·  $typeLabel"
+                }
                 AreButton(
                     text = label,
                     onClick = { viewModel.select(source.id, onSelected) },

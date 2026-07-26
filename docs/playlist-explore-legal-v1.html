@@ -272,10 +272,41 @@
       <div><span class="k">Schema</span><span class="v">v11 → v12</span></div>
       <div><span class="k">New screens</span><span class="v">1 (Explore)</span></div>
       <div><span class="k">Hosting</span><span class="v">None — bundled</span></div>
-      <div><span class="k">Status</span><span class="v">Design agreed, not built</span></div>
+      <div><span class="k">Status</span><span class="v">Phases 1–2 shipped · Phase 3 in build</span></div>
     </div>
   </div>
 </header>
+
+<section>
+  <div class="sechead">
+    <div class="bar"><span class="bar-id">Where this stands</span><span class="pill risk">2 blockers</span></div>
+    <p>Updated 27 July 2026, after building phases 1 and 2.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Phase</th><th>State</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Rename</td><td><span class="pill ok">Shipped</span> <code>c5590d7</code></td><td>Driven on the TV emulator: hold-OK menu, rename, persists. Hold-OK no longer deletes outright.</td></tr>
+        <tr><td>2 · Telemetry &amp; legal</td><td><span class="pill ok">Shipped</span> <code>c29d705</code> + <code>56ad142</code></td><td>Crash opt-out gates Sentry per-event; versioned consent re-prompts once; 15-clause document scrolls by D-pad. Verified in Hungarian.</td></tr>
+        <tr><td>3 · Explore</td><td><span class="pill new">In build</span></td><td>Migration 11→12, bundled manifest, curated grid, 10-playlist cap.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="note warn">
+      <div class="nt">Blocker 1 — the document ships with placeholders</div>
+      <p><code>[LEGAL_NAME]</code> and <code>[CONTACT_EMAIL]</code> are on screen right now, in clauses 1, 8, 11 and 15. A real name, country and contact address are needed before any release reaches users.</p>
+    </div>
+    <div class="note warn">
+      <div class="nt">Blocker 2 — no public policy URL</div>
+      <p>Play requires one and bundling does not satisfy it. Deferred deliberately; the text is structured so it can be published without a rewrite.</p>
+    </div>
+    <div class="note">
+      <div class="nt">Three defects the build caught only by being driven</div>
+      <p>The legal card overflowed a 540dp TV panel and clipped Close; the scroll area had no focusable child, so the D-pad did nothing and the reader was stuck on clause 3 of 15; and naively consuming those keys would have trapped focus in the document. None of it is visible to a compile or a unit test — only to a remote.</p>
+    </div>
+  </div>
+</section>
 
 <section>
   <div class="sechead">

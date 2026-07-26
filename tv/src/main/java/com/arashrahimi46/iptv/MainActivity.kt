@@ -69,6 +69,7 @@ import com.arashrahimi46.iptv.ui.settings.ParentalPinDialog
 import com.arashrahimi46.iptv.ui.settings.ParentalPinDialogMode
 import com.arashrahimi46.iptv.ui.detail.DetailScreen
 import com.arashrahimi46.iptv.ui.detail.PlayTarget
+import com.arashrahimi46.iptv.ui.explore.ExploreScreen
 import com.arashrahimi46.iptv.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.ui.home.HomeScreen
@@ -290,11 +291,26 @@ fun AreIptvApp() {
             )
         }
         composable("onboarding") {
-            OnboardingFlow(onFinished = {
-                navController.navigate("shell") {
-                    popUpTo("onboarding") { inclusive = true }
-                }
-            })
+            OnboardingFlow(
+                onFinished = {
+                    navController.navigate("shell") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                },
+                onExplore = { navController.navigate("explore") },
+            )
+        }
+        // Curated free-playlist catalogue. An add here is an ordinary M3U import, so it lands in the
+        // shell exactly like one the user typed -- popping onboarding too, since the goal is met.
+        composable("explore") {
+            ExploreScreen(
+                onAdded = {
+                    navController.navigate("shell") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() },
+            )
         }
         // Startup playlist picker: lists every added source and activates the chosen one
         // before entering the shell. "Add new" routes back into onboarding.

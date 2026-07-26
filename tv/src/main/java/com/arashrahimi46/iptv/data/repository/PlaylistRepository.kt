@@ -161,8 +161,13 @@ interface PlaylistRepository {
     suspend fun titlesByIds(ids: List<Long>): List<VodTitle>
     suspend fun channelIds(sourceId: Long): List<Long>
 
-    /** Fetches + parses an M3U playlist and persists the derived catalog. Throws on network/parse failure. */
-    suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary
+    /**
+     * Fetches + parses an M3U playlist and persists the derived catalog. Throws on network/parse failure.
+     *
+     * [origin] records the curated Explore entry this came from (null = the user typed it), so the
+     * picker can badge it and provenance survives a rename.
+     */
+    suspend fun addM3uSource(name: String, url: String, epgUrl: String?, origin: String? = null): ImportSummary
 
     /** Authenticates against the Xtream portal, pulls the top-level catalog, and persists it. Throws on failure. */
     suspend fun addXtreamSource(
@@ -416,7 +421,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
         )
     }
 
-    override suspend fun addM3uSource(name: String, url: String, epgUrl: String?): ImportSummary =
+    override suspend fun addM3uSource(name: String, url: String, epgUrl: String?, origin: String?): ImportSummary =
         withContext(Dispatchers.IO) {
             // An Xtream portal handed out as a get.php M3U link is imported via its authoritative
             // player_api instead of guessing content type from group-title keywords (which drops
@@ -446,7 +451,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
 
             val source = PlaylistSource(
                 name = name, type = SourceType.M3U, url = normalizedUrl, epgUrl = epgUrl,
-                lastRefreshedAtMs = System.currentTimeMillis(),
+                lastRefreshedAtMs = System.currentTimeMillis(), origin = origin,
             )
             val sourceId = db.playlistSourceDao().insert(source)
 

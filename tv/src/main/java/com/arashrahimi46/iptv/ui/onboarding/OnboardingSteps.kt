@@ -44,6 +44,9 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.components.AreBadge
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.ui.components.AreTextField
@@ -58,8 +61,10 @@ fun SourceStep(
     selected: OnboardingSourceType,
     onSelect: (OnboardingSourceType) -> Unit,
     modifier: Modifier = Modifier,
+    onExplore: (() -> Unit)? = null,
 ) {
-    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+    Column(modifier = modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
         SourceCard(
             title = stringResource(R.string.onboarding_xtream_title),
             desc = stringResource(R.string.onboarding_xtream_desc),
@@ -84,6 +89,23 @@ fun SourceStep(
             onClick = { onSelect(OnboardingSourceType.STALKER) },
             modifier = Modifier.weight(1f),
         )
+    }
+        // Quiet secondary route below the three source types: discoverable for someone who has no
+        // provider yet, without ever competing with the user's own subscription above it.
+        // Deliberately small and not full-width: the content region between the pinned header and
+        // the button row is only ~200dp on a 540dp TV panel, and a Large full-width button here got
+        // clipped by the button row. Small also matches the intent -- a side door, not a fourth card.
+        if (onExplore != null) {
+            Box(Modifier.height(10.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                AreButton(
+                    text = stringResource(R.string.explore_link),
+                    onClick = onExplore,
+                    variant = AreButtonVariant.Ghost,
+                    size = AreButtonSize.Small,
+                )
+            }
+        }
     }
 }
 

@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Curated Explore catalogue. Bundled in the APK on purpose: this list is only names and URLs and",
+    "changes rarely, while the CHANNELS behind each URL are maintained continuously by iptv-org, so a",
+    "static list still serves live content. See docs/playlist-explore-legal-v1.html.",
+    "",
+    "Vetting bar for an entry: free-to-air or public-domain only, publicly listed by a known community",
+    "index, no paywalled or scrambled content, and it must resolve when curated. Anything ambiguous",
+    "does not go in.",
+    "",
+    "'channels' is indicative only and is labelled as approximate in the UI -- these lists change daily.",
+    "If an entry's URL dies it stays broken until the next app release; that is the accepted cost of",
+    "having no backend."
+  ],
+  "version": 1,
+  "entries": [
+    { "id": "nl",      "glyph": "🇳🇱", "name": "Netherlands",    "channels": 118, "url": "https://iptv-org.github.io/iptv/countries/nl.m3u" },
+    { "id": "uk",      "glyph": "🇬🇧", "name": "United Kingdom", "channels": 96,  "url": "https://iptv-org.github.io/iptv/countries/uk.m3u" },
+    { "id": "de",      "glyph": "🇩🇪", "name": "Germany",        "channels": 204, "url": "https://iptv-org.github.io/iptv/countries/de.m3u" },
+    { "id": "fr",      "glyph": "🇫🇷", "name": "France",         "channels": 178, "url": "https://iptv-org.github.io/iptv/countries/fr.m3u" },
+    { "id": "es",      "glyph": "🇪🇸", "name": "Spain",          "channels": 143, "url": "https://iptv-org.github.io/iptv/countries/es.m3u" },
+    { "id": "it",      "glyph": "🇮🇹", "name": "Italy",          "channels": 156, "url": "https://iptv-org.github.io/iptv/countries/it.m3u" },
+    { "id": "us",      "glyph": "🇺🇸", "name": "United States",  "channels": 1720,"url": "https://iptv-org.github.io/iptv/countries/us.m3u" },
+    { "id": "ca",      "glyph": "🇨🇦", "name": "Canada",         "channels": 187, "url": "https://iptv-org.github.io/iptv/countries/ca.m3u" },
+    { "id": "tr",      "glyph": "🇹🇷", "name": "Türkiye",   "channels": 132, "url": "https://iptv-org.github.io/iptv/countries/tr.m3u" },
+    { "id": "pl",      "glyph": "🇵🇱", "name": "Poland",         "channels": 88,  "url": "https://iptv-org.github.io/iptv/countries/pl.m3u" },
+    { "id": "ru",      "glyph": "🇷🇺", "name": "Russia",         "channels": 310, "url": "https://iptv-org.github.io/iptv/countries/ru.m3u" },
+    { "id": "br",      "glyph": "🇧🇷", "name": "Brazil",         "channels": 165, "url": "https://iptv-org.github.io/iptv/countries/br.m3u" },
+    { "id": "in",      "glyph": "🇮🇳", "name": "India",          "channels": 240, "url": "https://iptv-org.github.io/iptv/countries/in.m3u" },
+    { "id": "ar",      "glyph": "🇦🇪", "name": "Arabic",         "channels": 420, "url": "https://iptv-org.github.io/iptv/languages/ara.m3u" },
+    { "id": "news",    "glyph": "📰", "name": "World news",   "channels": 73,  "url": "https://iptv-org.github.io/iptv/categories/news.m3u" },
+    { "id": "movies",  "glyph": "🎬", "name": "Movies",       "channels": 61,  "url": "https://iptv-org.github.io/iptv/categories/movies.m3u" },
+    { "id": "music",   "glyph": "🎵", "name": "Music",        "channels": 45,  "url": "https://iptv-org.github.io/iptv/categories/music.m3u" },
+    { "id": "sports",  "glyph": "⚽",       "name": "Sports",       "channels": 89,  "url": "https://iptv-org.github.io/iptv/categories/sports.m3u" },
+    { "id": "kids",    "glyph": "🧸", "name": "Kids",         "channels": 52,  "url": "https://iptv-org.github.io/iptv/categories/kids.m3u" },
+    { "id": "science", "glyph": "🔬", "name": "Science",      "channels": 28,  "url": "https://iptv-org.github.io/iptv/categories/science.m3u" }
+  ]
+}

@@ -30,6 +30,9 @@ data class PlaylistSource(
      * rows imported before this column existed (they read as "never refreshed" -> stale badge until
      * the first refresh). Drives the Settings "refresh overdue" badge and the "Last updated" label. */
     val lastRefreshedAtMs: Long? = null,
+    /** Id of the curated Explore entry this was added from; null when the user entered it by hand.
+     *  Survives renames (the name is the user's, this is provenance) and drives the picker badge. */
+    val origin: String? = null,
     /** Xtream only: JSON blob of the provider account/server metadata (status, expiry, connection
      * limits, timezone…) captured from the auth response on import + each refresh, shown in the
      * Settings "Provider" panel. Null for M3U sources and for rows imported before this existed
