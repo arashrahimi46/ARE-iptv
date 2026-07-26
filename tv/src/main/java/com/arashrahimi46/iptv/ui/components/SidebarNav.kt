@@ -1,7 +1,10 @@
 package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -39,6 +42,7 @@ import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,11 +60,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
@@ -70,10 +78,9 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
-import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassLens
 import com.arashrahimi46.iptv.ui.theme.glassSurface
-import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
@@ -244,6 +251,14 @@ private fun ColumnScope.SidebarNavBody(
 
     Box(Modifier.height(spacing.sp10))
 
+    // Measured top-Y (px) of each row within the list Box, so the selection lens knows where to slide.
+    val rowTops = remember { mutableStateMapOf<String, Float>() }
+    val activeTop = rowTops[active]
+    // Buttery bit: a single glass-lens pill that SPRINGS between rows when the active tab changes,
+    // instead of the lens hard-cutting to the new row. Same feel as AreSegmentedControl's indicator.
+    val slide = spring<Float>(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow)
+    val lensY by animateFloatAsState(activeTop ?: 0f, animationSpec = slide, label = "sidebarLensY")
+
     // HIGH QA defect: a fixed-height Column with no scroll clips/hides items (Settings included)
     // below the fold on shorter/denser TV viewports (e.g. the 540dp-effective Television_1080p AVD).
     // .weight(1f) takes only the space left after the header, and verticalScroll (with focusable row
@@ -261,22 +276,38 @@ private fun ColumnScope.SidebarNavBody(
             // vertical padding inside the scroll content so the first/last item's focus glow isn't
             // clipped at the viewport edge (the reported "top of the Home focus ring disappeared").
             .padding(horizontal = if (floating) 10.dp else 16.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        items.forEach { item ->
-            val itemInteractionSource = remember { MutableInteractionSource() }
-            SidebarNavRow(
-                item = item,
-                active = item.id == active,
-                expanded = expanded,
-                badged = item.id in badgedIds,
-                // Start inset centres the 22dp icon in each container's own collapsed width.
-                startInset = if (floating) 26.dp else 23.dp,
-                interactionSource = itemInteractionSource,
-                focusRequester = focusRequesters.getValue(item.id),
-                onClick = { onSelect(item.id) },
-                onFocusedChanged = { focused -> onFocusedChanged(item.id, focused) },
-            )
+        Box(Modifier.fillMaxWidth()) {
+            // The sliding selection lens, BEHIND the rows. Rows carry a transparent fill so it shows
+            // through; the active row's own icon/label still take lensContentColor. It scrolls with
+            // the list because it lives inside the same scrolled Box.
+            if (activeTop != null) {
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(0, lensY.roundToInt()) }
+                        .fillMaxWidth()
+                        .height(44.dp)
+                        .glassLens(RoundedCornerShape(AreIptvTheme.radius.lg)),
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                items.forEach { item ->
+                    val itemInteractionSource = remember { MutableInteractionSource() }
+                    SidebarNavRow(
+                        item = item,
+                        active = item.id == active,
+                        expanded = expanded,
+                        badged = item.id in badgedIds,
+                        // Start inset centres the 22dp icon in each container's own collapsed width.
+                        startInset = if (floating) 26.dp else 23.dp,
+                        interactionSource = itemInteractionSource,
+                        focusRequester = focusRequesters.getValue(item.id),
+                        onClick = { onSelect(item.id) },
+                        onFocusedChanged = { focused -> onFocusedChanged(item.id, focused) },
+                        onPositioned = { top -> rowTops[item.id] = top },
+                    )
+                }
+            }
         }
     }
 }
@@ -332,11 +363,14 @@ private fun SidebarNavRow(
     focusRequester: FocusRequester,
     onClick: () -> Unit,
     onFocusedChanged: (Boolean) -> Unit,
+    onPositioned: (Float) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
     val label = stringResource(item.labelRes)
-    // Three visually-distinct states (design §6b): rest = transparent, focused = glass fill +
-    // lit-edge gradient (on top of the TvFocusable ring), current screen = accent lens.
+    // Two states rendered on the row itself (design §6b): rest = transparent, focused = glass fill +
+    // lit-edge gradient (on top of the TvFocusable ring). The third -- current screen = accent lens --
+    // is drawn by the sliding pill BEHIND the rows (see SidebarNavBody) so selection glides, so the
+    // row stays transparent when active and only lends its icon/label the lens content colour.
     val focused by interactionSource.collectIsFocusedAsState()
 
     TvFocusable(
@@ -346,20 +380,21 @@ private fun SidebarNavRow(
             // Smaller, tighter rows per the design artifact (rail-item: 22px icon, ~44dp tall) --
             // the rail reads lighter and shinier occupying less vertical space than before.
             .height(44.dp)
+            .onGloballyPositioned { onPositioned(it.positionInParent().y) }
             .focusRequester(focusRequester),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.lg),
-        // Three distinct states (design §6b): rest = transparent, focused = glass fill + lit edge,
-        // current screen = accent lens (more glass + a brighter rim, not opaque paint). No shadow --
-        // the lens sits on the flat rail, so a drop shadow reads as heavy; the lens rim marks it.
+        // rest = transparent, focused = glass fill + lit edge. Active fill/rim come from the sliding
+        // lens, so the row adds nothing when active-and-unfocused. No shadow -- the lens sits on the
+        // flat rail, so a drop shadow reads as heavy; the lens rim marks it.
         backgroundColor = if (focused && !active) colors.surfaceGlass else Color.Transparent,
-        backgroundBrush = if (active) accentLensBrush() else null,
-        borderBrush = when {
-            active -> lensBorderBrush()
-            focused -> glassBorderBrush()
-            else -> null
-        },
+        backgroundBrush = null,
+        borderBrush = if (focused) glassBorderBrush() else null,
         showFocusSheen = false,
+        // The selection lens is drawn behind the rows and does NOT scale, so a 6% focus grow would
+        // enlarge the ring past the lens and open a gap around an active+focused row. Full-width rail
+        // rows don't need the grow anyway -- the ring + glow carry focus.
+        disableScale = true,
     ) { isFocused, _ ->
         LaunchedEffect(isFocused) { onFocusedChanged(isFocused) }
         Row(

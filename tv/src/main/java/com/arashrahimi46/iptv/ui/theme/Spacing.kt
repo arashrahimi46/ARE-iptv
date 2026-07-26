@@ -34,7 +34,7 @@ data class AreIptvSpacing(
     // touch narrower than the flush rail and reserves box-width + 2×inset in the shell Row.
     val sidebarInset: Dp = 20.dp,
     val sidebarBoxWidth: Dp = 96.dp,
-    val sidebarBoxWidthOpen: Dp = 236.dp,
+    val sidebarBoxWidthOpen: Dp = 208.dp,
     val tilePosterWidth: Dp = 208.dp,
     val tilePosterHeight: Dp = 312.dp,
     val tileLandWidth: Dp = 320.dp,
