@@ -17,8 +17,10 @@ import com.arashrahimi46.iptv.ui.player.HudSlot
 import com.arashrahimi46.iptv.ui.player.decodeHudLayout
 import com.arashrahimi46.iptv.ui.player.encodeHudLayout
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
+import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "are_iptv_settings")
@@ -151,112 +153,131 @@ class UserSettings(private val context: Context) {
         fun multiViewChannelsKey(sourceId: Long) = stringPreferencesKey("multiview_channels_$sourceId")
     }
 
-    val activeSourceId: Flow<Long?> = context.dataStore.data.map { prefs ->
+    /**
+     * Every exposed preference flow goes through here.
+     *
+     * PERF: the `.distinctUntilChanged()` is the whole point. DataStore emits a fresh [Preferences]
+     * snapshot on ANY `edit`, so without it a write to one key woke all ~48 mapped flows on every
+     * live [UserSettings] instance; each re-ran its transform and re-emitted an identical value,
+     * which then propagated through the ViewModels' `combine`s and re-triggered their
+     * `flatMapLatest`/`mapLatest` blocks -- re-running catalog queries and rail loads for a setting
+     * that did not change. The keys written most often are the cheap incidental ones: LAST_USED_TAB
+     * fires on every tab change, GUIDE_SELECTED_CATEGORY on every guide category, and
+     * VIDEO_ASPECT_BY_CHANNEL during playback.
+     *
+     * (The decode itself was never duplicated -- `dataStore` is a Context extension delegate, so all
+     * call sites share one SingleProcessDataStore and DataStore caches the decoded Preferences. Only
+     * the transform lambdas re-ran, which is why this is a wake-up problem, not an IO one.)
+     */
+    private fun <T> pref(transform: (Preferences) -> T): Flow<T> =
+        context.dataStore.data.map(transform).distinctUntilChanged()
+
+    val activeSourceId: Flow<Long?> = pref { prefs ->
         prefs[Keys.ACTIVE_SOURCE_ID]?.takeIf { it > 0 }
     }
 
-    val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { it[Keys.DARK_THEME] ?: true }
+    val isDarkTheme: Flow<Boolean> = pref { it[Keys.DARK_THEME] ?: true }
 
     /** Theme selection; when unset, migrates the legacy [DARK_THEME] bool (true→DARK, false→LIGHT)
      * so existing users keep exactly the mode they had before this pref existed. Default DARK. */
-    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { prefs ->
+    val themeMode: Flow<ThemeMode> = pref { prefs ->
         prefs[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: if (prefs[Keys.DARK_THEME] == false) ThemeMode.LIGHT else ThemeMode.DARK
     }
 
     /** Left-nav container style; defaults to [SidebarStyle.FLOATING] (the glass box is the new default). */
-    val sidebarStyle: Flow<SidebarStyle> = context.dataStore.data.map { prefs ->
+    val sidebarStyle: Flow<SidebarStyle> = pref { prefs ->
         prefs[Keys.SIDEBAR_STYLE]?.let { runCatching { SidebarStyle.valueOf(it) }.getOrNull() } ?: SidebarStyle.FLOATING
     }
 
     /** EPG/HUD clock format; true = 24-hour (HH:mm), false = 12-hour (h:mm a). Defaults to 24-hour. */
-    val is24HourClock: Flow<Boolean> = context.dataStore.data.map { it[Keys.CLOCK_24H] ?: true }
+    val is24HourClock: Flow<Boolean> = pref { it[Keys.CLOCK_24H] ?: true }
 
     /** Catalog stale window in days (0 = never stale). Backs the Settings "stale-window" chips and
      * the sidebar refresh nudge; defaults to 14 days (the previous hardcoded window). */
-    val staleWindowDays: Flow<Long> = context.dataStore.data.map { it[Keys.STALE_WINDOW_DAYS] ?: 14L }
+    val staleWindowDays: Flow<Long> = pref { it[Keys.STALE_WINDOW_DAYS] ?: 14L }
 
     /** Preferred audio language (ISO code) auto-selected when the user hasn't picked a track in the
      * player; blank = let ExoPlayer choose automatically. */
-    val preferredAudioLanguage: Flow<String> = context.dataStore.data.map { it[Keys.PREFERRED_AUDIO_LANG] ?: "" }
+    val preferredAudioLanguage: Flow<String> = pref { it[Keys.PREFERRED_AUDIO_LANG] ?: "" }
 
     /** Auto-advance-to-next-episode delay in seconds; 0 = off. Default 0 (matches today: no auto-advance). */
-    val autoplayNextDelaySeconds: Flow<Long> = context.dataStore.data.map { it[Keys.AUTOPLAY_NEXT_DELAY] ?: 0L }
+    val autoplayNextDelaySeconds: Flow<Long> = pref { it[Keys.AUTOPLAY_NEXT_DELAY] ?: 0L }
 
-    val subtitleTextScale: Flow<SubtitleTextScale> = context.dataStore.data.map { prefs ->
+    val subtitleTextScale: Flow<SubtitleTextScale> = pref { prefs ->
         prefs[Keys.SUBTITLE_TEXT_SCALE]?.let { runCatching { SubtitleTextScale.valueOf(it) }.getOrNull() } ?: SubtitleTextScale.MEDIUM
     }
-    val subtitleEdge: Flow<SubtitleEdge> = context.dataStore.data.map { prefs ->
+    val subtitleEdge: Flow<SubtitleEdge> = pref { prefs ->
         prefs[Keys.SUBTITLE_EDGE]?.let { runCatching { SubtitleEdge.valueOf(it) }.getOrNull() } ?: SubtitleEdge.BOX
     }
-    val subtitleColor: Flow<SubtitleColorChoice> = context.dataStore.data.map { prefs ->
+    val subtitleColor: Flow<SubtitleColorChoice> = pref { prefs ->
         prefs[Keys.SUBTITLE_COLOR]?.let { runCatching { SubtitleColorChoice.valueOf(it) }.getOrNull() } ?: SubtitleColorChoice.WHITE
     }
-    val subtitleFont: Flow<SubtitleFontChoice> = context.dataStore.data.map { prefs ->
+    val subtitleFont: Flow<SubtitleFontChoice> = pref { prefs ->
         prefs[Keys.SUBTITLE_FONT]?.let { runCatching { SubtitleFontChoice.valueOf(it) }.getOrNull() } ?: SubtitleFontChoice.DEFAULT
     }
 
-    val isReducedMotion: Flow<Boolean> = context.dataStore.data.map { it[Keys.REDUCED_MOTION] ?: false }
+    val isReducedMotion: Flow<Boolean> = pref { it[Keys.REDUCED_MOTION] ?: false }
 
     /** Accent preset chosen for dark mode; defaults to [AccentPreset.BLUE] (the original accent). */
-    val darkAccent: Flow<AccentPreset> = context.dataStore.data.map { AccentPreset.fromId(it[Keys.ACCENT_DARK]) }
+    val darkAccent: Flow<AccentPreset> = pref { AccentPreset.fromId(it[Keys.ACCENT_DARK]) }
 
     /** Accent preset chosen for light mode; independent of [darkAccent], defaults to BLUE. */
-    val lightAccent: Flow<AccentPreset> = context.dataStore.data.map { AccentPreset.fromId(it[Keys.ACCENT_LIGHT]) }
+    val lightAccent: Flow<AccentPreset> = pref { AccentPreset.fromId(it[Keys.ACCENT_LIGHT]) }
 
     /** ExoPlayer decoder-fallback preference -- see [com.arashrahimi46.iptv.ui.player.LivePlayerScreen]'s `ExoPlayer.Builder`. */
-    val isHardwareDecoding: Flow<Boolean> = context.dataStore.data.map { it[Keys.HARDWARE_DECODING] ?: true }
+    val isHardwareDecoding: Flow<Boolean> = pref { it[Keys.HARDWARE_DECODING] ?: true }
 
     /**
      * Preference only in this phase -- persisted for real, but no auto-advance-on-completion
      * listener is wired yet (documented follow-up; see report). [com.arashrahimi46.iptv.ui.detail.DetailScreen]'s
      * episode list already lets a user manually pick the next episode.
      */
-    val isAutoplayNextEpisode: Flow<Boolean> = context.dataStore.data.map { it[Keys.AUTOPLAY_NEXT_EPISODE] ?: true }
+    val isAutoplayNextEpisode: Flow<Boolean> = pref { it[Keys.AUTOPLAY_NEXT_EPISODE] ?: true }
 
     /** Docked mini-player anti-occlusion behavior; defaults to [MiniPlayerBehavior.DODGE]. */
-    val miniPlayerBehavior: Flow<MiniPlayerBehavior> = context.dataStore.data.map { prefs ->
+    val miniPlayerBehavior: Flow<MiniPlayerBehavior> = pref { prefs ->
         prefs[Keys.MINI_PLAYER_BEHAVIOR]?.let { runCatching { MiniPlayerBehavior.valueOf(it) }.getOrNull() } ?: MiniPlayerBehavior.DODGE
     }
 
-    val isParentalLockEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.PARENTAL_LOCK_ENABLED] ?: false }
+    val isParentalLockEnabled: Flow<Boolean> = pref { it[Keys.PARENTAL_LOCK_ENABLED] ?: false }
 
     /** Salted SHA-256 hash -- never the raw PIN. Null when no PIN has been set yet. */
-    val parentalPinHash: Flow<String?> = context.dataStore.data.map { it[Keys.PARENTAL_PIN_HASH] }
-    val parentalPinSalt: Flow<String?> = context.dataStore.data.map { it[Keys.PARENTAL_PIN_SALT] }
+    val parentalPinHash: Flow<String?> = pref { it[Keys.PARENTAL_PIN_HASH] }
+    val parentalPinSalt: Flow<String?> = pref { it[Keys.PARENTAL_PIN_SALT] }
 
     /** How long a PIN unlock reveals adult content before re-locking; defaults to [AutoRelock.IMMEDIATELY]. */
-    val parentalAutoRelock: Flow<AutoRelock> = context.dataStore.data.map { prefs ->
+    val parentalAutoRelock: Flow<AutoRelock> = pref { prefs ->
         prefs[Keys.PARENTAL_AUTO_RELOCK]?.let { runCatching { AutoRelock.valueOf(it) }.getOrNull() } ?: AutoRelock.IMMEDIATELY
     }
 
     /** Whether locked content is hidden or shown blurred; defaults to [LockedContentDisplay.HIDE] (today's behavior). */
-    val lockedContentDisplay: Flow<LockedContentDisplay> = context.dataStore.data.map { prefs ->
+    val lockedContentDisplay: Flow<LockedContentDisplay> = pref { prefs ->
         prefs[Keys.PARENTAL_LOCKED_DISPLAY]?.let { runCatching { LockedContentDisplay.valueOf(it) }.getOrNull() } ?: LockedContentDisplay.HIDE
     }
 
     /** User-added lowercase substrings merged into [AdultContentFilter]'s built-in markers; empty by default. */
-    val parentalKeywords: Flow<Set<String>> = context.dataStore.data.map { it[Keys.PARENTAL_KEYWORDS] ?: emptySet() }
+    val parentalKeywords: Flow<Set<String>> = pref { it[Keys.PARENTAL_KEYWORDS] ?: emptySet() }
 
     /** Require the parental PIN before the app opens; only enforced when the lock is on and a PIN is set. Default off. */
-    val isPinOnLaunch: Flow<Boolean> = context.dataStore.data.map { it[Keys.PARENTAL_PIN_ON_LAUNCH] ?: false }
+    val isPinOnLaunch: Flow<Boolean> = pref { it[Keys.PARENTAL_PIN_ON_LAUNCH] ?: false }
 
     /** Which tab opens on launch; defaults to [StartScreen.HOME] (today's behavior). */
-    val startScreen: Flow<StartScreen> = context.dataStore.data.map { prefs ->
+    val startScreen: Flow<StartScreen> = pref { prefs ->
         prefs[Keys.START_SCREEN]?.let { runCatching { StartScreen.valueOf(it) }.getOrNull() } ?: StartScreen.HOME
     }
 
     /** Last shell tab the user was on; backs [StartScreen.LAST_USED]. Defaults to "home". */
-    val lastUsedTab: Flow<String> = context.dataStore.data.map { it[Keys.LAST_USED_TAB] ?: "home" }
+    val lastUsedTab: Flow<String> = pref { it[Keys.LAST_USED_TAB] ?: "home" }
 
     /** Auto-refresh the active catalog on launch; defaults to [AutoRefreshInterval.OFF]. */
-    val autoRefreshInterval: Flow<AutoRefreshInterval> = context.dataStore.data.map { prefs ->
+    val autoRefreshInterval: Flow<AutoRefreshInterval> = pref { prefs ->
         prefs[Keys.AUTO_REFRESH]?.let { runCatching { AutoRefreshInterval.valueOf(it) }.getOrNull() } ?: AutoRefreshInterval.OFF
     }
 
     /** Confirm before leaving the app on Back at the shell root; defaults on (preserves the existing
      * exit-confirm dialog -- turning it off exits immediately). */
-    val confirmBeforeExit: Flow<Boolean> = context.dataStore.data.map { it[Keys.CONFIRM_EXIT] ?: true }
+    val confirmBeforeExit: Flow<Boolean> = pref { it[Keys.CONFIRM_EXIT] ?: true }
 
     /**
      * Single source of truth for how the parental lock filters catalogs, folding together the lock
@@ -271,10 +292,14 @@ class UserSettings(private val context: Context) {
                 hideLocked = lock && display == LockedContentDisplay.HIDE && !unlocked,
                 keywords = keywords,
             )
-        }
+        }.distinctUntilChanged()
+    // Deduped again AFTER the combine, not just on its inputs: `hideLocked` collapses three of them
+    // into one boolean, so e.g. flipping display between BOX and OUTLINE while the lock is off is a
+    // real upstream change that produces an identical ParentalFilter. Every catalog query in the app
+    // is keyed on this flow, so an identical re-emission re-runs them for nothing.
 
     /** Last channel-group filter picked on the Guide screen (see [com.arashrahimi46.iptv.ui.guide.GuideViewModel]); "All" when unset. */
-    val guideSelectedCategory: Flow<String> = context.dataStore.data.map { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
+    val guideSelectedCategory: Flow<String> = pref { it[Keys.GUIDE_SELECTED_CATEGORY] ?: "All" }
 
     /**
      * Which version of the Privacy Policy / Terms this user has accepted; 0 = never accepted.
@@ -284,7 +309,7 @@ class UserSettings(private val context: Context) {
      * read as version 1, so existing installs are re-prompted exactly once when
      * [CURRENT_TERMS_VERSION] moves past it, and every future revision reuses the same mechanism.
      */
-    val acceptedTermsVersion: Flow<Int> = context.dataStore.data.map { prefs ->
+    val acceptedTermsVersion: Flow<Int> = pref { prefs ->
         prefs[Keys.TERMS_VERSION] ?: if (prefs[Keys.TERMS_ACCEPTED] == true) 1 else 0
     }
 
@@ -293,65 +318,65 @@ class UserSettings(private val context: Context) {
 
     /** Anonymous usage analytics (Firebase/GA4) opt-out; on by default, a Settings switch flips it.
      * Read once at startup to seed [com.arashrahimi46.iptv.analytics.Analytics] collection state. */
-    val isAnalyticsEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.ANALYTICS_ENABLED] ?: true }
+    val isAnalyticsEnabled: Flow<Boolean> = pref { it[Keys.ANALYTICS_ENABLED] ?: true }
 
     /** Crash + ANR diagnostics (Sentry) opt-out; on by default. Read at startup to seed
      * [com.arashrahimi46.iptv.analytics.CrashReporting], which gates every outgoing event. */
-    val isCrashReportingEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.CRASH_REPORTING_ENABLED] ?: true }
+    val isCrashReportingEnabled: Flow<Boolean> = pref { it[Keys.CRASH_REPORTING_ENABLED] ?: true }
 
     /** Show the pulsing "REC" badge in the player HUD while recording; on by default (see
      * [com.arashrahimi46.iptv.ui.components.RecordingIndicator]). */
-    val isRecordingIndicatorEnabled: Flow<Boolean> = context.dataStore.data.map { it[Keys.RECORDING_INDICATOR] ?: true }
+    val isRecordingIndicatorEnabled: Flow<Boolean> = pref { it[Keys.RECORDING_INDICATOR] ?: true }
 
     /** True renders Live TV/Movies/Series as a list instead of the default tile grid (see [com.arashrahimi46.iptv.ui.browse.BrowseLayout]). */
-    val isBrowseListMode: Flow<Boolean> = context.dataStore.data.map { it[Keys.BROWSE_LIST_MODE] ?: false }
+    val isBrowseListMode: Flow<Boolean> = pref { it[Keys.BROWSE_LIST_MODE] ?: false }
 
     /** Preferred subtitle language (ISO code) pre-selected when searching subtitles online; defaults to English. */
-    val subtitleLanguage: Flow<String> = context.dataStore.data.map { it[Keys.SUBTITLE_LANGUAGE] ?: "en" }
+    val subtitleLanguage: Flow<String> = pref { it[Keys.SUBTITLE_LANGUAGE] ?: "en" }
 
     /** Video aspect/resize mode name (see AspectMode in the player); "FIT" (whole picture) by default. */
-    val videoAspectMode: Flow<String> = context.dataStore.data.map { it[Keys.VIDEO_ASPECT_MODE] ?: "FIT" }
+    val videoAspectMode: Flow<String> = pref { it[Keys.VIDEO_ASPECT_MODE] ?: "FIT" }
 
     /** Per-live-channel aspect overrides (channelId -> AspectMode name); empty until a live channel's
      * aspect is changed from the HUD. Live playback prefers this over the global [videoAspectMode];
      * VOD (no channel id) always uses the global default. */
     val videoAspectByChannel: Flow<Map<String, String>> =
-        context.dataStore.data.map { it[Keys.VIDEO_ASPECT_BY_CHANNEL].parseAspectMap() }
+        pref { it[Keys.VIDEO_ASPECT_BY_CHANNEL].parseAspectMap() }
 
     /** User's personal OpenSubtitles API key for online subtitle search; null until they connect one in Settings. */
-    val openSubsCredential: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_CRED]?.takeIf { k -> k.isNotBlank() } }
+    val openSubsCredential: Flow<String?> = pref { it[Keys.OPENSUBS_CRED]?.takeIf { k -> k.isNotBlank() } }
 
     /** User's personal OMDb API key for movie/series metadata (IMDb & Rotten Tomatoes ranks, plot,
      * cast); null until they connect one in Settings. See [com.arashrahimi46.iptv.data.parser.OmdbClient]. */
-    val omdbKey: Flow<String?> = context.dataStore.data.map { it[Keys.OMDB_KEY]?.takeIf { k -> k.isNotBlank() } }
+    val omdbKey: Flow<String?> = pref { it[Keys.OMDB_KEY]?.takeIf { k -> k.isNotBlank() } }
 
     /** OpenSubtitles account username -- needed (with [openSubsPhrase]) to log in for downloads. */
-    val openSubsUsername: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_U]?.takeIf { k -> k.isNotBlank() } }
+    val openSubsUsername: Flow<String?> = pref { it[Keys.OPENSUBS_U]?.takeIf { k -> k.isNotBlank() } }
 
     /** OpenSubtitles account password, stored to re-authenticate when the login token expires (~24h). */
-    val openSubsPhrase: Flow<String?> = context.dataStore.data.map { it[Keys.OPENSUBS_P]?.takeIf { k -> k.isNotBlank() } }
+    val openSubsPhrase: Flow<String?> = pref { it[Keys.OPENSUBS_P]?.takeIf { k -> k.isNotBlank() } }
 
     /** Persisted Home rail order/visibility; defaults to [DEFAULT_HOME_LAYOUT] until the user
      * customizes it (or if the stored value decodes to nothing usable). */
-    val homeLayout: Flow<List<HomeSection>> = context.dataStore.data.map { prefs ->
+    val homeLayout: Flow<List<HomeSection>> = pref { prefs ->
         prefs[Keys.HOME_LAYOUT]?.let(::decodeHomeLayout)?.takeIf { it.isNotEmpty() } ?: DEFAULT_HOME_LAYOUT
     }
 
     /** Persisted player-HUD button order/visibility; defaults to [DEFAULT_HUD_LAYOUT] until the
      * user rearranges it. [decodeHudLayout] self-heals (fills any missing controls) so this always
      * yields every control exactly once. */
-    val hudLayout: Flow<List<HudSlot>> = context.dataStore.data.map { prefs ->
+    val hudLayout: Flow<List<HudSlot>> = pref { prefs ->
         prefs[Keys.HUD_LAYOUT]?.let(::decodeHudLayout) ?: DEFAULT_HUD_LAYOUT
     }
 
     /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); mirrors whatever was last
      * applied via `AppCompatDelegate.setApplicationLocales` so app logic can read "current
      * language" without touching AppCompatDelegate internals directly. Defaults to "en". */
-    val languageTag: Flow<String> = context.dataStore.data.map { it[Keys.LANGUAGE_TAG] ?: "en" }
+    val languageTag: Flow<String> = pref { it[Keys.LANGUAGE_TAG] ?: "en" }
 
     /** Whether the first-run language selector has already been completed once; gates that screen
      * so it is shown exactly once, on first app open. Defaults to false. */
-    val hasSelectedLanguage: Flow<Boolean> = context.dataStore.data.map { it[Keys.LANGUAGE_CHOSEN] ?: false }
+    val hasSelectedLanguage: Flow<Boolean> = pref { it[Keys.LANGUAGE_CHOSEN] ?: false }
 
     suspend fun setActiveSourceId(id: Long) {
         context.dataStore.edit { it[Keys.ACTIVE_SOURCE_ID] = id }
@@ -612,7 +637,7 @@ class UserSettings(private val context: Context) {
      * doesn't also pin a same-named genre under Movies. Empty until the user pins one.
      */
     fun pinnedCategories(namespace: String): Flow<Set<String>> =
-        context.dataStore.data.map { it[Keys.pinnedCategoriesKey(namespace)] ?: emptySet() }
+        pref { it[Keys.pinnedCategoriesKey(namespace)] ?: emptySet() }
 
     suspend fun togglePinnedCategory(namespace: String, name: String) {
         context.dataStore.edit { prefs ->
@@ -628,7 +653,7 @@ class UserSettings(private val context: Context) {
      * of channel ids; see [com.arashrahimi46.iptv.ui.multiview.MultiViewViewModel].
      */
     fun multiViewChannelIds(sourceId: Long): Flow<List<Long>> =
-        context.dataStore.data.map { it[Keys.multiViewChannelsKey(sourceId)].parseIdCsv() }
+        pref { it[Keys.multiViewChannelsKey(sourceId)].parseIdCsv() }
 
     /** Append [channelId] (no duplicates); when already at [max], evict the oldest (FIFO). */
     suspend fun addMultiViewChannel(sourceId: Long, channelId: Long, max: Int) {

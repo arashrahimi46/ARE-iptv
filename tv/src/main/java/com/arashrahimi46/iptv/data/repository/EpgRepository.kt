@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.data.repository
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
@@ -207,9 +208,19 @@ class EpgRepository(context: Context) {
 
         val rows = bulkRows + fallbackRows
         if (rows.isNotEmpty()) {
-            // Same SQLite host-param cap as observeForChannels -- chunk the delete's IN(...) list.
-            channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES).forEach { db.epgProgramDao().deleteForChannels(it) }
-            db.epgProgramDao().insertAll(rows)
+            // ONE transaction for the whole replace. Two reasons, both felt on a TV:
+            //  - each chunked delete and the insert were separate transactions, so each paid its own
+            //    WAL commit + fsync on slow flash;
+            //  - more visibly, every one of those commits invalidated `epg_programs`, and the guide
+            //    observes it via a Flow -- so the grid re-queried once per chunk mid-refresh and
+            //    could briefly render empty between the delete and the insert. Wrapping them makes
+            //    the swap atomic: observers see the old rows, then the new ones, never neither.
+            db.withTransaction {
+                // Same SQLite host-param cap as observeForChannels -- chunk the delete's IN(...) list.
+                channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES)
+                    .forEach { db.epgProgramDao().deleteForChannels(it) }
+                db.epgProgramDao().insertAll(rows)
+            }
         }
 
         _availability.value = resolveEpgAvailability(
