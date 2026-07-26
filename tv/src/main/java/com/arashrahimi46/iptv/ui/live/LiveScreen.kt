@@ -81,16 +81,26 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         return
     }
 
-    val categoryOptions = state.categories.mapIndexed { index, category ->
-        BrowseCategoryOption(
-            name = category.name,
-            count = category.count,
-            kind = if (index == 1) AreCategoryKind.Live else AreCategoryKind.Default,
-            pinned = category.pinned,
-            // index 0 = "Favorites", 1 = "All channels" -- neither is pinnable.
-            pinnable = index >= 2,
-        )
+    // remember-ed: this is a param to [BrowseLayout], and rebuilding the List (with fresh
+    // BrowseCategoryOption instances) on every recomposition meant the param never compared equal, so
+    // BrowseLayout could never skip -- taking the whole category column and every visible grid item's
+    // content lambda with it. It re-ran on any favourites emission and any paging state change.
+    val categoryOptions = remember(state.categories) {
+        state.categories.mapIndexed { index, category ->
+            BrowseCategoryOption(
+                name = category.name,
+                count = category.count,
+                kind = if (index == 1) AreCategoryKind.Live else AreCategoryKind.Default,
+                pinned = category.pinned,
+                // index 0 = "Favorites", 1 = "All channels" -- neither is pinnable.
+                pinnable = index >= 2,
+            )
+        }
     }
+    // Hoisted out of the item lambda below. `favoriteChannelIds` is a Set -- an unstable type -- so
+    // capturing it directly made the trailing lambda a new instance on every recomposition, which
+    // defeats strong skipping's lambda memoization for the same reason as above.
+    val isFavorite = remember(favoriteChannelIds) { { id: Long -> id in favoriteChannelIds } }
 
     BrowseLayout(
         titleAccessory = { OnAirNowBadge() },
@@ -119,7 +129,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             number = channel.number,
             now = channel.categoryName,
             logoUrl = channel.logoUrl,
-            isFavorite = channel.id in favoriteChannelIds,
+            isFavorite = isFavorite(channel.id),
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
             fillWidth = true,
             modifier = Modifier.focusRequester(focusRequester),

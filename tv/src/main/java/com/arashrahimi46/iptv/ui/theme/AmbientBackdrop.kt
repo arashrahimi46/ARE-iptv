@@ -9,6 +9,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -100,49 +101,48 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
             )
         }
         androidx.compose.foundation.layout.Box(
-            Modifier.fillMaxSize().drawBehind {
+            // PERF: drawWithCache, not drawBehind. Every brush and centre here is a pure function of
+            // the layer size and the theme, yet drawBehind rebuilt all three Brushes -- and therefore
+            // three native gradient shaders -- on EVERY draw pass. This layer is the Backdrop that
+            // every glass surface samples, so it redraws whenever the focused artwork changes or any
+            // sampling surface invalidates; on a D-pad sweep that was a shader triple per redraw.
+            // Now they are built once per size/theme and the draw is three blits.
+            Modifier.fillMaxSize().drawWithCache {
                 // Two wide radial lobes, sized well past the viewport
                 // so only their soft interiors are ever on screen -- no visible gradient edge.
                 val r = size.maxDimension * 0.85f
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(meshA, Color.Transparent),
-                        center = Offset(
-                            size.width * (0.22f + 0.10f * cos(t * 6.2832f)),
-                            size.height * (0.18f + 0.08f * sin(t * 6.2832f)),
-                        ),
-                        radius = r,
-                    ),
+                val centerA = Offset(
+                    size.width * (0.22f + 0.10f * cos(t * 6.2832f)),
+                    size.height * (0.18f + 0.08f * sin(t * 6.2832f)),
+                )
+                val centerB = Offset(
+                    size.width * (0.86f - 0.09f * sin(t * 6.2832f)),
+                    size.height * (0.78f - 0.07f * cos(t * 6.2832f)),
+                )
+                val radiusB = r * 0.9f
+                val brushA = Brush.radialGradient(
+                    colors = listOf(meshA, Color.Transparent),
+                    center = centerA,
                     radius = r,
-                    center = Offset(
-                        size.width * (0.22f + 0.10f * cos(t * 6.2832f)),
-                        size.height * (0.18f + 0.08f * sin(t * 6.2832f)),
-                    ),
                 )
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(meshB, Color.Transparent),
-                        center = Offset(
-                            size.width * (0.86f - 0.09f * sin(t * 6.2832f)),
-                            size.height * (0.78f - 0.07f * cos(t * 6.2832f)),
-                        ),
-                        radius = r * 0.9f,
-                    ),
-                    radius = r * 0.9f,
-                    center = Offset(
-                        size.width * (0.86f - 0.09f * sin(t * 6.2832f)),
-                        size.height * (0.78f - 0.07f * cos(t * 6.2832f)),
-                    ),
+                val brushB = Brush.radialGradient(
+                    colors = listOf(meshB, Color.Transparent),
+                    center = centerB,
+                    radius = radiusB,
                 )
-                // Veil + vignette: the contrast floor every text token is measured against.
-                if (colors.backdropVeil.alpha > 0f) drawRect(colors.backdropVeil)
-                drawRect(
-                    Brush.radialGradient(
-                        colors = listOf(Color.Transparent, colors.bgSunken.copy(alpha = 0.55f)),
-                        center = Offset(size.width * 0.5f, size.height * 0.45f),
-                        radius = size.maxDimension * 0.72f,
-                    ),
+                val vignette = Brush.radialGradient(
+                    colors = listOf(Color.Transparent, colors.bgSunken.copy(alpha = 0.55f)),
+                    center = Offset(size.width * 0.5f, size.height * 0.45f),
+                    radius = size.maxDimension * 0.72f,
                 )
+                val veil = colors.backdropVeil
+                onDrawBehind {
+                    drawCircle(brush = brushA, radius = r, center = centerA)
+                    drawCircle(brush = brushB, radius = radiusB, center = centerB)
+                    // Veil + vignette: the contrast floor every text token is measured against.
+                    if (veil.alpha > 0f) drawRect(veil)
+                    drawRect(vignette)
+                }
             },
         )
     }

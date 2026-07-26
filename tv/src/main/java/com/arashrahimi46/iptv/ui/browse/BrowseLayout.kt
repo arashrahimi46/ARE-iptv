@@ -193,7 +193,12 @@ fun <T : Any> BrowseLayout(
                         modifier = Modifier.padding(bottom = 8.dp, start = 16.dp),
                     )
                 }
-                itemsIndexed(categories) { index, category ->
+                // Keyed by name, not by position. Index-keyed, any change to the list -- pinning
+                // floats a row to the top, a count changes -- made Compose reuse slots BY POSITION:
+                // every visible row recomposed instead of moving, and each row's remembered
+                // MutableInteractionSource stayed with the slot rather than the category, so the
+                // pressed/focus visual briefly attached to the wrong name.
+                itemsIndexed(categories, key = { _, category -> category.name }) { index, category ->
                     AreCategoryRow(
                         name = category.name,
                         onClick = { onCategorySelected(index) },

@@ -75,8 +75,12 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     }
 
     // index 0 = "Favorites", 1 = "All movies" -- neither is pinnable.
-    val categoryOptions = state.categories.mapIndexed { index, it ->
-        BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned, pinnable = index >= 2)
+    // remember-ed so the List (and its fresh BrowseCategoryOption instances) doesn't compare unequal
+    // on every recomposition, which would stop BrowseLayout from ever skipping.
+    val categoryOptions = remember(state.categories) {
+        state.categories.mapIndexed { index, it ->
+            BrowseCategoryOption(name = it.name, count = it.count, pinned = it.pinned, pinnable = index >= 2)
+        }
     }
 
     BrowseLayout(

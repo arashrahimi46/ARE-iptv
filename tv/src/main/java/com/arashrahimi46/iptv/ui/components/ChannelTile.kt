@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -89,8 +90,13 @@ fun AreChannelTile(
     val ambientArtwork = LocalAmbientArtwork.current
     val blur = LocalParentalBlur.current
     val obscured = blur.isObscured(lockCategory)
-    val initials = channel.replace(Regex(" ?HD$", RegexOption.IGNORE_CASE), "")
-        .split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    // remember-ed, and the Regex is a file-level val: this compiled a fresh Regex and built ~4
+    // intermediate collections per tile per composition -- 40 visible tiles on a live grid, re-run on
+    // every focus move.
+    val initials = remember(channel) {
+        HdSuffix.replace(channel, "")
+            .split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    }
     val healthColor = when (health) {
         AreStreamHealthLevel.Stable -> colors.healthStable
         AreStreamHealthLevel.Moderate -> colors.healthModerate
@@ -110,8 +116,19 @@ fun AreChannelTile(
       // Publish this tile's logo as the page's ambient artwork on focus gain. Fires only on the
       // transition, never per recomposition, and never clears on focus loss -- the next focused
       // tile overwrites it, so a fast D-pad move doesn't flicker back to the empty state.
+      //
+      // PERF: debounced until focus SETTLES. Each publish costs a full-screen Coil decode plus a
+      // `blur(72.dp)` RenderEffect over the whole 1080p layer in AmbientBackdrop -- and because that
+      // layer is the Backdrop every glass surface samples, it also invalidates all of them. Publishing
+      // on every focus transition meant one of those per D-pad step, so HOLDING the D-pad queued a
+      // full-screen decode + blur per tile travelled through, all of them discarded. The delay is
+      // cancelled by the next focus change (LaunchedEffect re-keys), so a sweep across twelve tiles
+      // now costs ONE decode instead of twelve.
       LaunchedEffect(focused) {
-          if (focused && logoUrl != null) ambientArtwork.value = logoUrl
+          if (focused && logoUrl != null) {
+              delay(AmbientArtworkSettleMs)
+              ambientArtwork.value = logoUrl
+          }
       }
       Box(Modifier.fillMaxWidth().clip(shape)) {
         // Clip the content to the tile shape so the info panel's square surface1 background
@@ -282,3 +299,15 @@ private fun AreChannelTilePreview() {
         }
     }
 }
+
+/**
+ * How long focus must rest on a tile before its artwork becomes the page's ambient backdrop.
+ *
+ * Sized to be shorter than a deliberate pause and longer than a D-pad repeat interval, so settling on
+ * a tile still feels immediate while sweeping past a row costs nothing. See the publish site above for
+ * what each publish actually costs.
+ */
+internal const val AmbientArtworkSettleMs = 280L
+
+/** Trailing "HD"/" HD" that provider channel names carry; stripped before deriving initials. */
+private val HdSuffix = Regex(" ?HD$", RegexOption.IGNORE_CASE)

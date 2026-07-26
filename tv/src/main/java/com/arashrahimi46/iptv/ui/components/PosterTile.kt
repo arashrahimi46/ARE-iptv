@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -99,10 +100,20 @@ fun ArePosterTile(
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     LaunchedEffect(focused) {
         if (focused) {
-            // Publish the poster as the page's ambient artwork on focus gain; never cleared on
-            // focus loss, so the next focused tile overwrites it rather than flickering to empty.
-            if (posterUrl != null) ambientArtwork.value = posterUrl
+            // Scroll FIRST and unconditionally -- this is the focus response the user feels, so it
+            // must not sit behind the artwork debounce below.
             bringIntoViewRequester.bringIntoView()
+            // Publish the poster as the page's ambient artwork; never cleared on focus loss, so the
+            // next focused tile overwrites it rather than flickering to empty.
+            //
+            // PERF: debounced until focus settles (see AmbientArtworkSettleMs). Each publish costs a
+            // full-screen Coil decode plus a blur(72.dp) RenderEffect over the whole layer, and
+            // invalidates every glass surface sampling that backdrop. Undebounced, holding the D-pad
+            // across a poster grid queued one of those per tile travelled through.
+            if (posterUrl != null) {
+                delay(AmbientArtworkSettleMs)
+                ambientArtwork.value = posterUrl
+            }
         }
     }
 
