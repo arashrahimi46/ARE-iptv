@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
@@ -140,6 +141,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
     val confirmBeforeExit by viewModel.confirmBeforeExit.collectAsState()
 
     var omdbKeyInput by remember { mutableStateOf("") }
+    var guide by remember { mutableStateOf<IntegrationGuide?>(null) }
     var showLanguagePicker by remember { mutableStateOf(false) }
     var pendingLanguage by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf<GeneralConfirm?>(null) }
@@ -263,7 +265,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
 
         item {
             SettingsSection(title = stringResource(R.string.settings_section_metadata)) {
-                OmdbBlock(omdbKey, omdbValidation, omdbKeyInput, { omdbKeyInput = it }, viewModel)
+                OmdbBlock(omdbKey, omdbValidation, omdbKeyInput, { omdbKeyInput = it }, { guide = IntegrationGuide.Omdb }, viewModel)
             }
         }
 
@@ -351,6 +353,12 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
         }
     }
 
+    guide?.let { g ->
+        Dialog(onDismissRequest = { guide = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            IntegrationGuideDialog(guide = g, onDismiss = { guide = null })
+        }
+    }
+
     when (confirm) {
         GeneralConfirm.ClearCache -> ConfirmActionDialog(
             title = stringResource(R.string.settings_clear_cache_title),
@@ -393,6 +401,7 @@ private fun OmdbBlock(
     omdbValidation: OmdbValidation,
     input: String,
     onInput: (String) -> Unit,
+    onHowTo: () -> Unit,
     viewModel: SettingsViewModel,
 ) {
     val colors = AreIptvTheme.colors
@@ -427,13 +436,24 @@ private fun OmdbBlock(
                 activateOnClick = true,
             )
             Box(Modifier.padding(top = 12.dp))
-            AreButton(
-                text = if (validatingOmdb) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
-                onClick = { viewModel.connectOmdb(input) },
-                disabled = validatingOmdb || input.isBlank(),
-                variant = AreButtonVariant.Primary,
-                size = AreButtonSize.Small,
-            )
+            // The walkthrough sits in this branch only, so it disappears the moment a key is
+            // connected -- nobody needs setup instructions for something already set up.
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AreButton(
+                    text = if (validatingOmdb) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
+                    onClick = { viewModel.connectOmdb(input) },
+                    disabled = validatingOmdb || input.isBlank(),
+                    variant = AreButtonVariant.Primary,
+                    size = AreButtonSize.Small,
+                )
+                AreButton(
+                    text = stringResource(R.string.settings_howto_key),
+                    onClick = onHowTo,
+                    variant = AreButtonVariant.Ghost,
+                    size = AreButtonSize.Small,
+                    icon = Icons.Filled.HelpOutline,
+                )
+            }
         }
     }
 }
@@ -755,6 +775,7 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
     var subsKeyInput by remember { mutableStateOf("") }
     var subsUserInput by remember { mutableStateOf("") }
     var subsPassInput by remember { mutableStateOf("") }
+    var guide by remember { mutableStateOf<IntegrationGuide?>(null) }
     var showSubtitlePicker by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
@@ -825,13 +846,22 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
                                 activateOnClick = true,
                             )
                             Box(Modifier.padding(top = 12.dp))
-                            AreButton(
-                                text = if (signingIn) stringResource(R.string.settings_signing_in) else stringResource(R.string.action_sign_in),
-                                onClick = { viewModel.signInOpenSubs(subsUserInput, subsPassInput) },
-                                disabled = signingIn || subsUserInput.isBlank() || subsPassInput.isBlank(),
-                                variant = AreButtonVariant.Primary,
-                                size = AreButtonSize.Small,
-                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                AreButton(
+                                    text = if (signingIn) stringResource(R.string.settings_signing_in) else stringResource(R.string.action_sign_in),
+                                    onClick = { viewModel.signInOpenSubs(subsUserInput, subsPassInput) },
+                                    disabled = signingIn || subsUserInput.isBlank() || subsPassInput.isBlank(),
+                                    variant = AreButtonVariant.Primary,
+                                    size = AreButtonSize.Small,
+                                )
+                                AreButton(
+                                    text = stringResource(R.string.settings_howto_account),
+                                    onClick = { guide = IntegrationGuide.OpenSubsAccount },
+                                    variant = AreButtonVariant.Ghost,
+                                    size = AreButtonSize.Small,
+                                    icon = Icons.Filled.HelpOutline,
+                                )
+                            }
                         }
                     }
                 } else {
@@ -852,13 +882,22 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
                             activateOnClick = true,
                         )
                         Box(Modifier.padding(top = 12.dp))
-                        AreButton(
-                            text = if (validating) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
-                            onClick = { viewModel.connectOpenSubs(subsKeyInput) },
-                            disabled = validating || subsKeyInput.isBlank(),
-                            variant = AreButtonVariant.Primary,
-                            size = AreButtonSize.Small,
-                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            AreButton(
+                                text = if (validating) stringResource(R.string.settings_checking) else stringResource(R.string.action_connect),
+                                onClick = { viewModel.connectOpenSubs(subsKeyInput) },
+                                disabled = validating || subsKeyInput.isBlank(),
+                                variant = AreButtonVariant.Primary,
+                                size = AreButtonSize.Small,
+                            )
+                            AreButton(
+                                text = stringResource(R.string.settings_howto_key),
+                                onClick = { guide = IntegrationGuide.OpenSubsKey },
+                                variant = AreButtonVariant.Ghost,
+                                size = AreButtonSize.Small,
+                                icon = Icons.Filled.HelpOutline,
+                            )
+                        }
                     }
                 }
             }
@@ -918,6 +957,12 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
                     )
                 }
             }
+        }
+    }
+
+    guide?.let { g ->
+        Dialog(onDismissRequest = { guide = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            IntegrationGuideDialog(guide = g, onDismiss = { guide = null })
         }
     }
 

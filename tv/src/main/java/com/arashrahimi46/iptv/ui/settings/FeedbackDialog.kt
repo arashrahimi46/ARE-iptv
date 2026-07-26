@@ -27,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -250,9 +251,14 @@ private suspend fun postFeedback(rating: Int, category: FeedbackCategory?, messa
         }
     }
 
-/** Static QR of [content] on a white quiet-zone card (white bg + dark modules scans in any theme). */
+/**
+ * Static QR of [content] on a white quiet-zone card (white bg + dark modules scans in any theme).
+ *
+ * `internal` rather than private: [IntegrationGuideDialog] hands off to a phone the same way, and a
+ * second encoder would be the same twenty lines with a different bug.
+ */
 @Composable
-private fun QrCode(content: String) {
+internal fun QrCode(content: String, size: Dp = 140.dp) {
     val matrix = remember(content) {
         runCatching {
             QRCodeWriter().encode(
@@ -269,9 +275,10 @@ private fun QrCode(content: String) {
             .background(Color.White, RoundedCornerShape(AreIptvTheme.radius.md))
             .padding(10.dp),
     ) {
-        Canvas(Modifier.size(140.dp)) {
+        Canvas(Modifier.size(size)) {
             val m = matrix ?: return@Canvas
-            val cell = size.width / m.width
+            // this.size (the DrawScope's px Size), not the `size: Dp` parameter, which shadows it.
+            val cell = this.size.width / m.width
             for (x in 0 until m.width) {
                 for (y in 0 until m.height) {
                     if (m.get(x, y)) {
