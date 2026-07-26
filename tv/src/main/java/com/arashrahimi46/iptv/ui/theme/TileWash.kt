@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import java.util.concurrent.ConcurrentHashMap
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -28,16 +27,20 @@ import kotlin.math.abs
  * mid-scroll is the whole jank budget, and at tile size a blurred logo is mud rather than colour.
  * Being this cheap is also why the wash is the one part of Glass V2 that ships on Tier C too.
  */
-fun Modifier.tileWash(shape: Shape, hue: Color): Modifier = composed {
+@Composable
+fun Modifier.tileWash(shape: Shape, hue: Color): Modifier {
     val alpha = AreIptvTheme.colors.tileWashAlpha
-    this.background(
+    // PERF: a plain @Composable extension, not `composed {}` (which is per-node and unskippable --
+    // see the note in Glass.kt), and the Brush is remembered so 40 visible tiles don't each mint a
+    // fresh gradient on every recomposition.
+    val brush = remember(hue, alpha) {
         Brush.linearGradient(
             colors = listOf(hue.copy(alpha = alpha), Color.Transparent),
             start = Offset.Zero,
             end = Offset.Infinite,
-        ),
-        shape,
-    )
+        )
+    }
+    return this.background(brush, shape)
 }
 
 /**

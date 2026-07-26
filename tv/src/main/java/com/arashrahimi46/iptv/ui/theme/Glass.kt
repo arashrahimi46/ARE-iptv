@@ -5,8 +5,8 @@ import android.graphics.Paint as NativePaint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
@@ -99,12 +99,13 @@ fun Modifier.softShadow(
  *   ambient backdrop. The sidebar floats over the dark ambient veil, so it stays legible without the
  *   dense fill.
  */
+@Composable
 fun Modifier.glassSurface(
     shape: Shape,
     elevated: Boolean = false,
     shadow: Boolean = true,
     sheer: Boolean = false,
-): Modifier = composed {
+): Modifier {
     val c = AreIptvTheme.colors
     val tier = LocalGlassTier.current
     val backdrop = LocalAppBackdrop.current
@@ -119,7 +120,7 @@ fun Modifier.glassSurface(
     // V2: sample and blur what's actually behind this surface. Only possible where the shell has
     // published a backdrop layer AND the device can render it -- Tier C falls through to the V1
     // path, which is why its token alphas are deliberately left at V1's denser values (§7/§8).
-    if (backdrop != null && tier.hasBackdropBlur) {
+    return if (backdrop != null && tier.hasBackdropBlur) {
         lifted
             .drawBackdrop(
                 backdrop = backdrop,
@@ -152,6 +153,17 @@ fun Modifier.glassSurface(
 }
 
 /**
+ * PERF NOTE for every modifier in this file: these are plain `@Composable` extensions, NOT
+ * `Modifier.composed {}`. `composed` modifiers are materialized per layout node, cannot be
+ * equality-compared, and re-execute whenever their element recomposes -- it is the documented way to
+ * defeat modifier skipping. A 40-tile grid instantiated ~4-5 of them per tile (`tvFocusable`,
+ * `glassChild` in the logo well, `tileWash`, the favourite button's own `tvFocusable`), i.e. ~180
+ * non-reusable nodes all re-running on scroll and focus travel. None of these needed `composed`'s
+ * per-node scope: they only read theme/composition-local values, which a `@Composable` function reads
+ * just as well and far more cheaply.
+ */
+
+/**
  * TRUE frosted glass -- a panel that floats over the page and shows the **page content** softly
  * blurred behind it. Currently the expanded sidebar, and deliberately nothing else.
  *
@@ -167,11 +179,12 @@ fun Modifier.glassSurface(
  * Falls back to sheer [glassSurface] when the shell hasn't published a page layer (i.e. the sidebar is
  * collapsed, where there is no content behind it anyway) or the TV can't render one (Tier C).
  */
-fun Modifier.frostedPanel(shape: Shape): Modifier = composed {
+@Composable
+fun Modifier.frostedPanel(shape: Shape): Modifier {
     val c = AreIptvTheme.colors
     val tier = LocalGlassTier.current
     val page = LocalPageBackdrop.current
-    if (page != null && tier.hasBackdropBlur) {
+    return if (page != null && tier.hasBackdropBlur) {
         this
             .softShadow(shape)
             .drawBackdrop(
@@ -191,7 +204,9 @@ fun Modifier.frostedPanel(shape: Shape): Modifier = composed {
 @Composable
 fun glassBorderBrush(): Brush {
     val c = AreIptvTheme.colors
-    return Brush.verticalGradient(listOf(c.glassHighlight, c.borderGlass))
+    return remember(c.glassHighlight, c.borderGlass) {
+        Brush.verticalGradient(listOf(c.glassHighlight, c.borderGlass))
+    }
 }
 
 /**
@@ -214,9 +229,10 @@ fun accentGradientBrush(): Brush {
  * second blur (V2 §6). Glass never stacks -- `surfaceGlass` on `surfaceGlassElevated` compounds to
  * ~87% effective opacity, which is why V1's HUD buttons read as opaque squares on a translucent bar.
  */
-fun Modifier.glassChild(shape: Shape): Modifier = composed {
+@Composable
+fun Modifier.glassChild(shape: Shape): Modifier {
     val c = AreIptvTheme.colors
-    this.background(c.glassChildTint, shape).border(1.dp, c.borderGlass, shape).clip(shape)
+    return this.background(c.glassChildTint, shape).border(1.dp, c.borderGlass, shape).clip(shape)
 }
 
 /**
@@ -224,9 +240,10 @@ fun Modifier.glassChild(shape: Shape): Modifier = composed {
  * legible against the surface it sits on -- switch tracks, the seek rail, nested text fields.
  * Carries the lit top edge so the shape reads without a fill.
  */
-fun Modifier.glassTrack(shape: Shape): Modifier = composed {
+@Composable
+fun Modifier.glassTrack(shape: Shape): Modifier {
     val c = AreIptvTheme.colors
-    this
+    return this
         .background(c.glassTrackTint, shape)
         .border(1.dp, glassBorderBrush(), shape)
         .clip(shape)
@@ -248,10 +265,11 @@ fun Modifier.glassTrack(shape: Shape): Modifier = composed {
  * Depth is carried by the direction of the lighting, not by opacity -- which is why simply raising
  * the field's alpha never fixed this.
  */
-fun Modifier.glassWell(shape: Shape): Modifier = composed {
+@Composable
+fun Modifier.glassWell(shape: Shape): Modifier {
     val c = AreIptvTheme.colors
     val shadow = if (c.isDark) Color.Black.copy(alpha = 0.30f) else Color.Black.copy(alpha = 0.10f)
-    this
+    return this
         .background(c.glassWellTint, shape)
         .clip(shape)
         .drawBehind {
@@ -284,12 +302,12 @@ fun wellBorderBrush(): Brush {
  * gradient, so the label must keep [lensContentColor] and the lens must sit on [glassTrack] (or
  * another tinted surface) rather than directly on the ambient backdrop.
  */
-fun Modifier.glassLens(shape: Shape): Modifier = composed {
+@Composable
+fun Modifier.glassLens(shape: Shape): Modifier =
     this
         .background(accentLensBrush(), shape)
         .border(1.dp, lensBorderBrush(), shape)
         .clip(shape)
-}
 
 /** [glassLens] as a plain [Brush], for the [TvFocusable] `backgroundBrush` funnel. */
 @Composable

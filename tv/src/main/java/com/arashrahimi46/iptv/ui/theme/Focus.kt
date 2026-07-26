@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawBehind
@@ -31,7 +30,10 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
@@ -72,7 +74,7 @@ fun Modifier.tvFocusable(
     ringWidth: Dp = 3.dp,
     disableScale: Boolean = false,
     ownsFocusable: Boolean = true,
-): Modifier = composed {
+): Modifier {
     val motion = AreIptvTheme.motion
     val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()
@@ -94,7 +96,7 @@ fun Modifier.tvFocusable(
         label = "tvFocusRingAlpha",
     )
 
-    this
+    return this
         .then(if (ownsFocusable) Modifier.focusable(interactionSource = interactionSource) else Modifier)
         .graphicsLayer {
             scaleX = scale
@@ -109,8 +111,71 @@ fun Modifier.tvFocusable(
         // and travelling focus on Home. The glow ([tvGlowCached]) also builds its blur
         // path/paint ONCE (drawWithCache) and only modulates alpha per frame, instead of the
         // old per-frame Path/Paint/BlurMaskFilter allocation that churned the GC mid-animation.
+        //
+        // Both take `alpha` as a LAMBDA so the animated value is read at DRAW time. This used to be
+        // `.border(color = glowColor.copy(alpha = ringAlpha))`, which read `ringAlpha` in
+        // COMPOSITION -- so every one of the ~8-15 tween frames rebuilt this whole modifier chain
+        // and minted a fresh Color and border node, on BOTH the leaving and the entering element,
+        // for every single D-pad step. It was the one hole in an otherwise draw-time-only chain.
         .tvGlowCached(glowColor, shape) { ringAlpha }
-        .border(width = ringWidth, color = glowColor.copy(alpha = ringAlpha), shape = shape)
+        .focusRingCached(glowColor, shape, ringWidth) { ringAlpha }
+}
+
+/**
+ * The crisp focus ring, drawn at DRAW time from an [alpha] lambda -- a drop-in replacement for
+ * `Modifier.border(width, color.copy(alpha = animated), shape)` that doesn't invalidate composition
+ * as the value animates.
+ *
+ * Geometry deliberately mirrors [androidx.compose.foundation.border]: the stroke is inset by half its
+ * width so the ring sits entirely INSIDE the element's bounds (centring it on the outline instead
+ * would fatten every focused element by half a stroke and shift the layout's optical edge).
+ */
+fun Modifier.focusRingCached(
+    color: Color,
+    shape: Shape,
+    width: Dp,
+    alpha: () -> Float,
+): Modifier = this.drawWithCache {
+    val strokePx = width.toPx()
+    val half = strokePx / 2f
+    val stroke = Stroke(width = strokePx)
+    val outline = shape.createOutline(size, layoutDirection, this)
+    val rounded = (outline as? Outline.Rounded)?.roundRect
+    val rect = (outline as? Outline.Rectangle)?.rect
+    val generic = (outline as? Outline.Generic)?.path
+    onDrawWithContent {
+        drawContent()
+        val a = alpha()
+        if (a <= 0f) return@onDrawWithContent
+        when {
+            rounded != null -> drawRoundRect(
+                color = color,
+                alpha = a,
+                topLeft = Offset(rounded.left + half, rounded.top + half),
+                size = Size(
+                    (rounded.width - strokePx).coerceAtLeast(0f),
+                    (rounded.height - strokePx).coerceAtLeast(0f),
+                ),
+                cornerRadius = CornerRadius(
+                    (rounded.topLeftCornerRadius.x - half).coerceAtLeast(0f),
+                    (rounded.topLeftCornerRadius.y - half).coerceAtLeast(0f),
+                ),
+                style = stroke,
+            )
+            rect != null -> drawRect(
+                color = color,
+                alpha = a,
+                topLeft = Offset(rect.left + half, rect.top + half),
+                size = Size(
+                    (rect.width - strokePx).coerceAtLeast(0f),
+                    (rect.height - strokePx).coerceAtLeast(0f),
+                ),
+                style = stroke,
+            )
+            // A generic outline can't be inset analytically; stroke it in place, as border does.
+            generic != null -> drawPath(generic, color, alpha = a, style = stroke)
+        }
+    }
 }
 
 /**

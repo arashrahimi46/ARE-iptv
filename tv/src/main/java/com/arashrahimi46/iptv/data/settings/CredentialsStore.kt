@@ -21,8 +21,16 @@ import androidx.security.crypto.MasterKey
  * which is a URL-parsing/display concern, not something this store manages) -- callers
  * simply won't have anything to read/write for those source ids.
  */
-class CredentialsStore(context: Context) {
-    private val prefs: SharedPreferences = run {
+class CredentialsStore(private val context: Context) {
+    /**
+     * PERF: `by lazy`, NOT eager. Building this does an AndroidKeyStore round trip
+     * ([MasterKey.Builder.build] generates an AES-256-GCM key via Keymaster on first run),
+     * statically initialises Tink, and then reads a file -- and [CredentialsStore] is
+     * constructed by [com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl]'s
+     * constructor, which used to run on the composition thread before the first frame. Nothing
+     * on the cold-start path reads a credential; only playing/refreshing an Xtream source does.
+     */
+    private val prefs: SharedPreferences by lazy {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
