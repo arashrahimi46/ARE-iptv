@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Ciemny</string>
     <string name="settings_theme_light">Jasny</string>
     <string name="settings_theme_system">System</string>
+    <string name="settings_sidebar_style">Styl paska bocznego</string>
+    <string name="settings_sidebar_style_desc">Pływający szklany panel lub pasek pełnej wysokości przy krawędzi</string>
+    <string name="settings_sidebar_style_floating">Pływający</string>
+    <string name="settings_sidebar_style_edge">Pełna wysokość</string>
     <string name="settings_clock_title">Format zegara</string>
     <string name="settings_clock_desc">Jak godziny pojawiają się w Przewodniku i odtwarzaczu</string>
     <string name="settings_clock_24h">24-godzinny</string>

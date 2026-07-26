@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Oscuro</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_system">Sistema</string>
+    <string name="settings_sidebar_style">Estilo de la barra lateral</string>
+    <string name="settings_sidebar_style_desc">Un panel de cristal flotante o una barra de altura completa en el borde</string>
+    <string name="settings_sidebar_style_floating">Flotante</string>
+    <string name="settings_sidebar_style_edge">Altura completa</string>
     <string name="settings_clock_title">Formato de hora</string>
     <string name="settings_clock_desc">Cómo aparecen las horas en la Guía y el reproductor</string>
     <string name="settings_clock_24h">24 horas</string>

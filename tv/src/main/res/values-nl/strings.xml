@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Donker</string>
     <string name="settings_theme_light">Licht</string>
     <string name="settings_theme_system">Systeem</string>
+    <string name="settings_sidebar_style">Stijl van de zijbalk</string>
+    <string name="settings_sidebar_style_desc">Een zwevend glazen paneel of een balk op volledige hoogte tegen de rand</string>
+    <string name="settings_sidebar_style_floating">Zwevend</string>
+    <string name="settings_sidebar_style_edge">Volledige hoogte</string>
     <string name="settings_clock_title">Klokindeling</string>
     <string name="settings_clock_desc">Hoe tijden verschijnen in de Gids en speler</string>
     <string name="settings_clock_24h">24-uurs</string>

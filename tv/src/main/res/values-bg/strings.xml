@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Тъмна</string>
     <string name="settings_theme_light">Светла</string>
     <string name="settings_theme_system">Система</string>
+    <string name="settings_sidebar_style">Стил на страничната лента</string>
+    <string name="settings_sidebar_style_desc">Плаващ стъклен панел или лента с пълна височина до ръба</string>
+    <string name="settings_sidebar_style_floating">Плаващ</string>
+    <string name="settings_sidebar_style_edge">Пълна височина</string>
     <string name="settings_clock_title">Формат на часа</string>
     <string name="settings_clock_desc">Как се показват часовете в Справочника и плейъра</string>
     <string name="settings_clock_24h">24-часов</string>

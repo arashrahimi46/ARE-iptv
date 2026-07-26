@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Sötét</string>
     <string name="settings_theme_light">Világos</string>
     <string name="settings_theme_system">Rendszer</string>
+    <string name="settings_sidebar_style">Oldalsáv stílusa</string>
+    <string name="settings_sidebar_style_desc">Lebegő üvegpanel vagy a szélhez simuló, teljes magasságú sáv</string>
+    <string name="settings_sidebar_style_floating">Lebegő</string>
+    <string name="settings_sidebar_style_edge">Teljes magasság</string>
     <string name="settings_clock_title">Óraformátum</string>
     <string name="settings_clock_desc">Hogyan jelennek meg az időpontok a Műsorújságban és a lejátszóban</string>
     <string name="settings_clock_24h">24 órás</string>

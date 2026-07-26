@@ -84,6 +84,7 @@ import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
 import com.arashrahimi46.iptv.data.settings.AutoRelock
 import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
+import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.data.settings.StartScreen
 import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
@@ -442,6 +443,7 @@ private fun OmdbBlock(
 internal fun DisplayPane(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
     val isDark = AreIptvTheme.isDark
     val themeMode by viewModel.themeMode.collectAsState()
+    val sidebarStyle by viewModel.sidebarStyle.collectAsState()
     val darkAccent by viewModel.darkAccent.collectAsState()
     val lightAccent by viewModel.lightAccent.collectAsState()
     val isReducedMotion by viewModel.isReducedMotion.collectAsState()
@@ -461,6 +463,18 @@ internal fun DisplayPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                         isSelected = { it == themeMode },
                         label = { stringResource(it.labelRes()) },
                         onSelect = { viewModel.setThemeMode(it) },
+                    )
+                }
+                SettingsRow(
+                    icon = Icons.Filled.Style,
+                    title = stringResource(R.string.settings_sidebar_style),
+                    desc = stringResource(R.string.settings_sidebar_style_desc),
+                ) {
+                    ChipChoiceRow(
+                        options = SidebarStyle.entries,
+                        isSelected = { it == sidebarStyle },
+                        label = { stringResource(it.labelRes()) },
+                        onSelect = { viewModel.setSidebarStyle(it) },
                     )
                 }
                 AccentPickerBlock(
@@ -512,6 +526,11 @@ private fun ThemeMode.labelRes(): Int = when (this) {
     ThemeMode.DARK -> R.string.settings_theme_dark
     ThemeMode.LIGHT -> R.string.settings_theme_light
     ThemeMode.SYSTEM -> R.string.settings_theme_system
+}
+
+private fun SidebarStyle.labelRes(): Int = when (this) {
+    SidebarStyle.FLOATING -> R.string.settings_sidebar_style_floating
+    SidebarStyle.EDGE -> R.string.settings_sidebar_style_edge
 }
 
 private fun StartScreen.labelRes(): Int = when (this) {

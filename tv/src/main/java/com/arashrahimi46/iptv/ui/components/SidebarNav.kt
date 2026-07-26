@@ -14,6 +14,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,29 +43,36 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
@@ -85,8 +93,11 @@ val DefaultSidebarNavItems = listOf(
 )
 
 /**
- * SidebarNav — the persistent left rail nav (SidebarNav.jsx). Collapsed to
- * icons (104dp); expands to labels (280dp) while any item inside has focus.
+ * SidebarNav — the persistent left rail nav (SidebarNav.jsx). Collapses to icons and expands to
+ * labels while any item inside holds D-pad focus. Two container styles ([SidebarStyle]): a
+ * [SidebarStyle.FLOATING] glass box inset off the screen edge (default), or the [SidebarStyle.EDGE]
+ * full-height rail flush to the bezel. Identical items, focus model and expand trigger either way —
+ * only the surface and shape differ.
  */
 @Composable
 fun AreSidebarNav(
@@ -98,10 +109,12 @@ fun AreSidebarNav(
     /** Nav ids that show a small "!" attention badge on their icon (e.g. "settings" when the
      * active playlist hasn't been refreshed in over two weeks). */
     badgedIds: Set<String> = emptySet(),
+    style: SidebarStyle = SidebarStyle.FLOATING,
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     val motion = AreIptvTheme.motion
+    val floating = style == SidebarStyle.FLOATING
 
     // Tracks which item currently holds D-pad focus (null = none), driving expand/collapse.
     var focusedItemId by remember { mutableStateOf<String?>(null) }
@@ -111,90 +124,185 @@ fun AreSidebarNav(
     // only re-enters composition when returning from a full-bleed overlay (player/detail) -- and
     // that is exactly when the browse screen restores D-pad focus to the tile the user launched
     // from (see rememberPlaybackFocusRequester). An auto-focus here stole that focus back to the
-    // sidebar, which was the reported "Back always lands on the sidebar" bug.
+    // sidebar, which was the reported "Back always lands on the sidebar" bug. The style/inset change
+    // touches nothing here -- do not add a restorer.
     val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
     val expanded = focusedItemId != null
     val width by animateDpAsState(
-        targetValue = if (expanded) spacing.sidebarWidthOpen else spacing.sidebarWidth,
+        targetValue = when {
+            floating && expanded -> spacing.sidebarBoxWidthOpen
+            floating -> spacing.sidebarBoxWidth
+            expanded -> spacing.sidebarWidthOpen
+            else -> spacing.sidebarWidth
+        },
         animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
         label = "sidebarWidth",
     )
+    val onFocusedChanged: (String, Boolean) -> Unit = { id, focused ->
+        focusedItemId = if (focused) id else focusedItemId.takeUnless { it == id }
+    }
 
-    Column(
-        modifier = modifier
-            .width(width)
-            .fillMaxHeight()
-            // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
-            // lit hairline right edge (the glass seam separating rail from content). Drawn behind
-            // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
-            // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which is
-            // the most persistent chrome in the app and so the most visible place to get it wrong.
-            .drawBehind {
-                drawRect(
-                    Brush.verticalGradient(
-                        listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
-                    ),
+    if (floating) {
+        // The 20dp gap IS the idea: that band of ambient backdrop running behind every edge is what
+        // makes the rail read as a glass object floating on the page rather than chrome bolted to the
+        // bezel. `glassSurface(elevated)` samples and blurs that backdrop through the 28dp shape
+        // exactly as dialogs do (Tier A/B); Tier C falls through to the denser opaque fill and still
+        // reads via the inset + shape + shadow.
+        Box(modifier = modifier.fillMaxHeight().padding(spacing.sidebarInset)) {
+            Column(
+                modifier = Modifier
+                    .width(width)
+                    .fillMaxHeight()
+                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
+                    .padding(vertical = spacing.sp8),
+            ) {
+                SidebarNavBody(
+                    expanded = expanded,
+                    floating = true,
+                    items = items,
+                    active = active,
+                    brand = brand,
+                    badgedIds = badgedIds,
+                    focusRequesters = focusRequesters,
+                    onSelect = onSelect,
+                    onFocusedChanged = onFocusedChanged,
                 )
-                val edge = 1.dp.toPx()
-                drawRect(
-                    brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
-                    topLeft = Offset(size.width - edge, 0f),
-                    size = Size(edge, size.height),
-                )
-            }
-            .padding(vertical = spacing.sp8),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp)
-                .padding(horizontal = 26.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            BrandMark(brand = brand, colors = colors)
-            AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
-                Text(text = "$brand iptv", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
             }
         }
-
-        Box(Modifier.height(spacing.sp10))
-
-        // HIGH QA defect: fixed-height Column with no scroll clipped/unreachable items
-        // (Settings included) below the fold on shorter/denser TV viewports (e.g. the
-        // 540dp-effective-height Television_1080p AVD profile with all 8 items + header).
-        // .weight(1f) lets this take only the space left after the brand header, and
-        // verticalScroll (with focusable() row items) lets D-pad focus auto-scroll a
-        // below-the-fold item into view instead of just stopping at the last visible one.
+    } else {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                // vertical padding inside the scroll content so the first/last item's
-                // focus glow isn't clipped at the scroll viewport edge (the reported
-                // "top of the Home focus ring disappeared").
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = modifier
+                .width(width)
+                .fillMaxHeight()
+                // The rail is a glass panel, not a flat block: a faint top-lit vertical sheen plus a
+                // lit hairline right edge (the glass seam separating rail from content). Drawn behind
+                // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
+                // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which
+                // is the most persistent chrome in the app and so the most visible place to get wrong.
+                .drawBehind {
+                    drawRect(
+                        Brush.verticalGradient(
+                            listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
+                        ),
+                    )
+                    val edge = 1.dp.toPx()
+                    drawRect(
+                        brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
+                        topLeft = Offset(size.width - edge, 0f),
+                        size = Size(edge, size.height),
+                    )
+                }
+                .padding(vertical = spacing.sp8),
         ) {
-            items.forEach { item ->
-                val itemInteractionSource = remember { MutableInteractionSource() }
-                SidebarNavRow(
-                    item = item,
-                    active = item.id == active,
-                    expanded = expanded,
-                    badged = item.id in badgedIds,
-                    interactionSource = itemInteractionSource,
-                    focusRequester = focusRequesters.getValue(item.id),
-                    onClick = { onSelect(item.id) },
-                    onFocusedChanged = { focused ->
-                        focusedItemId = if (focused) item.id else focusedItemId.takeUnless { it == item.id }
-                    },
-                )
-            }
+            SidebarNavBody(
+                expanded = expanded,
+                floating = false,
+                items = items,
+                active = active,
+                brand = brand,
+                badgedIds = badgedIds,
+                focusRequesters = focusRequesters,
+                onSelect = onSelect,
+                onFocusedChanged = onFocusedChanged,
+            )
         }
     }
 }
+
+/** Brand header + the scrolling item column, shared by both container styles. */
+@Composable
+private fun ColumnScope.SidebarNavBody(
+    expanded: Boolean,
+    floating: Boolean,
+    items: List<SidebarNavItem>,
+    active: String,
+    brand: String,
+    badgedIds: Set<String>,
+    focusRequesters: Map<String, FocusRequester>,
+    onSelect: (String) -> Unit,
+    onFocusedChanged: (String, Boolean) -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    val spacing = AreIptvTheme.spacing
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            // Floating: 28dp start centres the 40dp brand mark in the 96dp collapsed capsule
+            // ((96-40)/2), matching the icons below; kept static so it doesn't shift as the label
+            // fades in on expand. Edge: the original flush-rail inset.
+            .padding(start = if (floating) 28.dp else 26.dp, end = if (floating) 20.dp else 26.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        BrandMark(brand = brand, colors = colors)
+        AnimatedVisibility(visible = expanded, enter = fadeIn(), exit = fadeOut()) {
+            Text(text = "$brand iptv", style = AreIptvTheme.typography.h3, color = colors.textPrimary)
+        }
+    }
+
+    Box(Modifier.height(spacing.sp10))
+
+    // HIGH QA defect: a fixed-height Column with no scroll clips/hides items (Settings included)
+    // below the fold on shorter/denser TV viewports (e.g. the 540dp-effective Television_1080p AVD).
+    // .weight(1f) takes only the space left after the header, and verticalScroll (with focusable row
+    // items) lets D-pad focus auto-scroll a below-the-fold item into view.
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)
+            // Floating box only: the rounded glassSurface clip would hard-slice the first/last row at
+            // the 28dp corner. An alpha mask on the scrolled content dissolves the rows INTO the glass
+            // instead -- a solid fade colour can't, the surface is translucent, so the fade has to
+            // subtract alpha (DstIn) and let the blurred backdrop show through.
+            .then(if (floating) Modifier.scrollEdgeFade(spacing.sp6) else Modifier)
+            .verticalScroll(rememberScrollState())
+            // vertical padding inside the scroll content so the first/last item's focus glow isn't
+            // clipped at the viewport edge (the reported "top of the Home focus ring disappeared").
+            .padding(horizontal = if (floating) 10.dp else 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        items.forEach { item ->
+            val itemInteractionSource = remember { MutableInteractionSource() }
+            SidebarNavRow(
+                item = item,
+                active = item.id == active,
+                expanded = expanded,
+                badged = item.id in badgedIds,
+                // Start inset centres the 22dp icon in each container's own collapsed width.
+                startInset = if (floating) 26.dp else 23.dp,
+                interactionSource = itemInteractionSource,
+                focusRequester = focusRequesters.getValue(item.id),
+                onClick = { onSelect(item.id) },
+                onFocusedChanged = { focused -> onFocusedChanged(item.id, focused) },
+            )
+        }
+    }
+}
+
+/**
+ * Fades the scrolled content to transparent over [fade] at the top and bottom edges, so nav rows
+ * dissolve into the glass box at its rounded corners instead of being sliced by the surface clip.
+ * An offscreen layer + a DstIn vertical-gradient mask: it subtracts alpha from the content, revealing
+ * the blurred glass behind (a solid fade rectangle can't -- the surface is translucent).
+ */
+private fun Modifier.scrollEdgeFade(fade: Dp): Modifier = this
+    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    .drawWithContent {
+        drawContent()
+        val f = (fade.toPx()).coerceAtMost(size.height / 2f)
+        if (f <= 0f) return@drawWithContent
+        drawRect(
+            brush = Brush.verticalGradient(
+                0f to Color.Transparent,
+                f / size.height to Color.Black,
+                1f - f / size.height to Color.Black,
+                1f to Color.Transparent,
+            ),
+            blendMode = BlendMode.DstIn,
+        )
+    }
 
 @Composable
 private fun BrandMark(brand: String, colors: AreIptvColors) {
@@ -219,6 +327,7 @@ private fun SidebarNavRow(
     active: Boolean,
     expanded: Boolean,
     badged: Boolean,
+    startInset: Dp,
     interactionSource: MutableInteractionSource,
     focusRequester: FocusRequester,
     onClick: () -> Unit,
@@ -262,15 +371,14 @@ private fun SidebarNavRow(
                 // the (offset) glow pools in the empty lower half.
                 .fillMaxWidth()
                 .fillMaxHeight()
-                // 23dp start inset centres the 26dp icon in the collapsed rail (104dp wide minus
-                // the 16dp column padding = 72dp; (72-26)/2 = 23). Kept static (not switched by
-                // `expanded`) so the icon stays put through the width animation -- a conditional
-                // arrangement made it jump between centred and left-aligned mid-animation.
-                // Trailing inset is much smaller than the leading one: the 23dp start inset exists
-                // only to centre the icon in the collapsed rail, and mirroring it on the end just
-                // stole width from the label -- enough that long RTL labels ("راهنمای تلویزیون")
-                // wrapped to two lines. Start-aligned content, so the icon does not move.
-                .padding(start = 23.dp, end = 10.dp),
+                // [startInset] centres the 22dp icon in the collapsed container's own width. Kept
+                // static (not switched by `expanded`) so the icon stays put through the width
+                // animation -- a conditional arrangement made it jump between centred and
+                // left-aligned mid-animation. Trailing inset is much smaller than the leading one:
+                // the start inset exists only to centre the icon, and mirroring it on the end stole
+                // width from the label -- enough that long RTL labels ("راهنمای تلویزیون") wrapped to
+                // two lines. Start-aligned content, so the icon does not move.
+                .padding(start = startInset, end = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {

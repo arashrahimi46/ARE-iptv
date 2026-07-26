@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Dunkel</string>
     <string name="settings_theme_light">Hell</string>
     <string name="settings_theme_system">System</string>
+    <string name="settings_sidebar_style">Seitenleistenstil</string>
+    <string name="settings_sidebar_style_desc">Ein schwebendes Glaspanel oder eine randbündige Leiste in voller Höhe</string>
+    <string name="settings_sidebar_style_floating">Schwebend</string>
+    <string name="settings_sidebar_style_edge">Volle Höhe</string>
     <string name="settings_clock_title">Uhrzeitformat</string>
     <string name="settings_clock_desc">Wie Uhrzeiten im Guide und Player erscheinen</string>
     <string name="settings_clock_24h">24 Stunden</string>

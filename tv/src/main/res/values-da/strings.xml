@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Mørkt</string>
     <string name="settings_theme_light">Lyst</string>
     <string name="settings_theme_system">System</string>
+    <string name="settings_sidebar_style">Sidepanelets stil</string>
+    <string name="settings_sidebar_style_desc">Et svævende glaspanel eller en fuldhøjde-bjælke langs kanten</string>
+    <string name="settings_sidebar_style_floating">Svævende</string>
+    <string name="settings_sidebar_style_edge">Fuld højde</string>
     <string name="settings_clock_title">Urformat</string>
     <string name="settings_clock_desc">Hvordan tidspunkter vises i Guiden og afspilleren</string>
     <string name="settings_clock_24h">24-timers</string>

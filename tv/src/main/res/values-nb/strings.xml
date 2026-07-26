@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Mørkt</string>
     <string name="settings_theme_light">Lyst</string>
     <string name="settings_theme_system">System</string>
+    <string name="settings_sidebar_style">Sidepanelstil</string>
+    <string name="settings_sidebar_style_desc">Et svevende glasspanel eller en fullhøyde-linje langs kanten</string>
+    <string name="settings_sidebar_style_floating">Svevende</string>
+    <string name="settings_sidebar_style_edge">Full høyde</string>
     <string name="settings_clock_title">Klokkeformat</string>
     <string name="settings_clock_desc">Hvordan tidspunkter vises i Guiden og spilleren</string>
     <string name="settings_clock_24h">24-timers</string>

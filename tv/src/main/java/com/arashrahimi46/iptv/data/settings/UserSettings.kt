@@ -31,6 +31,11 @@ enum class MiniPlayerBehavior { DODGE, FADE }
  * via `isSystemInDarkTheme()`); [DARK]/[LIGHT] force one mode regardless of the device. */
 enum class ThemeMode { DARK, LIGHT, SYSTEM }
 
+/** Left-nav container style (see [com.arashrahimi46.iptv.ui.components.AreSidebarNav]). [FLOATING] is
+ * the glass box inset off the screen edge (the app's new identity); [EDGE] is the full-height rail
+ * flush to the bezel. Same nav items and focus model either way — only the surface/shape differs. */
+enum class SidebarStyle { FLOATING, EDGE }
+
 /** Subtitle text size as a fraction of view height (Media3 `SubtitleView.setFractionalTextSize`);
  * [MEDIUM] matches Media3's own default (0.0533). */
 enum class SubtitleTextScale(val fraction: Float) { SMALL(0.04f), MEDIUM(0.0533f), LARGE(0.072f), XLARGE(0.095f) }
@@ -80,6 +85,8 @@ class UserSettings(private val context: Context) {
         val DARK_THEME = booleanPreferencesKey("dark_theme")
         /** Theme selection (enum name, see [ThemeMode]); absent = derive from legacy [DARK_THEME]. */
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        /** Left-nav container style (enum name, see [SidebarStyle]); default FLOATING. */
+        val SIDEBAR_STYLE = stringPreferencesKey("sidebar_style")
         /** True renders EPG/HUD clocks in 24-hour (HH:mm); false = 12-hour (h:mm a). Default 24h. */
         val CLOCK_24H = booleanPreferencesKey("clock_24h")
         /** Days after which a catalog is "stale" (nudge refresh); 0 = never stale. Default 14. */
@@ -152,6 +159,11 @@ class UserSettings(private val context: Context) {
     val themeMode: Flow<ThemeMode> = context.dataStore.data.map { prefs ->
         prefs[Keys.THEME_MODE]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
             ?: if (prefs[Keys.DARK_THEME] == false) ThemeMode.LIGHT else ThemeMode.DARK
+    }
+
+    /** Left-nav container style; defaults to [SidebarStyle.FLOATING] (the glass box is the new default). */
+    val sidebarStyle: Flow<SidebarStyle> = context.dataStore.data.map { prefs ->
+        prefs[Keys.SIDEBAR_STYLE]?.let { runCatching { SidebarStyle.valueOf(it) }.getOrNull() } ?: SidebarStyle.FLOATING
     }
 
     /** EPG/HUD clock format; true = 24-hour (HH:mm), false = 12-hour (h:mm a). Defaults to 24-hour. */
@@ -353,6 +365,10 @@ class UserSettings(private val context: Context) {
         }
     }
 
+    suspend fun setSidebarStyle(style: SidebarStyle) {
+        context.dataStore.edit { it[Keys.SIDEBAR_STYLE] = style.name }
+    }
+
     suspend fun set24HourClock(enabled: Boolean) {
         context.dataStore.edit { it[Keys.CLOCK_24H] = enabled }
     }
@@ -394,7 +410,7 @@ class UserSettings(private val context: Context) {
     suspend fun resetToDefaults() {
         context.dataStore.edit { prefs ->
             listOf(
-                Keys.THEME_MODE, Keys.DARK_THEME, Keys.ACCENT_DARK, Keys.ACCENT_LIGHT,
+                Keys.THEME_MODE, Keys.DARK_THEME, Keys.SIDEBAR_STYLE, Keys.ACCENT_DARK, Keys.ACCENT_LIGHT,
                 Keys.REDUCED_MOTION, Keys.BROWSE_LIST_MODE, Keys.CLOCK_24H, Keys.STALE_WINDOW_DAYS,
                 Keys.HARDWARE_DECODING, Keys.VIDEO_ASPECT_MODE, Keys.VIDEO_ASPECT_BY_CHANNEL,
                 Keys.AUTOPLAY_NEXT_EPISODE, Keys.MINI_PLAYER_BEHAVIOR, Keys.RECORDING_INDICATOR,

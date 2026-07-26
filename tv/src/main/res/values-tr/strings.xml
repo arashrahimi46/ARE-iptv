@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Koyu</string>
     <string name="settings_theme_light">Açık</string>
     <string name="settings_theme_system">Sistem</string>
+    <string name="settings_sidebar_style">Kenar çubuğu stili</string>
+    <string name="settings_sidebar_style_desc">Yüzen bir cam panel ya da kenara yaslı tam boy bir şerit</string>
+    <string name="settings_sidebar_style_floating">Yüzen</string>
+    <string name="settings_sidebar_style_edge">Tam boy</string>
     <string name="settings_clock_title">Saat biçimi</string>
     <string name="settings_clock_desc">Saatlerin Rehber ve oynatıcıda görünümü</string>
     <string name="settings_clock_24h">24 saat</string>

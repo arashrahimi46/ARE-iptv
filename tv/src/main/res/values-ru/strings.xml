@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Тёмная</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_system">Системная</string>
+    <string name="settings_sidebar_style">Стиль боковой панели</string>
+    <string name="settings_sidebar_style_desc">Плавающая стеклянная панель или полоса во всю высоту у края</string>
+    <string name="settings_sidebar_style_floating">Плавающая</string>
+    <string name="settings_sidebar_style_edge">Во всю высоту</string>
     <string name="settings_clock_title">Формат времени</string>
     <string name="settings_clock_desc">Как показывается время в Гиде и плеере</string>
     <string name="settings_clock_24h">24 часа</string>

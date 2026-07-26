@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Escuro</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_system">Sistema</string>
+    <string name="settings_sidebar_style">Estilo da barra lateral</string>
+    <string name="settings_sidebar_style_desc">Um painel de vidro flutuante ou uma barra de altura total na borda</string>
+    <string name="settings_sidebar_style_floating">Flutuante</string>
+    <string name="settings_sidebar_style_edge">Altura total</string>
     <string name="settings_clock_title">Formato de hora</string>
     <string name="settings_clock_desc">Como as horas aparecem no Guia e no player</string>
     <string name="settings_clock_24h">24 horas</string>

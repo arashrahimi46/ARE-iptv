@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Tmavý</string>
     <string name="settings_theme_light">Světlý</string>
     <string name="settings_theme_system">Systém</string>
+    <string name="settings_sidebar_style">Styl postranního panelu</string>
+    <string name="settings_sidebar_style_desc">Plovoucí skleněný panel nebo lišta v plné výšce u okraje</string>
+    <string name="settings_sidebar_style_floating">Plovoucí</string>
+    <string name="settings_sidebar_style_edge">Plná výška</string>
     <string name="settings_clock_title">Formát hodin</string>
     <string name="settings_clock_desc">Jak se časy zobrazují v Průvodci a přehrávači</string>
     <string name="settings_clock_24h">24hodinový</string>

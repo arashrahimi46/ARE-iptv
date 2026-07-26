@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Întunecat</string>
     <string name="settings_theme_light">Luminos</string>
     <string name="settings_theme_system">Sistem</string>
+    <string name="settings_sidebar_style">Stilul barei laterale</string>
+    <string name="settings_sidebar_style_desc">Un panou de sticlă plutitor sau o bară pe toată înălțimea lângă margine</string>
+    <string name="settings_sidebar_style_floating">Plutitor</string>
+    <string name="settings_sidebar_style_edge">Înălțime completă</string>
     <string name="settings_clock_title">Format oră</string>
     <string name="settings_clock_desc">Cum apar orele în Ghid și player</string>
     <string name="settings_clock_24h">24 de ore</string>

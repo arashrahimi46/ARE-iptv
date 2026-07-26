@@ -446,6 +446,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     val settings = remember { UserSettings(context) }
     val miniBehavior by settings.miniPlayerBehavior.collectAsState(initial = MiniPlayerBehavior.DODGE)
     val reducedMotion by settings.isReducedMotion.collectAsState(initial = false)
+    val sidebarStyle by settings.sidebarStyle.collectAsState(initial = com.arashrahimi46.iptv.data.settings.SidebarStyle.FLOATING)
     var focusedContentBounds by remember { mutableStateOf<Rect?>(null) }
 
     // Settings "!" badge: the active playlist's catalog is overdue for a refresh (>2 weeks, or never).
@@ -547,6 +548,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     AreIptvAppShell(
         activeNav = activeNav,
         badgedNavIds = badgedNavIds,
+        sidebarStyle = sidebarStyle,
         onNavSelect = { id ->
             if (id != activeNav && id in KnownRoutes) innerNav.selectTab(id)
         },

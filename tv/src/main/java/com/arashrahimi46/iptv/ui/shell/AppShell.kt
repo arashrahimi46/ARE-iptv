@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
@@ -46,6 +47,7 @@ fun AreIptvAppShell(
     topBar: @Composable () -> Unit = { AreTopBar() },
     /** Nav ids that show a "!" attention badge (e.g. "settings" when a catalog refresh is overdue). */
     badgedNavIds: Set<String> = emptySet(),
+    sidebarStyle: SidebarStyle = SidebarStyle.FLOATING,
     content: @Composable () -> Unit,
 ) {
     // Glass V2 §3: the shell owns the artwork slot that browse screens publish their focused item
@@ -62,7 +64,7 @@ fun AreIptvAppShell(
         Box(modifier = modifier.fillMaxSize()) {
             AmbientBackdrop(Modifier.layerBackdrop(backdrop))
             Row(modifier = Modifier.fillMaxSize()) {
-                AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds)
+                AreSidebarNav(active = activeNav, onSelect = onNavSelect, badgedIds = badgedNavIds, style = sidebarStyle)
                 Column(modifier = Modifier.weight(1f)) {
                     topBar()
             // Bounded content area (no scroll here). The shell used to own a single

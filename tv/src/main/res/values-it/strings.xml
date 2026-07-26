@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Scuro</string>
     <string name="settings_theme_light">Chiaro</string>
     <string name="settings_theme_system">Sistema</string>
+    <string name="settings_sidebar_style">Stile della barra laterale</string>
+    <string name="settings_sidebar_style_desc">Un pannello di vetro fluttuante o una barra a tutta altezza sul bordo</string>
+    <string name="settings_sidebar_style_floating">Fluttuante</string>
+    <string name="settings_sidebar_style_edge">Altezza intera</string>
     <string name="settings_clock_title">Formato ora</string>
     <string name="settings_clock_desc">Come compaiono gli orari nella Guida e nel lettore</string>
     <string name="settings_clock_24h">24 ore</string>

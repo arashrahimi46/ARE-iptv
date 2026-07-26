@@ -132,6 +132,10 @@
     <string name="settings_theme_dark">Tumma</string>
     <string name="settings_theme_light">Vaalea</string>
     <string name="settings_theme_system">Järjestelmä</string>
+    <string name="settings_sidebar_style">Sivupalkin tyyli</string>
+    <string name="settings_sidebar_style_desc">Kelluva lasipaneeli tai reunaan kiinnittyvä täyskorkea palkki</string>
+    <string name="settings_sidebar_style_floating">Kelluva</string>
+    <string name="settings_sidebar_style_edge">Täysi korkeus</string>
     <string name="settings_clock_title">Kellon muoto</string>
     <string name="settings_clock_desc">Miten ajat näkyvät oppaassa ja soittimessa</string>
     <string name="settings_clock_24h">24 tuntia</string>

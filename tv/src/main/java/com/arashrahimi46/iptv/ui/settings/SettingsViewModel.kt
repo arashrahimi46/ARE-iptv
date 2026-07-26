@@ -22,6 +22,7 @@ import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
@@ -78,6 +79,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         flow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)
 
     val themeMode: StateFlow<ThemeMode> = flowState(settings.themeMode, ThemeMode.DARK)
+    val sidebarStyle: StateFlow<SidebarStyle> = flowState(settings.sidebarStyle, SidebarStyle.FLOATING)
     val isReducedMotion: StateFlow<Boolean> = flowState(settings.isReducedMotion, false)
     val is24HourClock: StateFlow<Boolean> = flowState(settings.is24HourClock, true)
     val staleWindowDays: StateFlow<Long> = flowState(settings.staleWindowDays, 14L)
@@ -147,6 +149,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     // Async, off the main thread -- these are DataStore file writes and must not block the UI
     // thread's switch callback (jank/ANR on low-end boxes). Matches every other setter below.
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { settings.setThemeMode(mode) }
+    fun setSidebarStyle(style: SidebarStyle) = viewModelScope.launch { settings.setSidebarStyle(style) }
     fun setReducedMotion(enabled: Boolean) = viewModelScope.launch { settings.setReducedMotion(enabled) }
     fun set24HourClock(enabled: Boolean) = viewModelScope.launch { settings.set24HourClock(enabled) }
     fun setStaleWindowDays(days: Long) = viewModelScope.launch { settings.setStaleWindowDays(days) }
