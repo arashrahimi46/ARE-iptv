@@ -37,6 +37,9 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
@@ -571,7 +574,18 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
         },
     ) {
         CompositionLocalProvider(LocalParentalBlur provides parentalBlur) {
-        NavHost(navController = innerNav, startDestination = startRoute) {
+        // A tab switch cross-fades the outgoing + incoming screen, which composites BOTH offscreen for
+        // the whole duration -- opening the blur-heavy Settings screen over Home was the worst case and
+        // the source of the "opening Settings is laggy" spike. navigation-compose defaults to a 700ms
+        // fade; a fast fade on the motion token cuts that window ~4x (and collapses to instant under
+        // reduced motion, since durFastMs -> 0). No slide: pure alpha is the cheapest cross-fade.
+        val tabFade = AreIptvTheme.motion.durFastMs
+        NavHost(
+            navController = innerNav,
+            startDestination = startRoute,
+            enterTransition = { fadeIn(tween(tabFade)) },
+            exitTransition = { fadeOut(tween(tabFade)) },
+        ) {
             composable("home") {
                 ScrollableTab {
                     HomeScreen(
@@ -790,5 +804,6 @@ private val UNKNOWN = -1L
 /** Guards the launch auto-refresh so it fires at most once per process, not on every recomposition. */
 private var autoRefreshChecked = false
 
-/** How long [AreSplashScreen] stays up on cold start (Issue #13) -- product-lead placeholder duration. */
-private const val SPLASH_DURATION_MS = 1800L
+/** How long [AreSplashScreen] stays up on cold start (Issue #13) -- long enough for the choreographed
+ *  glass reveal (bloom -> plate settle -> mark -> brand -> shimmer) to play out, then hold a beat. */
+private const val SPLASH_DURATION_MS = 3400L
