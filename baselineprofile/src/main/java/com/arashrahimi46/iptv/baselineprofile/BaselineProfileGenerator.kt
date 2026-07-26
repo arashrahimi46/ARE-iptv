@@ -23,7 +23,13 @@ class BaselineProfileGenerator {
     val rule = BaselineProfileRule()
 
     @Test
-    fun generate() = rule.collect(packageName = PACKAGE_NAME) {
+    fun generate() = rule.collect(
+        packageName = PACKAGE_NAME,
+        // Without this the run emits "No startup profile rules were generated" and the app gets a
+        // plain baseline profile with no startup ordering -- which is exactly the part that pays off
+        // on a slow TV CPU, where class loading dominates time-to-first-frame.
+        includeInStartupProfile = true,
+    ) {
         pressHome()
         startActivityAndWait()
 

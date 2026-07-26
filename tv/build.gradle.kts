@@ -61,6 +61,19 @@ android {
             val releaseSigning = signingConfigs.getByName("release")
             signingConfig = if (releaseSigning.storeFile != null) releaseSigning else signingConfigs.getByName("debug")
         }
+        // The baselineprofile plugin creates `nonMinifiedRelease` by copying `release` and setting
+        // the legacy `isMinifyEnabled = false`. AGP 9's `optimization { enable }` is a SEPARATE
+        // switch that the copy inherits and the plugin does not clear -- so R8 ran on the variant
+        // the profile is generated from, and the collected rules came back with obfuscated names
+        // (`Lxb3;`) that no longer match anything in the real release build. Every UI rule was
+        // silently dropped: the first generated profile contained the Room DAOs (whose names R8
+        // keeps) and nothing else -- no composables, no focus/glass code. Clearing it here is what
+        // makes the generated profile actually apply.
+        all {
+            if (name == "nonMinifiedRelease" || name == "benchmarkRelease") {
+                optimization { enable = false }
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
