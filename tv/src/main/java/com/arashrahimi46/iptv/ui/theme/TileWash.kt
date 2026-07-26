@@ -4,8 +4,10 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import java.util.concurrent.ConcurrentHashMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
@@ -75,19 +77,34 @@ fun sampleTileWashHue(logoUrl: String?, drawable: android.graphics.drawable.Draw
 /**
  * Snapshot-backed so a late-arriving hue recomposes the tile, and bounded so a 20k-channel playlist
  * can't grow it without limit.
+ *
+ * PERF: one [MutableState] **per key**, deliberately NOT a `mutableStateMapOf`. Reading a
+ * SnapshotStateMap subscribes the reader to the whole map, so with a map every logo that finished
+ * decoding recomposed *every other tile* observing a hue -- on a 40-tile grid loading its logos that
+ * is ~40x40 recompositions, all during the one moment the grid is least able to afford them. A
+ * per-key state means a tile only ever wakes for its own hue.
  */
 private object DominantColorCache {
     private const val MAX = 1024
-    private val cache = mutableStateMapOf<String, Color>()
 
-    fun peek(key: String): Color? = cache[key]
+    /** Concurrent because [put] is driven from Coil's `onState` callback while composition reads. */
+    private val cache = ConcurrentHashMap<String, MutableState<Color?>>()
+
+    fun peek(key: String): Color? = cache[key]?.value
 
     @Composable
-    fun observe(key: String): Color? = cache[key]
+    fun observe(key: String): Color? = remember(key) { entry(key) }.value
 
     fun put(key: String, value: Color) {
-        if (cache.size >= MAX) cache.clear()
-        cache[key] = value
+        entry(key).value = value
+    }
+
+    private fun entry(key: String): MutableState<Color?> {
+        // A tile holds its own entry across recomposition, so a wholesale clear orphans the tiles
+        // observing a dropped key -- they keep their seeded fallback rather than picking up a later
+        // hue. That is cosmetic and only past 1024 distinct logos, which is why the cheap bound stays.
+        if (cache.size >= MAX && !cache.containsKey(key)) cache.clear()
+        return cache.getOrPut(key) { mutableStateOf(null) }
     }
 }
 
