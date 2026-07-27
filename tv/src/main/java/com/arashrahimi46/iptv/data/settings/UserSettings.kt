@@ -12,8 +12,8 @@ import com.arashrahimi46.iptv.ui.home.DEFAULT_HOME_LAYOUT
 import com.arashrahimi46.iptv.ui.home.HomeSection
 import com.arashrahimi46.iptv.ui.home.decodeHomeLayout
 import com.arashrahimi46.iptv.ui.home.encodeHomeLayout
-import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT
-import com.arashrahimi46.iptv.ui.player.HudSlot
+import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_ARRANGEMENT
+import com.arashrahimi46.iptv.ui.player.HudArrangement
 import com.arashrahimi46.iptv.ui.player.decodeHudLayout
 import com.arashrahimi46.iptv.ui.player.encodeHudLayout
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
@@ -140,8 +140,10 @@ class UserSettings(private val context: Context) {
         val OPENSUBS_P = stringPreferencesKey("opensubs_p")
         val OMDB_KEY = stringPreferencesKey("omdb_key")
         val HOME_LAYOUT = stringPreferencesKey("home_layout")
-        /** Persisted player-HUD button order/visibility (see [hudLayout]). */
+        /** Persisted live-TV player-HUD arrangement (see [hudLayoutLive]). */
         val HUD_LAYOUT = stringPreferencesKey("hud_layout")
+        /** Persisted movies/series player-HUD arrangement (see [hudLayoutVod]). */
+        val HUD_LAYOUT_VOD = stringPreferencesKey("hud_layout_vod")
         /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); see [languageTag]. */
         val LANGUAGE_TAG = stringPreferencesKey("language_tag")
         /** Whether the first-run language selector has been completed; see [hasSelectedLanguage]. */
@@ -362,11 +364,18 @@ class UserSettings(private val context: Context) {
         prefs[Keys.HOME_LAYOUT]?.let(::decodeHomeLayout)?.takeIf { it.isNotEmpty() } ?: DEFAULT_HOME_LAYOUT
     }
 
-    /** Persisted player-HUD button order/visibility; defaults to [DEFAULT_HUD_LAYOUT] until the
+    /** Persisted live-TV player-HUD arrangement; defaults to [DEFAULT_HUD_ARRANGEMENT] until the
      * user rearranges it. [decodeHudLayout] self-heals (fills any missing controls) so this always
-     * yields every control exactly once. */
-    val hudLayout: Flow<List<HudSlot>> = pref { prefs ->
-        prefs[Keys.HUD_LAYOUT]?.let(::decodeHudLayout) ?: DEFAULT_HUD_LAYOUT
+     * yields every control exactly once. Keeps the original `hud_layout` key: before the live/VOD
+     * split there was one shared layout, and live is the dominant context, so it inherits. */
+    val hudLayoutLive: Flow<HudArrangement> = pref { prefs ->
+        prefs[Keys.HUD_LAYOUT]?.let(::decodeHudLayout) ?: DEFAULT_HUD_ARRANGEMENT
+    }
+
+    /** Persisted movies/series player-HUD arrangement. Separate from [hudLayoutLive] because the two
+     * contexts offer genuinely different controls (speed vs record/guide/multi-view). */
+    val hudLayoutVod: Flow<HudArrangement> = pref { prefs ->
+        prefs[Keys.HUD_LAYOUT_VOD]?.let(::decodeHudLayout) ?: DEFAULT_HUD_ARRANGEMENT
     }
 
     /** BCP-47 app language tag ("en", "es", "fr", "de", "it", "pt-BR"); mirrors whatever was last
@@ -461,6 +470,7 @@ class UserSettings(private val context: Context) {
                 Keys.SUBTITLE_LANGUAGE, Keys.PREFERRED_AUDIO_LANG, Keys.AUTOPLAY_NEXT_DELAY,
                 Keys.SUBTITLE_TEXT_SCALE, Keys.SUBTITLE_EDGE, Keys.SUBTITLE_COLOR, Keys.SUBTITLE_FONT,
                 Keys.START_SCREEN, Keys.LAST_USED_TAB, Keys.AUTO_REFRESH, Keys.CONFIRM_EXIT,
+                Keys.HUD_LAYOUT, Keys.HUD_LAYOUT_VOD,
             ).forEach { prefs.remove(it) }
         }
     }
@@ -617,8 +627,10 @@ class UserSettings(private val context: Context) {
         context.dataStore.edit { it[Keys.HOME_LAYOUT] = encodeHomeLayout(sections) }
     }
 
-    suspend fun setHudLayout(slots: List<HudSlot>) {
-        context.dataStore.edit { it[Keys.HUD_LAYOUT] = encodeHudLayout(slots) }
+    /** Persists one context's HUD arrangement; the other context's is untouched. */
+    suspend fun setHudLayout(live: Boolean, arrangement: HudArrangement) {
+        val key = if (live) Keys.HUD_LAYOUT else Keys.HUD_LAYOUT_VOD
+        context.dataStore.edit { it[key] = encodeHudLayout(arrangement) }
     }
 
     /** Persists the chosen app language tag and marks the first-run selector as completed. Callers

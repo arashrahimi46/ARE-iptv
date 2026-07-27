@@ -102,8 +102,10 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val isAnalyticsEnabled: StateFlow<Boolean> = flowState(settings.isAnalyticsEnabled, true)
     val isCrashReportingEnabled: StateFlow<Boolean> = flowState(settings.isCrashReportingEnabled, true)
     val isRecordingIndicatorEnabled: StateFlow<Boolean> = flowState(settings.isRecordingIndicatorEnabled, true)
-    val hudLayout: StateFlow<List<com.arashrahimi46.iptv.ui.player.HudSlot>> =
-        flowState(settings.hudLayout, com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT)
+    val hudLayoutLive: StateFlow<com.arashrahimi46.iptv.ui.player.HudArrangement> =
+        flowState(settings.hudLayoutLive, com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_ARRANGEMENT)
+    val hudLayoutVod: StateFlow<com.arashrahimi46.iptv.ui.player.HudArrangement> =
+        flowState(settings.hudLayoutVod, com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_ARRANGEMENT)
     /** Nullable so "not yet loaded" (null) is distinct from "loaded, no PIN set" (false) --
      * the Settings screen gates the PIN row / lock toggle until this resolves so a fast tap
      * during the initial async DataStore read can't route to a no-verify PIN-set flow. */
@@ -190,7 +192,8 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setRecordingIndicatorEnabled(enabled: Boolean) = viewModelScope.launch { settings.setRecordingIndicatorEnabled(enabled) }
 
-    fun setHudLayout(slots: List<com.arashrahimi46.iptv.ui.player.HudSlot>) = viewModelScope.launch { settings.setHudLayout(slots) }
+    fun setHudLayout(live: Boolean, arrangement: com.arashrahimi46.iptv.ui.player.HudArrangement) =
+        viewModelScope.launch { settings.setHudLayout(live, arrangement) }
 
     /** Persist the analytics opt-out AND flip live collection so it takes effect without a restart. */
     fun setAnalyticsEnabled(enabled: Boolean) = viewModelScope.launch {

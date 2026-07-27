@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -184,6 +185,14 @@ fun ArePlayerControls(
     /** User-customized HUD button order + per-button visibility (see [HudSlot]). Defaults to the
      * canonical order; locked core transport (rewind/play-pause/FF) always renders regardless. */
     slots: List<HudSlot> = DEFAULT_HUD_LAYOUT,
+    /** True when the user has swapped the clusters, putting utilities left and transport right. */
+    swapped: Boolean = false,
+    /** Layout-edit mode. When non-null every button slot renders through this composable (the
+     * editor's grabbable proxy) instead of the live control, and the row is filtered by static
+     * [HudControl.availableIn] rather than by this player's actual callbacks -- so the editor shows
+     * the context's whole catalog without a real stream behind it. Everything else in the panel
+     * (artwork, title, seek bar) renders normally, so what the user arranges IS the real HUD. */
+    editSlot: (@Composable (HudControl) -> Unit)? = null,
 ) {
     val colors = AreIptvTheme.colors
 
@@ -356,6 +365,10 @@ fun ArePlayerControls(
 
         @Composable
         fun HudButton(c: HudControl) {
+            if (editSlot != null) {
+                editSlot(c)
+                return
+            }
             when (c) {
                 HudControl.REWIND ->
                     AreIconButton(Icons.Filled.FastRewind, stringResource(R.string.player_rewind), onClick = onRewind, variant = AreIconButtonVariant.Glass)
@@ -438,7 +451,10 @@ fun ArePlayerControls(
 
         // Resolve the ordered, visible, context-available controls per cluster. Locked controls are
         // always shown and pinned to their default order (they can't be moved/hidden in the editor).
-        val shown = slots.filter { (it.control.locked || it.visible) && renderable(it.control) }
+        val shown = slots.filter {
+            (it.control.locked || it.visible) &&
+                if (editSlot != null) it.control.availableIn(live) else renderable(it.control)
+        }
         val transportCore = shown.filter { it.control.group == HudGroup.TRANSPORT && it.control.locked }
             .sortedBy { it.control.order }
         val transportExtra = shown.filter { it.control.group == HudGroup.TRANSPORT && !it.control.locked }
@@ -451,23 +467,43 @@ fun ArePlayerControls(
         // Every child here is focusable, so D-pad focus drags the row along for free (unlike a
         // scroll area of plain text, which never receives the key at all).
         Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                // Headroom INSIDE the scroll clip, edit mode only. `horizontalScroll` clips to its
+                // bounds on BOTH axes, and the row's bounds are exactly the 52dp buttons -- so the
+                // editor's held-button lift was having its top sliced off by the scroll container.
+                // Padding placed after the scroll modifier grows the clip rect and insets the
+                // content, giving the lift somewhere to go; the live HUD keeps its tight row.
+                .then(if (editSlot != null) Modifier.padding(vertical = 16.dp) else Modifier),
             verticalAlignment = Alignment.CenterVertically,
             // 6dp, not 8: at the full 13-button default the row was ~25dp over the bar's inner
             // width, so the last glyph was sliced down the middle. Twelve gaps at 2dp less buys
             // that back and then some, without shrinking the 52dp targets themselves.
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            transportCore.forEach { HudButton(it.control) }
-            if (transportExtra.isNotEmpty()) {
-                Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
-                transportExtra.forEach { HudButton(it.control) }
+            // The two clusters as emit-order-independent blocks, so [swapped] can simply put the
+            // utilities first. The hairline divider stays welded to the transport cluster (it
+            // separates locked core from the transport extras, not the two clusters from each other).
+            // key(): without it Compose matches these children by POSITION, so reordering the list
+            // leaves slot N's composition group -- its remembered MutableInteractionSource, its
+            // focused flag, its in-flight focus and lift animations -- attached to whatever control
+            // moved INTO slot N. That is what made a reorder flicker: the ring and the lift appeared
+            // to stay behind on the position instead of travelling with the button. Keyed by control,
+            // the groups move with the data and each button keeps its own state across the shuffle.
+            val transportBlock: @Composable () -> Unit = {
+                transportCore.forEach { key(it.control) { HudButton(it.control) } }
+                if (transportExtra.isNotEmpty()) {
+                    Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
+                    transportExtra.forEach { key(it.control) { HudButton(it.control) } }
+                }
             }
+            val utilitiesBlock: @Composable () -> Unit = { utilities.forEach { key(it.control) { HudButton(it.control) } } }
+            if (swapped) utilitiesBlock() else transportBlock()
             // Fixed gap, not weight(1f): a growable spacer can't exist inside a scrollable row
             // (the row is measured at its content width, so "the remaining space" is undefined).
             // It still reads as two clusters, and no longer pretends there's room when there isn't.
             if (utilities.isNotEmpty()) Box(Modifier.width(12.dp))
-            utilities.forEach { HudButton(it.control) }
+            if (swapped) transportBlock() else utilitiesBlock()
             // Trailing breathing room INSIDE the scroll, so if a locale or a future control does
             // overflow, the row ends on space rather than flush against the bar's rounded edge.
             Box(Modifier.width(4.dp))

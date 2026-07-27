@@ -64,6 +64,8 @@ fun AreIconButton(
     disabled: Boolean = false,
     /** Overrides the glyph tint (e.g. a red REC dot) without changing the variant's background. */
     contentTint: Color? = null,
+    /** Hold-OK handler; null leaves the button short-press only. */
+    onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val colors = AreIptvTheme.colors
@@ -96,6 +98,7 @@ fun AreIconButton(
         borderBrush = skin.borderBrush,
         enabled = !disabled,
         showFocusSheen = false,
+        onLongClick = onLongClick,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {
             Icon(

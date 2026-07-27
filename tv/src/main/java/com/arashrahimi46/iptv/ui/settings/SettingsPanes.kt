@@ -643,7 +643,8 @@ internal fun PlaybackPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
     val preferredAudioLang by viewModel.preferredAudioLanguage.collectAsState()
     val miniPlayerBehavior by viewModel.miniPlayerBehavior.collectAsState()
     val isRecordingIndicatorEnabled by viewModel.isRecordingIndicatorEnabled.collectAsState()
-    val hudLayout by viewModel.hudLayout.collectAsState()
+    val hudLayoutLive by viewModel.hudLayoutLive.collectAsState()
+    val hudLayoutVod by viewModel.hudLayoutVod.collectAsState()
 
     var showAudioLangPicker by remember { mutableStateOf(false) }
     var showHudEditor by remember { mutableStateOf(false) }
@@ -723,7 +724,8 @@ internal fun PlaybackPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
     if (showHudEditor) {
         Dialog(onDismissRequest = { showHudEditor = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             HudLayoutEditor(
-                slots = hudLayout,
+                liveArrangement = hudLayoutLive,
+                vodArrangement = hudLayoutVod,
                 onApply = viewModel::setHudLayout,
                 onDismiss = { showHudEditor = false },
             )
