@@ -87,6 +87,41 @@ an *effect* on what is behind; with no effect it redraws the pixels that would h
 anyway. Tier A keeps the sample (it has `vibrancy()`), and `frostedPanel`'s single genuine blur — the
 expanded sidebar, the one blur in the app worth its cost — is untouched.
 
+## The sidebar expand/collapse animation (measured on the XL95, on Home)
+
+Measured on **Home**, breaking this document's own "never measure on Home" rule — deliberately, because
+that is the screen the report was about, and the numbers reproduced to ~2 ms across reps. Compare only
+Home-to-Home.
+
+The cost was attributed by elimination. Two of the three suspects this document named were innocent:
+
+| suspect | cost |
+|---|---|
+| unbaked Gaussian `softShadow` (resizes every frame) | **~0 ms** |
+| `frostedPanel`'s 28 dp blur | **~1 ms** |
+| the page capture — `layerBackdrop`'s double draw | **~14 ms** |
+
+`layerBackdrop` re-records its subtree on **every frame the consumer draws**, and the panel is
+remeasured and redrawn on every frame of the width tween — so the whole page was re-photographed 13
+times per expand.
+
+Fix: gate the capture in **time** as well as in state. No capture while the width is moving; capture
+once the tween settles (`durBaseMs + 32 ms`). 28 dp of blur is not readable on a surface travelling
+160 dp in 220 ms, and the settled panel is untouched.
+
+| p50, 3 reps | before | after |
+|---|---|---|
+| RenderThread | 13.5 ms | **4.8 ms** |
+| sync / upload | 5.5–11.0 ms | **0.45 ms** |
+| TOTAL frame | 33–37 ms | **~20 ms** |
+| janky | ~18.5 % | **~14 %** |
+
+**Do not "capture once and freeze" by detaching the modifier.** `layerBackdrop` discards its recording
+when detached, so that silently turns the frost off entirely — and it lands on the no-frost ceiling
+number *exactly*, so it reads as a perfect win in framestats while being a visual regression. This was
+built, measured, and nearly shipped before a screenshot caught it. Verify frost with a screenshot, or
+with pixel variance just inside the panel edge: frosted ≈ 23–25, unfrosted ≈ 38.
+
 ## Earlier draw-time fixes (emulator-era, all still valid)
 
 Work that was being redone every frame to produce an image that never changed:
@@ -187,9 +222,7 @@ Each of these produced a confidently wrong answer during this investigation:
   near-white surfaces on the off-white page need a `borderDefault` edge to read, and glass alpha
   behaves differently over a light page. This is the most likely place for a regression.
 - **~5 ms of RenderThread remains** at p50, plus ~4 ms of sync/upload. Not yet attributed.
-- **The sidebar expand/collapse animation is unmeasured on the TV.** It carries two per-frame costs
-  no other surface does: an unbaked Gaussian `softShadow` and a `frostedPanel` blur whose region
-  resizes every frame. On the emulator its frames spread across 22–48 ms.
+- ~~The sidebar expand/collapse animation is unmeasured on the TV.~~ **Done — see below.**
 - **Known composition-level issues, deliberately not fixed.** Unstable `Iterable` params on
   `ChipChoiceRow` (plus `values().asIterable()` allocated per recomposition at four call sites),
   `animateDpAsState` read in composition scope in `AreSwitch`, a `focusRequester` toggling
