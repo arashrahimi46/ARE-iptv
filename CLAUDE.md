@@ -383,3 +383,20 @@ feature — decisions there were made deliberately; don't relitigate them.
   (`create_link` mints session-scoped URLs — they can't be precomputed like Xtream's), MAC stored in
   `CredentialsStore`, `cmd` in `Channel.externalId`, **no DB migration** (schema stays v11).
   Visual one-pager: https://claude.ai/code/artifact/d34083e0-3255-41ce-8189-dbb84e9c237c
+
+## Rendering performance — READ BEFORE OPTIMIZING ANY JANK
+
+`docs/glass-render-perf-findings.md` — profiled 2026-07-27 with `dumpsys gfxinfo framestats`.
+
+**This app is draw-bound, not recomposition-bound.** On a Settings D-pad scroll, composition +
+measure + layout came to **0.04ms** of a 27ms frame; the frame is spent rasterizing glass. Do not
+chase recomposition for a jank report — profile first, and read the RenderThread column
+(`SwapBuffers - IssueDrawCommandsStart`), which is the only number that transfers to real hardware.
+The emulator translates GLES→Metal on the host, so its GPU time and absolute frame time are not
+comparable to a TV.
+
+Locked there: the **glass backdrop system stays** (costs ~4ms/frame but removing it is a real
+visual change — measured), and the ambient mesh stays static (`t = 0`) because the bake depends on
+it. Also: `softShadow`/mesh bakes use `drawWithCache`, which re-runs on size change — any new
+size-animating glass surface must pass `bake = false`. Best open lead is **input latency**
+(241 high-latency events per 14 keypresses), which is untouched.
