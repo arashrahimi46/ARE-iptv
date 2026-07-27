@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.zIndex
@@ -47,6 +48,7 @@ import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import java.time.Instant
 import java.time.ZoneId
 
@@ -101,6 +103,20 @@ fun GuideScreen(
     // remember-ed so it's a stable `remember` key for the per-cell time labels below.
     val zone = remember { ZoneId.systemDefault() }
 
+    // Initial D-pad focus, matching every other tab: without it the shell leaves focus on the
+    // sidebar and the Guide reads as dead. Lands on the SELECTED category chip rather than a
+    // programme cell -- from there Down enters the grid and Left/Right switches category, whereas
+    // starting inside the grid would mean travelling back up past the info bar to change category.
+    // Stands down when returning from the player (the played cell is restored instead).
+    val groupFocusRequester = remember { FocusRequester() }
+    // Keyed on whether the selected chip EXISTS yet, not on which one is selected: categories arrive
+    // asynchronously (so LaunchedEffect(Unit) would fire before there is anything to focus), but
+    // re-firing on every category change would yank focus back out of the grid mid-browse.
+    val selectedChipExists = state.selectedGroup in state.groups
+    LaunchedEffect(selectedChipExists) {
+        if (selectedChipExists && lastPlayedChannelId == null) groupFocusRequester.requestFocusWhenReady()
+    }
+
     // P0.2: fillMaxSize (not just padding) so this root Column has a real bounded height to
     // hand down -- GuideScreen's caller (MainActivity) no longer wraps this tab in a
     // `verticalScroll` (see FullSizeTab there); this Composable owns its own layout end to
@@ -136,7 +152,13 @@ fun GuideScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             state.groups.forEach { group ->
-                AreChip(text = group, onClick = { viewModel.selectGroup(group) }, selected = group == state.selectedGroup)
+                val isSelected = group == state.selectedGroup
+                AreChip(
+                    text = group,
+                    onClick = { viewModel.selectGroup(group) },
+                    selected = isSelected,
+                    modifier = if (isSelected) Modifier.focusRequester(groupFocusRequester) else Modifier,
+                )
             }
         }
         Box(Modifier.height(spacing.sp5))

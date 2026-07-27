@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -64,6 +65,7 @@ import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreRail
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 
 /**
  * Real Home dashboard (Home.jsx): rails (no top Hero banner -- removed per
@@ -166,6 +168,18 @@ fun HomeScreen(
         state.sections.filter { !it.hidden && sectionHasContent(it, state, recommended) }
     }
 
+    // Initial D-pad focus, matching every other tab: the persistent shell leaves focus on the
+    // sidebar, so Home reads as dead until the user blindly presses RIGHT. Lands on the first tile
+    // of the first rail. Stands down when returning from the player, where
+    // rememberPlaybackFocusRequester puts focus back on the tile that started playback, and in edit
+    // mode, whose reorder choreography drives focus itself.
+    val contentFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(editMode, visibleSections.isEmpty()) {
+        if (!editMode && lastPlayedChannelId == null && visibleSections.isNotEmpty()) {
+            contentFocusRequester.requestFocusWhenReady()
+        }
+    }
+
     // Wraps the whole screen (rails + the step 6 dialog below) so the dialog actually
     // overlays on top instead of being laid out as an invisible/misplaced sibling -- HomeScreen's
     // caller gives it a single-child slot, so two top-level composables side by side here (rails,
@@ -197,9 +211,10 @@ fun HomeScreen(
             // Home layout customization (step 1-3): rails are driven by state.sections instead of
             // being hardcoded here. With the default layout this renders byte-for-byte the same
             // rails, in the same order, as the old fixed sequence did.
-            items(visibleSections, key = { homeSectionKey(it) }) { section ->
+            itemsIndexed(visibleSections, key = { _, section -> homeSectionKey(section) }) { index, section ->
                 HomeSectionContent(
                     section = section,
+                    contentFocusRequester = contentFocusRequester.takeIf { index == 0 },
                     state = state,
                     recommended = recommended,
                     nowPlayingTitles = nowPlayingTitles,
@@ -415,6 +430,8 @@ private fun HomeSectionContent(
     onRequestRemove: (HomeContinueWatchingItem) -> Unit,
     showSeeAll: Boolean,
     onSeeAll: (String) -> Unit,
+    // Non-null only for the FIRST visible section, so opening Home lands on its first tile.
+    contentFocusRequester: FocusRequester? = null,
 ) {
     // PERF: each rail title is resolved INSIDE its own branch. Resolving all six up front meant
     // every section paid six resource lookups (five of them discarded) on every recomposition --
@@ -424,7 +441,7 @@ private fun HomeSectionContent(
             BuiltinSection.CONTINUE_WATCHING -> {
                 // P1.2: hidden when empty, same as every other rail below.
                 if (state.continueWatching.isNotEmpty()) {
-                    AreRail(title = stringResource(R.string.home_section_continue_watching), seeAll = false) {
+                    AreRail(title = stringResource(R.string.home_section_continue_watching), seeAll = false, contentFocusRequester = contentFocusRequester) {
                         items(state.continueWatching, key = { it.vodTitleId?.let { id -> "v$id" } ?: "e${it.seriesEpisodeId}" }) { item ->
                             // Same portrait movie/series tile as the other rails: shows real poster art,
                             // resume progress, and (for series) an on-poster season/episode badge. Hold OK
@@ -450,7 +467,7 @@ private fun HomeSectionContent(
                     // PERF: `take(20)` remembered -- inline it minted a new List identity on every
                     // recomposition, which invalidates this LazyRow's whole item provider.
                     val channels = remember(state.channels) { state.channels.take(20) }
-                    AreRail(title = stringResource(R.string.home_section_live_now), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                    AreRail(title = stringResource(R.string.home_section_live_now), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }, contentFocusRequester = contentFocusRequester) {
                         items(channels, key = { it.id }) { channel ->
                             val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                             AreChannelTile(
@@ -472,7 +489,7 @@ private fun HomeSectionContent(
             BuiltinSection.CATEGORIES -> {
                 if (state.categories.isNotEmpty()) {
                     val categories = remember(state.categories) { state.categories.take(20) }
-                    AreRail(title = stringResource(R.string.home_section_categories), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                    AreRail(title = stringResource(R.string.home_section_categories), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }, contentFocusRequester = contentFocusRequester) {
                         items(categories, key = { it.name }) { category ->
                             AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                         }
@@ -486,7 +503,7 @@ private fun HomeSectionContent(
                         RecommendedLabel.ForYou -> stringResource(R.string.home_section_for_you)
                         RecommendedLabel.Popular -> stringResource(R.string.home_section_popular)
                     }
-                    AreRail(title = recommendedTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
+                    AreRail(title = recommendedTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }, contentFocusRequester = contentFocusRequester) {
                         items(recommended, key = { it.id }) { title ->
                             ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp, lockCategory = title.categoryName)
                         }
@@ -496,7 +513,7 @@ private fun HomeSectionContent(
             BuiltinSection.MOVIES -> {
                 if (state.movies.isNotEmpty()) {
                     val movies = remember(state.movies) { state.movies.take(20) }
-                    AreRail(title = stringResource(R.string.home_section_movies), seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
+                    AreRail(title = stringResource(R.string.home_section_movies), seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }, contentFocusRequester = contentFocusRequester) {
                         items(movies, key = { it.id }) { movie ->
                             ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp, lockCategory = movie.categoryName)
                         }
@@ -506,7 +523,7 @@ private fun HomeSectionContent(
             BuiltinSection.SERIES -> {
                 if (state.series.isNotEmpty()) {
                     val series = remember(state.series) { state.series.take(20) }
-                    AreRail(title = stringResource(R.string.home_section_series), seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
+                    AreRail(title = stringResource(R.string.home_section_series), seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }, contentFocusRequester = contentFocusRequester) {
                         items(series, key = { it.id }) { show ->
                             ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp, lockCategory = show.categoryName)
                         }
@@ -520,7 +537,7 @@ private fun HomeSectionContent(
             when (val content = state.categoryRails[homeCategoryRailKey(section.kind, section.name)]) {
                 is HomeCategoryContent.Live -> {
                     if (content.channels.isNotEmpty()) {
-                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }) {
+                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }, contentFocusRequester = contentFocusRequester) {
                             items(content.channels, key = { it.id }) { channel ->
                                 val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                                 AreChannelTile(
@@ -541,7 +558,7 @@ private fun HomeSectionContent(
                 }
                 is HomeCategoryContent.Vod -> {
                     if (content.titles.isNotEmpty()) {
-                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }) {
+                        AreRail(title = section.name, seeAll = showSeeAll, onSeeAll = { onCategorySelected(section.name) }, contentFocusRequester = contentFocusRequester) {
                             items(content.titles, key = { it.id }) { title ->
                                 ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp, lockCategory = title.categoryName)
                             }

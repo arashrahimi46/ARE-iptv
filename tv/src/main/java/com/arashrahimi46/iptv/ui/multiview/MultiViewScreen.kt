@@ -81,6 +81,7 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import kotlinx.coroutines.delay
 
 /**
@@ -106,6 +107,13 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
     // Closing the picker left focus at the top of the screen (the Back button). The pane the user
     // just created is what they were looking at, so it takes focus once it composes.
     var focusChannelId by remember { mutableStateOf<Long?>(null) }
+    // Initial D-pad focus, matching every other tab: entering left focus on the Back button in the
+    // header, so the grid read as dead. Lands on the first slot -- a pane if there is one, otherwise
+    // its "+" placeholder, which is the only useful thing to press on an empty Multi-view.
+    val firstSlotFocus = remember { FocusRequester() }
+    LaunchedEffect(state.hasSource) {
+        if (state.hasSource) firstSlotFocus.requestFocusWhenReady()
+    }
 
     BackHandler(onBack = onBack)
 
@@ -162,6 +170,9 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
                                 // PlayerView -- instead of Compose reusing the previous channel's
                                 // pane in place (which left the old video under the new label).
                                 key(channel?.id ?: "empty-$index") {
+                                    // The initial-focus target only; a pane restored after the
+                                    // picker (focusChannelId) still wins via its own requester.
+                                    val slotFocus = if (index == 0) Modifier.focusRequester(firstSlotFocus) else Modifier
                                     if (channel != null) {
                                         val paneFocus = remember { FocusRequester() }
                                         if (channel.id == focusChannelId) {
@@ -176,12 +187,12 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
                                             concurrentPanes = state.paneCount,
                                             onClick = { viewModel.setActive(index) },
                                             onLongClick = { paneMenu = channel },
-                                            modifier = Modifier.weight(1f).fillMaxSize().focusRequester(paneFocus),
+                                            modifier = Modifier.weight(1f).fillMaxSize().focusRequester(paneFocus).then(slotFocus),
                                         )
                                     } else {
                                         EmptyPaneSlot(
                                             onClick = { pickerOpen = true },
-                                            modifier = Modifier.weight(1f).fillMaxSize(),
+                                            modifier = Modifier.weight(1f).fillMaxSize().then(slotFocus),
                                         )
                                     }
                                 }

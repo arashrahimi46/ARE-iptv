@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.glassSurface
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 
 /** Order the grouped sections render in (design §7): live capture first, then the archive. */
 private val GROUP_ORDER = listOf(
@@ -73,6 +75,17 @@ fun RecordingsScreen(
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     var toDelete by remember { mutableStateOf<Recording?>(null) }
+
+    // Initial D-pad focus, matching every other tab: the shell leaves focus on the sidebar, so the
+    // list reads as dead until the user blindly presses RIGHT. Lands on the first card's primary
+    // action. Ordered by GROUP_ORDER, not by `rows`, so this is the card that actually renders first.
+    val firstCardFocus = remember { FocusRequester() }
+    val firstRowId = GROUP_ORDER.firstNotNullOfOrNull { group ->
+        rows.firstOrNull { it.group == group }?.recording?.id
+    }
+    LaunchedEffect(firstRowId) {
+        if (firstRowId != null) firstCardFocus.requestFocusWhenReady()
+    }
 
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2)) {
 
@@ -107,6 +120,7 @@ fun RecordingsScreen(
                             row = row,
                             onPlay = { onPlay(row.recording.id) },
                             onDelete = { toDelete = row.recording },
+                            actionFocusRequester = firstCardFocus.takeIf { row.recording.id == firstRowId },
                         )
                     }
                 }
@@ -159,9 +173,13 @@ private fun RecordingCard(
     row: RecordingRow,
     onPlay: () -> Unit,
     onDelete: () -> Unit,
+    // Non-null only for the first card in the list, so opening the tab lands on a real control.
+    // Attached to whichever action this card actually shows first (Play, else Delete).
+    actionFocusRequester: FocusRequester? = null,
 ) {
     val colors = AreIptvTheme.colors
     val unavailable = row.group == RecordingGroup.UNAVAILABLE
+    val firstAction = if (actionFocusRequester != null) Modifier.focusRequester(actionFocusRequester) else Modifier
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,6 +224,7 @@ private fun RecordingCard(
                         variant = AreButtonVariant.Primary,
                         size = AreButtonSize.Small,
                         icon = Icons.Filled.PlayArrow,
+                        modifier = firstAction,
                     )
                 }
                 if (row.group != RecordingGroup.RECORDING_NOW) {
@@ -215,6 +234,9 @@ private fun RecordingCard(
                         variant = AreButtonVariant.Ghost,
                         size = AreButtonSize.Small,
                         icon = Icons.Filled.Delete,
+                        // Only when Play isn't there to take it -- a card must not hold the
+                        // requester twice, and Play is the first control when it exists.
+                        modifier = if (row.playable) Modifier else firstAction,
                     )
                 }
             }
@@ -227,6 +249,7 @@ private fun RecordingCard(
                 variant = AreButtonVariant.Ghost,
                 size = AreButtonSize.Small,
                 icon = Icons.Filled.Delete,
+                modifier = firstAction,
             )
         }
         }

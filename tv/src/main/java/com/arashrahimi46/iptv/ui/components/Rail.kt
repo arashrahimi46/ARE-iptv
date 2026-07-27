@@ -41,6 +41,9 @@ fun AreRail(
     smart: Boolean = false,
     seeAll: Boolean = true,
     onSeeAll: () -> Unit = {},
+    /** Requests focus INTO the tile row (its first tile), not onto the header. Set on the first rail
+     *  of a screen so opening the tab lands on real content rather than the "See all" chip above it. */
+    contentFocusRequester: FocusRequester? = null,
     content: LazyListScope.() -> Unit,
 ) {
     val colors = AreIptvTheme.colors
@@ -94,9 +97,19 @@ fun AreRail(
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
+                // Requesting focus on the GROUP hands it to the group's first child -- the first
+                // tile. Requesting it on the rail's outer Column would land on the header's
+                // "See all" chip instead, which is not where "open the tab" should put you.
+                .then(if (contentFocusRequester != null) Modifier.focusRequester(contentFocusRequester) else Modifier)
                 // focusProperties only governs a group's exit when the container is an explicit
                 // focusGroup; without it the up-redirect is ignored and focus jumps to the rail above.
-                .then(if (seeAll) Modifier.focusProperties { up = seeAllFocus }.focusGroup() else Modifier),
+                .then(
+                    when {
+                        seeAll -> Modifier.focusProperties { up = seeAllFocus }.focusGroup()
+                        contentFocusRequester != null -> Modifier.focusGroup()
+                        else -> Modifier
+                    },
+                ),
             contentPadding = PaddingValues(
                 start = spacing.safeX,
                 end = spacing.safeX + spacing.railPeek,
