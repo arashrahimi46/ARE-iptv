@@ -330,7 +330,7 @@ private fun SeriesEpisodesSection(
     onPlayEpisode: (SeriesEpisode) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
-    val totalEpisodes = state.episodesBySeason.values.sumOf { it.size }
+    val totalEpisodes = remember(state.episodesBySeason) { state.episodesBySeason.values.sumOf { it.size } }
     val seasons = remember(state.episodesBySeason) { state.episodesBySeason.keys.sorted() }
     // Restore to the season that CONTAINS the episode we're returning from (Back out of the
     // player), so the focus restore below can find it -- otherwise a multi-season show resets to
@@ -370,7 +370,12 @@ private fun SeriesEpisodesSection(
                     }
                     Box(Modifier.padding(top = 18.dp))
                 }
-                val episodes = state.episodesBySeason[selectedSeason].orEmpty().sortedBy { it.episode }
+                // remember-ed: an unremembered sortedBy allocates and sorts a fresh List on every
+                // recomposition -- and metadata arrives asynchronously here, so there are several --
+                // and the new List identity then makes every episode row below unskippable.
+                val episodes = remember(state.episodesBySeason, selectedSeason) {
+                    state.episodesBySeason[selectedSeason].orEmpty().sortedBy { it.episode }
+                }
                 Text(
                     text = stringResource(R.string.detail_season_episode_count, (selectedSeason ?: "").toString(), episodes.size),
                     style = AreIptvTheme.typography.h3,

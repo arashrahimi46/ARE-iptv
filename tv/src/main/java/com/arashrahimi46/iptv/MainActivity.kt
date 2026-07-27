@@ -102,6 +102,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/** The one allocation of the "Settings needs a refresh" badge set -- see the use site in AppShell. */
+private val SettingsBadge = setOf("settings")
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -490,7 +493,11 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     // refresh, and isStale() treats a null timestamp as stale, which wrongly badged a fresh install.
     val currentSource = activeSource
     val staleWindowDays by settings.staleWindowDays.collectAsState(initial = 14L)
-    val badgedNavIds = if (currentSource != null && currentSource.lastRefreshedAtMs.isStale(staleWindowDays)) setOf("settings") else emptySet()
+    // SettingsBadge is a file-level val, not an inline setOf(): a Set is unstable, so strong skipping
+    // compares it by identity, and minting a new one per recomposition meant the shell and the whole
+    // sidebar could never skip for as long as the badge was showing. (emptySet() is already a
+    // singleton, which is why this only bit users with a stale source.)
+    val badgedNavIds = if (currentSource != null && currentSource.lastRefreshedAtMs.isStale(staleWindowDays)) SettingsBadge else emptySet()
 
     // Phase 3 -- General: start screen (resolved once for the inner NavHost) + last-used tracking,
     // and confirm-before-exit. startScreen starts null (DataStore not read yet); gate below so the

@@ -172,6 +172,15 @@ fun AreSidebarNav(
         animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
         label = "sidebarLabelAlpha",
     )
+    // The EDGE rail's glass fill and its lit right-edge seam. Hoisted out of the drawBehind below
+    // because that node is remeasured (and so redrawn) on every frame of the width tween -- see the
+    // PERF note at the call site.
+    val railFill = remember(colors.surfaceGlassElevated, colors.surfaceGlass) {
+        Brush.verticalGradient(listOf(colors.surfaceGlassElevated, colors.surfaceGlass))
+    }
+    val railSeam = remember(colors.glassHighlight, colors.borderGlass) {
+        Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass))
+    }
     val onFocusedChanged: (String, Boolean) -> Unit = { id, focused ->
         focusedItemId = if (focused) id else focusedItemId.takeUnless { it == id }
     }
@@ -208,7 +217,6 @@ fun AreSidebarNav(
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
-                    expanded = expanded,
                     floating = true,
                     items = items,
                     active = active,
@@ -234,15 +242,17 @@ fun AreSidebarNav(
                     // the nav rows. V2: the fill is the TRANSLUCENT glass token, not the opaque surface
                     // ramp -- an opaque rail killed the ambient backdrop down the whole left edge, which
                     // is the most persistent chrome in the app and so the most visible place to get wrong.
+                    // PERF: both brushes are hoisted (see railFill/railSeam above) rather than built
+                    // inside the lambda. This node carries .widthFrom(width), so its measure -- and
+                    // therefore its draw -- is invalidated on every frame of the open/close tween;
+                    // allocating two gradients plus their lists per frame put GC pressure exactly
+                    // where the animation needed the budget. Size-independent gradients, so hoisting
+                    // is pixel-identical. Same treatment softShadow/tileWash already document.
                     .drawBehind {
-                        drawRect(
-                            Brush.verticalGradient(
-                                listOf(colors.surfaceGlassElevated, colors.surfaceGlass),
-                            ),
-                        )
+                        drawRect(railFill)
                         val edge = 1.dp.toPx()
                         drawRect(
-                            brush = Brush.verticalGradient(listOf(colors.glassHighlight, colors.borderGlass)),
+                            brush = railSeam,
                             topLeft = Offset(size.width - edge, 0f),
                             size = Size(edge, size.height),
                         )
@@ -255,7 +265,6 @@ fun AreSidebarNav(
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
-                    expanded = expanded,
                     floating = false,
                     items = items,
                     active = active,
@@ -289,7 +298,11 @@ private fun Modifier.widthFrom(width: State<Dp>, inset: Dp = 0.dp): Modifier = l
 /** Brand header + the scrolling item column, shared by both container styles. */
 @Composable
 private fun ColumnScope.SidebarNavBody(
-    expanded: Boolean,
+    // PERF: deliberately does NOT take `expanded`. It took it and never read it, and because an
+    // unused parameter still blocks skipping, the flag flipping re-executed this whole body -- brand
+    // mark, selection lens, all ten rows and their TvFocusable modifier chains -- on frame 0 of every
+    // open/close tween, which is exactly where the width animation could least afford it. Everything
+    // visible is driven by `panelWidth` (layout) and `labelAlpha` (draw), neither of which recomposes.
     floating: Boolean,
     items: List<SidebarNavItem>,
     active: String,

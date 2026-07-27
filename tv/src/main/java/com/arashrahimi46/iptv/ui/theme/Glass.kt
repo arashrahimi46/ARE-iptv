@@ -221,7 +221,9 @@ fun glassBorderBrush(): Brush {
 @Composable
 fun accentGradientBrush(): Brush {
     val c = AreIptvTheme.colors
-    return Brush.verticalGradient(listOf(c.accentHover, c.accent))
+    // remember-ed like glassBorderBrush: this is on every primary button, chip and the brand mark,
+    // so an unremembered factory minted a gradient + its list per call per recomposition.
+    return remember(c.accentHover, c.accent) { Brush.verticalGradient(listOf(c.accentHover, c.accent)) }
 }
 
 /**
@@ -272,14 +274,16 @@ fun Modifier.glassWell(shape: Shape): Modifier {
     return this
         .background(c.glassWellTint, shape)
         .clip(shape)
-        .drawBehind {
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(shadow, Color.Transparent),
-                    startY = 0f,
-                    endY = size.height * 0.55f,
-                ),
+        // drawWithCache, not drawBehind: this gradient is size-dependent, so it can't be a plain
+        // remember -- but built in drawBehind it was re-created on every DRAW pass, i.e. on every
+        // focus-ring alpha frame of every text field. The cache re-runs only on a size change.
+        .drawWithCache {
+            val brush = Brush.verticalGradient(
+                colors = listOf(shadow, Color.Transparent),
+                startY = 0f,
+                endY = size.height * 0.55f,
             )
+            onDrawBehind { drawRect(brush) }
         }
         .border(1.dp, wellBorderBrush(), shape)
 }
@@ -288,7 +292,7 @@ fun Modifier.glassWell(shape: Shape): Modifier {
 @Composable
 fun wellBorderBrush(): Brush {
     val c = AreIptvTheme.colors
-    return Brush.verticalGradient(listOf(c.borderGlass, c.glassHighlight))
+    return remember(c.borderGlass, c.glassHighlight) { Brush.verticalGradient(listOf(c.borderGlass, c.glassHighlight)) }
 }
 
 /**
@@ -313,15 +317,19 @@ fun Modifier.glassLens(shape: Shape): Modifier =
 @Composable
 fun accentLensBrush(): Brush {
     val c = AreIptvTheme.colors
-    return if (c.isDark) {
-        Brush.verticalGradient(
-            listOf(c.accentHover.copy(alpha = 0.40f), c.accent.copy(alpha = 0.26f)),
-        )
-    } else {
-        // Light theme flips it, as Apple's does: a white lens over a low accent wash, label in accent.
-        Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.72f), c.accentHover.copy(alpha = 0.26f)),
-        )
+    // remember-ed: glassLens calls this AND lensBorderBrush, and the sidebar's sliding selection
+    // pill is a glassLens -- so every recomposition of the nav body was 2 gradients + 4 Color.copy.
+    return remember(c.isDark, c.accentHover, c.accent) {
+        if (c.isDark) {
+            Brush.verticalGradient(
+                listOf(c.accentHover.copy(alpha = 0.40f), c.accent.copy(alpha = 0.26f)),
+            )
+        } else {
+            // Light theme flips it, as Apple's does: a white lens over a low accent wash, label in accent.
+            Brush.verticalGradient(
+                listOf(Color.White.copy(alpha = 0.72f), c.accentHover.copy(alpha = 0.26f)),
+            )
+        }
     }
 }
 
@@ -329,14 +337,16 @@ fun accentLensBrush(): Brush {
 @Composable
 fun lensBorderBrush(): Brush {
     val c = AreIptvTheme.colors
-    return if (c.isDark) {
-        Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.46f), c.accentHover.copy(alpha = 0.42f)),
-        )
-    } else {
-        Brush.verticalGradient(
-            listOf(Color.White.copy(alpha = 0.90f), c.accent.copy(alpha = 0.42f)),
-        )
+    return remember(c.isDark, c.accentHover, c.accent) {
+        if (c.isDark) {
+            Brush.verticalGradient(
+                listOf(Color.White.copy(alpha = 0.46f), c.accentHover.copy(alpha = 0.42f)),
+            )
+        } else {
+            Brush.verticalGradient(
+                listOf(Color.White.copy(alpha = 0.90f), c.accent.copy(alpha = 0.42f)),
+            )
+        }
     }
 }
 

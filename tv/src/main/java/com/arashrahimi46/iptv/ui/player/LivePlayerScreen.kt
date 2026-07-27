@@ -37,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -98,6 +99,7 @@ import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.math.roundToInt
@@ -290,11 +292,21 @@ fun LivePlayerScreen(
     // D-pad activity bumps interactionTick (see onPreviewKeyEvent), restarting this timer; only
     // genuine idleness hides it. (Previously it never hid once the panel was focused, so a single
     // click left the "console" on screen indefinitely.) On hide, focus returns to the video below.
-    LaunchedEffect(interactionTick, controlsVisible) {
-        if (controlsVisible) {
-            delay(CONTROLS_IDLE_HIDE_MS)
-            controlsVisible = false
-        }
+    // PERF: `interactionTick` is read via snapshotFlow, NOT as a LaunchedEffect key. Effect keys are
+    // evaluated in this composable's body, so keying on it made every key-up -- including D-pad
+    // autorepeat while scrubbing -- a state read in the screen's ROOT scope. That invalidated the
+    // whole player: both scrims, the ~700-line HUD branch, and the AndroidView's update lambda,
+    // which re-applied the ExoPlayer and reset the SubtitleView style once per keypress. Read inside
+    // the coroutine instead and the timer restarts without recomposing anything. collectLatest gives
+    // the same restart-on-activity semantics the key list did.
+    LaunchedEffect(Unit) {
+        snapshotFlow { interactionTick to controlsVisible }
+            .collectLatest { (_, visible) ->
+                if (visible) {
+                    delay(CONTROLS_IDLE_HIDE_MS)
+                    controlsVisible = false
+                }
+            }
     }
     LaunchedEffect(controlsVisible) {
         if (!controlsVisible) {
@@ -1067,10 +1079,18 @@ fun LivePlayerScreen(
                     // name/category, so the HUD reflects what's actually playing (D7).
                     val catchupInfo = state.catchup
                     val catchupClock = rememberClockFormatter()
-                    val catchupAired = catchupInfo?.let {
-                        val z = ZoneId.systemDefault()
-                        val s = Instant.ofEpochMilli(it.programStartMs).atZone(z).format(catchupClock)
-                        val e = Instant.ofEpochMilli(it.programEndMs).atZone(z).format(catchupClock)
+                    // PERF: the two formats are remembered against the programme. They're pure
+                    // functions of its fixed timestamps, but ran on every recomposition of this HUD
+                    // lambda -- two ZonedDateTime conversions plus formatter work per pass. The
+                    // stringResource stays outside (composable-only, and cheap).
+                    val catchupWindow = remember(catchupInfo, catchupClock) {
+                        catchupInfo?.let {
+                            val z = ZoneId.systemDefault()
+                            Instant.ofEpochMilli(it.programStartMs).atZone(z).format(catchupClock) to
+                                Instant.ofEpochMilli(it.programEndMs).atZone(z).format(catchupClock)
+                        }
+                    }
+                    val catchupAired = catchupWindow?.let { (s, e) ->
                         stringResource(R.string.guide_catchup_aired, s, e)
                     }
                     ArePlayerControls(

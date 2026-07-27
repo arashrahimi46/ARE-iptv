@@ -87,7 +87,12 @@ fun ArePosterTile(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
-    val initials = title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    // remember-ed for the reason AreChannelTile already documents: this built ~4 intermediate
+    // collections per tile per composition, and a poster tile recomposes on every focus enter AND
+    // leave, so a D-pad sweep across the grid paid it twice per step on every visible tile.
+    val initials = remember(title) {
+        title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    }
     val focused by interactionSource.collectIsFocusedAsState()
     val ambientArtwork = LocalAmbientArtwork.current
     // Parental "blur locked content": obscure the poster and route the click to a PIN prompt.
