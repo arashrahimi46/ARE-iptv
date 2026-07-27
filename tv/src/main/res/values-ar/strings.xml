@@ -491,7 +491,6 @@
     <string name="multiview_add_to">إضافة إلى العرض المتعدد</string>
     <string name="multiview_add_channel">إضافة قناة</string>
     <string name="multiview_pane_watch">مشاهدة بملء الشاشة</string>
-    <string name="multiview_pane_remove">إزالة من العرض المتعدد</string>
     <string name="multiview_pane_menu_body">افتح هذه القناة بملء الشاشة، أو أزلها من العرض المتعدد.</string>
     <string name="multiview_added_toast">تمت الإضافة إلى العرض المتعدد</string>
 

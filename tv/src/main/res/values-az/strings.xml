@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Çoxlu görünüşə əlavə et</string>
     <string name="multiview_add_channel">Kanal əlavə et</string>
     <string name="multiview_pane_watch">Tam ekranda izlə</string>
-    <string name="multiview_pane_remove">Çoxlu görünüşdən sil</string>
     <string name="multiview_pane_menu_body">Bu kanalı tam ekranda açın və ya çoxlu görünüşdən silin.</string>
     <string name="multiview_added_toast">Çoxlu görünüşə əlavə edildi</string>
 

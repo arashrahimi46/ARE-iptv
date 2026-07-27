@@ -103,6 +103,9 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
     // Long-press used to remove the pane outright; a mis-held OK silently deleted a channel and
     // there was no way to promote a pane to full screen. Non-null = that pane's menu is open.
     var paneMenu by remember { mutableStateOf<Channel?>(null) }
+    // Closing the picker left focus at the top of the screen (the Back button). The pane the user
+    // just created is what they were looking at, so it takes focus once it composes.
+    var focusChannelId by remember { mutableStateOf<Long?>(null) }
 
     BackHandler(onBack = onBack)
 
@@ -160,13 +163,20 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
                                 // pane in place (which left the old video under the new label).
                                 key(channel?.id ?: "empty-$index") {
                                     if (channel != null) {
+                                        val paneFocus = remember { FocusRequester() }
+                                        if (channel.id == focusChannelId) {
+                                            LaunchedEffect(channel.id) {
+                                                runCatching { paneFocus.requestFocus() }
+                                                focusChannelId = null
+                                            }
+                                        }
                                         MultiViewPane(
                                             channel = channel,
                                             active = index == state.activeIndex,
                                             concurrentPanes = state.paneCount,
                                             onClick = { viewModel.setActive(index) },
                                             onLongClick = { paneMenu = channel },
-                                            modifier = Modifier.weight(1f).fillMaxSize(),
+                                            modifier = Modifier.weight(1f).fillMaxSize().focusRequester(paneFocus),
                                         )
                                     } else {
                                         EmptyPaneSlot(
@@ -186,7 +196,7 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
             ChannelPickerDialog(
                 categories = state.pickerCategories,
                 loadChannels = viewModel::channelsFor,
-                onPick = { viewModel.addChannel(it); pickerOpen = false },
+                onPick = { viewModel.addChannel(it); focusChannelId = it.id; pickerOpen = false },
                 onDismiss = { pickerOpen = false },
             )
         }
@@ -226,7 +236,10 @@ private fun PaneMenuDialog(
                     modifier = Modifier.focusRequester(watchFocus),
                 )
                 AreButton(
-                    text = stringResource(R.string.multiview_pane_remove),
+                    // "Remove" -- the dialog is titled with the channel and the body already says
+                    // what removal means, so repeating "from multi-view" on the button only forced
+                    // it onto two lines next to a one-line sibling.
+                    text = stringResource(R.string.action_remove),
                     onClick = onRemove,
                     variant = AreButtonVariant.Danger,
                 )

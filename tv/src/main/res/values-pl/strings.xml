@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Dodaj do widoku wielokanałowego</string>
     <string name="multiview_add_channel">Dodaj kanał</string>
     <string name="multiview_pane_watch">Oglądaj na pełnym ekranie</string>
-    <string name="multiview_pane_remove">Usuń z widoku wielokanałowego</string>
     <string name="multiview_pane_menu_body">Otwórz ten kanał na pełnym ekranie lub usuń go z widoku wielokanałowego.</string>
     <string name="multiview_added_toast">Dodano do widoku wielokanałowego</string>
 

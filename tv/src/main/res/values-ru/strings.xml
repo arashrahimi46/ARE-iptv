@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Добавить в Мультипросмотр</string>
     <string name="multiview_add_channel">Добавить канал</string>
     <string name="multiview_pane_watch">Смотреть во весь экран</string>
-    <string name="multiview_pane_remove">Убрать из мультиэкрана</string>
     <string name="multiview_pane_menu_body">Откройте этот канал во весь экран или уберите его из мультиэкрана.</string>
     <string name="multiview_added_toast">Добавлено в Мультипросмотр</string>
 

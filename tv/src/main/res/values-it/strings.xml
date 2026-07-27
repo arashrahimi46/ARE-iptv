@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Aggiungi a Multi-vista</string>
     <string name="multiview_add_channel">Aggiungi canale</string>
     <string name="multiview_pane_watch">Guarda a schermo intero</string>
-    <string name="multiview_pane_remove">Rimuovi da multi-vista</string>
     <string name="multiview_pane_menu_body">Apri questo canale a schermo intero oppure rimuovilo dalla multi-vista.</string>
     <string name="multiview_added_toast">Aggiunto a Multi-vista</string>
 

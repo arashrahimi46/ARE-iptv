@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Añadir a Multivisión</string>
     <string name="multiview_add_channel">Añadir canal</string>
     <string name="multiview_pane_watch">Ver en pantalla completa</string>
-    <string name="multiview_pane_remove">Quitar de multivista</string>
     <string name="multiview_pane_menu_body">Abre este canal en pantalla completa o quítalo de la multivista.</string>
     <string name="multiview_added_toast">Añadido a Multivisión</string>
 

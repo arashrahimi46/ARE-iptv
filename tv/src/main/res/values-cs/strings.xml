@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Přidat do Více oken</string>
     <string name="multiview_add_channel">Přidat kanál</string>
     <string name="multiview_pane_watch">Sledovat na celou obrazovku</string>
-    <string name="multiview_pane_remove">Odebrat z multizobrazení</string>
     <string name="multiview_pane_menu_body">Otevřete tento kanál na celou obrazovku, nebo jej odeberte z multizobrazení.</string>
     <string name="multiview_added_toast">Přidáno do Více oken</string>
 

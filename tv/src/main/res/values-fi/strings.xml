@@ -513,7 +513,6 @@
     <string name="multiview_add_to">Lisää Moninäkymään</string>
     <string name="multiview_add_channel">Lisää kanava</string>
     <string name="multiview_pane_watch">Katso koko näytöllä</string>
-    <string name="multiview_pane_remove">Poista moninäkymästä</string>
     <string name="multiview_pane_menu_body">Avaa tämä kanava koko näytölle tai poista se moninäkymästä.</string>
     <string name="multiview_added_toast">Lisätty Moninäkymään</string>
 
