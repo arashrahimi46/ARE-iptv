@@ -1,180 +1,201 @@
 # Glass render performance — findings and decisions
 
-_Investigated 2026-07-27, on the TV emulator (`emulator-5554`, API 36), against the Settings
-D-pad scroll. Read this before optimizing anything about how this app renders._
+_Originally investigated 2026-07-27 on the TV **emulator**. **Rewritten 2026-07-28 against the real
+Sony BRAVIA XL95** (`BRAVIA_4K_VH22`, MediaTek MT5895, 4× Cortex-A55, Android 12 / API 31, 60 Hz),
+which contradicted the emulator on the single most important point. Read this before optimizing
+anything about how this app renders._
 
 ## The one thing to take away
 
-**This app's scrolling is draw-bound, not recomposition-bound.** Measured per frame during a
-Settings D-pad sweep:
+**Measure on the TV, not the emulator.** The emulator under-reported the app's dominant render cost
+by about 4× and led to a locked decision that was wrong. The emulator's own numbers were also wildly
+unstable: three runs of an *identical* build gave RenderThread means of 9.0, 67.0 and 8.4 ms. The TV
+reproduces to ±1 ms.
 
-| phase | time |
-|---|---|
-| composition + measure + layout | **0.04 ms** |
-| draw recording | 0.92 ms |
-| issuing draw commands (RenderThread) | **7.44 ms** |
-| GPU (see caveat below) | ~13 ms |
-| **total** | **27.13 ms** |
+Second: **this app is draw-bound, not recomposition-bound.** That part the emulator got right, and it
+holds on hardware — composition + measure + layout is **0.07 ms** of a 34 ms frame. Several earlier
+passes went after recomposition (unused params blocking skipping, unstable `Set`/`List` params,
+memoizing brushes). Those changes are individually correct and worth keeping, but they were aimed at
+0.07 ms. **They could not have fixed the reported jank, and neither can further work of that kind.**
 
-Compose accounts for about half a percent of the CPU work. Several earlier passes went after
-recomposition — unused parameters blocking skipping, effect keys that were secretly root-scope
-state reads, unstable `Set`/`List` params, memoizing brushes. Those changes were individually
-correct and are worth keeping, but they were aimed at the 0.04 ms. **They could not have fixed
-the reported jank, and neither can further work of that kind.**
+## Real-hardware baseline (XL95, Settings D-pad scroll, release build, AOT-compiled)
 
-If someone reports scroll or focus jank again, profile before theorizing. The cheap, decisive
-check is below.
+p50 over 3 reps × 120 frames. Budget is 16.7 ms.
 
-## How to reproduce the measurement
+| phase | XL95 | emulator (same commit) |
+|---|---|---|
+| input → handle | 0.4 ms | — |
+| composition + measure + layout | **0.07 ms** | 0.04 ms |
+| draw recording | 1.0 ms | 0.92 ms |
+| **sync / upload** | **~4 ms** | _never measured_ |
+| **RenderThread (issue → swap)** | **14.5 ms** | 5.25 ms |
+| GPU | 5.9 ms | ~13 ms (meaningless, see below) |
+| **TOTAL** | **~34 ms** | 24.9 ms debug / 17.0 release |
 
-```bash
-export ANDROID_SERIAL=emulator-5554
-adb shell dumpsys gfxinfo com.arashrahimi46.iptv reset
-# ...perform the interaction (e.g. 14x KEYCODE_DPAD_DOWN with ~450ms between presses)...
-adb shell dumpsys gfxinfo com.arashrahimi46.iptv framestats
-```
+116–119 of every 120 frames missed the deadline. That is ~29 fps, and it is what the "flaky and
+laggy animation" report on the XL95 actually was.
 
-`framestats` emits one CSV row per frame under `---PROFILEDATA---`. The columns that matter
-(0-indexed): `IntendedVsync` 2, `PerformTraversalsStart` 7, `DrawStart` 8, `SyncQueued` 13,
-`IssueDrawCommandsStart` 15, `SwapBuffers` 16, `FrameCompleted` 17, `GpuCompleted` 20,
-`CommandSubmissionCompleted` 23. So:
+**Input latency is a symptom, not a cause.** `gfxinfo` counts 236–280 "high input latency" events per
+sweep, and an earlier version of this document named that the most promising open lead. It is not:
+the app begins handling a keypress in **0.4 ms**. Those events are frames queueing behind 34 ms
+draws, and they fell by half when draw time fell. Do not optimize input handling for this.
 
-- composition + measure + layout = `DrawStart - PerformTraversalsStart`
-- draw recording = `SyncQueued - DrawStart`
-- **RenderThread = `SwapBuffers - IssueDrawCommandsStart`** ← the number that matters
-- total = `FrameCompleted - IntendedVsync`
+## What the backdrop actually costs
 
-## What was fixed
+The emulator estimated the whole glass backdrop system at ~4 ms of RenderThread and, on that basis,
+this document **locked the decision to keep it** — "the win isn't big enough to pay for it."
 
-Three draw-time costs, all of them work that was being redone every frame to produce an image
-that never changed. Each is verified visually identical by direct pixel diff.
+On the XL95 it was worth **14.7 ms of a 16.7 ms frame**. Forcing `GlassTier.C` (backdrop off
+app-wide) as an experiment:
+
+| p50 | backdrop on (Tier B) | backdrop off (Tier C) |
+|---|---|---|
+| RenderThread | 14.6 ms | 5.0 ms |
+| sync / upload | ~5.7 ms | 0.4 ms |
+| GPU | 5.9 ms | ~5.0 ms — **unchanged** |
+| TOTAL | ~32.6 ms | ~17.9 ms |
+| high input latency | ~289 | ~138 |
+
+GPU time does not move. **This is CPU work on the RenderThread**, which is exactly the axis a
+Cortex-A55 is worst at and exactly what a translation-layer emulator on an M-series host hides.
+
+### The fix, and the flaw in the original reasoning
+
+The old decision rested on a test that disabled two things at once. Turning the backdrop system off
+changes `Theme.kt`'s `withBlurredBackdrop()` **token retune** *and* removes the per-surface
+**sampling**. The observed visual change came from the retune. They are separable.
+
+`glassSurface` already applied **no effects on Tier B** — the per-surface blur was removed in an
+earlier pass and `vibrancy()` is Tier A only. So every glass surface on the XL95 was paying for a
+full offscreen backdrop capture with an empty effect list. Gating the sample on `tier.hasShaders`
+(is there an effect to apply?) rather than `tier.hasBackdropBlur` (could this device blur?):
+
+| p50, 3 reps each | before | after |
+|---|---|---|
+| RenderThread | 14.5 ms | **5.0 ms** |
+| sync / upload | ~4 ms | **0.4 ms** |
+| TOTAL frame | ~34 ms | **~18 ms** |
+| frames over 16.7 ms | 117 / 119 / 116 of 120 | **89 / 69 / 55** |
+| janky | ~17 % | **~7.5 %** |
+
+**~29 → ~55 fps, with the look kept.** Settings is pixel-identical; Home shows no card-shaped
+difference at 8× amplification. The only systematic diff is 1 px of antialiasing on shape edges.
+
+Why it is safe: `AmbientBackdrop` is a **real layer in the hierarchy**, so a translucent fill over it
+already composites correctly through ordinary alpha blending. Sampling only buys the ability to run
+an *effect* on what is behind; with no effect it redraws the pixels that would have shown through
+anyway. Tier A keeps the sample (it has `vibrancy()`), and `frostedPanel`'s single genuine blur — the
+expanded sidebar, the one blur in the app worth its cost — is untouched.
+
+## Earlier draw-time fixes (emulator-era, all still valid)
+
+Work that was being redone every frame to produce an image that never changed:
 
 | change | what it was doing | commit |
 |---|---|---|
-| Ambient mesh baked to a bitmap | 2 viewport-sized radial gradients + veil + vignette, re-evaluated per frame — and drawn **twice**, because `layerBackdrop` captures the same subtree | `fa8a826` |
-| `softShadow` baked to a bitmap | `drawPath` regenerating a Gaussian mask every frame; ~1.7 ms of RenderThread on its own | `fa8a826` |
+| Ambient mesh baked to a bitmap | 2 viewport-sized radial gradients + veil + vignette per frame, drawn **twice** because `layerBackdrop` captures the same subtree | `fa8a826` |
+| `softShadow` baked to a bitmap | `drawPath` regenerating a Gaussian mask every frame; ~1.7 ms of RenderThread alone | `fa8a826` |
 | `tvGlow` moved to `drawWithCache` | allocating a `Path`, `NativePaint` and `BlurMaskFilter` on **every draw pass** | `cb1235a` |
 
-Both bakes render at half resolution and upscale. That is lossless in practice because both
-outputs are band-limited by construction — wide gradients and a blur fringe carry no detail a
-half-res buffer can hold. Pixel diff of the Settings screen: 1.3% of pixels differ, all by at
-most 2/255, under the quantisation floor of a shadow drawn at 10% alpha.
+Both bakes render at half resolution and upscale — lossless in practice because the outputs are
+band-limited by construction. Pixel diff: 1.3 % of pixels differ, all by at most 2/255.
 
 Two traps worth remembering, because both would have made things **worse**:
 
-- `drawWithCache` re-runs when the modifier is recreated. Baking the mesh inline in
-  `AmbientBackdrop` meant a fresh multi-MB allocation on every artwork change — i.e. every D-pad
-  step on a browse screen. It lives in its own skippable composable (`AmbientMesh`, stable `Color`
-  params only) so artwork changes can't touch it.
-- `drawWithCache` also re-runs on **size** change. The expanding sidebar is remeasured every frame
-  by `widthFrom`, so baking its shadow would allocate and rasterize per frame. `softShadow` takes
-  a `bake: Boolean` opt-out for exactly this; `frostedPanel` and `glassSurface(sheer = true)` pass
-  `false`. **Any future size-animating glass surface must do the same.**
+- `drawWithCache` re-runs when the modifier is recreated. Baking the mesh inline in `AmbientBackdrop`
+  meant a fresh multi-MB allocation on every artwork change — i.e. every D-pad step on a browse
+  screen. It lives in its own skippable composable (`AmbientMesh`, stable `Color` params only).
+- `drawWithCache` also re-runs on **size** change. The expanding sidebar is remeasured every frame by
+  `widthFrom`, so baking its shadow would allocate and rasterize per frame. `softShadow` takes a
+  `bake: Boolean` opt-out; `frostedPanel` and `glassSurface(sheer = true)` pass `false`. **Any future
+  size-animating glass surface must do the same.**
 
-## How much it actually helped: not much
+## How to measure — the real device
 
-| build | RenderThread | frame total | effective fps |
-|---|---|---|---|
-| before | 7.44 ms | 27.13 ms | ~37 |
-| after the three fixes | 5.25 ms | 24.92 ms | ~40 |
-| _hypothetical:_ backdrop removed | 1.33 ms | 17.58 ms | ~57 |
+`adb` is not on PATH; use `~/Library/Android/sdk/platform-tools/adb`. The shell is zsh, which does
+not word-split unquoted vars, so use `export ANDROID_SERIAL=…` rather than `-s $VAR`.
 
-RenderThread dropped 30%, but wall-clock only moved ~2 ms — about 3 fps, which is below what
-anyone perceives. **The work removed real waste and is worth keeping, but it did not make the
-scroll feel different on the emulator.** Recorded plainly here so nobody re-measures expecting a
-dramatic result.
+```bash
+# TV: Settings > System > Developer options > Network debugging. Accept the on-screen prompt.
+adb connect <tv-ip>:5555
+export ANDROID_SERIAL=<tv-ip>:5555
 
-The 30% RenderThread cut should matter more on the Sony XL95 than it does here, because
-RenderThread is CPU work and that SoC is much slower — but that is an expectation, **not
-something that has been measured**. See the open items.
+adb install -r tv/build/outputs/apk/release/tv-release.apk
+# A sideload leaves ART at status=verify -- the baseline profile is NOT applied and every number is
+# of an uncompiled app. Run the app once first so a profile exists, then:
+adb shell killall -s SIGUSR1 com.arashrahimi46.iptv     # flush the profile
+adb shell cmd package compile -m speed-profile -f com.arashrahimi46.iptv
+adb shell dumpsys package dexopt | grep -A2 'com.arashrahimi46.iptv]'   # want status=speed-profile
+
+adb shell dumpsys gfxinfo com.arashrahimi46.iptv reset
+# ...perform the interaction (14x KEYCODE_DPAD_DOWN, ~450ms apart)...
+adb shell dumpsys gfxinfo com.arashrahimi46.iptv framestats
+```
+
+### Parse `framestats` by COLUMN NAME, never by index
+
+An earlier version of this document hardcoded column indices taken from the emulator (API 36). **The
+XL95 (API 31) emits a different layout** — `SyncQueued`, `IssueDrawCommandsStart` and
+`FrameCompleted` all sit one index earlier. Fixed indices do not error, they silently produce
+nonsense (they read a *duration* field as a timestamp and every row gets filtered out). `framestats`
+emits a header row inside `---PROFILEDATA---`; zip against it.
+
+Phases, by name:
+
+- composition + measure + layout = `DrawStart - PerformTraversalsStart`
+- draw recording = `SyncQueued - DrawStart`
+- sync / upload = `IssueDrawCommandsStart - SyncQueued`
+- **RenderThread = `SwapBuffers - IssueDrawCommandsStart`** ← the number that matters
+- GPU = `GpuCompleted - SwapBuffers`
+- total = `FrameCompleted - IntendedVsync`
+
+Skip rows where `Flags != 0` — HWUI is telling you it is not a valid timing sample.
+
+### Traps in the measurement itself
+
+Each of these produced a confidently wrong answer during this investigation:
+
+- **`PROFILEDATA` is a 120-frame ring buffer.** A sweep longer than ~2 s overflows it and you end up
+  reading idle frames. The `Stats since:` aggregate block covers every frame since `reset` — trust
+  that for jank rates and percentiles.
+- **Never measure on Home.** Its "Live now" rail plays real network streams; decode and network
+  jitter move p50 by tens of ms and make a rendering delta unmeasurable. Settings has no video.
+- **Wait for genuine idle before `reset`,** and require the app to have actually started drawing. An
+  app that has not rendered yet reports 0 frames, which naive idle-detection reads as "settled" — so
+  the whole sweep gets typed into a window that is not up.
+- **`Total frames rendered: 0` usually means your keypresses did nothing,** not that the instrument
+  is broken. Focus parked on the last sidebar row swallows every DPAD_DOWN. Screenshot the state.
+- **Blind scripted navigation drifts.** A capture sequence that "goes to Home" landed in Multi-view
+  and produced a 100 %-different pixel diff that meant nothing. Screenshot every state you compare;
+  prefer a fresh launch (start screen = Home) over a key sequence.
+- **The emulator cannot answer absolute questions.** It runs OpenGL ES → Metal on the host
+  (`ro.hardware.egl = emulation`), so `GpuCompleted` is host round-trip latency, not GPU work.
+- **Debug builds carry non-trivial overhead** — profile release.
 
 ## Locked decisions
 
 | decision | status | why |
 |---|---|---|
-| **Keep the glass backdrop system** | **Locked 2026-07-27** | It is the largest remaining draw cost (~4 ms of RenderThread, every frame, every screen), but removing it is a real visual change and the win isn't big enough to pay for it. See below. |
-| Ambient mesh stays static (`t = 0`) | Locked | The bake depends on it. Re-introducing drift would invalidate the cached bitmap every frame and undo the fix. |
-| `vibrancy()` stays | Locked | Measured at ~0.5 ms, inside run-to-run noise. Not worth a visual change. |
-
-### Why the backdrop was kept
-
-The hypothesis was that since only the ambient wash sits *behind* a glass card, sampling that
-wash and redrawing it should be a no-op. **That was tested and it is false** — the theme also
-retunes token alphas when backdrop blur is active (`Theme.kt`, `withBlurredBackdrop()`), so
-removing it changes the surfaces themselves. Pixel diff, backdrop on vs off:
-
-| screen | pixels differing | max channel delta |
-|---|---|---|
-| Settings | 95% | 103/255 |
-| Home | 11% | 90/255 |
-| Expanded sidebar | **0%** | **0** |
-
-Cards flatten toward a plain tint — a loss of depth rather than a different design, but real and
-app-wide. Against ~4 ms and an unproven perceptual benefit, that trade was declined.
-
-The sidebar result is the useful one: the expanded panel frosts through `LocalPageBackdrop`, a
-**separate** layer that samples page content, so it is untouched by the ambient backdrop either
-way. The app's one genuinely visible blur — and the one most worth its cost — is not part of this
-trade-off.
-
-## The emulator cannot answer absolute questions
-
-It runs an OpenGL ES → Metal translator on the host (`ro.hardware.egl = emulation`), so the
-`GpuCompleted` timestamp is dominated by host round-trip latency rather than real GPU work. In
-practice:
-
-- **Trustworthy:** RenderThread CPU (`issue draw commands`). Stable, and it transfers to real
-  hardware.
-- **Noisy:** GPU time. Per-frame minimum ranged 1.1–5.2 ms across runs of the *same* build.
-- **Not comparable to a TV:** absolute frame time. Even with the entire backdrop system disabled
-  the emulator still sat at 17.6 ms/frame, so it cannot demonstrate 60 fps for this screen under
-  any configuration.
-
-Run-to-run variance on total frame time is roughly ±1.5 ms. Treat smaller differences as noise.
+| Sample the backdrop only where an effect runs | **Locked 2026-07-28** | Worth 9.5 ms of RenderThread on the XL95 at no visual cost. Measured, pixel-diffed. |
+| Keep `AmbientBackdrop` + the Tier B token retune | Locked | The retune *is* the glass look; only the redundant per-surface sampling was removed. |
+| Ambient mesh stays static (`t = 0`) | Locked | The bake depends on it. Drift would invalidate the cached bitmap every frame. |
+| ~~Keep the glass backdrop system~~ | **Superseded 2026-07-28** | Locked on emulator data that understated the cost ~4×, and on a test that conflated the token retune with the sampling. |
 
 ## Open items
 
-- **Input latency is unexamined and is the better lead.** `gfxinfo` counted **241 high
-  input-latency events** across a 14-keypress sweep. That is a different failure from a low frame
-  rate, and it matches the original report ("it goes down with a glitch, with some delays") better
-  than 37-vs-40 fps does. Nothing here addressed it. Suspects not yet looked at: the LazyColumn's
-  focus-driven `bringIntoView` scroll animation, and D-pad autorepeat handling.
-- **Nothing has been profiled on the actual Sony XL95.** Everything above is emulator data. The
-  decisive test is the same scripted sweep over network `adb` against the TV.
-- **Known composition-level issues, deliberately not fixed.** An audit found unstable `Iterable`
-  params on `ChipChoiceRow` (plus `values().asIterable()` allocated per recomposition at four call
-  sites), `animateDpAsState` read in composition scope in `AreSwitch`, and a `focusRequester`
-  element toggling structurally mid-animation in `AreSegmentedControl`. All real; all in the
-  0.04 ms. Fix them if they cause a correctness or jank problem that is *measured*, not on
-  principle.
-## Two corrections to an earlier version of this document
-
-**A baseline profile _is_ shipped.** An earlier draft here claimed it wasn't, on the grounds that
-`tv/src/release/generated/` doesn't exist. That was wrong — the `baselineprofile` module generates
-it at build time, and `tv-release.apk` contains `assets/dexopt/baseline.prof`: 6367 rules, 1123 of
-them in `ui/`, composables included. Verified by unzipping the APK.
-
-**But `adb install` does not apply it.** A sideloaded install leaves ART at `status=verify` — no
-AOT compilation, profile unused. Play Store installs apply it; sideloads don't. So **any on-device
-perf impression from a sideloaded build is of an uncompiled app.** After installing, run:
-
-```bash
-adb shell cmd package compile -m speed-profile -f com.arashrahimi46.iptv
-adb shell dumpsys package dexopt | grep -A2 com.arashrahimi46.iptv   # want status=speed-profile
-```
-
-Measured effect (emulator, 4 cold starts each): `verify` ~118 ms → `speed-profile` ~103 ms, about
-12% off cold start. It made **no** measurable difference to the steady-state scroll (17.03 ms vs
-17.43 ms, inside noise) — which is expected, because a baseline profile buys cold start and the
-first run through a path, not sustained scrolling after JIT has warmed up.
-
-## Debug vs release: the numbers above are all DEBUG builds
-
-Every measurement in this document was taken on `:tv:assembleDebug`. The release build of the same
-commit runs the same Settings scroll at **17.0 ms/frame against debug's 24.9 ms**. Debug builds
-carry non-trivial overhead, so this document overstates the absolute problem — but the relative
-comparisons in it are all debug-vs-debug and remain valid.
-
-Practical consequence: profile release builds when you want to know how the app actually behaves,
-and force `speed-profile` afterwards. Profiling a sideloaded debug build measures two layers of
-overhead the user will never see.
+- **Light theme and dialogs are unverified** against the sampling change. `CLAUDE.md` warns that
+  near-white surfaces on the off-white page need a `borderDefault` edge to read, and glass alpha
+  behaves differently over a light page. This is the most likely place for a regression.
+- **~5 ms of RenderThread remains** at p50, plus ~4 ms of sync/upload. Not yet attributed.
+- **The sidebar expand/collapse animation is unmeasured on the TV.** It carries two per-frame costs
+  no other surface does: an unbaked Gaussian `softShadow` and a `frostedPanel` blur whose region
+  resizes every frame. On the emulator its frames spread across 22–48 ms.
+- **Known composition-level issues, deliberately not fixed.** Unstable `Iterable` params on
+  `ChipChoiceRow` (plus `values().asIterable()` allocated per recomposition at four call sites),
+  `animateDpAsState` read in composition scope in `AreSwitch`, a `focusRequester` toggling
+  structurally mid-animation in `AreSegmentedControl`. All real; all inside the 0.07 ms. Fix them if
+  they cause a problem that is *measured*, not on principle.
+- **Baseline profile:** one *is* shipped (`assets/dexopt/baseline.prof`, 6367 rules). Sideloads leave
+  ART at `status=verify` and never apply it; Play installs do. Forcing `speed-profile` took cold
+  start from ~118 ms to ~103 ms on the emulator and made no difference to steady-state scroll, which
+  is expected — a baseline profile buys cold start, not sustained scrolling.

@@ -193,18 +193,37 @@ fun Modifier.glassSurface(
     // size -- animates per frame. That is exactly the case the shadow must NOT bake; see `bake`.
     val lifted = this.then(if (shadow) Modifier.softShadow(shape, bake = !sheer) else Modifier)
 
-    // V2: sample and blur what's actually behind this surface. Only possible where the shell has
-    // published a backdrop layer AND the device can render it -- Tier C falls through to the V1
-    // path, which is why its token alphas are deliberately left at V1's denser values (§7/§8).
-    return if (backdrop != null && tier.hasBackdropBlur) {
+    // V2: sample what's actually behind this surface. Gated on there being an EFFECT to apply
+    // (`hasShaders`), NOT merely on the tier being blur-capable -- see the PERF note below. Tier B/C
+    // take the plain-fill path; Tier C's token alphas are deliberately left at V1's denser values
+    // (§7/§8), while Tier B keeps the retuned alphas (`withBlurredBackdrop()`) it always had.
+    //
+    // PERF (measured on the real Sony XL95 -- see docs/glass-render-perf-findings.md): sampling the
+    // backdrop with an EMPTY effects block is not free and is not a no-op-shaped cost. It is a full
+    // offscreen capture per surface, and a dense Settings pane has a dozen. Gating it here took
+    // RenderThread from 14.5ms to 5.0ms and total frame time from ~34ms to ~18ms (~29 -> ~55 fps) on
+    // a 16.7ms budget. Settings was pixel-identical; Home showed no card-shaped difference at 8x
+    // amplification.
+    //
+    // Why it can be dropped without changing pixels: [AmbientBackdrop] is a REAL LAYER in the
+    // hierarchy, so a translucent `fill` over it already composites to the right thing through
+    // ordinary alpha blending. Sampling only buys the ability to run an effect on what's behind; with
+    // no effect it re-draws the pixels that would have shown through anyway. Anything that needs an
+    // actual effect must keep the sample -- that is why Tier A (vibrancy) still takes this path, and
+    // why [frostedPanel]'s one real blur is untouched.
+    //
+    // NOTE this supersedes an earlier conclusion that the backdrop system had to stay because turning
+    // it off changed the surfaces. That test disabled the token retune AND the sampling together; the
+    // visual change came from the retune. They are separable, and this separates them.
+    return if (backdrop != null && tier.hasShaders) {
         lifted
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { shape },
                 effects = {
                     // Vibrancy is the "alive" ingredient -- a saturation boost on the sampled
-                    // content. AGSL, so Tier A only.
-                    if (tier.hasShaders) vibrancy()
+                    // content. AGSL, so Tier A only -- and now the sole reason this path exists.
+                    vibrancy()
                     // PERF (§4 retune): NO per-surface blur pass. The layer this samples is
                     // [AmbientBackdrop], which is low-frequency by construction -- a flat base, two
                     // wide radial gradient lobes, a veil and a vignette, plus artwork that is ALREADY
