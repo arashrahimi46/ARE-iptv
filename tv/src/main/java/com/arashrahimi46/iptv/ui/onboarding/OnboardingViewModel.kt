@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.arashrahimi46.iptv.data.parser.MAX_PLAYLISTS
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -127,6 +128,17 @@ class OnboardingViewModel(app: Application) : AndroidViewModel(app) {
         _uiState.value = state.copy(isSubmitting = true, error = null)
         viewModelScope.launch {
             try {
+                // The cap is enforced here as well as in Explore: it's advertised on the Explore
+                // screen as a limit on playlists, so leaving this path unbounded would make it a
+                // promise the app doesn't keep. Checked inside submit() rather than gating the
+                // button because the count is a Flow and the check must be current at commit time.
+                if (repository.observeSources().first().size >= MAX_PLAYLISTS) {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        error = getApplication<Application>().getString(R.string.explore_cap_body),
+                    )
+                    return@launch
+                }
                 val name = state.portalName.ifBlank { getApplication<Application>().getString(R.string.onboarding_confirm_default_portal_name) }
                 val epgUrl = state.epgUrl.takeIf { !state.epgAuto && it.isNotBlank() }
                 val summary = when (state.sourceType) {
