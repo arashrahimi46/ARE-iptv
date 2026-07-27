@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Nincs aktív lejátszási lista</string>
     <string name="multiview_no_channels">Nincs elérhető élő csatorna a többnézetes megjelenítéshez</string>
     <string name="multiview_audio_badge">Hang</string>
+    <string name="multiview_audio_only">Rádióállomás — csak hang</string>
     <string name="multiview_add_to">Hozzáadás a Többnézeteshez</string>
     <string name="multiview_add_channel">Csatorna hozzáadása</string>
     <string name="multiview_pane_watch">Megtekintés teljes képernyőn</string>

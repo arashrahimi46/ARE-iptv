@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Немає активного плейлиста</string>
     <string name="multiview_no_channels">Немає прямих каналів для мультиперегляду</string>
     <string name="multiview_audio_badge">Звук</string>
+    <string name="multiview_audio_only">Радіостанція — лише звук</string>
     <string name="multiview_add_to">Додати до Мультиперегляду</string>
     <string name="multiview_add_channel">Додати канал</string>
     <string name="multiview_pane_watch">Дивитися на весь екран</string>

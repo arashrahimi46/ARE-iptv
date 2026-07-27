@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Ingen aktiv spellista</string>
     <string name="multiview_no_channels">Inga livekanaler tillgängliga för multivy</string>
     <string name="multiview_audio_badge">Ljud</string>
+    <string name="multiview_audio_only">Radiostation — endast ljud</string>
     <string name="multiview_add_to">Lägg till i Multivy</string>
     <string name="multiview_add_channel">Lägg till kanal</string>
     <string name="multiview_pane_watch">Titta i helskärm</string>

@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Ingen aktiv spilleliste</string>
     <string name="multiview_no_channels">Ingen direktekanaler tilgjengelig for multi-visning</string>
     <string name="multiview_audio_badge">Lyd</string>
+    <string name="multiview_audio_only">Radiostasjon — kun lyd</string>
     <string name="multiview_add_to">Legg til i Multi-visning</string>
     <string name="multiview_add_channel">Legg til kanal</string>
     <string name="multiview_pane_watch">Se i fullskjerm</string>

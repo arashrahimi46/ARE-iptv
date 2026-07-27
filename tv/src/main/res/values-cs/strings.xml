@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Žádný aktivní playlist</string>
     <string name="multiview_no_channels">Pro zobrazení více oken nejsou dostupné žádné živé kanály</string>
     <string name="multiview_audio_badge">Zvuk</string>
+    <string name="multiview_audio_only">Rozhlasová stanice — pouze zvuk</string>
     <string name="multiview_add_to">Přidat do Více oken</string>
     <string name="multiview_add_channel">Přidat kanál</string>
     <string name="multiview_pane_watch">Sledovat na celou obrazovku</string>

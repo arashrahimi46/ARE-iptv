@@ -681,6 +681,7 @@
     <string name="multiview_no_source">No active playlist</string>
     <string name="multiview_no_channels">No live channels available for multi-view</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_audio_only">Radio station — audio only</string>
     <string name="multiview_add_to">Add to multi-view</string>
     <string name="multiview_add_channel">Add channel</string>
     <string name="multiview_pane_watch">Watch full screen</string>

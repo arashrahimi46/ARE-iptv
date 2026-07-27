@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Brak aktywnej playlisty</string>
     <string name="multiview_no_channels">Brak dostępnych kanałów na żywo do widoku wielokanałowego</string>
     <string name="multiview_audio_badge">Dźwięk</string>
+    <string name="multiview_audio_only">Stacja radiowa — tylko dźwięk</string>
     <string name="multiview_add_to">Dodaj do widoku wielokanałowego</string>
     <string name="multiview_add_channel">Dodaj kanał</string>
     <string name="multiview_pane_watch">Oglądaj na pełnym ekranie</string>

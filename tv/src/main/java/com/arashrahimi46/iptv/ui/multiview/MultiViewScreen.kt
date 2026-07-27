@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
@@ -47,6 +48,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Tracks
+import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.lifecycle.Lifecycle
@@ -356,6 +359,7 @@ private fun ChannelPickerDialog(
     }
 }
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun MultiViewPane(
     channel: Channel,
@@ -372,6 +376,8 @@ private fun MultiViewPane(
     // swap the playing source without needing the parent's channel list to change.
     var currentSource by remember(channel.id) { mutableStateOf(channel) }
     var health by remember(channel.id) { mutableStateOf(AreStreamHealthLevel.Moderate) }
+    /** True once the player reports tracks but none of them video -- i.e. a radio station. */
+    var audioOnly by remember(channel.id) { mutableStateOf(false) }
     // Bumped by the auto-retry effect below to force exoPlayer's remember() key to change
     // (a fresh instance/reconnect attempt), same pattern as LivePlayerScreen's retryCount.
     var retryCount by remember(channel.id) { mutableStateOf(0) }
@@ -434,6 +440,15 @@ private fun MultiViewPane(
 
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
+            // A radio station in a video grid is just a black rectangle, which is indistinguishable
+            // from a dead stream -- the pane looks broken while it's playing perfectly. Ask the
+            // player what it actually has rather than guessing from the category, since plenty of
+            // "TV" channels are audio-only in these community lists and vice versa.
+            override fun onTracksChanged(tracks: Tracks) {
+                audioOnly = tracks.groups.isNotEmpty() &&
+                    tracks.groups.none { it.type == C.TRACK_TYPE_VIDEO }
+            }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 health = when (playbackState) {
                     Player.STATE_READY -> {
@@ -529,6 +544,20 @@ private fun MultiViewPane(
                 // old, now-released player -- a stale/frozen frame under the current label.
                 update = { it.player = exoPlayer },
             )
+            // Two sources, deliberately OR'd. [Channel.isRadio] is the provider's declaration, known
+            // before a single byte is fetched, so the glyph is there from the first frame. [audioOnly]
+            // is what the player actually found, which catches the many community-list stations that
+            // never declare radio="true" -- exactly the case that made this pane look broken.
+            // Sits above the (blank) video surface but below the gradient + labels, so the station
+            // name still reads normally over it.
+            if (channel.isRadio || audioOnly) {
+                Icon(
+                    imageVector = Icons.Filled.Radio,
+                    contentDescription = stringResource(R.string.multiview_audio_only),
+                    tint = colors.textTertiary,
+                    modifier = Modifier.align(Alignment.Center).size(48.dp),
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()

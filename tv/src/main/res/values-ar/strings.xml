@@ -487,6 +487,7 @@
     <string name="multiview_no_source">لا توجد قائمة تشغيل نشطة</string>
     <string name="multiview_no_channels">لا توجد قنوات مباشرة متاحة للعرض المتعدد</string>
     <string name="multiview_audio_badge">الصوت</string>
+    <string name="multiview_audio_only">محطة راديو — صوت فقط</string>
     <string name="multiview_add_to">إضافة إلى العرض المتعدد</string>
     <string name="multiview_add_channel">إضافة قناة</string>
     <string name="multiview_pane_watch">مشاهدة بملء الشاشة</string>

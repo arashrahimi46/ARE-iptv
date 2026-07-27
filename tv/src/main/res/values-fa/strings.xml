@@ -488,6 +488,7 @@
     <string name="multiview_no_source">پلی‌لیست فعالی نیست</string>
     <string name="multiview_no_channels">کانال زنده‌ای برای چند نمایی در دسترس نیست</string>
     <string name="multiview_audio_badge">صدا</string>
+    <string name="multiview_audio_only">ایستگاه رادیویی — فقط صدا</string>
     <string name="multiview_add_to">افزودن به چند نمایی</string>
     <string name="multiview_add_channel">افزودن کانال</string>
     <string name="multiview_pane_watch">تماشا در تمام‌صفحه</string>

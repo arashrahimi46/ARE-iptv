@@ -509,6 +509,7 @@
     <string name="multiview_no_source">No hay una lista activa</string>
     <string name="multiview_no_channels">No hay canales en vivo disponibles para multivisión</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_audio_only">Emisora de radio: solo audio</string>
     <string name="multiview_add_to">Añadir a Multivisión</string>
     <string name="multiview_add_channel">Añadir canal</string>
     <string name="multiview_pane_watch">Ver en pantalla completa</string>

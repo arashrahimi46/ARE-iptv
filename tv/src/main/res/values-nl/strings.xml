@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Geen actieve afspeellijst</string>
     <string name="multiview_no_channels">Geen live-kanalen beschikbaar voor multiweergave</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_audio_only">Radiozender — alleen audio</string>
     <string name="multiview_add_to">Toevoegen aan Multiweergave</string>
     <string name="multiview_add_channel">Kanaal toevoegen</string>
     <string name="multiview_pane_watch">Bekijk op volledig scherm</string>

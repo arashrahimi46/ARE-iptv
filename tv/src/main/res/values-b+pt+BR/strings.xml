@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Nenhuma playlist ativa</string>
     <string name="multiview_no_channels">Nenhum canal ao vivo disponível para multivisão</string>
     <string name="multiview_audio_badge">Áudio</string>
+    <string name="multiview_audio_only">Estação de rádio — somente áudio</string>
     <string name="multiview_add_to">Adicionar à Multivisão</string>
     <string name="multiview_add_channel">Adicionar canal</string>
     <string name="multiview_pane_watch">Assistir em tela cheia</string>

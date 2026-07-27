@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Nicio listă de redare activă</string>
     <string name="multiview_no_channels">Niciun canal live disponibil pentru vizualizare multiplă</string>
     <string name="multiview_audio_badge">Audio</string>
+    <string name="multiview_audio_only">Post de radio — doar audio</string>
     <string name="multiview_add_to">Adaugă la Vizualizare multiplă</string>
     <string name="multiview_add_channel">Adaugă canal</string>
     <string name="multiview_pane_watch">Vizionează pe tot ecranul</string>

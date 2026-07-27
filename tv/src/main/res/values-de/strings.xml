@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Keine aktive Playlist</string>
     <string name="multiview_no_channels">Keine Live-Sender für die Multi-Ansicht verfügbar</string>
     <string name="multiview_audio_badge">Ton</string>
+    <string name="multiview_audio_only">Radiosender — nur Ton</string>
     <string name="multiview_add_to">Zur Multi-Ansicht hinzufügen</string>
     <string name="multiview_add_channel">Kanal hinzufügen</string>
     <string name="multiview_pane_watch">Vollbild ansehen</string>

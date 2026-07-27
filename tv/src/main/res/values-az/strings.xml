@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Aktiv pleylist yoxdur</string>
     <string name="multiview_no_channels">Çoxlu görünüş üçün əlçatan canlı kanal yoxdur</string>
     <string name="multiview_audio_badge">Səs</string>
+    <string name="multiview_audio_only">Radio stansiyası — yalnız səs</string>
     <string name="multiview_add_to">Çoxlu görünüşə əlavə et</string>
     <string name="multiview_add_channel">Kanal əlavə et</string>
     <string name="multiview_pane_watch">Tam ekranda izlə</string>

@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Няма активен плейлист</string>
     <string name="multiview_no_channels">Няма налични канали на живо за мулти-изглед</string>
     <string name="multiview_audio_badge">Аудио</string>
+    <string name="multiview_audio_only">Радиостанция — само звук</string>
     <string name="multiview_add_to">Добавяне към Мулти-изглед</string>
     <string name="multiview_add_channel">Добавяне на канал</string>
     <string name="multiview_pane_watch">Гледане на цял екран</string>

@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Etkin oynatma listesi yok</string>
     <string name="multiview_no_channels">Çoklu görünüm için kullanılabilir canlı kanal yok</string>
     <string name="multiview_audio_badge">Ses</string>
+    <string name="multiview_audio_only">Radyo istasyonu — yalnızca ses</string>
     <string name="multiview_add_to">Çoklu görünüme ekle</string>
     <string name="multiview_add_channel">Kanal ekle</string>
     <string name="multiview_pane_watch">Tam ekran izle</string>

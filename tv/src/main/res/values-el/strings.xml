@@ -509,6 +509,7 @@
     <string name="multiview_no_source">Καμία ενεργή λίστα</string>
     <string name="multiview_no_channels">Δεν υπάρχουν διαθέσιμα ζωντανά κανάλια για πολλαπλή προβολή</string>
     <string name="multiview_audio_badge">Ήχος</string>
+    <string name="multiview_audio_only">Ραδιοφωνικός σταθμός — μόνο ήχος</string>
     <string name="multiview_add_to">Προσθήκη στην Πολλαπλή προβολή</string>
     <string name="multiview_add_channel">Προσθήκη καναλιού</string>
     <string name="multiview_pane_watch">Πλήρης οθόνη</string>
