@@ -23,7 +23,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -274,8 +273,7 @@ fun Modifier.tvGlow(
     shape: Shape,
     spread: Dp = 7.dp,
     alpha: Float = 1f,
-): Modifier = this.drawBehind {
-    if (alpha <= 0f) return@drawBehind
+): Modifier = if (alpha <= 0f) this else this.drawWithCache {
     val spreadPx = spread.toPx()
     // A thin core stroke that the Gaussian blur softens -- NOT a fat stroke. A wide
     // stroke (previously == spread) made the halo huge and bleed onto neighbouring
@@ -287,7 +285,7 @@ fun Modifier.tvGlow(
     // the element's own opaque background (drawn on top).
     val out = spreadPx * 0.5f
     val path = Path().apply {
-        when (val o = shape.createOutline(size, layoutDirection, this@drawBehind)) {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
             is Outline.Rounded -> {
                 val rr = o.roundRect
                 addRoundRect(
@@ -303,7 +301,7 @@ fun Modifier.tvGlow(
             is Outline.Rectangle -> addRect(o.rect.inflate(out))
             is Outline.Generic -> addPath(o.path)
         }
-    }
+    }.asAndroidPath()
     // One real Gaussian blur (BlurMaskFilter) = one smooth halo (no banded layered
     // strokes). minSdk 36 -> fully hardware-accelerated.
     val paint = NativePaint().apply {
@@ -313,8 +311,13 @@ fun Modifier.tvGlow(
         this.color = color.copy(alpha = (0.38f * alpha).coerceIn(0f, 1f)).toArgb()
         maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
     }
-    drawIntoCanvas { canvas ->
-        canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
+    // PERF: drawWithCache, not drawBehind -- same pixels, built once per size/shape instead of per
+    // draw pass. As drawBehind this allocated a Path, a NativePaint AND a BlurMaskFilter on every
+    // single draw, so each of these badges/dots/switches churned three objects per frame and missed
+    // HWUI's paint cache. [alpha] is a plain parameter, so a change to it recreates the modifier and
+    // invalidates this cache -- correctness is preserved without reading it at draw time.
+    onDrawBehind {
+        drawIntoCanvas { canvas -> canvas.nativeCanvas.drawPath(path, paint) }
     }
 }
 
