@@ -398,7 +398,10 @@ private fun MultiViewPane(
         // each churning its own DefaultAllocator) is a GC-then-OOM shape on a low-RAM TV. Multiview
         // trades buffer depth for headroom: enough to ride out a hiccup, not enough to hoard.
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(1_500, 15_000, 1_000, 2_000)
+            // minBufferMs MUST be >= bufferForPlaybackAfterRebufferMs -- DefaultLoadControl asserts
+            // it and throws IllegalArgumentException from the builder, which crashed Multi-View on
+            // open every time (1_500 < 2_000). 5s still gives up ~90% of the ~50s default per player.
+            .setBufferDurationsMs(5_000, 15_000, 1_000, 2_000)
             .setTargetBufferBytes(8 * 1024 * 1024)
             .setPrioritizeTimeOverSizeThresholds(false)
             .build()
