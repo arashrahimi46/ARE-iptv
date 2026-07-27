@@ -1107,6 +1107,7 @@ fun LivePlayerScreen(
                         total = totalLabel,
                         channelLogoInitials = media.title.take(3).uppercase(),
                         channelLogoUrl = media.artworkUrl,
+                        artworkIsPoster = media.artworkIsPoster,
                         // Movies/series only: make the progress bar a focusable scrub control (shows
                         // a thumb when focused). Null on live -> bar stays display-only.
                         seekBarFocusRequester = if (media.isLive) null else seekBarFocusRequester,

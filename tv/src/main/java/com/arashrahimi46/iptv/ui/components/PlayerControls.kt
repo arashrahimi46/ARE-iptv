@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -115,8 +116,11 @@ fun ArePlayerControls(
     elapsed: () -> String = { "20:28" },
     total: () -> String = { "20:45" },
     channelLogoInitials: String = "SKY",
-    /** The channel's logo. Null (VOD, episodes, recordings, direct URLs) => initials only. */
+    /** Channel logo or title poster. Null (recordings, direct URLs) => initials only. */
     channelLogoUrl: String? = null,
+    /** True when [channelLogoUrl] is a 2:3 poster, so the well narrows to that ratio and the image
+     *  fills it edge-to-edge. Channel logos stay a square plate that the logo sits inside. */
+    artworkIsPoster: Boolean = false,
     onPlayPause: () -> Unit = {},
     onRewind: () -> Unit = {},
     onFastForward: () -> Unit = {},
@@ -202,11 +206,20 @@ fun ArePlayerControls(
         // over arbitrary video, not over the glass, so it keeps its own explicit surfaceOverlay fill.
         ProvideOnGlass {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            // The HEIGHT is pinned at 52dp for both shapes and only the width follows the ratio.
+            // For VOD the text column beside this can be short (streamInfo is live-only, and the
+            // category subtitle can be absent), which would let a taller well drive the row height
+            // and grow the HUD -- the exact direction that starts clipping the button row again.
+            val wellShape = RoundedCornerShape(AreIptvTheme.radius.sm)
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .background(colors.surfaceOverlay, RoundedCornerShape(AreIptvTheme.radius.sm))
-                    .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.sm)),
+                    .height(52.dp)
+                    .width(if (artworkIsPoster) 35.dp else 52.dp)
+                    .background(colors.surfaceOverlay, wellShape)
+                    .border(1.dp, colors.borderDefault, wellShape)
+                    // Clipped so a Crop-scaled poster can bleed to the edges without squaring off
+                    // the rounded corners the border draws.
+                    .clip(wellShape),
                 contentAlignment = Alignment.Center,
             ) {
                 // Same contract as AreChannelTile's well: the initials are a FALLBACK, shown only
@@ -222,9 +235,16 @@ fun ArePlayerControls(
                     AsyncImage(
                         model = channelLogoUrl,
                         contentDescription = null,
-                        contentScale = ContentScale.Fit,
+                        // A poster IS the well -- fill it edge to edge. A logo sits INSIDE the
+                        // plate, inset and never cropped, because provider logos are wordmarks
+                        // that Crop would slice through.
+                        contentScale = if (artworkIsPoster) ContentScale.Crop else ContentScale.Fit,
                         onState = { logoLoaded.value = it is AsyncImagePainter.State.Success },
-                        modifier = Modifier.fillMaxSize().padding(6.dp),
+                        modifier = if (artworkIsPoster) {
+                            Modifier.fillMaxSize()
+                        } else {
+                            Modifier.fillMaxSize().padding(6.dp)
+                        },
                     )
                 }
             }

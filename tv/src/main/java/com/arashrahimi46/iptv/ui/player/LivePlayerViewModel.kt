@@ -66,9 +66,12 @@ data class PlayableMedia(
     val subtitle: String?,
     val streamUrl: String,
     val isLive: Boolean,
-    /** Channel logo for the HUD's provider well. Null => the well falls back to title initials,
-     *  which is all it could ever show before. */
+    /** Channel logo or title poster for the HUD's artwork well. Null => the well falls back to
+     *  title initials, which is all it could ever show before. */
     val artworkUrl: String? = null,
+    /** True when [artworkUrl] is a 2:3 poster (movies, series) rather than a channel logo, so the
+     *  well can take the matching shape instead of letterboxing it into a square plate. */
+    val artworkIsPoster: Boolean = false,
     val searchName: String? = null,
     val year: String? = null,
     val season: Int? = null,
@@ -307,6 +310,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                             subtitle = title.categoryName,
                             streamUrl = url,
                             isLive = false,
+                            artworkUrl = title.posterUrl,
+                            artworkIsPoster = true,
                             searchName = title.name,
                             year = title.year,
                         )
@@ -321,6 +326,10 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                             subtitle = "S${episode.season} · E${episode.episode}",
                             streamUrl = url,
                             isLive = false,
+                            // Episodes carry no artwork of their own -- the parent series poster is
+                            // the recognisable image, and `parent` is already loaded for searchName.
+                            artworkUrl = parent?.posterUrl,
+                            artworkIsPoster = true,
                             searchName = parent?.name,
                             season = episode.season,
                             episode = episode.episode,
