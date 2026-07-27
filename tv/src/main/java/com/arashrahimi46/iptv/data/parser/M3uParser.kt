@@ -51,6 +51,33 @@ object M3uParser {
     fun parse(playlist: String): List<M3uEntry> = parse(playlist.lineSequence()).toList()
 
     /**
+     * Index of the comma separating an `#EXTINF` line's attributes from its display name, ignoring
+     * commas inside quoted attribute VALUES. Returns -1 when there is none.
+     *
+     * Naive `indexOf(',')` breaks on a real and common line, because a browser User-Agent contains
+     * a comma inside its quotes:
+     *
+     *     #EXTINF:-1 user-agent="Mozilla/5.0 (X11; Linux x86_64) … (KHTML, like Gecko) Chrome/149"
+     *               group-title="Kids",Disney Channel
+     *                                          ^ the real separator
+     *
+     * Splitting at the comma in "(KHTML, like Gecko)" names the channel
+     * `like Gecko) Chrome/149… group-title="Kids",Disney Channel` AND loses group-title with it, so
+     * the channel is misnamed and uncategorised. Seen live in the iptv-org Netherlands playlist we
+     * ship in Explore.
+     */
+    internal fun String.indexOfNameSeparator(): Int {
+        var inQuotes = false
+        for (i in indices) {
+            when (this[i]) {
+                '"' -> inQuotes = !inQuotes
+                ',' -> if (!inQuotes) return i
+            }
+        }
+        return -1
+    }
+
+    /**
      * Streaming variant: yields entries lazily from a line sequence so a large
      * playlist (100s of MB) is never fully materialized in memory. Only the
      * pending `#EXTINF` metadata is held until its URL line arrives; other
@@ -68,7 +95,7 @@ object M3uParser {
                 // (matches the non-streaming parser -- see M3uParserTest for the pinned behavior).
                 if (pendingName == null) {
                     val info = line.substringAfter(":", "")
-                    val commaIdx = info.indexOf(',')
+                    val commaIdx = info.indexOfNameSeparator()
                     val attrsPart = if (commaIdx >= 0) info.substring(0, commaIdx) else info
                     val displayName = if (commaIdx >= 0) info.substring(commaIdx + 1).trim() else ""
                     val attrs = attrRegex.findAll(attrsPart).associate { it.groupValues[1].lowercase() to it.groupValues[2] }

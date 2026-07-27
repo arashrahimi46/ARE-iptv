@@ -166,6 +166,29 @@ class M3uParserTest {
         assertTrue(M3uParser.parse("#EXTM3U").isEmpty())
     }
 
+    /**
+     * Regression: the display-name split used the FIRST comma, but a User-Agent attribute contains
+     * one inside its quotes -- "(KHTML, like Gecko)". Real line from the iptv-org Netherlands
+     * playlist shipped in Explore, which named the channel
+     * `like Gecko) Chrome/149.0.0.0 Safari/537.36" group-title="Kids",Disney Channel`
+     * and dropped group-title along with it.
+     */
+    @Test
+    fun `a comma inside a quoted attribute is not the name separator`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 tvg-id="Disney.nl" user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36" group-title="Kids",Disney Channel
+            http://example.com/stream/disney
+        """.trimIndent()
+
+        val entries = M3uParser.parse(playlist)
+
+        assertEquals(1, entries.size)
+        assertEquals("Disney Channel", entries[0].name)
+        assertEquals("Kids", entries[0].groupTitle)
+        assertEquals("Disney.nl", entries[0].tvgId)
+    }
+
     @Test
     fun `entry with no name at all falls back to Unnamed`() {
         val playlist = """
