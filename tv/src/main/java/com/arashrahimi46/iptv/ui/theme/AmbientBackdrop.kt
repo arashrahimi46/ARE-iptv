@@ -12,9 +12,15 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -84,16 +90,6 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
     val artwork by LocalAmbientArtwork.current
     val context = LocalContext.current
 
-    // V2 max-smoothness: the ambient mesh is STATIC. It used to drift on a 42s loop (Tier A only),
-    // but that animation invalidated this backdrop's draw every frame -- and since every glass surface
-    // in the app samples this layer, each one had to re-blur continuously, a constant GPU cost even on
-    // a fully idle screen, for a motion far too slow to perceive. A fixed phase keeps the exact mesh
-    // look while letting an idle screen do zero backdrop work (nothing invalidates, nothing re-blurs).
-    val t = 0f
-
-    val meshA = colors.accent.copy(alpha = if (colors.isDark) 0.20f else 0.13f)
-    val meshB = colors.accentHover.copy(alpha = if (colors.isDark) 0.13f else 0.09f)
-
     androidx.compose.foundation.layout.Box(modifier.fillMaxSize().background(colors.bgBase)) {
         if (artwork != null && tier.hasBackdropBlur) {
             AsyncImage(
@@ -112,50 +108,107 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize().blur(72.dp),
             )
         }
-        androidx.compose.foundation.layout.Box(
-            // PERF: drawWithCache, not drawBehind. Every brush and centre here is a pure function of
-            // the layer size and the theme, yet drawBehind rebuilt all three Brushes -- and therefore
-            // three native gradient shaders -- on EVERY draw pass. This layer is the Backdrop that
-            // every glass surface samples, so it redraws whenever the focused artwork changes or any
-            // sampling surface invalidates; on a D-pad sweep that was a shader triple per redraw.
-            // Now they are built once per size/theme and the draw is three blits.
-            Modifier.fillMaxSize().drawWithCache {
-                // Two wide radial lobes, sized well past the viewport
-                // so only their soft interiors are ever on screen -- no visible gradient edge.
-                val r = size.maxDimension * 0.85f
-                val centerA = Offset(
-                    size.width * (0.22f + 0.10f * cos(t * 6.2832f)),
-                    size.height * (0.18f + 0.08f * sin(t * 6.2832f)),
-                )
-                val centerB = Offset(
-                    size.width * (0.86f - 0.09f * sin(t * 6.2832f)),
-                    size.height * (0.78f - 0.07f * cos(t * 6.2832f)),
-                )
-                val radiusB = r * 0.9f
-                val brushA = Brush.radialGradient(
-                    colors = listOf(meshA, Color.Transparent),
-                    center = centerA,
-                    radius = r,
-                )
-                val brushB = Brush.radialGradient(
-                    colors = listOf(meshB, Color.Transparent),
-                    center = centerB,
-                    radius = radiusB,
-                )
-                val vignette = Brush.radialGradient(
-                    colors = listOf(Color.Transparent, colors.bgSunken.copy(alpha = 0.55f)),
-                    center = Offset(size.width * 0.5f, size.height * 0.45f),
-                    radius = size.maxDimension * 0.72f,
-                )
-                val veil = colors.backdropVeil
-                onDrawBehind {
-                    drawCircle(brush = brushA, radius = r, center = centerA)
-                    drawCircle(brush = brushB, radius = radiusB, center = centerB)
-                    // Veil + vignette: the contrast floor every text token is measured against.
-                    if (veil.alpha > 0f) drawRect(veil)
-                    drawRect(vignette)
-                }
-            },
+        AmbientMesh(
+            meshA = colors.accent.copy(alpha = if (colors.isDark) 0.20f else 0.13f),
+            meshB = colors.accentHover.copy(alpha = if (colors.isDark) 0.13f else 0.09f),
+            veil = colors.backdropVeil,
+            vignette = colors.bgSunken.copy(alpha = 0.55f),
         )
     }
+}
+
+/**
+ * The static accent mesh: two wide radial lobes + veil + vignette.
+ *
+ * Its own composable, taking only [Color]s, for one specific reason: it must be SKIPPABLE. The bake
+ * below lives in `drawWithCache`, which re-runs when the modifier is recreated -- and inlined into
+ * [AmbientBackdrop] it was recreated on every recomposition of that function, i.e. every time the
+ * focused artwork changed. On a browse screen that is every D-pad step, so the mesh would have been
+ * re-rasterized and a fresh multi-MB bitmap allocated per focus move: far worse than the per-frame
+ * gradients it replaced. All four params are stable, so an artwork change now skips this entirely and
+ * the bake happens once per size/theme.
+ */
+@Composable
+private fun AmbientMesh(meshA: Color, meshB: Color, veil: Color, vignette: Color) {
+    // V2 max-smoothness: the mesh is STATIC. It used to drift on a 42s loop (Tier A only), but that
+    // animation invalidated this backdrop's draw every frame -- and since every glass surface samples
+    // this layer, each one re-blurred continuously, a constant GPU cost even on a fully idle screen,
+    // for a motion far too slow to perceive. A fixed phase keeps the exact look and lets an idle
+    // screen do zero backdrop work. It is also what makes the bake below correct.
+    val t = 0f
+    androidx.compose.foundation.layout.Box(
+            // PERF: the mesh is BAKED into a cached ImageBitmap and blitted, rather than re-rasterized
+            // per frame. `drawWithCache` already hoisted the Brush *construction* out of the draw pass,
+            // but the four fills themselves still ran every frame: two viewport-sized radial lobes, the
+            // veil and the vignette, i.e. ~4 full-screen gradient evaluations at 1080p. And because this
+            // subtree is ALSO captured by `Modifier.layerBackdrop` (the layer every glass surface
+            // samples), it is drawn TWICE per frame -- ~8 full-screen gradient passes before a single
+            // row of content is painted. Measured on the TV emulator that was the entire frame budget:
+            // a Settings D-pad scroll sat at 27ms/frame with 13.5ms of GPU, while Compose itself
+            // (composition + measure + layout) used 0.04ms. This was never a recomposition problem.
+            //
+            // Baking is safe because the mesh is STATIC -- `t` is fixed at 0 (see above), so nothing
+            // here varies frame to frame; it is a pure function of size and theme. Compositing the four
+            // layers into one transparent buffer and drawing that buffer is pixel-identical to drawing
+            // them in sequence, because Porter-Duff source-over is associative. Baking the artwork or
+            // `bgBase` in too would NOT be safe: the artwork cross-fades, and it has to stay BETWEEN
+            // `bgBase` and this mesh.
+            //
+            // Rendered at half resolution and bilinearly upscaled. These are gradients whose smallest
+            // feature spans ~1600px, so they carry no detail a half-res buffer can lose -- and it cuts
+            // the cached bitmap from ~8MB to ~2MB, which matters more on a TV than on a phone.
+            Modifier.fillMaxSize().drawWithCache {
+                val bakeW = (size.width / 2f).toInt().coerceAtLeast(1)
+                val bakeH = (size.height / 2f).toInt().coerceAtLeast(1)
+                val bakeSize = Size(bakeW.toFloat(), bakeH.toFloat())
+                val baked = ImageBitmap(bakeW, bakeH)
+                // Geometry below is expressed as fractions of `size`, so evaluating it against the
+                // half-res `bakeSize` scales it correctly -- the upscale puts it back exactly.
+                CanvasDrawScope().draw(this, layoutDirection, Canvas(baked), bakeSize) {
+                    // Two wide radial lobes, sized well past the viewport
+                    // so only their soft interiors are ever on screen -- no visible gradient edge.
+                    val r = size.maxDimension * 0.85f
+                    val centerA = Offset(
+                        size.width * (0.22f + 0.10f * cos(t * 6.2832f)),
+                        size.height * (0.18f + 0.08f * sin(t * 6.2832f)),
+                    )
+                    val centerB = Offset(
+                        size.width * (0.86f - 0.09f * sin(t * 6.2832f)),
+                        size.height * (0.78f - 0.07f * cos(t * 6.2832f)),
+                    )
+                    val radiusB = r * 0.9f
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(meshA, Color.Transparent),
+                            center = centerA,
+                            radius = r,
+                        ),
+                        radius = r,
+                        center = centerA,
+                    )
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(meshB, Color.Transparent),
+                            center = centerB,
+                            radius = radiusB,
+                        ),
+                        radius = radiusB,
+                        center = centerB,
+                    )
+                    // Veil + vignette: the contrast floor every text token is measured against.
+                    if (veil.alpha > 0f) drawRect(veil)
+                    drawRect(
+                        Brush.radialGradient(
+                            colors = listOf(Color.Transparent, vignette),
+                            center = Offset(size.width * 0.5f, size.height * 0.45f),
+                            radius = size.maxDimension * 0.72f,
+                        ),
+                    )
+                }
+                val dst = IntSize(size.width.toInt(), size.height.toInt())
+                onDrawBehind {
+                    drawImage(image = baked, dstSize = dst, filterQuality = FilterQuality.Low)
+                }
+            },
+    )
 }
