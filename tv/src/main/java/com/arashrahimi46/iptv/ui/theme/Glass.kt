@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
@@ -259,6 +260,21 @@ fun Modifier.glassSurface(
  */
 
 /**
+ * The expanded sidebar's frosted fill -- **fill only**: no shadow, no border, no clip, and no size of
+ * its own. The caller pins this node at the panel's OPEN width inside its own `graphicsLayer` and
+ * animates a rounded clip around it; the wrapper draws the shadow and the edge.
+ *
+ * That split is not stylistic, it is the fix for the expand/collapse jank. `drawBackdrop` re-pulls its
+ * source layer every frame the node draws, and `layerBackdrop` satisfies that pull by re-rasterizing
+ * the WHOLE page -- ~14 ms/frame on the XL95 (docs/glass-render-perf-findings.md). While this node's
+ * own width animated, that happened on every frame of the tween, at ~28 fps. Pinned at the open width
+ * it draws once, the page is captured once, and the per-frame work is a rounded clip.
+ *
+ * Same pixels: the page behind does not move during the tween, so the blur is the same image either
+ * way -- only how much of it is revealed changes. Note this is the ONE genuine blur in the app; see
+ * [Modifier.glassSurface] for why every other surface samples nothing.
+ */
+/**
  * TRUE frosted glass -- a panel that floats over the page and shows the **page content** softly
  * blurred behind it. Currently the expanded sidebar, and deliberately nothing else.
  *
@@ -275,24 +291,22 @@ fun Modifier.glassSurface(
  * collapsed, where there is no content behind it anyway) or the TV can't render one (Tier C).
  */
 @Composable
-fun Modifier.frostedPanel(shape: Shape): Modifier {
+fun Modifier.frostedPanel(): Modifier {
     val c = AreIptvTheme.colors
     val tier = LocalGlassTier.current
     val page = LocalPageBackdrop.current
     return if (page != null && tier.hasBackdropBlur) {
-        this
-            // bake = false: this panel's width animates, so its size changes every frame. See `bake`.
-            .softShadow(shape, bake = false)
-            .drawBackdrop(
-                backdrop = page,
-                shape = { shape },
-                effects = { blur(28.dp.toPx()) },
-                onDrawSurface = { drawRect(c.surfaceGlassSheer) },
-            )
-            .border(1.dp, glassBorderBrush(), shape)
-            .clip(shape)
+        this.drawBackdrop(
+            backdrop = page,
+            // Rectangle, and no border/clip: the caller's wrapper owns the rounded edge, because the
+            // rounding is the part that animates and this node must not.
+            shape = { RectangleShape },
+            effects = { blur(28.dp.toPx()) },
+            onDrawSurface = { drawRect(c.surfaceGlassSheer) },
+        )
     } else {
-        this.glassSurface(shape, elevated = true, sheer = true)
+        // Same fill `glassSurface(sheer = true)` uses on every tier -- fill only, for the same reason.
+        this.background(c.surfaceGlassSheer)
     }
 }
 

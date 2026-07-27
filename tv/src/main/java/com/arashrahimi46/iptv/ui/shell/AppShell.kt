@@ -74,6 +74,13 @@ fun AreIptvAppShell(
     // capture is close to free precisely when it's switched on. Collapsed, the rail sits over the
     // reserved strip with no content behind it, so it has nothing to frost anyway.
     var sidebarExpanded by remember { mutableStateOf(false) }
+    // NOT gated in time. An earlier pass deferred the capture until the expand tween settled, which
+    // did halve frame time but made the blur visibly pop in after the motion finished -- a worse
+    // experience than the jank it fixed. The per-frame cost came from the frosted node RESIZING (its
+    // `drawBackdrop` re-pulls this layer whenever it draws, and the pull re-rasterizes the whole page,
+    // ~14ms). SidebarNav now pins that node at the open width and animates a clip around it instead, so
+    // the page is captured once per expand and the frost is there from frame 0. Fix the cost at the
+    // consumer, not by taking the frost away.
     // ...and gated in TIME as well as in state, because the capture is by far the most expensive thing
     // the app does. Measured on the XL95 (see docs/glass-render-perf-findings.md): the page capture
     // costs ~14ms of RenderThread per frame, and during the expand tween the panel is remeasured and

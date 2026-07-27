@@ -51,6 +51,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
@@ -81,6 +84,7 @@ import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.frostedPanel
+import com.arashrahimi46.iptv.ui.theme.softShadow
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassLens
 import com.arashrahimi46.iptv.ui.theme.glassSurface
@@ -191,6 +195,9 @@ fun AreSidebarNav(
         // bezel. `glassSurface(elevated)` samples and blurs that backdrop through the 28dp shape
         // exactly as dialogs do (Tier A/B); Tier C falls through to the denser opaque fill and still
         // reads via the inset + shape + shadow.
+        val panelRadius = AreIptvTheme.radius.xl
+        val panelShape = RoundedCornerShape(panelRadius)
+        val edgeBrush = glassBorderBrush()
         Box(modifier = modifier.fillMaxHeight().padding(spacing.sidebarInset)) {
             // The animating glass panel is CHILDLESS, and the nav content below is pinned at the open
             // width. That split is the whole fix for expand/collapse jank: previously the animated
@@ -200,16 +207,40 @@ fun AreSidebarNav(
             // out once and the reveal is pure alpha (a draw-time property). Visually identical: the
             // rail's content is start-aligned with a static icon inset, so it never moved during the
             // animation anyway -- only the panel edge did.
+            // Two nodes, and the split is load-bearing. The OUTER node is the one that animates: it
+            // carries the tween width, the rounded clip and the edge, all of which are cheap per-frame
+            // draw ops. The INNER node carries the frost and is pinned at the open width in its own
+            // graphicsLayer, so an animation frame never invalidates its draw -- which matters because
+            // its `drawBackdrop` re-pulls the page layer whenever it draws, and satisfying that pull
+            // re-rasterizes the whole page at ~14ms/frame on the XL95. Pinned, the page is captured
+            // once per expand instead of thirteen times, and the frost is present from frame 0 (an
+            // earlier attempt deferred the frost until the tween settled, and the blur visibly popped
+            // in afterwards). See [Modifier.frostedPanel] and docs/glass-render-perf-findings.md.
             Box(
                 Modifier
                     .widthFrom(width)
                     .fillMaxHeight()
-                    // Frosted, not merely translucent: while expanded the shell publishes the page
-                    // layer and this panel samples + blurs it, so the rails and artwork the overhang
-                    // covers are genuinely visible through the glass. Collapsed (or Tier C) it falls
-                    // back to the sheer ambient fill -- see [Modifier.frostedPanel].
-                    .frostedPanel(RoundedCornerShape(AreIptvTheme.radius.xl)),
-            )
+                    // bake = false: this node's size changes every frame. See `bake`.
+                    .softShadow(panelShape, bake = false)
+                    .clip(panelShape)
+                    // The edge has to be stroked AFTER the child: modifier draws land beneath a node's
+                    // children, so a plain `.border()` here would sit under the frost fill. Stroked on
+                    // the animating node rather than the pinned one so the corner radius and the right
+                    // edge stay correct at every width -- pinning the frost must not cost the border.
+                    .drawWithContent {
+                        drawContent()
+                        val hair = 1.dp.toPx()
+                        drawRoundRect(
+                            brush = edgeBrush,
+                            topLeft = Offset(hair / 2f, hair / 2f),
+                            size = Size(size.width - hair, size.height - hair),
+                            cornerRadius = CornerRadius(panelRadius.toPx() - hair / 2f),
+                            style = Stroke(hair),
+                        )
+                    },
+            ) {
+                Box(Modifier.width(openWidth).fillMaxHeight().graphicsLayer().frostedPanel())
+            }
             Column(
                 modifier = Modifier
                     .width(openWidth)
