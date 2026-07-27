@@ -10,10 +10,15 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -142,40 +147,57 @@ fun HomeScreen(
         }
     }
 
-    // Wraps the whole screen (rails Column + the step 6 dialog below) so the dialog actually
+    // "Recommended" is now a real personalized best-of across movies+series, ranked by the
+    // categories the user pins/favorites/watches (see [HomeRailCurator]); falls back to top-rated
+    // "Popular" before any signal exists. Drop titles already on the Continue Watching rail above
+    // so this stays discovery, not a repeat of what you're mid-watching.
+    //
+    // PERF: remembered against its two inputs. Recomputed inline it minted a fresh Set + List on
+    // every Home recomposition (an EPG tick, a resume-progress write), and since it is a rail's
+    // `items()` argument that new identity invalidated that LazyRow's whole item provider.
+    val recommended = remember(state.recommended, state.continueWatching) {
+        val continuingIds = state.continueWatching.mapNotNull { it.vodTitleId }.toSet()
+        state.recommended.filterNot { it.id in continuingIds }
+    }
+    // The rails that actually render, resolved once instead of re-filtered per recomposition --
+    // this is the LazyColumn's item list, so a stable identity is what keeps it from re-running
+    // its item provider on every state emission.
+    val visibleSections = remember(state, recommended) {
+        state.sections.filter { !it.hidden && sectionHasContent(it, state, recommended) }
+    }
+
+    // Wraps the whole screen (rails + the step 6 dialog below) so the dialog actually
     // overlays on top instead of being laid out as an invisible/misplaced sibling -- HomeScreen's
-    // caller gives it a single-child slot, so two top-level composables side by side here (Column,
+    // caller gives it a single-child slot, so two top-level composables side by side here (rails,
     // then a bare conditional dialog) had no shared layout parent to overlay them within.
-    Box(modifier = modifier) {
+    Box(modifier = modifier.fillMaxSize()) {
     // Design review: the big top-of-screen Hero banner is gone -- rail tiles/cards
     // below are sized down instead (see the explicit `width =` overrides on each rail
     // item further down) so more of the catalog fits on screen without scrolling as much.
-    Column(modifier = Modifier.padding(bottom = spacing.sp16)) {
-        if (!state.hasSource || (state.channels.isEmpty() && state.movies.isEmpty())) {
-            Box(modifier = Modifier.padding(horizontal = spacing.safeX)) {
-                // QA LOW defect: a real source existed but Room hadn't emitted its first
-                // catalog read yet (cold-start DB open on a large catalog can take several
-                // seconds) -- showing EmptyHero() here read as "your playlist vanished"
-                // rather than "still loading".
-                if (state.isInitializing) LoadingHero() else EmptyHero()
+    if (!editMode) {
+        // PERF: a real LazyColumn, not an eager Column inside the shell's verticalScroll (Home is
+        // a FullSizeTab now, see MainActivity). Every rail used to compose, measure and draw up
+        // front and then stay in the display list -- with the default layout that is 6-10 rails
+        // whose LazyRows each hold ~7 live glass tiles (wash + gradient border + softShadow path +
+        // AsyncImage), i.e. ~40-50 tiles alive at once, all re-recorded on every scroll frame.
+        // A desktop-GPU emulator absorbs that; a TV SoC drops frames on it. Rails below the fold
+        // now simply do not exist until they scroll in.
+        LazyColumn(contentPadding = PaddingValues(bottom = spacing.sp16)) {
+            if (!state.hasSource || (state.channels.isEmpty() && state.movies.isEmpty())) {
+                item(key = "hero") {
+                    // QA LOW defect: a real source existed but Room hadn't emitted its first
+                    // catalog read yet (cold-start DB open on a large catalog can take several
+                    // seconds) -- showing EmptyHero() here read as "your playlist vanished"
+                    // rather than "still loading".
+                    Column(modifier = Modifier.padding(horizontal = spacing.safeX, vertical = spacing.sp10)) {
+                        if (state.isInitializing) LoadingHero() else EmptyHero()
+                    }
+                }
             }
-            Box(Modifier.padding(top = spacing.sp10))
-        }
-
-        // "Recommended" is now a real personalized best-of across movies+series, ranked by the
-        // categories the user pins/favorites/watches (see [HomeRailCurator]); falls back to top-rated
-        // "Popular" before any signal exists. Drop titles already on the Continue Watching rail above
-        // so this stays discovery, not a repeat of what you're mid-watching.
-        val continuingIds = state.continueWatching.mapNotNull { it.vodTitleId }.toSet()
-        val recommended = state.recommended.filterNot { it.id in continuingIds }
-
-        if (!editMode) {
             // Home layout customization (step 1-3): rails are driven by state.sections instead of
-            // being hardcoded here. With the default layout this loop renders byte-for-byte the same
-            // rails, in the same order, as the old fixed sequence below did.
-            state.sections.forEach { section ->
-                if (section.hidden) return@forEach
-                if (!sectionHasContent(section, state, recommended)) return@forEach
+            // being hardcoded here. With the default layout this renders byte-for-byte the same
+            // rails, in the same order, as the old fixed sequence did.
+            items(visibleSections, key = { homeSectionKey(it) }) { section ->
                 HomeSectionContent(
                     section = section,
                     state = state,
@@ -193,7 +215,17 @@ fun HomeScreen(
                     onSeeAll = onSeeAll,
                 )
             }
-        } else {
+        }
+    } else {
+        // Edit mode stays eager on purpose: it shows every section (including hidden ones), so
+        // there is nothing to virtualize away, and its reorder choreography (animatePlacement +
+        // the grabbed row's focus/bringIntoView) depends on rows staying composed while they move
+        // -- a LazyColumn would dispose the grabbed row the moment it left the viewport.
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = spacing.sp16),
+        ) {
             workingSections.forEachIndexed { index, section ->
                 // Stable per-section identity so a reorder MOVES the row's node to its new slot
                 // (rather than swapping data between fixed slots) -- that node movement is what
@@ -384,22 +416,15 @@ private fun HomeSectionContent(
     showSeeAll: Boolean,
     onSeeAll: (String) -> Unit,
 ) {
-    val continueWatchingTitle = stringResource(R.string.home_section_continue_watching)
-    val liveNowTitle = stringResource(R.string.home_section_live_now)
-    val categoriesTitle = stringResource(R.string.home_section_categories)
-    val recommendedTitle = when (val l = state.recommendedLabel) {
-        is RecommendedLabel.BecauseYouLike -> stringResource(R.string.home_section_because_you_like, l.category)
-        RecommendedLabel.ForYou -> stringResource(R.string.home_section_for_you)
-        RecommendedLabel.Popular -> stringResource(R.string.home_section_popular)
-    }
-    val moviesTitle = stringResource(R.string.home_section_movies)
-    val seriesTitle = stringResource(R.string.home_section_series)
+    // PERF: each rail title is resolved INSIDE its own branch. Resolving all six up front meant
+    // every section paid six resource lookups (five of them discarded) on every recomposition --
+    // with the default layout, ~36 wasted lookups per Home pass.
     when (section) {
         is HomeSection.Builtin -> when (section.key) {
             BuiltinSection.CONTINUE_WATCHING -> {
                 // P1.2: hidden when empty, same as every other rail below.
                 if (state.continueWatching.isNotEmpty()) {
-                    AreRail(title = continueWatchingTitle, seeAll = false) {
+                    AreRail(title = stringResource(R.string.home_section_continue_watching), seeAll = false) {
                         items(state.continueWatching, key = { it.vodTitleId?.let { id -> "v$id" } ?: "e${it.seriesEpisodeId}" }) { item ->
                             // Same portrait movie/series tile as the other rails: shows real poster art,
                             // resume progress, and (for series) an on-poster season/episode badge. Hold OK
@@ -422,8 +447,11 @@ private fun HomeSectionContent(
             }
             BuiltinSection.LIVE_NOW -> {
                 if (state.channels.isNotEmpty()) {
-                    AreRail(title = liveNowTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
-                        items(state.channels.take(20), key = { it.id }) { channel ->
+                    // PERF: `take(20)` remembered -- inline it minted a new List identity on every
+                    // recomposition, which invalidates this LazyRow's whole item provider.
+                    val channels = remember(state.channels) { state.channels.take(20) }
+                    AreRail(title = stringResource(R.string.home_section_live_now), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                        items(channels, key = { it.id }) { channel ->
                             val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { onChannelPlayed(null) }
                             AreChannelTile(
                                 channel = channel.name,
@@ -443,8 +471,9 @@ private fun HomeSectionContent(
             }
             BuiltinSection.CATEGORIES -> {
                 if (state.categories.isNotEmpty()) {
-                    AreRail(title = categoriesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
-                        items(state.categories.take(20), key = { it.name }) { category ->
+                    val categories = remember(state.categories) { state.categories.take(20) }
+                    AreRail(title = stringResource(R.string.home_section_categories), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }) {
+                        items(categories, key = { it.name }) { category ->
                             AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                         }
                     }
@@ -452,6 +481,11 @@ private fun HomeSectionContent(
             }
             BuiltinSection.RECOMMENDED -> {
                 if (recommended.isNotEmpty()) {
+                    val recommendedTitle = when (val l = state.recommendedLabel) {
+                        is RecommendedLabel.BecauseYouLike -> stringResource(R.string.home_section_because_you_like, l.category)
+                        RecommendedLabel.ForYou -> stringResource(R.string.home_section_for_you)
+                        RecommendedLabel.Popular -> stringResource(R.string.home_section_popular)
+                    }
                     AreRail(title = recommendedTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
                         items(recommended, key = { it.id }) { title ->
                             ArePosterTile(title = title.name, onClick = { onTitleSelected(title) }, meta = listOfNotNull(title.year, title.categoryName).joinToString(" · "), rating = title.rating, posterUrl = title.posterUrl, width = 168.dp, lockCategory = title.categoryName)
@@ -461,8 +495,9 @@ private fun HomeSectionContent(
             }
             BuiltinSection.MOVIES -> {
                 if (state.movies.isNotEmpty()) {
-                    AreRail(title = moviesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
-                        items(state.movies.take(20), key = { it.id }) { movie ->
+                    val movies = remember(state.movies) { state.movies.take(20) }
+                    AreRail(title = stringResource(R.string.home_section_movies), seeAll = showSeeAll, onSeeAll = { onSeeAll("movies") }) {
+                        items(movies, key = { it.id }) { movie ->
                             ArePosterTile(title = movie.name, onClick = { onTitleSelected(movie) }, meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · "), rating = movie.rating, posterUrl = movie.posterUrl, width = 168.dp, lockCategory = movie.categoryName)
                         }
                     }
@@ -470,8 +505,9 @@ private fun HomeSectionContent(
             }
             BuiltinSection.SERIES -> {
                 if (state.series.isNotEmpty()) {
-                    AreRail(title = seriesTitle, seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
-                        items(state.series.take(20), key = { it.id }) { show ->
+                    val series = remember(state.series) { state.series.take(20) }
+                    AreRail(title = stringResource(R.string.home_section_series), seeAll = showSeeAll, onSeeAll = { onSeeAll("series") }) {
+                        items(series, key = { it.id }) { show ->
                             ArePosterTile(title = show.name, onClick = { onTitleSelected(show) }, meta = show.categoryName, rating = show.rating, posterUrl = show.posterUrl, width = 168.dp, lockCategory = show.categoryName)
                         }
                     }

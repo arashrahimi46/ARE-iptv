@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -14,8 +15,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.kyant.backdrop.Backdrop
 import kotlin.math.cos
 import kotlin.math.sin
@@ -79,6 +82,7 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
     val colors = AreIptvTheme.colors
     val tier = LocalGlassTier.current
     val artwork by LocalAmbientArtwork.current
+    val context = LocalContext.current
 
     // V2 max-smoothness: the ambient mesh is STATIC. It used to drift on a 42s loop (Tier A only),
     // but that animation invalidated this backdrop's draw every frame -- and since every glass surface
@@ -93,7 +97,15 @@ fun AmbientBackdrop(modifier: Modifier = Modifier) {
     androidx.compose.foundation.layout.Box(modifier.fillMaxSize().background(colors.bgBase)) {
         if (artwork != null && tier.hasBackdropBlur) {
             AsyncImage(
-                model = artwork,
+                // PERF: decode SMALL. Coil otherwise sizes the bitmap to this composable -- i.e.
+                // a full 1080p ARGB decode of every poster focus settles on -- only to hand it to
+                // a 72dp blur that destroys all of that detail anyway. 128px upscaled through the
+                // same blur is indistinguishable and costs a fraction of the decode and of the
+                // texture upload feeding the RenderEffect. This runs on the focus-settle path, so
+                // it is exactly the work that shows up as a dropped frame on a TV SoC.
+                model = remember(artwork) {
+                    ImageRequest.Builder(context).data(artwork).size(128).build()
+                },
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 alpha = if (colors.isDark) 0.30f else 0.18f,

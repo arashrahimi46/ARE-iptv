@@ -615,7 +615,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             exitTransition = { fadeOut(tween(tabFade)) },
         ) {
             composable("home") {
-                ScrollableTab {
+                // Home owns a real LazyColumn now (see HomeScreen), so it needs a bounded height
+                // like the other lazy screens -- FullSizeTab, not ScrollableTab. Under the old
+                // verticalScroll every rail stayed composed and in the display list at once.
+                FullSizeTab {
                     HomeScreen(
                         editMode = homeEditMode,
                         onChannelSelected = { channel -> rootNav.navigate("player/${channel.id}") },
