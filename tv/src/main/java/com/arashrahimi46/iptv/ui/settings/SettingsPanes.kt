@@ -59,6 +59,9 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -1183,6 +1186,7 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
     var showFeedback by remember { mutableStateOf(false) }
     var showWhatsNew by remember { mutableStateOf(false) }
     var showLegal by remember { mutableStateOf(false) }
+    var showSupport by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
         item {
@@ -1202,10 +1206,10 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
                 ) {
                     AreButton(
                         text = stringResource(R.string.action_buy_coffee),
-                        onClick = {
-                            // PLACEHOLDER URL -- set the real Buy Me a Coffee page (buymeacoffee.com/<name>).
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/change-me")))
-                        },
+                        // Shows a QR instead of firing ACTION_VIEW: a TV often has no browser at
+                        // all, and where it does, paying on one with a D-pad is miserable. The
+                        // phone is the right device for this, so hand off to it.
+                        onClick = { showSupport = true },
                         variant = AreButtonVariant.Secondary,
                         size = AreButtonSize.Small,
                     )
@@ -1256,6 +1260,12 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
 
     if (showLegal) LegalDocumentDialog(onDismiss = { showLegal = false })
 
+    if (showSupport) {
+        Dialog(onDismissRequest = { showSupport = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            SupportDialog(onDismiss = { showSupport = false })
+        }
+    }
+
     if (showFeedback) {
         Dialog(onDismissRequest = { showFeedback = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             FeedbackDialog(onDismiss = { showFeedback = false })
@@ -1265,6 +1275,67 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
     if (showWhatsNew) {
         Dialog(onDismissRequest = { showWhatsNew = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             WhatsNewDialog(onDismiss = { showWhatsNew = false })
+        }
+    }
+}
+
+/** The Buy Me a Coffee page. Encoded into the QR at render time rather than shipping a QR image, so
+ *  the code and the printed address can never drift apart. */
+private const val SUPPORT_URL = "https://buymeacoffee.com/arashrahimi46"
+
+/**
+ * Support hand-off: a QR to scan plus the address in plain text underneath.
+ *
+ * Deliberately not `ACTION_VIEW`: many Android TV devices ship no browser, and on the ones that do,
+ * entering card details with a D-pad is punishing. The phone is the right device, so the TV's only
+ * job is to get the URL across the room. Same pattern as [IntegrationGuideDialog].
+ */
+@Composable
+private fun SupportDialog(onDismiss: () -> Unit) {
+    val colors = AreIptvTheme.colors
+    val closeFocus = remember { FocusRequester() }
+    // Sole focusable in the dialog -- claim focus on open or the remote has nothing to act on.
+    LaunchedEffect(Unit) { runCatching { closeFocus.requestFocus() } }
+
+    AreDialog(
+        onDismiss = onDismiss,
+        title = stringResource(R.string.action_buy_coffee),
+        width = 720.dp,
+        actions = {
+            AreButton(
+                text = stringResource(R.string.action_close),
+                onClick = onDismiss,
+                variant = AreButtonVariant.Primary,
+                modifier = Modifier.focusRequester(closeFocus),
+            )
+        },
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
+            QrCode(SUPPORT_URL)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_support_desc),
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+                Text(
+                    text = stringResource(R.string.guide_qr_title),
+                    style = AreIptvTheme.typography.label,
+                    color = colors.textPrimary,
+                )
+                Text(
+                    text = stringResource(R.string.guide_qr_or),
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textTertiary,
+                )
+                Text(
+                    // Scheme stripped: it's noise on a card someone is reading off a TV to type
+                    // into a phone browser, which supplies https:// itself.
+                    text = SUPPORT_URL.removePrefix("https://"),
+                    style = AreIptvTheme.typography.mono,
+                    color = colors.textSecondary,
+                )
+            }
         }
     }
 }
