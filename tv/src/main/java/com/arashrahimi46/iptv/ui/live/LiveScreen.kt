@@ -31,6 +31,7 @@ import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
@@ -141,11 +142,17 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
 @Composable
 private fun OnAirNowBadge() {
     val colors = AreIptvTheme.colors
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(AreIptvTheme.radius.pill)
     androidx.compose.foundation.layout.Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(7.dp),
         modifier = Modifier
-            .background(colors.live.copy(alpha = 0.14f), androidx.compose.foundation.shape.RoundedCornerShape(AreIptvTheme.radius.pill))
+            // Glass, not a flat red slab: the neutral glass material carries the shape (tint +
+            // hairline, per glassChild), and the live colour goes on as a WASH over it rather than
+            // as the fill. A solid `live * 0.14` read as a muddy maroon rectangle -- opaque-looking
+            // on a translucent page, and the one badge in the app that ignored the glass language.
+            .glassChild(shape)
+            .background(colors.live.copy(alpha = 0.10f), shape)
             .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
         androidx.compose.foundation.layout.Box(Modifier.size(8.dp).background(colors.live, CircleShape))
