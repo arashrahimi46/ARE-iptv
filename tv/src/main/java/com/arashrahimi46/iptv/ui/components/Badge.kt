@@ -14,9 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassChild
@@ -29,12 +33,15 @@ enum class AreBadgeTone { Live, New, Quality, Catchup, Smart, Neutral }
  * Badge — tiny status overline (Badge.jsx). LIVE and SMART glow when
  * [glow] is true.
  */
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun AreBadge(
     text: String,
     modifier: Modifier = Modifier,
     tone: AreBadgeTone = AreBadgeTone.Neutral,
     glow: Boolean = false,
+    /** Optional glyph before the label, tinted with the tone's foreground. */
+    icon: ImageVector? = null,
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.xs)
@@ -83,10 +90,17 @@ fun AreBadge(
         if (tone == AreBadgeTone.Live) {
             Box(Modifier.size(5.dp).background(Color.White, CircleShape))
         }
+        if (icon != null) {
+            Icon(imageVector = icon, contentDescription = null, tint = style.fg, modifier = Modifier.size(12.dp))
+        }
         Text(
             text = text.uppercase(),
             style = if (compact) AreIptvTheme.typography.caption.copy(fontSize = 11.sp) else AreIptvTheme.typography.caption,
             color = style.fg,
+            // Provider category names can be long ("Sports · Premium UK") -- a badge is a chip, so it
+            // clips rather than wraps out of its fixed height.
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

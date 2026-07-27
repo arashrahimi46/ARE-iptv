@@ -21,6 +21,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,10 @@ fun AreChannelTile(
     number: String? = null,
     now: String? = null,
     next: String? = null,
+    /** Provider category ("Sports", "News"), rendered as a chip under the name -- not as text. */
+    category: String? = null,
+    /** Provider-declared audio-only station ([com.arashrahimi46.iptv.data.model.Channel.isRadio]). */
+    isRadio: Boolean = false,
     health: AreStreamHealthLevel = AreStreamHealthLevel.Stable,
     quality: String? = null,
     codec: String? = null,
@@ -250,28 +255,54 @@ fun AreChannelTile(
                         modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
                     )
                 }
-                // Always render the now line (empty when absent) so tiles with no current
-                // program stay the same height as tiles that have one -- matches how the
-                // `next` row below always reserves its height.
-                Text(
-                    text = if (now != null) stringResource(R.string.channel_tile_now, now) else "",
-                    style = AreIptvTheme.typography.caption,
-                    color = colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = if (focused) Modifier.basicMarquee() else Modifier,
-                )
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Category + radio chips. Fixed height (badge 22dp + 5dp lead) whether or not there
+                // are chips, for the same reason the now/next lines below always reserve theirs:
+                // a channel with no category must not sit shorter than its neighbours in the grid.
+                Row(
+                    modifier = Modifier.height(27.dp).fillMaxWidth().padding(top = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    if (isRadio) {
+                        AreBadge(
+                            text = stringResource(R.string.badge_radio),
+                            tone = AreBadgeTone.Smart,
+                            icon = Icons.Filled.Radio,
+                        )
+                    }
+                    if (category != null) {
+                        AreBadge(
+                            text = category,
+                            tone = AreBadgeTone.Neutral,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                    }
+                }
+                // The EPG block reserves both lines whenever the screen has ANY guide data, so tiles
+                // with no current program stay the same height as tiles that have one. Screens that
+                // pass no guide data at all (Live, Favorites, Search) drop the block entirely rather
+                // than leave two permanently blank lines under the badges.
+                if (now != null || next != null || codec != null) {
                     Text(
-                        text = if (next != null) stringResource(R.string.channel_tile_next, next) else "",
+                        text = if (now != null) stringResource(R.string.channel_tile_now, now) else "",
                         style = AreIptvTheme.typography.caption,
-                        color = colors.textTertiary,
+                        color = colors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                        modifier = if (focused) Modifier.basicMarquee() else Modifier,
                     )
-                    if (codec != null) {
-                        Text(text = codec, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            text = if (next != null) stringResource(R.string.channel_tile_next, next) else "",
+                            style = AreIptvTheme.typography.caption,
+                            color = colors.textTertiary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                        )
+                        if (codec != null) {
+                            Text(text = codec, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+                        }
                     }
                 }
             }
@@ -295,6 +326,14 @@ private fun AreChannelTilePreview() {
                 quality = "1080p",
                 codec = "H.264",
                 catchup = true,
+                category = "Sports",
+            )
+            AreChannelTile(
+                channel = "ZFM Zoetermeer",
+                onClick = {},
+                number = "902",
+                category = "Music",
+                isRadio = true,
             )
         }
     }

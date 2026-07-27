@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Live</string>
+    <string name="badge_radio">Radio</string>
     <string name="badge_catchup">Catch-up</string>
     <string name="badge_smart">Smart</string>
     <string name="health_stable">Stabil</string>

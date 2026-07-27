@@ -87,6 +87,10 @@ data class Channel(
     /** M3U only: the `catchup-type` convention (default/shift/append/flussonic/xc) that selects how
      * [catchupSource] is expanded; null otherwise. */
     val catchupType: String? = null,
+    /** Audio-only station, as declared by the provider at catalog time -- Xtream's
+     * `stream_type: "radio_streams"` or M3U's `radio="true"`/`tvg-type="radio"`. Not inferred from
+     * playback: the tile has to know before anything is played. False when the provider says nothing. */
+    val isRadio: Boolean = false,
 )
 
 /**

@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Прямий ефір</string>
+    <string name="badge_radio">Радіо</string>
     <string name="badge_catchup">Архів</string>
     <string name="badge_smart">Розумний</string>
     <string name="health_stable">Стабільно</string>

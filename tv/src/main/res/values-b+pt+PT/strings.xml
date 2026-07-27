@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Direto</string>
+    <string name="badge_radio">Rádio</string>
     <string name="badge_catchup">Repetição</string>
     <string name="badge_smart">Inteligente</string>
     <string name="health_stable">Estável</string>

@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 
 data class XtreamCategory(val id: String, val name: String)
-data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null, val archiveDays: Int = 0)
+/** [isRadio]: the portal's `stream_type` is `radio_streams` for audio-only stations, `live` for TV. */
+data class XtreamLiveStream(val id: String, val name: String, val categoryId: String?, val logo: String?, val epgChannelId: String? = null, val archiveDays: Int = 0, val isRadio: Boolean = false)
 data class XtreamVodStream(val id: String, val name: String, val categoryId: String?, val icon: String?, val containerExtension: String?)
 data class XtreamSeries(val id: String, val name: String, val categoryId: String?, val cover: String?)
 data class XtreamShortEpgEntry(val title: String, val description: String?, val startMs: Long, val stopMs: Long)
@@ -198,6 +199,7 @@ class XtreamClient(
                 archiveDays = if (obj.optStringOrNull("tv_archive") == "1")
                     obj.optStringOrNull("tv_archive_duration")?.toIntOrNull()?.coerceAtLeast(0) ?: 0
                 else 0,
+                isRadio = obj.optStringOrNull("stream_type")?.contains("radio", ignoreCase = true) == true,
             )
         }
     }

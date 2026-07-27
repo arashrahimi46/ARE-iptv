@@ -202,4 +202,23 @@ class M3uParserTest {
         assertEquals(1, entries.size)
         assertEquals("Unnamed", entries[0].name)
     }
+
+    /** Radio stations are declared at catalog time by `radio="true"` or `tvg-type="radio"` --
+     * the tile has to badge them without playing anything first. */
+    @Test
+    fun `radio attributes flag a station as audio-only`() {
+        val playlist = """
+            #EXTM3U
+            #EXTINF:-1 radio="true" group-title="Music",ZFM Zoetermeer
+            http://example.com/stream/zfm
+            #EXTINF:-1 tvg-type="radio",Sky Radio
+            http://example.com/stream/sky
+            #EXTINF:-1 group-title="News",BBC One
+            http://example.com/stream/bbc
+        """.trimIndent()
+
+        val entries = M3uParser.parse(playlist)
+
+        assertEquals(listOf(true, true, false), entries.map { it.isRadio })
+    }
 }

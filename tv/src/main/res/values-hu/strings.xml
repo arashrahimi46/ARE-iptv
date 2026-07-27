@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Élő</string>
+    <string name="badge_radio">Rádió</string>
     <string name="badge_catchup">Visszanézés</string>
     <string name="badge_smart">Okos</string>
     <string name="health_stable">Stabil</string>

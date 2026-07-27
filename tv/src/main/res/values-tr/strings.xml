@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Canlı</string>
+    <string name="badge_radio">Radyo</string>
     <string name="badge_catchup">Geri sarma</string>
     <string name="badge_smart">Akıllı</string>
     <string name="health_stable">Kararlı</string>

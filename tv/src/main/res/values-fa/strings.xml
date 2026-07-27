@@ -524,6 +524,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">زنده</string>
+    <string name="badge_radio">رادیو</string>
     <string name="badge_catchup">بازپخش</string>
     <string name="badge_smart">هوشمند</string>
     <string name="health_stable">پایدار</string>

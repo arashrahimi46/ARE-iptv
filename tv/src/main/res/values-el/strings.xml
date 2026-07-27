@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">Ζωντανά</string>
+    <string name="badge_radio">Ράδιο</string>
     <string name="badge_catchup">Επανάληψη</string>
     <string name="badge_smart">Έξυπνο</string>
     <string name="health_stable">Σταθερή</string>

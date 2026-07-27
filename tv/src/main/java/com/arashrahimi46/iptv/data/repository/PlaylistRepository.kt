@@ -503,6 +503,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                                     catchupDays = entry.catchupDays,
                                     catchupSource = entry.catchupSource,
                                     catchupType = entry.catchupType,
+                                    isRadio = entry.isRadio,
                                 )
                                 channelCount++
                             }
@@ -650,6 +651,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                     externalId = it.id,
                     tvgId = it.epgChannelId,
                     catchupDays = it.archiveDays,
+                    isRadio = it.isRadio,
                 )
             }
             val movies = vodStreams.map {
@@ -810,6 +812,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
                 externalId = it.id,
                 tvgId = it.epgChannelId,
                 catchupDays = it.archiveDays,
+                isRadio = it.isRadio,
             )
         }
         val movies = vodStreams.map {

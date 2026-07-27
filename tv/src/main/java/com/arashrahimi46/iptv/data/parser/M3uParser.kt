@@ -13,6 +13,8 @@ data class M3uEntry(
     val catchupType: String? = null,
     val catchupSource: String? = null,
     val catchupDays: Int = 0,
+    /** Provider-declared audio-only station: `radio="true"` or `tvg-type="radio"` on the `#EXTINF`. */
+    val isRadio: Boolean = false,
 )
 
 /**
@@ -118,6 +120,8 @@ object M3uParser {
                             ?: pendingAttrs["catchup"]?.takeIf { it.isNotBlank() },
                         catchupSource = pendingAttrs["catchup-source"]?.takeIf { it.isNotBlank() },
                         catchupDays = m3uCatchupDays(pendingAttrs),
+                        isRadio = pendingAttrs["radio"].equals("true", ignoreCase = true) ||
+                            pendingAttrs["tvg-type"].equals("radio", ignoreCase = true),
                     ),
                 )
                 pendingName = null

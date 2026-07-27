@@ -542,6 +542,7 @@
 
     <!-- Shared components -->
     <string name="badge_live">На живо</string>
+    <string name="badge_radio">Радио</string>
     <string name="badge_catchup">По-късно</string>
     <string name="badge_smart">Умен</string>
     <string name="health_stable">Стабилна</string>
