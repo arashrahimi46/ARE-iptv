@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Відтворення</string>
     <string name="hud_editor_utilities_group">Інструменти</string>
     <string name="hud_editor_locked_note">Відтворення, перемотування назад і вперед показуються завжди.</string>
+    <string name="hud_editor_budget">Показано %1$d з %2$d додаткових кнопок</string>
+    <string name="hud_editor_at_cap">Досягнуто ліміту — вимкніть одну, щоб додати іншу.</string>
     <string name="hud_editor_hint">Виберіть елемент керування та натисніть OK, щоб узяти його, потім використовуйте вгору/вниз, щоб перемістити його. Натисніть OK ще раз, щоб відпустити. Використовуйте око, щоб приховати або показати його.</string>
     <string name="hud_editor_reset">Скинути до типових</string>
     <string name="hud_editor_done">Готово</string>

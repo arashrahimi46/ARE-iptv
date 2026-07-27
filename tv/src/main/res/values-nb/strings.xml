@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Avspilling</string>
     <string name="hud_editor_utilities_group">Verktøy</string>
     <string name="hud_editor_locked_note">Spill av, spol tilbake og spol fremover vises alltid.</string>
+    <string name="hud_editor_budget">%1$d av %2$d valgfrie knapper vises</string>
+    <string name="hud_editor_at_cap">Grensen er nådd — slå av én for å legge til en annen.</string>
     <string name="hud_editor_hint">Velg en kontroll og trykk OK for å ta tak i den, og bruk deretter opp/ned for å flytte den. Trykk OK igjen for å slippe den. Bruk øyet for å skjule eller vise den.</string>
     <string name="hud_editor_reset">Tilbakestill til standard</string>
     <string name="hud_editor_done">Ferdig</string>

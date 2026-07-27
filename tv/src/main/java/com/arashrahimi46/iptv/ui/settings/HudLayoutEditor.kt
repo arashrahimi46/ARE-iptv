@@ -26,6 +26,7 @@ import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.home.HomeSectionEditRow
 import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT
 import com.arashrahimi46.iptv.ui.player.HudControl
+import com.arashrahimi46.iptv.ui.player.MAX_VISIBLE_HUD_CONTROLS
 import com.arashrahimi46.iptv.ui.player.HudGroup
 import com.arashrahimi46.iptv.ui.player.HudSlot
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -105,7 +106,17 @@ fun HudLayoutEditor(
         commit(core + tExtra + util)
     }
 
+    // Locked transport is always on screen and can't be traded away, so it doesn't count against
+    // the budget -- otherwise three of the allowance would be spent before the user chose anything.
+    val visibleCount = working.count { !it.control.locked && it.visible }
+    val atCap = visibleCount >= MAX_VISIBLE_HUD_CONTROLS
+
     fun toggleHidden(control: HudControl) {
+        val slot = working.first { it.control == control }
+        // Turning one OFF is always allowed; only turning one ON can breach the cap. Refusing here
+        // rather than disabling the row keeps the control reachable, so the user can still see what
+        // it is and read why it won't turn on.
+        if (!slot.visible && atCap) return
         commit(working.map { if (it.control == control) it.copy(visible = !it.visible) else it })
     }
 
@@ -138,6 +149,22 @@ fun HudLayoutEditor(
             Text(text = stringResource(R.string.hud_editor_hint), style = AreIptvTheme.typography.caption, color = colors.textTertiary)
             Box(Modifier.height(12.dp))
             Text(text = stringResource(R.string.hud_editor_locked_note), style = AreIptvTheme.typography.caption, color = colors.textTertiary)
+            Box(Modifier.height(8.dp))
+            // Always visible, not only once full: a budget you can watch fill explains the refusal
+            // BEFORE it happens. Turns amber at the cap so a toggle that declines to move isn't
+            // mistaken for a dead control.
+            Text(
+                text = stringResource(R.string.hud_editor_budget, visibleCount, MAX_VISIBLE_HUD_CONTROLS),
+                style = AreIptvTheme.typography.caption,
+                color = if (atCap) colors.warning else colors.textTertiary,
+            )
+            if (atCap) {
+                Text(
+                    text = stringResource(R.string.hud_editor_at_cap),
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.warning,
+                )
+            }
 
             Box(Modifier.height(20.dp))
             Text(text = stringResource(R.string.hud_editor_transport_group), style = AreIptvTheme.typography.label, color = colors.textSecondary)

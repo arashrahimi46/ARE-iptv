@@ -49,10 +49,24 @@ enum class HudStyle { CINEMATIC }
  *  controls are always visible regardless of [visible]. */
 data class HudSlot(val control: HudControl, val visible: Boolean = true)
 
-/** The default HUD button order/visibility — the catalog in its natural order, all shown. Rendering
- *  this must be indistinguishable from the original hardcoded button row. */
+/**
+ * Most controls a user may switch on at once (locked transport excluded — those are always there
+ * and can't be traded away). Enough to keep every genuinely useful control reachable in one press,
+ * short of the point where the row becomes a wall of identical glyphs to scan at two metres.
+ *
+ * This is an editor-side guard rail, not a layout guarantee: the HUD row scrolls, so it renders
+ * correctly with any number. Removing this constant would degrade taste, not correctness.
+ */
+const val MAX_VISIBLE_HUD_CONTROLS = 13
+
+/** Off by default: audio sync is a repair tool for a stream whose track is misaligned, not something
+ *  reached for in normal viewing, and it was the least-earning glyph in a crowded row. */
+private val HIDDEN_BY_DEFAULT = setOf(HudControl.AUDIO_DELAY)
+
+/** The default HUD button order/visibility — the catalog in its natural order, everything shown
+ *  except [HIDDEN_BY_DEFAULT]. */
 val DEFAULT_HUD_LAYOUT: List<HudSlot> =
-    HudControl.entries.sortedBy { it.order }.map { HudSlot(it) }
+    HudControl.entries.sortedBy { it.order }.map { HudSlot(it, visible = it !in HIDDEN_BY_DEFAULT) }
 
 /**
  * Serializes a HUD layout to a newline-delimited string for DataStore (no kotlinx.serialization in

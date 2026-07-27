@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -399,13 +401,26 @@ fun ArePlayerControls(
         val transportExtra = shown.filter { it.control.group == HudGroup.TRANSPORT && !it.control.locked }
         val utilities = shown.filter { it.control.group == HudGroup.UTILITIES }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Scrolls rather than clips. The row used to push the utilities cluster right with a
+        // weight(1f) spacer; once the buttons outgrew the width that spacer collapsed to zero and
+        // everything past it was simply cut off at the panel edge -- the half-sliced Guide button.
+        // A cap on visible buttons would only move that cliff, since glyph widths differ per locale.
+        // Every child here is focusable, so D-pad focus drags the row along for free (unlike a
+        // scroll area of plain text, which never receives the key at all).
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             transportCore.forEach { HudButton(it.control) }
             if (transportExtra.isNotEmpty()) {
                 Box(Modifier.width(1.dp).height(32.dp).background(colors.borderDefault))
                 transportExtra.forEach { HudButton(it.control) }
             }
-            Box(Modifier.weight(1f))
+            // Fixed gap, not weight(1f): a growable spacer can't exist inside a scrollable row
+            // (the row is measured at its content width, so "the remaining space" is undefined).
+            // It still reads as two clusters, and no longer pretends there's room when there isn't.
+            if (utilities.isNotEmpty()) Box(Modifier.width(20.dp))
             utilities.forEach { HudButton(it.control) }
         }
         }

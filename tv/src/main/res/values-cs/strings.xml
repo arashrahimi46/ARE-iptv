@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Přehrávání</string>
     <string name="hud_editor_utilities_group">Nástroje</string>
     <string name="hud_editor_locked_note">Přehrát, přetočit zpět a vpřed se zobrazují vždy.</string>
+    <string name="hud_editor_budget">Zobrazeno %1$d z %2$d volitelných tlačítek</string>
+    <string name="hud_editor_at_cap">Dosažen limit — jedno vypněte, abyste přidali další.</string>
     <string name="hud_editor_hint">Vyberte ovládací prvek a stisknutím OK jej uchopte, poté jej přesuňte pomocí nahoru/dolů. Dalším stisknutím OK jej uvolníte. Okem jej skryjete nebo zobrazíte.</string>
     <string name="hud_editor_reset">Obnovit výchozí</string>
     <string name="hud_editor_done">Hotovo</string>

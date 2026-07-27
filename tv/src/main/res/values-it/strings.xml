@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Riproduzione</string>
     <string name="hud_editor_utilities_group">Strumenti</string>
     <string name="hud_editor_locked_note">Riproduci, riavvolgi e avanzamento rapido sono sempre visibili.</string>
+    <string name="hud_editor_budget">%1$d di %2$d pulsanti opzionali mostrati</string>
+    <string name="hud_editor_at_cap">Limite raggiunto: disattivane uno per aggiungerne un altro.</string>
     <string name="hud_editor_hint">Seleziona un comando e premi OK per afferrarlo, poi usa su/giù per spostarlo. Premi di nuovo OK per rilasciarlo. Usa l\'occhio per nasconderlo o mostrarlo.</string>
     <string name="hud_editor_reset">Ripristina predefiniti</string>
     <string name="hud_editor_done">Fine</string>

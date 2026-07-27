@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Redare</string>
     <string name="hud_editor_utilities_group">Instrumente</string>
     <string name="hud_editor_locked_note">Redarea, derularea înapoi și înainte sunt afișate întotdeauna.</string>
+    <string name="hud_editor_budget">%1$d din %2$d butoane opționale afișate</string>
+    <string name="hud_editor_at_cap">Ai atins limita — dezactivează unul pentru a adăuga altul.</string>
     <string name="hud_editor_hint">Selectează o comandă și apasă OK pentru a o prinde, apoi folosește sus/jos pentru a o muta. Apasă OK din nou pentru a o elibera. Folosește ochiul pentru a o ascunde sau afișa.</string>
     <string name="hud_editor_reset">Resetează la valorile implicite</string>
     <string name="hud_editor_done">Gata</string>

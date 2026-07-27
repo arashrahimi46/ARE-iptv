@@ -657,4 +657,6 @@
     <string name="guide_catchup_record_soon">تسجيل (قريبًا)</string>
     <string name="player_previous_program">البرنامج السابق</string>
     <string name="player_next_program">البرنامج التالي</string>
+    <string name="hud_editor_budget">%1$d من %2$d أزرار اختيارية معروضة</string>
+    <string name="hud_editor_at_cap">بلغت الحد — أوقف زرًا لإضافة آخر.</string>
 </resources>

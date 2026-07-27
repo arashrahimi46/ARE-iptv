@@ -307,6 +307,8 @@
     <string name="hud_editor_transport_group">Oxutma</string>
     <string name="hud_editor_utilities_group">Alətlər</string>
     <string name="hud_editor_locked_note">Oxut, geri sar və irəli sar həmişə göstərilir.</string>
+    <string name="hud_editor_budget">%2$d seçimli düymədən %1$d göstərilir</string>
+    <string name="hud_editor_at_cap">Həddə çatdınız — başqasını əlavə etmək üçün birini söndürün.</string>
     <string name="hud_editor_hint">İdarəetməni seçin və tutmaq üçün OK düyməsini basın, sonra yuxarı/aşağı ilə hərəkət etdirin. Buraxmaq üçün yenidən OK basın. Gizlətmək və ya göstərmək üçün gözdən istifadə edin.</string>
     <string name="hud_editor_reset">Standarta sıfırla</string>
     <string name="hud_editor_done">Hazırdır</string>
