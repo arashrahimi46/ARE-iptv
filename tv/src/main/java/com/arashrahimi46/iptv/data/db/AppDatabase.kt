@@ -59,7 +59,7 @@ import com.arashrahimi46.iptv.data.settings.CredentialsStore
         Recording::class,
         DirectStream::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -314,13 +314,30 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v13 -> v14: index `epg_programs(channelId, startMs)`. Pure index creation -- no column or
+         * data change, so it cannot fail on existing rows and needs no backfill. See the note on
+         * [com.arashrahimi46.iptv.data.model.EPGProgram] for why the table was the app's worst query.
+         *
+         * `IF NOT EXISTS` because a user who lands here via a destructive fallback or a fresh install
+         * already has the index from Room's generated schema; creating it twice would throw.
+         */
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_epg_programs_channelId_startMs` " +
+                        "ON `epg_programs` (`channelId`, `startMs`)",
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "are_iptv.db",
-                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+                ).addMigrations(migration1To2(context.applicationContext), MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
                     .build().also { instance = it }
             }
     }

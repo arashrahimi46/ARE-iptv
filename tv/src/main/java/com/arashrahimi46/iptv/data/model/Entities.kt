@@ -153,8 +153,21 @@ data class SeriesEpisode(
     val externalId: String? = null,
 )
 
-/** EPG programme entry. Schema stub -- not populated/wired to UI in this phase. */
-@Entity(tableName = "epg_programs")
+/**
+ * EPG programme entry.
+ *
+ * PERF: the `(channelId, startMs)` index is load-bearing, not housekeeping. This table had no index
+ * at all, and a few days of XMLTV for a 20k-channel playlist is 10^5-10^6 rows -- so every guide read
+ * planned as `SCAN epg_programs` plus `USE TEMP B-TREE FOR ORDER BY`. Worse, the guide observes this
+ * table as a Flow, so ANY write re-ran that full scan for every active observer (the Guide grid, the
+ * Home now-playing rail, and the player's now/next). The leading `channelId` turns the `IN (...)`
+ * lookup into a per-channel range scan, and the trailing `startMs` lets `ORDER BY startMs` be served
+ * from the index instead of a temp B-tree.
+ */
+@Entity(
+    tableName = "epg_programs",
+    indices = [Index(value = ["channelId", "startMs"])],
+)
 data class EPGProgram(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val channelId: Long,
