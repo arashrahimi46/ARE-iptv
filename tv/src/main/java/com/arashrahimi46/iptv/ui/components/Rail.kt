@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
 /**
@@ -54,7 +55,11 @@ fun AreRail(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = spacing.safeX)
-                .padding(bottom = spacing.sp4),
+                // Top inset so the See-all focus ring + glow have somewhere to draw. The ring is
+                // painted OUTSIDE the control's bounds, and the first rail on Home sits flush
+                // against the top of the scroll area -- so without this the ring is sliced off,
+                // which is what made a focused See all look broken rather than focused.
+                .padding(top = 6.dp, bottom = spacing.sp4),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -66,16 +71,22 @@ fun AreRail(
                 Box(Modifier.weight(1f))
                 // Real focusable/clickable control -- previously a bare Text, so on TV there was
                 // no D-pad target and onSeeAll never fired.
+                // A glass chip, not bare text. As plain text it only announced itself as a control
+                // once focused -- at two metres an unfocused "See all ›" reads as a caption, so the
+                // one D-pad target in the header was invisible until you happened to land on it.
+                val seeAllShape = RoundedCornerShape(AreIptvTheme.radius.pill)
                 TvFocusable(
                     onClick = onSeeAll,
                     modifier = Modifier.focusRequester(seeAllFocus),
-                    shape = RoundedCornerShape(AreIptvTheme.radius.sm),
+                    shape = seeAllShape,
                 ) { focused, _ ->
                     Text(
                         text = stringResource(R.string.browse_see_all),
                         style = AreIptvTheme.typography.label,
-                        color = if (focused) colors.textPrimary else colors.textTertiary,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        color = if (focused) colors.textPrimary else colors.textSecondary,
+                        modifier = Modifier
+                            .glassChild(seeAllShape)
+                            .padding(horizontal = 14.dp, vertical = 6.dp),
                     )
                 }
             }
