@@ -56,11 +56,17 @@ fun AreBadge(
         AreBadgeTone.Quality -> ToneStyle(Color.Transparent, colors.textPrimary, null, null, glass = true)
         AreBadgeTone.Catchup -> ToneStyle(colors.success.copy(alpha = 0.16f), colors.catchupText, colors.success.copy(alpha = 0.4f), null)
         AreBadgeTone.Smart -> ToneStyle(colors.smart.copy(alpha = 0.16f), colors.violetText, colors.smart.copy(alpha = 0.45f), colors.smart)
-        AreBadgeTone.Neutral -> ToneStyle(Color.Transparent, colors.textSecondary, null, null, glass = true)
+        // textTertiary, not textSecondary: the glass fill is deliberately faint, so a bright label
+        // on top of it reads as a solid grey slab rather than as glass. Dimming the text is what
+        // actually makes the chip recede.
+        AreBadgeTone.Neutral -> ToneStyle(Color.Transparent, colors.textTertiary, null, null, glass = true)
     }
 
     // LIVE reads as a compact status flag, not a chip — smaller than the other tones.
-    val compact = tone == AreBadgeTone.Live
+    // NEUTRAL joins it: it carries a provider's category ("OUTDOOR;SPORTS"), which is supporting
+    // metadata under the channel name, not a status to announce. At the full 14sp it competed with
+    // the name it sits beneath and dominated the tile.
+    val compact = tone == AreBadgeTone.Live || tone == AreBadgeTone.Neutral
 
     Row(
         modifier = modifier
