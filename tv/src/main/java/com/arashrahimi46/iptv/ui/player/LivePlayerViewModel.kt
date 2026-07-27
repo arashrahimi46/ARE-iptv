@@ -66,6 +66,9 @@ data class PlayableMedia(
     val subtitle: String?,
     val streamUrl: String,
     val isLive: Boolean,
+    /** Channel logo for the HUD's provider well. Null => the well falls back to title initials,
+     *  which is all it could ever show before. */
+    val artworkUrl: String? = null,
     val searchName: String? = null,
     val year: String? = null,
     val season: Int? = null,
@@ -294,7 +297,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             val media = when (val s = source) {
                 is PlaybackSource.Channel -> db.channelDao().getById(s.channelId)?.let { ch ->
                     resolvePlayUrl(ch.sourceId, StreamKind.LIVE, ch.externalId, ch.streamUrl)?.let { url ->
-                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = true)
+                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = true, artworkUrl = ch.logoUrl)
                     }
                 }
                 is PlaybackSource.Vod -> db.vodTitleDao().getById(s.vodTitleId)?.let { title ->
@@ -348,7 +351,7 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
                         m3uType = ch.catchupType,
                     )
                     resolvePlayUrl(ch.sourceId, StreamKind.LIVE, ch.externalId, ch.streamUrl, catchup = request)?.let { url ->
-                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = false)
+                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = false, artworkUrl = ch.logoUrl)
                     }
                 }
                 // A pasted direct URL, played seekably like VOD. Bump its history recency so

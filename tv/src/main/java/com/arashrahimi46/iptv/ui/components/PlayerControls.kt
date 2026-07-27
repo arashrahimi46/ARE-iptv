@@ -14,6 +14,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,6 +51,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -76,6 +78,8 @@ import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.glassTrack
+import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
 
 /**
  * PlayerControls — glass transport HUD overlaid on live video / VOD
@@ -111,6 +115,8 @@ fun ArePlayerControls(
     elapsed: () -> String = { "20:28" },
     total: () -> String = { "20:45" },
     channelLogoInitials: String = "SKY",
+    /** The channel's logo. Null (VOD, episodes, recordings, direct URLs) => initials only. */
+    channelLogoUrl: String? = null,
     onPlayPause: () -> Unit = {},
     onRewind: () -> Unit = {},
     onFastForward: () -> Unit = {},
@@ -203,7 +209,24 @@ fun ArePlayerControls(
                     .border(1.dp, colors.borderDefault, RoundedCornerShape(AreIptvTheme.radius.sm)),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(text = channelLogoInitials, style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                // Same contract as AreChannelTile's well: the initials are a FALLBACK, shown only
+                // until the logo resolves, never behind it -- provider logos are usually
+                // transparent PNGs, so leaving the text underneath bleeds it through the artwork.
+                // onState is a plain callback, not SubcomposeAsyncImage, so this stays cheap on the
+                // HUD's recomposition path.
+                val logoLoaded = remember(channelLogoUrl) { mutableStateOf(false) }
+                if (channelLogoUrl == null || !logoLoaded.value) {
+                    Text(text = channelLogoInitials, style = AreIptvTheme.typography.label, color = colors.textPrimary)
+                }
+                if (channelLogoUrl != null) {
+                    AsyncImage(
+                        model = channelLogoUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        onState = { logoLoaded.value = it is AsyncImagePainter.State.Success },
+                        modifier = Modifier.fillMaxSize().padding(6.dp),
+                    )
+                }
             }
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
