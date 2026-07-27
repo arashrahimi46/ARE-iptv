@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -23,6 +25,7 @@ import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import kotlinx.coroutines.delay
 
 /**
  * App shell scaffold (app.jsx): persistent left [AreSidebarNav] rail at the
@@ -71,6 +74,29 @@ fun AreIptvAppShell(
     // capture is close to free precisely when it's switched on. Collapsed, the rail sits over the
     // reserved strip with no content behind it, so it has nothing to frost anyway.
     var sidebarExpanded by remember { mutableStateOf(false) }
+    // ...and gated in TIME as well as in state, because the capture is by far the most expensive thing
+    // the app does. Measured on the XL95 (see docs/glass-render-perf-findings.md): the page capture
+    // costs ~14ms of RenderThread per frame, and during the expand tween the panel is remeasured and
+    // redrawn every frame, so the whole page subtree is re-recorded every frame -- p50 33ms, ~28fps,
+    // which is the "not very buttery" expand the report was about. The unbaked shadow (~0ms) and the
+    // 28dp blur (~1ms) are innocent; only the re-capture matters.
+    //
+    // So: no capture while the width is moving (the panel falls back to its plain sheer fill -- 28dp
+    // of blur is not readable on a surface that is travelling 160dp in 220ms anyway), then capture
+    // once the tween has settled, which is the state you actually sit and look at. Do NOT try to
+    // "capture once and freeze" by detaching the modifier: `layerBackdrop` discards its recording when
+    // detached, so that silently turns the frost off entirely and lands exactly on the no-frost
+    // ceiling number. It looks like a win in framestats and is a visual regression.
+    var capturePage by remember { mutableStateOf(false) }
+    val settleMs = AreIptvTheme.motion.durBaseMs.toLong() + 32L
+    LaunchedEffect(sidebarExpanded) {
+        if (sidebarExpanded) {
+            delay(settleMs)
+            capturePage = true
+        } else {
+            capturePage = false
+        }
+    }
     // The collapsed sidebar footprint the content reserves at the left. The sidebar OVERLAYS content
     // when it expands rather than pushing it: animating the rail's real width in a Row remeasured and
     // relayouted the entire content screen (a full movie grid / guide) on every animation frame, which
@@ -86,13 +112,13 @@ fun AreIptvAppShell(
     CompositionLocalProvider(
         LocalAmbientArtwork provides artwork,
         LocalAppBackdrop provides backdrop,
-        LocalPageBackdrop provides pageBackdrop.takeIf { sidebarExpanded },
+        LocalPageBackdrop provides pageBackdrop.takeIf { capturePage },
     ) {
         Box(modifier = modifier.fillMaxSize()) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .then(if (sidebarExpanded) Modifier.layerBackdrop(pageBackdrop) else Modifier),
+                    .then(if (capturePage) Modifier.layerBackdrop(pageBackdrop) else Modifier),
             ) {
                 AmbientBackdrop(Modifier.layerBackdrop(backdrop))
                 Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {
