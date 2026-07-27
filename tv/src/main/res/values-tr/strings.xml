@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Kaydet (yakında)</string>
     <string name="player_previous_program">Önceki program</string>
     <string name="player_next_program">Sonraki program</string>
+    <string name="support_dialog_title">ARE iptv hoşunuza gidiyor mu?</string>
+    <string name="support_dialog_body">Tek bir kişi tarafından akşamları ve hafta sonları geliştirilip bakımı yapılıyor. Abonelik yok, reklam yok, ne izlediğinizin takibi yok — sadece çalışan bir uygulama. Televizyonunuzdaki yerini hak ediyorsa, bir kahve onu ayakta tutar.</string>
+    <string name="support_dialog_scan">Telefonunuzda açmak için tarayın</string>
+    <string name="support_dialog_visit">Ya da şu adresi ziyaret edin</string>
 </resources>

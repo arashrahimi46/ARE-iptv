@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Yaz (tezliklə)</string>
     <string name="player_previous_program">Əvvəlki proqram</string>
     <string name="player_next_program">Növbəti proqram</string>
+    <string name="support_dialog_title">ARE iptv xoşunuza gəlir?</string>
+    <string name="support_dialog_body">Onu bir nəfər axşamları və həftəsonları hazırlayır və saxlayır. Abunə yoxdur, reklam yoxdur, nəyə baxdığınız izlənmir — sadəcə işləyən bir tətbiq. Televizorunuzda yerini doğruldursa, bir qəhvə onu davam etdirər.</string>
+    <string name="support_dialog_scan">Telefonunuzda açmaq üçün skan edin</string>
+    <string name="support_dialog_visit">Və ya ziyarət edin</string>
 </resources>

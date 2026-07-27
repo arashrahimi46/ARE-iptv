@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Запись (скоро)</string>
     <string name="player_previous_program">Предыдущая программа</string>
     <string name="player_next_program">Следующая программа</string>
+    <string name="support_dialog_title">Нравится ARE iptv?</string>
+    <string name="support_dialog_body">Его создаёт и поддерживает один человек по вечерам и выходным. Без подписки, без рекламы, без слежки за тем, что вы смотрите — просто приложение, которое работает. Если оно заслужило место на вашем телевизоре, чашка кофе поможет ему жить дальше.</string>
+    <string name="support_dialog_scan">Отсканируйте, чтобы открыть на телефоне</string>
+    <string name="support_dialog_visit">Или зайдите на</string>
 </resources>

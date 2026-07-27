@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Εγγραφή (σύντομα)</string>
     <string name="player_previous_program">Προηγούμενο πρόγραμμα</string>
     <string name="player_next_program">Επόμενο πρόγραμμα</string>
+    <string name="support_dialog_title">Σας αρέσει το ARE iptv;</string>
+    <string name="support_dialog_body">Φτιάχνεται και συντηρείται από ένα άτομο, τα βράδια και τα σαββατοκύριακα. Χωρίς συνδρομή, χωρίς διαφημίσεις, χωρίς καταγραφή του τι βλέπετε — απλώς μια εφαρμογή που δουλεύει. Αν αξίζει τη θέση της στην τηλεόρασή σας, ένας καφές τη κρατά ζωντανή.</string>
+    <string name="support_dialog_scan">Σαρώστε για άνοιγμα στο κινητό</string>
+    <string name="support_dialog_visit">Ή επισκεφθείτε</string>
 </resources>

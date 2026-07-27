@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Tallenna (pian)</string>
     <string name="player_previous_program">Edellinen ohjelma</string>
     <string name="player_next_program">Seuraava ohjelma</string>
+    <string name="support_dialog_title">Pidätkö ARE iptv:stä?</string>
+    <string name="support_dialog_body">Sen tekee ja ylläpitää yksi ihminen iltaisin ja viikonloppuisin. Ei tilausmaksua, ei mainoksia, ei seurantaa siitä mitä katsot — vain sovellus joka toimii. Jos se ansaitsee paikkansa televisiossasi, kahvi pitää sen käynnissä.</string>
+    <string name="support_dialog_scan">Skannaa avataksesi puhelimessa</string>
+    <string name="support_dialog_visit">Tai käy osoitteessa</string>
 </resources>

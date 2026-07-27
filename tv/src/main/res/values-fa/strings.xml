@@ -659,4 +659,8 @@
     <string name="player_next_program">برنامهٔ بعدی</string>
     <string name="hud_editor_budget">%1$d از %2$d دکمهٔ اختیاری نمایش داده می‌شود</string>
     <string name="hud_editor_at_cap">به حد مجاز رسیدید — برای افزودن یکی، یکی را خاموش کنید.</string>
+    <string name="support_dialog_title">از ARE iptv خوشتان می‌آید؟</string>
+    <string name="support_dialog_body">یک نفر آن را در شب‌ها و آخر هفته‌ها می‌سازد و نگه می‌دارد. بدون اشتراک، بدون تبلیغات، بدون ردیابی آنچه تماشا می‌کنید — فقط برنامه‌ای که کار می‌کند. اگر جایش را روی تلویزیون شما به دست آورده، یک قهوه آن را زنده نگه می‌دارد.</string>
+    <string name="support_dialog_scan">برای باز کردن در گوشی اسکن کنید</string>
+    <string name="support_dialog_visit">یا سر بزنید به</string>
 </resources>

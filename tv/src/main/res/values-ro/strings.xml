@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Înregistrează (în curând)</string>
     <string name="player_previous_program">Programul anterior</string>
     <string name="player_next_program">Programul următor</string>
+    <string name="support_dialog_title">Îți place ARE iptv?</string>
+    <string name="support_dialog_body">Este creată și întreținută de o singură persoană, seara și în weekend. Fără abonament, fără reclame, fără urmărirea a ceea ce vizionezi — doar o aplicație care funcționează. Dacă își merită locul pe televizorul tău, o cafea o ține în viață.</string>
+    <string name="support_dialog_scan">Scanează pentru a deschide pe telefon</string>
+    <string name="support_dialog_visit">Sau vizitează</string>
 </resources>

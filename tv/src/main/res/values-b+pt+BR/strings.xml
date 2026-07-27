@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Gravar (em breve)</string>
     <string name="player_previous_program">Programa anterior</string>
     <string name="player_next_program">Próximo programa</string>
+    <string name="support_dialog_title">Curtindo o ARE iptv?</string>
+    <string name="support_dialog_body">Ele é feito e mantido por uma pessoa só, à noite e nos fins de semana. Sem assinatura, sem anúncios, sem rastrear o que você assiste — só um app que funciona. Se ele merece o lugar na sua TV, um café mantém tudo em pé.</string>
+    <string name="support_dialog_scan">Escaneie para abrir no celular</string>
+    <string name="support_dialog_visit">Ou acesse</string>
 </resources>

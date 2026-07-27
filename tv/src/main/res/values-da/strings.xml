@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Optag (snart)</string>
     <string name="player_previous_program">Forrige program</string>
     <string name="player_next_program">Næste program</string>
+    <string name="support_dialog_title">Kan du lide ARE iptv?</string>
+    <string name="support_dialog_body">Den er bygget og vedligeholdt af én person, om aftenen og i weekenden. Intet abonnement, ingen reklamer, ingen sporing af hvad du ser — bare en app, der virker. Hvis den fortjener sin plads på dit tv, holder en kop kaffe den i gang.</string>
+    <string name="support_dialog_scan">Scan for at åbne på din telefon</string>
+    <string name="support_dialog_visit">Eller besøg</string>
 </resources>

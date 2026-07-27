@@ -59,6 +59,8 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.ViewAgenda
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -1299,8 +1301,8 @@ private fun SupportDialog(onDismiss: () -> Unit) {
 
     AreDialog(
         onDismiss = onDismiss,
-        title = stringResource(R.string.action_buy_coffee),
-        width = 720.dp,
+        title = stringResource(R.string.support_dialog_title),
+        width = 860.dp,
         actions = {
             AreButton(
                 text = stringResource(R.string.action_close),
@@ -1310,31 +1312,48 @@ private fun SupportDialog(onDismiss: () -> Unit) {
             )
         },
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(28.dp), verticalAlignment = Alignment.CenterVertically) {
-            QrCode(SUPPORT_URL)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Buy Me a Coffee's own branded code (their cup mark in the centre). Kept as an asset
+            // rather than generated: the mark is theirs and a generator can't reproduce it.
+            // If SUPPORT_URL ever changes this PNG must be regenerated with it -- they are the one
+            // pair in this file that can silently disagree.
+            Image(
+                painter = painterResource(R.drawable.support_qr),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(200.dp)
+                    // White quiet-zone plate: the code is black-on-transparent, so on the dark
+                    // glass dialog it would be unscannable without a light backing.
+                    .background(Color.White, RoundedCornerShape(AreIptvTheme.radius.md))
+                    .padding(10.dp),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(
-                    text = stringResource(R.string.settings_support_desc),
+                    text = stringResource(R.string.support_dialog_body),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
-                Text(
-                    text = stringResource(R.string.guide_qr_title),
-                    style = AreIptvTheme.typography.label,
-                    color = colors.textPrimary,
-                )
-                Text(
-                    text = stringResource(R.string.guide_qr_or),
-                    style = AreIptvTheme.typography.caption,
-                    color = colors.textTertiary,
-                )
-                Text(
-                    // Scheme stripped: it's noise on a card someone is reading off a TV to type
-                    // into a phone browser, which supplies https:// itself.
-                    text = SUPPORT_URL.removePrefix("https://"),
-                    style = AreIptvTheme.typography.mono,
-                    color = colors.textSecondary,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.support_dialog_scan),
+                        style = AreIptvTheme.typography.label,
+                        color = colors.textPrimary,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.support_dialog_visit),
+                            style = AreIptvTheme.typography.caption,
+                            color = colors.textTertiary,
+                        )
+                        Text(
+                            // Scheme stripped: it's noise on a card someone is reading off a TV to
+                            // type into a phone browser, which supplies https:// itself.
+                            text = SUPPORT_URL.removePrefix("https://"),
+                            style = AreIptvTheme.typography.mono,
+                            color = colors.textSecondary,
+                        )
+                    }
+                }
             }
         }
     }

@@ -778,4 +778,8 @@
     <string name="streams_rename">Rename</string>
     <string name="streams_save">Save</string>
     <string name="streams_rename_placeholder">Enter a name</string>
+    <string name="support_dialog_title">Enjoying ARE iptv?</string>
+    <string name="support_dialog_body">It\'s built and maintained by one person, in evenings and weekends. No subscription, no ads, no tracking of what you watch — just an app that works. If it earns its place on your TV, a coffee keeps it going.</string>
+    <string name="support_dialog_scan">Scan to open on your phone</string>
+    <string name="support_dialog_visit">Or visit</string>
 </resources>

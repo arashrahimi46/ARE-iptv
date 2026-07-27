@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Nahrát (brzy)</string>
     <string name="player_previous_program">Předchozí pořad</string>
     <string name="player_next_program">Další pořad</string>
+    <string name="support_dialog_title">Líbí se vám ARE iptv?</string>
+    <string name="support_dialog_body">Tvoří a udržuje ji jeden člověk po večerech a o víkendech. Žádné předplatné, žádné reklamy, žádné sledování toho, co díváte — prostě aplikace, která funguje. Pokud si své místo na vaší TV zaslouží, jedna káva ji udrží při životě.</string>
+    <string name="support_dialog_scan">Naskenujte a otevřete v telefonu</string>
+    <string name="support_dialog_visit">Nebo navštivte</string>
 </resources>

@@ -659,4 +659,8 @@
     <string name="player_next_program">البرنامج التالي</string>
     <string name="hud_editor_budget">%1$d من %2$d أزرار اختيارية معروضة</string>
     <string name="hud_editor_at_cap">بلغت الحد — أوقف زرًا لإضافة آخر.</string>
+    <string name="support_dialog_title">هل يعجبك ARE iptv؟</string>
+    <string name="support_dialog_body">يطوّره ويصونه شخص واحد في أمسياته وعطلاته. لا اشتراك ولا إعلانات ولا تتبّع لما تشاهده — مجرد تطبيق يعمل. إذا كان يستحق مكانه على تلفازك، فإن فنجان قهوة يبقيه مستمرًا.</string>
+    <string name="support_dialog_scan">امسح الرمز لفتحه على هاتفك</string>
+    <string name="support_dialog_visit">أو زر</string>
 </resources>

@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Felvétel (hamarosan)</string>
     <string name="player_previous_program">Előző műsor</string>
     <string name="player_next_program">Következő műsor</string>
+    <string name="support_dialog_title">Tetszik az ARE iptv?</string>
+    <string name="support_dialog_body">Egyetlen ember készíti és tartja karban, esténként és hétvégéken. Nincs előfizetés, nincs reklám, nincs követés arról, mit néz — csak egy alkalmazás, ami működik. Ha kiérdemli a helyét a tévéjén, egy kávé életben tartja.</string>
+    <string name="support_dialog_scan">Olvassa be a telefonján való megnyitáshoz</string>
+    <string name="support_dialog_visit">Vagy látogasson el ide</string>
 </resources>

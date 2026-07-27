@@ -677,4 +677,8 @@
     <string name="guide_catchup_record_soon">Registra (a breve)</string>
     <string name="player_previous_program">Programma precedente</string>
     <string name="player_next_program">Programma successivo</string>
+    <string name="support_dialog_title">Ti piace ARE iptv?</string>
+    <string name="support_dialog_body">È creata e mantenuta da una sola persona, la sera e nei weekend. Nessun abbonamento, nessuna pubblicità, nessun tracciamento di ciò che guardi: solo un\'app che funziona. Se si merita il suo posto sulla tua TV, un caffè la tiene in vita.</string>
+    <string name="support_dialog_scan">Inquadra per aprirlo sul telefono</string>
+    <string name="support_dialog_visit">Oppure visita</string>
 </resources>
