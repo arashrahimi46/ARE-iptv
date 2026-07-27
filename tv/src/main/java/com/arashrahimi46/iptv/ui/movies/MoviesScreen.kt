@@ -83,6 +83,12 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         }
     }
 
+    // Hoisted out of the item lambda below. `favoriteVodIds` is a Set -- an unstable type -- so
+    // capturing it directly made the trailing lambda a new instance on every recomposition, which
+    // defeats strong skipping's lambda memoization and takes every visible grid tile with it.
+    // (LiveScreen already does this; Movies/Series were still capturing the Set directly.)
+    val isFavorite = remember(favoriteVodIds) { { id: Long -> id in favoriteVodIds } }
+
     BrowseLayout(
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
@@ -113,7 +119,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             rating = movie.rating,
             posterUrl = movie.posterUrl,
             fillWidth = true,
-            isFavorite = movie.id in favoriteVodIds,
+            isFavorite = isFavorite(movie.id),
             onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
             focusRequester = focusRequester,
         )

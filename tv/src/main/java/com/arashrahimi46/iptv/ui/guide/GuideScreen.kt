@@ -71,7 +71,10 @@ fun GuideScreen(
         factory = GuideViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
-    val focused by viewModel.focused.collectAsState()
+    // PERF: `focused` is deliberately NOT read here. Every D-pad move writes it, and reading it at
+    // this level made the ENTIRE Guide recompose on every keypress -- the grid, the timeline header
+    // and every visible cell -- to update one info bar. FocusedInfoBar collects it itself, so the
+    // recomposition scope is that one Row. See its doc.
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     val timeFormatter = rememberClockFormatter()
@@ -95,7 +98,8 @@ fun GuideScreen(
         return
     }
 
-    val zone = ZoneId.systemDefault()
+    // remember-ed so it's a stable `remember` key for the per-cell time labels below.
+    val zone = remember { ZoneId.systemDefault() }
 
     // P0.2: fillMaxSize (not just padding) so this root Column has a real bounded height to
     // hand down -- GuideScreen's caller (MainActivity) no longer wraps this tab in a
@@ -152,7 +156,7 @@ fun GuideScreen(
 
         // Sticky focused-program info bar (no hover/tooltips on TV -- last focused cell stays shown).
         Box(Modifier.padding(horizontal = spacing.safeX)) {
-            FocusedInfoBar(focused)
+            FocusedInfoBar(viewModel)
         }
         Box(Modifier.height(spacing.sp5))
 
@@ -197,7 +201,19 @@ fun GuideScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
                             row.slots.forEach { slot ->
-                                val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
+                                // PERF: both are pure functions of the slot's fixed timestamps, but ran
+                                // on EVERY recomposition of this row -- and a ZonedDateTime + format()
+                                // per cell, times every cell of every visible row, is real allocation
+                                // and CPU on the D-pad path. Remembered against the slot instead.
+                                val cellWidth = remember(slot.startMs, slot.endMs) {
+                                    val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
+                                    // Clamp so window-clipped boundary programmes (1-2 min) don't
+                                    // compute a <=0.dp, invisible/unfocusable cell.
+                                    ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp)
+                                }
+                                val timeLabel = remember(slot.startMs, zone, timeFormatter) {
+                                    Instant.ofEpochMilli(slot.startMs).atZone(zone).format(timeFormatter)
+                                }
                                 val focusRequester = rememberPlaybackFocusRequester(
                                     savedId = lastPlayedChannelId?.takeIf { lastPlayedSlotStartMs == slot.startMs },
                                     itemId = row.channel.id,
@@ -207,7 +223,7 @@ fun GuideScreen(
                                 }
                                 AreGuideCell(
                                     title = slot.title,
-                                    time = Instant.ofEpochMilli(slot.startMs).atZone(zone).format(timeFormatter),
+                                    time = timeLabel,
                                     onClick = {
                                         // A catch-up-eligible past cell opens the action menu (watch from
                                         // start / go live); any other cell plays the live channel as before.
@@ -222,9 +238,7 @@ fun GuideScreen(
                                     live = slot.isNow,
                                     now = slot.isNow,
                                     catchup = slot.catchupEligible,
-                                    // Clamp so window-clipped boundary programmes (1-2 min) don't
-                                    // compute a <=0.dp, invisible/unfocusable cell.
-                                    width = ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp),
+                                    width = cellWidth,
                                     onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
                                     modifier = Modifier.focusRequester(focusRequester),
                                 )
@@ -397,8 +411,16 @@ private fun ChannelHeaderCell(name: String, number: String?) {
     }
 }
 
+/**
+ * Takes the [GuideViewModel], not the value: collecting `focused` HERE keeps the recomposition that
+ * every D-pad move triggers confined to this one Row. Read at the screen root it invalidated the
+ * whole Guide -- rows, cells, timeline -- once per keypress, which is what made fast cell-to-cell
+ * travel stutter on a TV SoC.
+ */
 @Composable
-private fun FocusedInfoBar(info: GuideFocusedInfo?) {
+private fun FocusedInfoBar(viewModel: GuideViewModel) {
+    // `.value` rather than `by`: the null checks below smart-cast off a plain val, not a delegate.
+    val info = viewModel.focused.collectAsState().value
     val colors = AreIptvTheme.colors
     val zone = ZoneId.systemDefault()
     val timeFormatter = rememberClockFormatter()

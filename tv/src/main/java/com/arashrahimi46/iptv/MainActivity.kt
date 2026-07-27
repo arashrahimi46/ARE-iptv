@@ -676,7 +676,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 }
             }
             composable("favorites") {
-                ScrollableTab {
+                // Favorites owns real LazyColumns now (see TileRows there), so it needs a bounded
+                // height -- FullSizeTab, not ScrollableTab. Under the old verticalScroll every
+                // favorite tile stayed composed and in the display list at once.
+                FullSizeTab {
                     FavoritesScreen(
                         onChannelSelected = { channelId -> rootNav.navigate("player/$channelId") },
                         onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },

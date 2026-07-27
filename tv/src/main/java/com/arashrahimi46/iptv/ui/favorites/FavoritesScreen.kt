@@ -3,9 +3,11 @@ package com.arashrahimi46.iptv.ui.favorites
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
@@ -76,7 +79,9 @@ fun FavoritesScreen(
         return
     }
 
-    Column(modifier = modifier.padding(top = spacing.sp2, bottom = spacing.sp10)) {
+    // fillMaxSize so the tab-content Box below has a real bounded height to hand to its
+    // LazyColumns (this screen scrolls its own content now -- see MainActivity's FullSizeTab).
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
         Column(Modifier.padding(horizontal = spacing.safeX)) {
             AreSegmentedControl(
                 options = listOf("channels", "movies", "series"),
@@ -94,7 +99,7 @@ fun FavoritesScreen(
 
         Box(Modifier.padding(top = spacing.sp8))
 
-        Box(Modifier.padding(horizontal = spacing.safeX)) {
+        Box(Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
             when (tab) {
                 "channels" -> ChannelGrid(
                     channels = state.channels,
@@ -133,20 +138,43 @@ private fun ChannelGrid(
     }
     // Restore D-pad focus onto the channel that opened the player when Back re-enters this tab.
     var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        channels.forEach { channel ->
-            val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, channel.id) { lastPlayedId = null }
-            AreChannelTile(
-                channel = channel.name,
-                onClick = { lastPlayedId = channel.id; onChannelSelected(channel.id) },
-                logoUrl = channel.logoUrl,
-                number = channel.number,
-                category = channel.categoryName,
-                isRadio = channel.isRadio,
-                isFavorite = true,
-                onToggleFavorite = { onToggleFavorite(channel.id) },
-                modifier = Modifier.focusRequester(focusRequester),
-            )
+    TileRows(channels, AreIptvTheme.spacing.tileLandWidth) { channel ->
+        val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, channel.id) { lastPlayedId = null }
+        AreChannelTile(
+            channel = channel.name,
+            onClick = { lastPlayedId = channel.id; onChannelSelected(channel.id) },
+            logoUrl = channel.logoUrl,
+            number = channel.number,
+            category = channel.categoryName,
+            isRadio = channel.isRadio,
+            isFavorite = true,
+            onToggleFavorite = { onToggleFavorite(channel.id) },
+            modifier = Modifier.focusRequester(focusRequester),
+        )
+    }
+}
+
+/**
+ * PERF: what [FlowRow] used to do here, but virtualized. Favorites is unbounded -- a user with a few
+ * hundred favorites had every single glass tile (and its [coil.compose.AsyncImage]) composed, measured
+ * and left in the display list, all of it re-recorded on every scroll frame. This is the same fix Home
+ * got, shaped to keep the layout byte-identical rather than swapping in a LazyVerticalGrid: tiles here
+ * are fixed-width, so chunking them into rows of `floor((width + gap) / (tileWidth + gap))` reproduces
+ * FlowRow's exact packing -- left-aligned, 18dp gaps, ragged last row -- while a LazyVerticalGrid would
+ * have distributed the leftover width across the columns and widened the gaps.
+ */
+@Composable
+private fun <T> TileRows(items: List<T>, tileWidth: Dp, tile: @Composable (T) -> Unit) {
+    val gap = 18.dp
+    BoxWithConstraints {
+        val perRow = ((maxWidth + gap) / (tileWidth + gap)).toInt().coerceAtLeast(1)
+        val rows = remember(items, perRow) { items.chunked(perRow) }
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(gap)) {
+            items(rows.size) { index ->
+                Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
+                    rows[index].forEach { tile(it) }
+                }
+            }
         }
     }
 }
@@ -165,19 +193,17 @@ private fun MovieGrid(
     }
     // Restore D-pad focus onto the title that opened Detail when Back re-enters this tab.
     var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        movies.forEach { movie ->
-            val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, movie.id) { lastPlayedId = null }
-            ArePosterTile(
-                title = movie.name,
-                onClick = { lastPlayedId = movie.id; onTitleSelected(movie) },
-                posterUrl = movie.posterUrl,
-                meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
-                rating = movie.rating,
-                isFavorite = true,
-                onToggleFavorite = { onToggleFavorite(movie) },
-                focusRequester = focusRequester,
-            )
-        }
+    TileRows(movies, AreIptvTheme.spacing.tilePosterWidth) { movie ->
+        val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, movie.id) { lastPlayedId = null }
+        ArePosterTile(
+            title = movie.name,
+            onClick = { lastPlayedId = movie.id; onTitleSelected(movie) },
+            posterUrl = movie.posterUrl,
+            meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
+            rating = movie.rating,
+            isFavorite = true,
+            onToggleFavorite = { onToggleFavorite(movie) },
+            focusRequester = focusRequester,
+        )
     }
 }
