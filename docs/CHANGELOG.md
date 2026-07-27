@@ -2,6 +2,61 @@
 
 All notable user-facing changes to the ARE iptv TV app.
 
+## 1.7.0 (2026-07-27)
+
+### New
+
+- **Explore free IPTV.** Adding a playlist no longer requires already having a
+  URL. **Add a playlist → Explore free IPTV playlists** offers around twenty
+  vetted, publicly listed free playlists by country and category — pick one,
+  name it, and it imports like any other. Playlists added this way are badged
+  **From Explore** in the picker. ARE iptv hosts none of these streams.
+- **Rename a playlist.** Hold **OK** on a playlist in the picker for a
+  Rename / Delete menu. Holding OK used to delete it outright, so an accidental
+  long-press can no longer start a destructive action.
+- **A real Privacy Policy and Terms.** The placeholder paragraph is replaced by
+  a full document — what stays on your device, what diagnostics are collected,
+  which third parties your device contacts, your GDPR rights, and a copyright
+  takedown route. Readable from **Settings → About**.
+- **Crash reports can be switched off.** Diagnostics previously had no opt-out
+  at all. **Settings → About → Crash reports** now controls it, and the choice
+  is asked for on first run.
+- **Guided setup for OMDb and OpenSubtitles keys.** Step-by-step instructions
+  with a QR code, so the sign-up happens on your phone instead of being typed
+  on a remote.
+- **Radio stations are marked as such.** A station with no video is labelled
+  instead of showing an empty black frame that looks like a broken stream.
+- **Channel tiles show their category.**
+- **Multi-view: hold OK on a pane** for a menu — watch that channel full
+  screen, or remove it. It used to delete the pane with no confirmation.
+
+### Changed
+
+- **The player HUD no longer runs out of room.** The button row fits its full
+  default set, and scrolls rather than clipping if you enable more.
+- **Audio sync is hidden by default** — it repairs a mis-timed stream and isn't
+  needed in normal viewing. Re-enable it in **Settings → Playback → Rearrange
+  player controls**, which now shows how many buttons you have room for.
+- A playlist limit of 10 is now applied consistently.
+- The **ON AIR NOW** badge and the sidebar match the app's glass finish.
+- New cinematic splash screen.
+
+### Fixed
+
+- **Multi-view crashed every time it was opened.**
+- **Channels imported from some playlists had corrupted names** and lost their
+  category — a channel could appear as a fragment of browser text instead of
+  its name.
+- The Privacy & Terms document **could not be scrolled with a remote**.
+- Multi-view kept four video decoders running after you left the screen.
+
+### Performance
+
+- Guide reads no longer scan the whole programme table.
+- The player stopped redrawing its entire HUD twice a second during playback.
+- Cheaper D-pad navigation, sidebar animation and tile rendering on slower TVs.
+- The startup profile is generated correctly again, so cold start is faster.
+
 ## 1.6.0 (2026-07-26)
 
 ### New
