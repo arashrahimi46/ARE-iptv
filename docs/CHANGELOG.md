@@ -2,6 +2,41 @@
 
 All notable user-facing changes to the ARE iptv TV app.
 
+## 1.8.0 (2026-07-27)
+
+### New
+
+- **The player HUD is arranged per context.** Live TV and movies/series no longer
+  share one button layout. **Settings → Playback → Rearrange player controls** now
+  has a **Live TV** / **Movies & series** switch, and each previews against its own
+  sample HUD, so what you arrange is what you'll see. Buttons you push up land in a
+  **Hidden buttons** tray instead of vanishing, and can be pulled back down. Any
+  arrangement you had already made carries over to Live TV.
+- **Opening a tab puts focus on the content.** Every tab now lands focus where
+  you're going instead of leaving it parked on the sidebar, so the screen no longer
+  looks inert until you press right.
+- **Supporting the app hands off to your phone.** Buy me a coffee shows a QR code
+  rather than asking you to type a URL on a remote.
+
+### Changed
+
+- **The HUD shows the channel's logo.** It used to guess at initials — "NAU" for
+  Nautical Channel. Movies and series get a poster-shaped well at the right aspect
+  ratio instead of a letterboxed square.
+- **See all** is a glass chip, and its focus ring is no longer clipped.
+- A channel tile's category chip recedes instead of competing with the name.
+
+### Performance
+
+- Home no longer composes every rail at once; the Guide stops redrawing itself on
+  every keypress; the sidebar stops rebuilding itself to slide; and the player stops
+  redrawing to count keypresses.
+- The ambient backdrop, the soft shadow under every glass surface, and the focus
+  glow are now rasterized once and reused instead of being redrawn every frame.
+  Honest note: this is a ~30% cut in RenderThread work but only ~3 fps, which you
+  are unlikely to notice. See `docs/glass-render-perf-findings.md` for what was
+  measured, what it was worth, and what is still open.
+
 ## 1.7.0 (2026-07-27)
 
 ### New

@@ -147,5 +147,34 @@ Run-to-run variance on total frame time is roughly ±1.5 ms. Treat smaller diffe
   element toggling structurally mid-animation in `AreSegmentedControl`. All real; all in the
   0.04 ms. Fix them if they cause a correctness or jank problem that is *measured*, not on
   principle.
-- **No baseline profile is shipped.** `tv/src/release/generated/` does not exist, so no Compose
-  scroll/focus path is AOT-compiled in release builds. Unrelated to draw cost, still outstanding.
+## Two corrections to an earlier version of this document
+
+**A baseline profile _is_ shipped.** An earlier draft here claimed it wasn't, on the grounds that
+`tv/src/release/generated/` doesn't exist. That was wrong — the `baselineprofile` module generates
+it at build time, and `tv-release.apk` contains `assets/dexopt/baseline.prof`: 6367 rules, 1123 of
+them in `ui/`, composables included. Verified by unzipping the APK.
+
+**But `adb install` does not apply it.** A sideloaded install leaves ART at `status=verify` — no
+AOT compilation, profile unused. Play Store installs apply it; sideloads don't. So **any on-device
+perf impression from a sideloaded build is of an uncompiled app.** After installing, run:
+
+```bash
+adb shell cmd package compile -m speed-profile -f com.arashrahimi46.iptv
+adb shell dumpsys package dexopt | grep -A2 com.arashrahimi46.iptv   # want status=speed-profile
+```
+
+Measured effect (emulator, 4 cold starts each): `verify` ~118 ms → `speed-profile` ~103 ms, about
+12% off cold start. It made **no** measurable difference to the steady-state scroll (17.03 ms vs
+17.43 ms, inside noise) — which is expected, because a baseline profile buys cold start and the
+first run through a path, not sustained scrolling after JIT has warmed up.
+
+## Debug vs release: the numbers above are all DEBUG builds
+
+Every measurement in this document was taken on `:tv:assembleDebug`. The release build of the same
+commit runs the same Settings scroll at **17.0 ms/frame against debug's 24.9 ms**. Debug builds
+carry non-trivial overhead, so this document overstates the absolute problem — but the relative
+comparisons in it are all debug-vs-debug and remain valid.
+
+Practical consequence: profile release builds when you want to know how the app actually behaves,
+and force `speed-profile` afterwards. Profiling a sideloaded debug build measures two layers of
+overhead the user will never see.
