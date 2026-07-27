@@ -410,7 +410,10 @@ fun ArePlayerControls(
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            // 6dp, not 8: at the full 13-button default the row was ~25dp over the bar's inner
+            // width, so the last glyph was sliced down the middle. Twelve gaps at 2dp less buys
+            // that back and then some, without shrinking the 52dp targets themselves.
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             transportCore.forEach { HudButton(it.control) }
             if (transportExtra.isNotEmpty()) {
@@ -420,8 +423,11 @@ fun ArePlayerControls(
             // Fixed gap, not weight(1f): a growable spacer can't exist inside a scrollable row
             // (the row is measured at its content width, so "the remaining space" is undefined).
             // It still reads as two clusters, and no longer pretends there's room when there isn't.
-            if (utilities.isNotEmpty()) Box(Modifier.width(20.dp))
+            if (utilities.isNotEmpty()) Box(Modifier.width(12.dp))
             utilities.forEach { HudButton(it.control) }
+            // Trailing breathing room INSIDE the scroll, so if a locale or a future control does
+            // overflow, the row ends on space rather than flush against the bar's rounded edge.
+            Box(Modifier.width(4.dp))
         }
         }
     }
