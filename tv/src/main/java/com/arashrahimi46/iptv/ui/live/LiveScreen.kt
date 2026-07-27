@@ -31,6 +31,7 @@ import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
@@ -57,19 +58,14 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     // rememberPlaybackFocusRequester for the full explanation.
     var lastPlayedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    // Initial D-pad focus: on genuine first entry the persistent shell leaves focus on the
-    // sidebar and the category column reads as dead until the user blindly presses RIGHT.
-    // Drive focus into the category column once -- but NOT when returning from the player
-    // (lastPlayedChannelId != null), where rememberPlaybackFocusRequester restores focus to
-    // the launched tile instead. initialFocusDone (rememberSaveable) keeps it to first entry.
+    // Initial D-pad focus: the persistent shell leaves focus on the sidebar, so without this the
+    // content reads as dead until the user blindly presses RIGHT. Runs on EVERY entry to the tab
+    // (not once per session) so every screen behaves the way Streams already did.
+    // The one exception is returning from the player, where rememberPlaybackFocusRequester restores
+    // focus to the tile you launched -- landing back on your place beats landing at the top.
     val contentFocusRequester = remember { FocusRequester() }
-    var initialFocusDone by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (!initialFocusDone && lastPlayedChannelId == null) {
-            withFrameNanos { }
-            runCatching { contentFocusRequester.requestFocus() }
-            initialFocusDone = true
-        }
+        if (lastPlayedChannelId == null) contentFocusRequester.requestFocusWhenReady()
     }
 
     if (!state.hasSource) {

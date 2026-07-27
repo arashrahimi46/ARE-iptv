@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.delay
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
 import android.graphics.BlurMaskFilter
@@ -448,3 +449,38 @@ fun TvFocusable(
 
 /** Hold threshold (ms) separating a tap from a long-press on the OK/select button. */
 private const val LONG_PRESS_MS = 400L
+
+/**
+ * Requests focus once the target actually exists, retrying for a few frames.
+ *
+ * A single `withFrameNanos { }` is enough on a screen that composes its target immediately (the
+ * Streams empty state), but not when arriving via a tab switch: the shell recomposes, the browse
+ * grid measures, and paging supplies its first page over several frames. Until the requester is
+ * attached, [FocusRequester.requestFocus] throws and the request is silently lost — leaving focus
+ * parked on the sidebar, which is exactly the "screen looks dead until you press RIGHT" symptom.
+ *
+ * Gives up after [maxFrames] rather than looping forever, so a screen whose target never appears
+ * (an empty catalogue, say) simply leaves focus where it was instead of spinning.
+ */
+suspend fun FocusRequester.requestFocusWhenReady(attempts: Int = 20, gapMs: Long = 40L) {
+    var granted = false
+    repeat(attempts) {
+        withFrameNanos { }
+        if (runCatching { requestFocus() }.isSuccess) {
+            granted = true
+            return@repeat
+        }
+        delay(gapMs)
+    }
+    // Re-assert once the navigation has settled. The first grant succeeds within a frame, but the
+    // sidebar row the user just clicked takes focus back afterwards as the tab transition completes
+    // -- so a single successful request leaves focus parked on the sidebar anyway. Claiming it a
+    // second time, late, is what actually makes the content focused.
+    if (granted) {
+        delay(SETTLE_MS)
+        runCatching { requestFocus() }
+    }
+}
+
+/** Long enough for the tab transition and the sidebar's collapse animation to finish. */
+private const val SETTLE_MS = 250L

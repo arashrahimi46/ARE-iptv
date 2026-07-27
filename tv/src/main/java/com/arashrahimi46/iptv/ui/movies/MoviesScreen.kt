@@ -25,6 +25,7 @@ import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
@@ -51,17 +52,14 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     // LiveScreen; survives this screen being paused under the overlay via rememberSaveable.
     var lastSelectedId by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    // Initial D-pad focus into the category column on genuine first entry -- but NOT when
-    // returning from Detail/player (lastSelectedId != null), where rememberPlaybackFocusRequester
-    // restores focus to the launched tile. initialFocusDone keeps this to the first entry only.
+    // Initial D-pad focus: the persistent shell leaves focus on the sidebar, so without this the
+    // content reads as dead until the user blindly presses RIGHT. Runs on EVERY entry to the tab
+    // (not once per session) so every screen behaves the way Streams already did.
+    // The one exception is returning from the player, where rememberPlaybackFocusRequester restores
+    // focus to the tile you launched -- landing back on your place beats landing at the top.
     val contentFocusRequester = remember { FocusRequester() }
-    var initialFocusDone by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        if (!initialFocusDone && lastSelectedId == null) {
-            withFrameNanos { }
-            runCatching { contentFocusRequester.requestFocus() }
-            initialFocusDone = true
-        }
+        if (lastSelectedId == null) contentFocusRequester.requestFocusWhenReady()
     }
 
     if (!state.hasSource) {

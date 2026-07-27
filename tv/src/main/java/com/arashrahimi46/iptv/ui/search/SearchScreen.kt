@@ -15,6 +15,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,6 +41,7 @@ import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
@@ -92,6 +96,11 @@ fun SearchScreen(
         // vertically instead of forcing them side by side when there genuinely isn't room for
         // both -- deterministic on measured dp, unlike relying on FlowRow's line-wrap
         // heuristics interacting with weight().
+        // Initial D-pad focus: same rule as every other tab -- land on the thing you came for.
+        // Here that is the query field, highlighted but NOT yet in edit mode (see activateOnClick
+        // below), so arriving at Search never throws a full-screen keyboard over the results.
+        val fieldFocus = remember { FocusRequester() }
+        LaunchedEffect(Unit) { fieldFocus.requestFocusWhenReady() }
         val fieldColumnWidth = 420.dp
         val columnGap = 32.dp
         val minResultsWidth = 320.dp
@@ -102,6 +111,7 @@ fun SearchScreen(
                         modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
                         onQueryChange = viewModel::setQuery,
+                        fieldFocus = fieldFocus,
                     )
                     SearchResultsColumn(
                         modifier = Modifier.fillMaxWidth(),
@@ -120,6 +130,7 @@ fun SearchScreen(
                         modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
                         onQueryChange = viewModel::setQuery,
+                        fieldFocus = fieldFocus,
                     )
                     SearchResultsColumn(
                         modifier = Modifier.weight(1f),
@@ -142,6 +153,7 @@ private fun SearchFieldColumn(
     modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
+    fieldFocus: FocusRequester? = null,
 ) {
     // Issue #10: no custom on-screen keyboard -- AreTextField's BasicTextField
     // focuses Android TV's native IME, which the D-pad remote can drive directly.
@@ -151,6 +163,11 @@ private fun SearchFieldColumn(
             onValueChange = onQueryChange,
             placeholder = stringResource(R.string.search_placeholder),
             icon = Icons.Filled.Search,
+            // activateOnClick: the screen now focuses this field on every entry, and with the
+            // always-editable form that would raise the IME over the results the instant Search
+            // opens. As a focusable row it highlights instead, and OK starts typing.
+            activateOnClick = true,
+            modifier = if (fieldFocus != null) Modifier.focusRequester(fieldFocus) else Modifier,
         )
     }
 }

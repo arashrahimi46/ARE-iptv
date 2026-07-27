@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +33,7 @@ import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 
 /**
@@ -79,6 +83,13 @@ fun FavoritesScreen(
         return
     }
 
+    // Initial D-pad focus: the shell leaves focus on the sidebar, so the tab reads as dead until
+    // the user presses RIGHT. Lands on the CURRENT tab chip rather than the first tile -- from
+    // there Down reaches the grid, whereas from a tile you'd have to travel back up to switch tabs.
+    // Runs on every entry, matching Streams and the browse screens.
+    val tabFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { tabFocus.requestFocusWhenReady() }
+
     // fillMaxSize so the tab-content Box below has a real bounded height to hand to its
     // LazyColumns (this screen scrolls its own content now -- see MainActivity's FullSizeTab).
     Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
@@ -94,6 +105,7 @@ fun FavoritesScreen(
                     }
                 },
                 onSelect = { selectedTab = it },
+                selectedFocusRequester = tabFocus,
             )
         }
 
