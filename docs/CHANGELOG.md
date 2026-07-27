@@ -32,6 +32,11 @@ All notable user-facing changes to the ARE iptv TV app.
 
 ### Changed
 
+- **Opening a tab now puts the selection where you are going.** The sidebar
+  closes and the first thing on the screen is selected — a channel, a category,
+  a recording, a search box — instead of leaving you on the sidebar having to
+  press right. Coming back from the player still returns you to what you were
+  watching.
 - **The player HUD no longer runs out of room.** The button row fits its full
   default set, and scrolls rather than clipping if you enable more.
 - **Audio sync is hidden by default** — it repairs a mis-timed stream and isn't
