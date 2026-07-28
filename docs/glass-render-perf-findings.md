@@ -646,3 +646,59 @@ Find what promotes entering tiles to offscreen layers. `TvFocusable` puts
 this exact protocol. **Verify against `flush layers` count/total, not against wall-clock percentiles**
 — that counter reproduced at 48/188 and 8/2 across independent reps and is the cleanest signal in
 this document.
+
+## The tile-chain bisect, and the one real win (2026-07-28, release build)
+
+One release APK with a launch-extra switch (`--ei perfBisect N`), so every candidate in the tile draw
+chain could be A/B'd inside a single build instead of one build per variant. Protocol per variant:
+force-stop → launch with the extra → settle 25 s → 11 s trace over the mixed sweep, **run twice,
+score the second** (see the shader-cache trap below).
+
+| variant | `flush layers` | RenderThread Running | janky |
+|---|---|---|---|
+| 0 control | 49 × / 184 ms | 2093 ms | 27 |
+| 1 no `softShadow` | 48 × / 195 ms | 2011 ms | 26 |
+| **2 no glow + ring** | 52 × / 171 ms | **1720 ms** | 21 |
+| 3 no `focusSheen` | 49 × / 186 ms | 1964 ms | 27 |
+| 4 no background + border | 49 × / 185 ms | 1943 ms | 25 |
+
+**Nothing in the tile draw chain changes the layer count.** `flush layers` sits at 48–52 in every
+variant. The layers are not created by any single modifier — they are new tiles' RenderNodes being
+recorded for the first time, an inherent cost of new content appearing. Removing a modifier shrinks
+what is *inside* a layer that still has to be allocated and rasterized. **Stop trying to delete them.**
+
+### What the bisect did find: the focus glow was blurring on the CPU every frame
+
+`tvGlowCached` hoisted its Path and `BlurMaskFilter` paint out of the draw pass but still *executed*
+the mask filter on every draw — and Skia's mask blur is a CPU pass, not a GPU one. The focused
+element redraws its glow every frame it holds focus, so a D-pad sweep is a continuous CPU blur.
+`softShadow` had already solved exactly this by baking; the glow never got the same treatment.
+
+Baking it (half-res, `pad = 3σ`, alpha modulated at blit) — **landed**:
+
+| | RenderThread Running | janky |
+|---|---|---|
+| old glow | 2093 / 2128 ms | 27 / 27 |
+| **baked glow (shipping)** | **1778 / 1742 / 1729 ms** | 24 / 29 / 29 |
+| glow deleted entirely (ceiling) | 1720 / 1713 ms | 21 / 21 |
+
+**−18 % RenderThread, reproduced three times, recovering ~85 % of the ceiling set by deleting the
+glow outright.** Pixel-equivalent: screenshot diff max **3/255**, 7 px of 2 M differ by >2, and the
+differences fall entirely inside the focused tile's bbox (which also proves the glow rendered in both).
+
+**Honest limit: this did NOT reduce the janky-frame count.** Control 27/27, shipping 29/29. At this
+sample size janky count swings ±5 and cannot resolve the change; `RenderThread Running` reproduces to
+~1 % and is the metric to use. This buys GPU headroom, not a proven jank reduction.
+
+**Cost:** a baked bitmap per focusable, ~292 KB for a poster tile — versus the ~536 KB `softShadow`
+already bakes for the same tile. ~55 % on top of an existing per-tile cost, not a new class of one.
+
+### Two methodology traps found the hard way
+
+- **Reinstalling wipes the shader cache.** The first trace after an `adb install` showed
+  `shader_compile` at **500 ms vs a settled 39 ms**, making an unrelated change look catastrophic.
+  Always discard the first post-install run. Several earlier A/Bs in this document compared a
+  post-install build against a long-installed one and are contaminated by this.
+- **Debug vs release is ~2×** on the main thread (Running 4797 ms vs 2770 ms) and it *inverts which
+  half dominates*: in debug, `measureAndLayout` swamps everything and the RenderThread looks minor.
+  Only ever compare like with like, and prefer release — it is what ships.
