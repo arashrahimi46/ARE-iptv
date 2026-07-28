@@ -122,6 +122,57 @@ number *exactly*, so it reads as a perfect win in framestats while being a visua
 built, measured, and nearly shipped before a screenshot caught it. Verify frost with a screenshot, or
 with pixel variance just inside the panel edge: frosted ≈ 23–25, unfrosted ≈ 38.
 
+## Home scroll: four hypotheses measured and REJECTED
+
+Profiled 2026-07-28 on the XL95, 6x DPAD_DOWN + 6x DPAD_UP, 3 reps. Read this before optimizing Home
+-- these are cheap-looking wins that are not wins, and each one cost a build/install/measure cycle.
+
+Baseline (Home): TOTAL p50 20.5ms, p90 **37.5ms**, max 57-98ms; draw recording p50 1.2ms but max
+11-16ms; RenderThread p50 5.4-6.2ms; GPU p50 7.4-8.4ms; janky 13-16.7%. Composition is **0.08ms**.
+
+| hypothesis | result |
+|---|---|
+| Gate the ambient backdrop capture on Tier A (it has **zero** consumers on Tier B after the sampling fix, so `layerBackdrop` was capturing for nobody) | **no change** -- GPU p50 7.4→7.6 |
+| `window.setBackgroundDrawable(null)` -- the decor view paints a full-screen opaque fill under a screen that already paints its own opaque `bgBase` | **no change** -- GPU p50 7.4→7.6 |
+| Drop the ambient artwork's full-screen `blur(72.dp)` (a RenderEffect over 1920x1080, re-run whenever focus republishes the artwork) | **no change** -- GPU p50 7.4→7.1 |
+| Disable `softShadow` app-wide (it bakes **per node** via `drawWithCache`, so every card scrolling into view rasterizes its own Gaussian mask) | **no change** -- draw recording max stayed 11-16ms |
+
+**`debug.hwui.overdraw show` is misleading here.** It reports dark red (4x+) across the entire Home
+frame including empty regions, which looks like a smoking gun. Two separate attempts to remove a
+full-screen layer moved nothing. Overdraw depth is not the cost on this device -- do not optimize
+against that map without an A/B.
+
+### What the numbers actually say
+
+**p90 is a fixed artefact of the input pattern, not a tail.** It measured 37.3 / 37.6 / 37.6 / 37.6 /
+37.5 / 37.5 / 37.5 / 37.4ms across *eight* different builds -- too constant to be noise. 12 keypresses
+x one expensive frame each = 12 of 120 frames = exactly the p90 boundary. p90 **is** the first frame
+after each keypress. Report p50 and p90 separately; they are two different phenomena, and averaging
+them hides both.
+
+**The spike is Home-specific.** The identical sweep on the Movies grid:
+
+| p50 / p90 / max | Home | Movies |
+|---|---|---|
+| TOTAL | 20.5 / **37.5** / 57-98ms | 19.4 / **19.8-22.1** / 25-27ms |
+| draw recording max | **11-16ms** | **4.2-4.6ms** |
+| GPU p50 | 7.4-8.4ms | 4.7-5.8ms |
+| janky | 13-16.7% | 7.7-9.8% |
+
+So the cost is in bringing a whole new **heterogeneous rail** into view (Home mixes 2:3 poster tiles
+with 16:9 live tiles; Movies is a uniform grid that stays warm), and it lands in **draw recording on
+the UI thread**, not in GPU or composition. It is not live video -- the "Live now" tiles are logos
+with a badge, there is no player on Home.
+
+**The residual p50 overshoot is app-wide, not a Home bug.** Movies sits at 19.4ms against a 16.7ms
+budget too. Whatever the last ~3ms is, it is common to every browse screen.
+
+### Next step, and what NOT to do
+
+Stop A/B-ing candidate features -- four in a row returned noise, which means the cost is not in any
+single removable layer. The spike frames need per-frame attribution from a **Perfetto trace on the TV**
+(`atrace` categories `gfx,view,res`), which will name the slow call instead of inviting another guess.
+
 ## Earlier draw-time fixes (emulator-era, all still valid)
 
 Work that was being redone every frame to produce an image that never changed:
