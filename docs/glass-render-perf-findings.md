@@ -183,6 +183,59 @@ Stop A/B-ing candidate features -- four in a row returned noise, which means the
 single removable layer. The spike frames need per-frame attribution from a **Perfetto trace on the TV**
 (`atrace` categories `gfx,view,res`), which will name the slow call instead of inviting another guess.
 
+## Home scroll p90: the Perfetto trace, and what it actually names (2026-07-28)
+
+Captured on the XL95 with `adb shell perfetto -o <file> -t 20s -b 32mb -a com.arashrahimi46.iptv gfx
+view res`, then 3x (6x DPAD_DOWN + 6x DPAD_UP) while tracing, pulled and queried with
+`trace_processor_shell` (grouping slices by `thread.tid` -- 29648 was the main/UI thread, 29677
+`RenderThread`, confirmed via `adb shell ps -T -p <pid>`).
+
+**The cost is not in draw, GPU, or the View traversal's own measure/layout -- it is Compose
+recomposing brand-new `LazyRow` items, and it happens in the Choreographer `ANIMATION` callback,
+*before* `PerformTraversalsStart` even fires.** That is why this doc's own framestats-based
+"composition + measure + layout = `DrawStart - PerformTraversalsStart`" reads as 0.07-0.08 ms on every
+prior measurement in this document: Compose's `Recomposer` schedules its per-frame work via
+`Choreographer.postFrameCallback` (the `ANIMATION` callback type), which Android runs *before*
+`TRAVERSAL`. `PerformTraversalsStart` was never the right start marker for Compose's own
+measure/layout cost -- it only bounds the View system's (now near-instant) pass over output Compose
+already produced. `framestats` has an `ANIMATION_START` field that this document never used.
+
+One 66.6 ms frame, broken down by trace slice (`Choreographer#doFrame` -> `animation` (59.4 ms) ->
+`Recomposer:animation` (55.4 ms) -> `AndroidOwner:measureAndLayout` (53.7 ms), all *before*
+`traversal` (7.2 ms) even starts):
+
+| repeated ~4x in this one frame (one per newly-visible tile) | cost |
+|---|---|
+| `TextAnnotatedStringNode:measure` (x3, one per `Text`/`AreBadge` on the tile) | ~1.0-1.5 ms each |
+| `Compose:recompose` | ~2.5-4.0 ms |
+| `Compose:applyChanges` | ~2.0-3.6 ms |
+| `rememberAsyncImagePainter` + `AsyncImagePainter.onRemembered` | ~1.0 + ~1.0 ms |
+
+`computePalette` -- initially suspicious, since it's a real per-tile call -- was ruled out by the same
+trace: 48 calls total across the whole 20 s capture, 0.79 ms summed. Not the cost.
+
+This matches the doc's "whole new heterogeneous rail" framing exactly, just one level more precise:
+the *rail* is the outer `LazyColumn` in `HomeScreen.kt` (each item is one `AreRail`/`LazyRow`), not a
+single mixed-shape row -- individual rails are shape-homogeneous (all-poster or all-channel). A new
+rail scrolling in means Compose composes ~4 previously-never-composed tiles at once, each paying
+several text measures plus an async image painter setup, synchronously inside the animation callback.
+
+**Investigated, matched the trace, but not landed:** the outer `LazyColumn`'s
+`itemsIndexed(visibleSections, key = ...)` has no `contentType`, so poster/channel/category-card rails
+all share the default `null` type and Compose's slot-reuse pool can't tell them apart -- a textbook
+match for "new shape scrolling in costs more than it should." A `contentType` lambda
+(`homeSectionContentType`, keyed off `HomeSection`/`BuiltinSection`) was written and compiled cleanly,
+but the on-device A/B to verify it was inconclusive: repeated (reset -> 3x sweep -> framestats) runs on
+the *same unchanged build* swung from p50 19 ms/p90 20 ms/janky-legacy 2.7% to p50 19 ms/p90 34 ms/
+janky-legacy 33%, and one rep's dump showed 94 attached Views where every other rep showed 9-10 -- the
+scripted D-pad sweep (`adb shell input keyevent`, one process fork per key) isn't reliably landing on
+the same view-hierarchy state rep to rep, so a same-build-vs-same-build delta is already larger than
+any signal the real change could plausibly produce. **Reverted rather than ship an unverified change.**
+The fix is still the best lead in this document and costs nothing to re-attempt; what's missing is a
+measurement harness that doesn't drift (e.g. a single scripted `MonkeyRunner`/UI-Automator session
+instead of N separate `adb shell input` forks, or per-frame Perfetto attribution instead of aggregate
+`framestats`, so a specific frame's cost can be compared trace-to-trace rather than percentile-to-percentile).
+
 ## Earlier draw-time fixes (emulator-era, all still valid)
 
 Work that was being redone every frame to produce an image that never changed:
