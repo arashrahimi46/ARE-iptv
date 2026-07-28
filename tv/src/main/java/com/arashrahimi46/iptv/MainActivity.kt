@@ -199,21 +199,25 @@ fun AreIptvApp() {
     val hasSelectedLanguage: Boolean? by settings.hasSelectedLanguage.collectAsState(initial = null)
     val navController = rememberNavController()
 
-    // Issue #13: cold-start splash, shown unconditionally for a couple of seconds before any
-    // real decision is made below. No androidx.core.splashscreen setup exists in the manifest
-    // yet, so this is a plain Compose state gate rather than the system splash API.
-    var showSplash by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) { delay(SPLASH_DURATION_MS); showSplash = false }
-    if (showSplash) {
+    // Issue #13: cold-start splash. No androidx.core.splashscreen setup exists in the manifest yet,
+    // so this is a plain Compose state gate rather than the system splash API.
+    //
+    // It holds for the LONGER of two things: the reveal choreography, and the first real read from
+    // DataStore/Room (so a source that already exists on launch doesn't flash Onboarding). It used to
+    // be a flat delay(3400ms) regardless -- but the reveal is a 1900ms one-shot tween and the data
+    // settles in well under a second, so ~1.5s of every cold start was spent holding a finished
+    // animation over ready data. The floor tracks the animation's own length: shorter and the reveal
+    // gets cut off mid-mark, before the brand ever fades in (see AreSplashScreen's `intro`).
+    var splashFloorElapsed by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { delay(SPLASH_FLOOR_MS); splashFloorElapsed = true }
+    val startStateReady = activeSourceId != UNKNOWN && hasAcceptedTerms != null &&
+        hasSelectedLanguage != null && sources != null
+    if (!splashFloorElapsed || !startStateReady) {
         AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
             AreSplashScreen()
         }
         return
     }
-
-    // Wait for the first real read from DataStore/Room before deciding the start
-    // destination, so a source that already exists on launch doesn't flash Onboarding.
-    if (activeSourceId == UNKNOWN || hasAcceptedTerms == null || hasSelectedLanguage == null || sources == null) return
     val hasMultipleSources = (sources?.size ?: 0) > 1
     val hasAnySource = (sources?.isNotEmpty() == true)
 
@@ -845,6 +849,8 @@ private val UNKNOWN = -1L
 /** Guards the launch auto-refresh so it fires at most once per process, not on every recomposition. */
 private var autoRefreshChecked = false
 
-/** How long [AreSplashScreen] stays up on cold start (Issue #13) -- long enough for the choreographed
- *  glass reveal (bloom -> plate settle -> mark -> brand -> shimmer) to play out, then hold a beat. */
-private const val SPLASH_DURATION_MS = 3400L
+/** Minimum time [AreSplashScreen] stays up on cold start (Issue #13) -- one full pass of the
+ *  choreographed glass reveal (bloom -> plate settle -> mark -> brand), matching `intro`'s 1900ms
+ *  tween so the reveal is never cut off mid-play. Past this floor the splash leaves as soon as the
+ *  start state has loaded, so it holds the animation and nothing else. */
+private const val SPLASH_FLOOR_MS = 1900L
