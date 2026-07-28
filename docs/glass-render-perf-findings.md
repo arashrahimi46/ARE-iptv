@@ -105,9 +105,19 @@ The cost was attributed by elimination. Two of the three suspects this document 
 remeasured and redrawn on every frame of the width tween — so the whole page was re-photographed 13
 times per expand.
 
-Fix: gate the capture in **time** as well as in state. No capture while the width is moving; capture
-once the tween settles (`durBaseMs + 32 ms`). 28 dp of blur is not readable on a surface travelling
-160 dp in 220 ms, and the settled panel is untouched.
+First attempt (superseded): gate the capture in **time** — no capture while the width moves, capture
+once the tween settles. It hit the numbers below, but the blur then visibly **popped in** a beat after
+the motion stopped, which is worse than the jank it fixed. Do not reach for this.
+
+Actual fix: stop the frosted node from resizing at all. `frostedPanel` is now **fill only** and is
+pinned at the panel's OPEN width inside its own `graphicsLayer`, so an animation frame never
+invalidates its draw; an outer wrapper carries the tween width, the rounded clip, the shadow and the
+edge, which are all cheap draw ops. The page is captured once per expand, and the frost is present
+from frame 0. Same pixels — the page behind does not move during the tween, so the blur is the same
+image either way; only how much of it is revealed changes.
+
+One gotcha: the edge must be stroked in `drawWithContent` after `drawContent()`, not with `.border()`.
+Modifier draws land *beneath* a node's children, so a border on the wrapper would sit under the frost.
 
 | p50, 3 reps | before | after |
 |---|---|---|
