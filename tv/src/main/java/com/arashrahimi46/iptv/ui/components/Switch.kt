@@ -41,8 +41,10 @@ fun AreSwitch(
 ) {
     val colors = AreIptvTheme.colors
     val motion = AreIptvTheme.motion
-    // ON = accent lens track + soft accent glow (design §6.2); OFF = glass track (§6.1: was an
-    // opaque surface3 slug punched through the glass Settings panel -- the canary defect of the spec).
+    // ON = accent lens track; OFF = glass track (§6.1: was an opaque surface3 slug punched through
+    // the glass Settings panel -- the canary defect of the spec). The ON state used to also carry a
+    // `tvGlow` halo -- dropped: on a list of switches it read as a smudge around every enabled row,
+    // and it is a per-draw CPU Gaussian blur. The lens fill + bright rim already say "on".
     val onBrush = if (checked && !disabled) accentLensBrush() else null
     val offColor = if (disabled) colors.glassTrackTint.copy(alpha = 0.5f) else colors.glassTrackTint
     val thumbOffset by animateDpAsState(
@@ -57,7 +59,6 @@ fun AreSwitch(
         // reads its on/off state -- previously just a focusable/clickable Box with no
         // semantics of its own beyond that.
         modifier = modifier
-            .then(if (onBrush != null) Modifier.tvGlow(colors.accent, CircleShape) else Modifier)
             .size(width = 58.dp, height = 34.dp)
             .semantics {
                 role = Role.Switch

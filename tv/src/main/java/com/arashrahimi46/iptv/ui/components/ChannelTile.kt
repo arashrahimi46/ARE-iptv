@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -283,23 +284,41 @@ fun AreChannelTile(
                 // pass no guide data at all (Live, Favorites, Search) drop the block entirely rather
                 // than leave two permanently blank lines under the badges.
                 if (now != null || next != null || codec != null) {
-                    Text(
-                        text = if (now != null) stringResource(R.string.channel_tile_now, now) else "",
-                        style = AreIptvTheme.typography.caption,
-                        color = colors.textSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = if (focused) Modifier.basicMarquee() else Modifier,
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = if (next != null) stringResource(R.string.channel_tile_next, next) else "",
-                            style = AreIptvTheme.typography.caption,
-                            color = colors.textTertiary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
-                        )
+                    // PERF: an absent now/next used to still compose a `Text("")`. An empty string
+                    // costs a full text layout -- and text measure is the single most expensive
+                    // per-tile item in a Compose rail (docs/glass-render-perf-findings.md: ~1-1.5ms
+                    // per TextAnnotatedStringNode:measure). Home's Live-now rail passes `next = null`
+                    // for EVERY tile, so every tile paid one of those for a blank line. The reserved
+                    // height is the part that actually matters (tiles must stay level whether or not
+                    // they have guide data), so keep the height and drop the text layout.
+                    val lineHeight = with(LocalDensity.current) { AreIptvTheme.typography.caption.lineHeight.toDp() }
+                    Box(Modifier.height(lineHeight)) {
+                        if (now != null) {
+                            Text(
+                                text = stringResource(R.string.channel_tile_now, now),
+                                style = AreIptvTheme.typography.caption,
+                                color = colors.textSecondary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = if (focused) Modifier.basicMarquee() else Modifier,
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.height(lineHeight),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        if (next != null) {
+                            Text(
+                                text = stringResource(R.string.channel_tile_next, next),
+                                style = AreIptvTheme.typography.caption,
+                                color = colors.textTertiary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                            )
+                        }
                         if (codec != null) {
                             Text(text = codec, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                         }

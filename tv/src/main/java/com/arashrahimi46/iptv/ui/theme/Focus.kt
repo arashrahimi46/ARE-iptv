@@ -26,12 +26,6 @@ import android.graphics.Paint as NativePaint
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.asAndroidBitmap
-import android.graphics.Canvas as AndroidCanvas
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
@@ -108,22 +102,20 @@ fun Modifier.tvFocusable(
             scaleX = scale
             scaleY = scale
         }
-        // Design system `--focus-glow-tight` = `0 0 0 3px ring, 0 0 22px glow` -- a
-        // SYMMETRIC (zero-offset) glow + crisp ring.
+        // Design system `--focus-glow-tight` was `0 0 0 3px ring, 0 0 22px glow`. The GLOW half is
+        // gone: product call -- the blue halo around a focused switch/button read as a smudge, and it
+        // was the last per-frame CPU Gaussian blur in the focus path. The crisp ring alone carries
+        // focus (so the "never focusable without an indicator" rule still holds).
         //
-        // PERF: both the glow and the ring are ALWAYS in the modifier chain (alpha 0 when
-        // unfocused), not conditionally added/removed. Toggling them in/out on every focus
-        // change forced a relayout each time -- the stutter felt moving the sidebar selection
-        // and travelling focus on Home. The glow ([tvGlowCached]) also builds its blur
-        // path/paint ONCE (drawWithCache) and only modulates alpha per frame, instead of the
-        // old per-frame Path/Paint/BlurMaskFilter allocation that churned the GC mid-animation.
+        // PERF: the ring is ALWAYS in the modifier chain (alpha 0 when unfocused), not conditionally
+        // added/removed. Toggling it in/out on every focus change forced a relayout each time -- the
+        // stutter felt moving the sidebar selection and travelling focus on Home.
         //
-        // Both take `alpha` as a LAMBDA so the animated value is read at DRAW time. This used to be
+        // It takes `alpha` as a LAMBDA so the animated value is read at DRAW time. This used to be
         // `.border(color = glowColor.copy(alpha = ringAlpha))`, which read `ringAlpha` in
         // COMPOSITION -- so every one of the ~8-15 tween frames rebuilt this whole modifier chain
         // and minted a fresh Color and border node, on BOTH the leaving and the entering element,
         // for every single D-pad step. It was the one hole in an otherwise draw-time-only chain.
-        .tvGlowCached(glowColor, shape) { ringAlpha }
         .focusRingCached(glowColor, shape, ringWidth) { ringAlpha }
 }
 
@@ -180,89 +172,6 @@ fun Modifier.focusRingCached(
             )
             // A generic outline can't be inset analytically; stroke it in place, as border does.
             generic != null -> drawPath(generic, color, alpha = a, style = stroke)
-        }
-    }
-}
-
-/**
- * Perf-tuned focus glow used by [tvFocusable]: identical look to [tvGlow] but built for a value that
- * animates every frame.
- *
- * The blur is BAKED once into a half-res bitmap and blitted, exactly as [Modifier.softShadow] does.
- * The previous version hoisted the Path and the [BlurMaskFilter] paint out of the draw pass but still
- * *executed* the mask filter on every draw -- and Skia's mask blur is a CPU pass. The focused element
- * redraws its glow every frame it holds focus, so on a D-pad sweep that was a continuous CPU blur.
- * Measured on the XL95 over the mixed Home sweep: RenderThread Running 2128 -> 1778 ms (-16%), janky
- * frames 27 -> 24. Deleting the glow outright only reaches 1713 ms, so this recovers ~85% of the win
- * while staying pixel-equivalent (screenshot diff: max 3/255, 7 px of 2M differ by >2).
- *
- * [alpha] is a lambda so the animated value is read at DRAW time and never invalidates the cache.
- * Draw it BEFORE any opaque `.background()` so only the outer halo shows (the element's fill covers
- * the inner half), same as [tvGlow].
- */
-fun Modifier.tvGlowCached(
-    color: Color,
-    shape: Shape,
-    spread: Dp = 2.5.dp,
-    alpha: () -> Float,
-): Modifier = this.drawWithCache {
-
-    val spreadPx = spread.toPx()
-    val out = spreadPx * 0.5f
-    val strokePx = 2.dp.toPx()
-    // Pad by 3x sigma so the blur fringe is never clipped; bake at half res like softShadow (a
-    // Gaussian's output is band-limited, so there is no detail a half-res buffer can lose).
-    val pad = spreadPx * 3f
-    val scale = 0.5f
-    val bakeW = ((size.width + pad * 2f) * scale).toInt().coerceAtLeast(1)
-    val bakeH = ((size.height + pad * 2f) * scale).toInt().coerceAtLeast(1)
-    val androidPath = Path().apply {
-        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
-            is Outline.Rounded -> {
-                val rr = o.roundRect
-                addRoundRect(
-                    RoundRect(
-                        left = rr.left - out,
-                        top = rr.top - out,
-                        right = rr.right + out,
-                        bottom = rr.bottom + out,
-                        cornerRadius = CornerRadius(rr.topLeftCornerRadius.x + out, rr.topLeftCornerRadius.y + out),
-                    ),
-                )
-            }
-            is Outline.Rectangle -> addRect(o.rect.inflate(out))
-            is Outline.Generic -> addPath(o.path)
-        }
-    }.asAndroidPath().apply {
-        transform(
-            android.graphics.Matrix().apply {
-                setTranslate(pad, pad)
-                postScale(scale, scale)
-            },
-        )
-    }
-    val paint = NativePaint().apply {
-        isAntiAlias = true
-        style = NativePaint.Style.STROKE
-        strokeWidth = strokePx * scale
-        // Baked at full alpha; the 0.20 factor and the animated value are applied at blit time.
-        this.color = color.toArgb()
-        maskFilter = BlurMaskFilter(spreadPx * scale, BlurMaskFilter.Blur.NORMAL)
-    }
-    val baked = ImageBitmap(bakeW, bakeH)
-    AndroidCanvas(baked.asAndroidBitmap()).drawPath(androidPath, paint)
-    val dstOffset = IntOffset((-pad).toInt(), (-pad).toInt())
-    val dstSize = IntSize((bakeW / scale).toInt(), (bakeH / scale).toInt())
-    onDrawBehind {
-        val a = alpha()
-        if (a > 0f) {
-            drawImage(
-                image = baked,
-                dstOffset = dstOffset,
-                dstSize = dstSize,
-                alpha = 0.20f * a,
-                filterQuality = FilterQuality.Low,
-            )
         }
     }
 }

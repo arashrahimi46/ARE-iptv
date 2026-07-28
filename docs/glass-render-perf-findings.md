@@ -818,3 +818,61 @@ Deliberate choices:
   user has stopped, which reads as lag rather than precision.
 - `DPAD_CENTER` and `ACTION_UP` are never gated — `TvFocusable` resolves short vs long press from
   its own down→up span, so swallowing either half would break OK entirely.
+
+---
+
+## The focus glow is gone, and the "Live now"/"Categories" rails are a measure cost (2026-07-28)
+
+Measured on the XL95 (`192.168.178.28:5555`), release builds, 12 s Perfetto capture over a scripted
+Home **down**-sweep (2 downs + 4 rights, ×5, all inside one `adb shell`), ≥2 reps per variant.
+
+### Focus glow deleted — the one change that moved the needle
+
+`tvFocusable` no longer draws `tvGlowCached`; the crisp `focusRingCached` ring alone carries focus.
+`Switch`'s own always-on `tvGlow` halo went with it. Measured, HEAD → shipped:
+
+| | HEAD | shipped | Δ |
+|---|---|---|---|
+| `AndroidOwner:draw` | 316 ms | 207 ms | **−35 %** |
+| frames > 16.7 ms | 17 | 11.5 | **−32 %** |
+| RenderThread Running | 1323 ms | 1299 ms | flat |
+| `AndroidOwner:measureAndLayout` | 577 ms | 571 ms | flat |
+
+Note the earlier entry claiming the *baked* glow recovered "~85 % of the win" of deleting it: that
+was measured before the sidebar-blur removal, when RenderThread dominated. On the current build the
+glow's cost shows up in `AndroidOwner:draw` (draw-command recording), and deleting it is worth ~3×
+what baking it was. **Do not reintroduce a focus glow without re-running this.**
+
+### The two heavy rails cost measure/layout — and it is NOT the decorations
+
+The user's own A/B (hiding "Live now" + "Browse by category" from Home) was reproduced with a
+`perfBisect` launch-extra that forces them back over the persisted layout. Forcing both on:
+
+| | rails off | rails on | Δ |
+|---|---|---|---|
+| `AndroidOwner:measureAndLayout` | 407 ms | 568 ms | **+40 %** |
+| `compose:lazy:prefetch:*` (all) | 305 ms | 565 ms | **+85 %** |
+| frames > 16.7 ms | 8 | 13 | +63 % |
+| `AndroidOwner:draw` | 232 ms | 176 ms | −24 % |
+| RenderThread Running | 1224 ms | 1004 ms | −18 % |
+
+Live-now and Categories contribute roughly equally (~+90 ms and ~+80 ms of measureAndLayout each).
+**Draw and RenderThread go DOWN** with them on — they displace poster rails, whose bitmaps are the
+draw cost. So this is purely a composition/measure problem.
+
+**Three things that look like the culprit and measurably are not** (all within ±2 %, i.e. noise):
+
+- Removing `AreChannelTile`'s LIVE badge **and** the stream-health dot.
+- Removing `AreChannelTile`'s category chip row.
+- Removing `AreCategoryCard`'s 132 dp folder watermark `Icon` (a `rememberVectorPainter`
+  subcomposition per card — the obvious suspect, and it is not one).
+- Tuning `LazyListPrefetchStrategy(nestedPrefetchItemCount = 0 / 1 / 2)` on the Home `LazyColumn`.
+
+The cost is the **aggregate layout-node count** of the tiles (`AreChannelTile` is ~24 layout nodes
+vs `ArePosterTile`'s ~10), amplified by the outer `LazyColumn`'s unit of prefetch being *a whole
+rail*: individual `compose:lazy:prefetch:measure` slices run **10–15 ms each**, i.e. one of them can
+eat a whole frame. Shaving individual elements cannot fix that — only a genuinely flatter tile
+would, and that is a rewrite, not a tweak.
+
+`TextAnnotatedStringNode:measure` is 83 → 126 ms across the whole 12 s sweep (~1.1 ms per call): real
+but a minority of the delta. The earlier framing that text measure dominates a rail is overstated.
