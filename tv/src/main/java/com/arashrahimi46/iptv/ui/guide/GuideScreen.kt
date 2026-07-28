@@ -6,11 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,7 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,9 +38,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
@@ -190,7 +196,17 @@ fun GuideScreen(
         // weight(1f) -- this is the last child of the fillMaxSize root Column above, so it
         // claims exactly the height left over after the header rows/chips/info-bar -- the real
         // bounded height the LazyColumn below needs to be a valid lazy layout.
-        Column(modifier = Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
+        // BoxWithConstraints, not an onGloballyPositioned measurement, because the lanes need the
+        // viewport width DURING their first composition -- that is the expensive frame this is here to
+        // make cheap, and a post-layout callback arrives one frame too late to save it. One
+        // subcomposition for the whole grid; the lanes take the number as a plain Int.
+        BoxWithConstraints(modifier = Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
+            // What a lane can actually show: the grid width less the pinned channel column and the
+            // 8dp gap the row puts between them.
+            val laneWidthPx = with(LocalDensity.current) {
+                (maxWidth - spacing.guideChannelWidth - 8.dp).coerceAtLeast(0.dp).roundToPx()
+            }
+        Column(modifier = Modifier.fillMaxSize()) {
             // Channel column is PINNED (drawn outside the shared horizontalScroll) on both the
             // timeline header and every row, so the channel you're browsing stays visible no
             // matter how far right you scroll through its programmes. Only the programme lane
@@ -217,22 +233,38 @@ fun GuideScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         ChannelHeaderCell(name = row.channel.name, number = row.channel.number)
-                        Row(
+                        // PERF: the lane is virtualized BY HAND -- see [rememberGuideLane]. It cannot be
+                        // a LazyRow: every lane and the timeline header share one pixel [ScrollState] so
+                        // the grid stays aligned by TIME, and a LazyRow scrolls by item index, which
+                        // would let rows with different programme boundaries drift out of lockstep. So
+                        // the lane keeps the shared scroll and simply skips composing the cells that are
+                        // off screen.
+                        val lane = rememberGuideLane(row.slots)
+                        val visibleRange by remember(lane, laneWidthPx, scrollState) {
+                            derivedStateOf { lane.visibleRange(scrollState.value, laneWidthPx) }
+                        }
+                        Box(
                             modifier = Modifier.weight(1f).horizontalScroll(scrollState),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
-                            row.slots.forEach { slot ->
-                                // PERF: both are pure functions of the slot's fixed timestamps, but ran
-                                // on EVERY recomposition of this row -- and a ZonedDateTime + format()
-                                // per cell, times every cell of every visible row, is real allocation
-                                // and CPU on the D-pad path. Remembered against the slot instead.
-                                val cellWidth = remember(slot.startMs, slot.endMs) {
-                                    val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
-                                    // Clamp so window-clipped boundary programmes (1-2 min) don't
-                                    // compute a <=0.dp, invisible/unfocusable cell.
-                                    ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp)
-                                }
+                            // Full-width spacer: the lane's scrollable extent must stay the extent of the
+                            // whole window no matter how few cells are composed, or the shared scroll
+                            // range would shrink to the visible slice and the header would desync.
+                            Box(Modifier.width(lane.totalWidth).height(spacing.guideRowHeight))
+                            for (index in visibleRange) {
+                                val cell = lane.cells[index]
+                                val slot = cell.slot
+                                // `key`, and it is not optional. A plain loop memoizes by POSITION, so as
+                                // the visible range slides the cell at slot 0 becomes a different
+                                // programme -- Compose would rebuild each cell's state (its remembered
+                                // time label, its focus requester, its interaction source) under the
+                                // focused node and drop D-pad focus mid-scroll. Keyed by start time, a
+                                // cell keeps its identity as the window moves around it; this is the same
+                                // guarantee `items(key = ...)` gives a lazy list.
+                                key(slot.startMs) {
+                                // PERF: a pure function of the slot's fixed timestamps, but it ran on
+                                // EVERY recomposition of this row -- and a ZonedDateTime + format() per
+                                // cell, times every cell of every visible row, is real allocation and CPU
+                                // on the D-pad path. Remembered against the slot instead.
                                 val timeLabel = remember(slot.startMs, zone, timeFormatter) {
                                     Instant.ofEpochMilli(slot.startMs).atZone(zone).format(timeFormatter)
                                 }
@@ -260,15 +292,22 @@ fun GuideScreen(
                                     live = slot.isNow,
                                     now = slot.isNow,
                                     catchup = slot.catchupEligible,
-                                    width = cellWidth,
+                                    width = cell.width,
                                     onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
-                                    modifier = Modifier.focusRequester(focusRequester),
+                                    // Absolutely positioned rather than sequentially laid out: with cells
+                                    // culled there is no longer a complete run of siblings for
+                                    // `spacedBy` to space, so each cell carries the x it would have had.
+                                    modifier = Modifier
+                                        .offset(x = cell.x)
+                                        .focusRequester(focusRequester),
                                 )
+                                }
                             }
                         }
                     }
                 }
             }
+        }
         }
     }
 
@@ -396,6 +435,77 @@ private fun TimelineHeader(windowStartMs: Long, windowEndMs: Long, zone: ZoneId,
                 }
                 mark += 30 * 60_000L
             }
+        }
+    }
+}
+
+/**
+ * One programme lane's geometry, precomputed once per channel's slot list.
+ *
+ * The Guide's cost was never the rows -- those went lazy in P0.2 -- it was that each visible row then
+ * composed EVERY cell of the whole ~6h window regardless of horizontal scroll position. At a dozen-plus
+ * cells per lane and 2-3 `Text`s per cell, a Guide entry was several hundred text measures, which the
+ * XL95 charges ~1-1.5ms each (docs/glass-render-perf-findings.md). This is what lets a lane skip the
+ * cells that are off screen.
+ *
+ * Positions are explicit because they have to be: sequential layout derives each cell's x from its
+ * predecessors, which stops working the moment the predecessors aren't composed. The x values here are
+ * exactly what `spacedBy(6.dp)` produced, so the grid is pixel-identical.
+ */
+private class GuideLane(
+    val cells: List<GuideLaneCell>,
+    val totalWidth: Dp,
+    private val xPx: IntArray,
+    private val endPx: IntArray,
+) {
+    /**
+     * Indices of the cells to compose for a viewport of [viewportPx] scrolled to [scrollPx].
+     *
+     * Padded by a full viewport on each side, and that margin is load-bearing rather than a comfort
+     * buffer: D-pad focus can only travel to a composed focusable, so a cell the user is about to
+     * step onto must already exist. One viewport of slack means the next cell is always composed --
+     * reaching an unbuilt one would take a single keypress crossing the entire visible width.
+     */
+    fun visibleRange(scrollPx: Int, viewportPx: Int): IntRange {
+        if (viewportPx <= 0 || cells.isEmpty()) return cells.indices
+        val from = scrollPx - viewportPx
+        val to = scrollPx + viewportPx * 2
+        var first = -1
+        var last = -1
+        for (i in cells.indices) {
+            if (endPx[i] >= from && xPx[i] <= to) {
+                if (first < 0) first = i
+                last = i
+            }
+        }
+        return if (first < 0) IntRange.EMPTY else first..last
+    }
+}
+
+private class GuideLaneCell(val slot: GuideProgramSlot, val x: Dp, val width: Dp)
+
+/** Lays [slots] out at the same widths and 6dp gaps the lane used when it was a plain `Row`. */
+@Composable
+private fun rememberGuideLane(slots: List<GuideProgramSlot>): GuideLane {
+    val density = LocalDensity.current
+    return remember(slots, density) {
+        var x = 0.dp
+        val cells = slots.map { slot ->
+            val durationMinutes = ((slot.endMs - slot.startMs) / 60000L).coerceAtLeast(1L)
+            // Clamp so window-clipped boundary programmes (1-2 min) don't compute a <=0.dp,
+            // invisible/unfocusable cell.
+            val width = ((DpPerMinute * durationMinutes.toInt()) - 6.dp).coerceAtLeast(24.dp)
+            GuideLaneCell(slot, x, width).also { x += width + 6.dp }
+        }
+        // Trailing gap trimmed: `spacedBy` puts gaps BETWEEN cells, not after the last one.
+        val total = (x - 6.dp).coerceAtLeast(0.dp)
+        with(density) {
+            GuideLane(
+                cells = cells,
+                totalWidth = total,
+                xPx = IntArray(cells.size) { cells[it].x.roundToPx() },
+                endPx = IntArray(cells.size) { (cells[it].x + cells[it].width).roundToPx() },
+            )
         }
     }
 }
