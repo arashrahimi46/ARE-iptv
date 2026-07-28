@@ -338,6 +338,63 @@ Each of these produced a confidently wrong answer during this investigation:
   (`ro.hardware.egl = emulation`), so `GpuCompleted` is host round-trip latency, not GPU work.
 - **Debug builds carry non-trivial overhead** — profile release.
 
+## Home cold-vs-warm: three more hypotheses measured and REJECTED (2026-07-28)
+
+The user's own observation — *"the first attempt is so slow, but the follow-up scrolling is much
+faster"* — is real and reproducible. Protocol changed to match it: a **complex mixed** sequence
+(horizontal runs inside rails, verticals between rails, backtracking: `RIGHT×3 DOWN RIGHT×2 DOWN
+LEFT×2 DOWN RIGHT×3 UP×2 LEFT`), captured in three separate `gfxinfo reset` windows — **cold** (first
+pass), **warm** (identical moves again), **deep** (further down into rails never reached). A uniform
+up/down sweep hides this entirely, because it only ever re-enters warm tiles.
+
+Sums over 120 frames, because *sums and p50 are stable here and maxima are not* (see the caveat below):
+
+| build | cold total | warm total | cold RT | warm RT | cold compose |
+|---|---|---|---|---|---|
+| current | 4393 | 2902 | 1447 | 788 | 445 |
+| hardware bitmaps (`allowRgb565` dropped) | 4324 | 2999 | 1392 | 860 | 435 |
+| **no tile images at all** | 4164 | 2837 | 1348 | 829 | 421 |
+| no ambient artwork blur | 4628 | 2571 | 1576 | 643 | 436 |
+
+**Cold costs ~50% more frame time than warm, in every build (~4400 vs ~2900), and nothing removed
+changes it.**
+
+| hypothesis | result |
+|---|---|
+| First-time image **decode + GPU upload** — the 137ms `sync`/RenderThread spikes looked exactly like texture upload | **REJECTED.** Disabling tile artwork *entirely* moved cold total 4393→4164 (5%) and left the spikes (sync max 137.7→130.7). Images are not the cold cost. |
+| `allowRgb565(true)` forces **software** bitmaps, so every image pays a CPU→GPU upload; hardware bitmaps would skip it | **REJECTED, and the premise was wrong.** Dropping it changed nothing (cold sync max 137.7→139.0) and `dumpsys meminfo` still reported **Graphics: 0 KB**, i.e. hardware bitmaps never engaged. Keep `allowRgb565` — it is a free memory win. Note `TileWash.kt:74` already bails on `Config.HARDWARE`, so anyone re-testing this must check the tile wash still renders. |
+| The ambient **artwork wash** (full-screen 72dp `RenderEffect`) is the RenderThread stall | **REJECTED for cold** (4393→4628, i.e. worse), but see the real finding below. |
+
+### The one thing that did move, and it is on the WARM path
+
+Disabling the artwork wash improved the **warm** pass substantially and consistently:
+total p90 **37.5→26.2ms**, RenderThread p90 **13.3→8.9ms**, RenderThread sum **788→643**. That is
+steady-state browsing, i.e. most of the time the user actually spends. It is a visual change (the
+page loses the focused item's colour wash), so it is a product decision, not a free win.
+
+Separately, on the simple up/down protocol, disabling artwork **and** mesh together was worth
+total p50 **22.76→19.81ms** (~3ms/frame, ~13%) — the whole "background lighting" system is a modest
+steady cost, not the lag.
+
+### Measurement caveat that matters more than any of the above
+
+**Single-rep maxima are noise.** The cold-pass `max` across these four builds read 194 / 188 / 167 /
+**326** ms, and the 326ms belongs to the build that was otherwise *best* on the warm path. Do not
+attribute a cause from one giant frame in one rep — this document has already been burned once by
+reading percentiles off single runs. Sums and p50 reproduced fine; maxima did not.
+
+### What is left
+
+Cold is RenderThread-bound (RT sum ~2× warm), spread across many frames rather than one spike, and
+**independent of content** — it survives removing every image on screen. The remaining candidate is
+first-use **shader / pipeline compilation** on the RenderThread as new shape+shader combinations
+appear, which fits every observation (cold-only, RT-bound, content-independent) and which a baseline
+profile does *not* cover. Untested. The obvious probe is a warm-up pass during the splash screen that
+draws the same surface recipes offscreen.
+
+Compose, for the record, is a flat ~3ms/frame tax in every single variant (cold sums 421–445, warm
+406–443). It is not the cold penalty and it is not where the next win is.
+
 ## MEASURED: the sidebar open/close on Home, XL95 (2026-07-28)
 
 The section below this one describes the composition-side fixes. This is what they were worth on the
