@@ -259,7 +259,10 @@ fun AreSidebarNav(
                 val frosted = LocalPageBackdrop.current != null && LocalGlassTier.current.hasBackdropBlur
                 val frostAlpha = animateFloatAsState(
                     targetValue = if (frosted) 1f else 0f,
-                    animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
+                    // durFast, not durBase: the capture is already gated behind the panel's travel, so
+                    // this fade is pure added latency on top of it. Long enough not to be a cut, short
+                    // enough that the frost is up before the eye goes looking for it.
+                    animationSpec = tween(motion.durFastMs, easing = motion.easeOut),
                     label = "sidebarFrost",
                 )
                 // The plain sheer fill, fading OUT as the frost fades in. Both are translucent, so they

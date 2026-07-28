@@ -97,6 +97,11 @@ fun AreIptvAppShell(
     // Verify frost by pixel variance just inside the panel edge, same region collapsed vs expanded
     // (measured here: mean|gradient| 3.39 -> 0.60, stdev 75.7 -> 29.0).
     var capturePage by remember { mutableStateOf(false) }
+    // Must outlast the ENTIRE width tween. Tried shortening it to `durFast` (150ms) on the theory that
+    // EaseOut is front-loaded enough that the panel is visually settled long before 220ms -- it is, but
+    // it does not matter: the capture still collides with live animation frames and the whole win
+    // evaporated. Measured, same protocol: total p50 20.1 -> 37.3ms, RenderThread 5.4 -> 13.8ms,
+    // sync 0.4 -> 3.5ms. "Looks stationary" is not "is not animating". Do not shorten this.
     val settleMs = AreIptvTheme.motion.durBaseMs.toLong() + 32L
     LaunchedEffect(sidebarExpanded) {
         if (sidebarExpanded) { delay(settleMs); capturePage = true } else capturePage = false
