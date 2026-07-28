@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.border
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -49,6 +50,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,16 +84,13 @@ import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
-import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
-import com.arashrahimi46.iptv.ui.theme.frostedPanel
 import com.arashrahimi46.iptv.ui.theme.softShadow
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassLens
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
-import kotlinx.coroutines.delay
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
 
@@ -127,9 +126,6 @@ fun AreSidebarNav(
      * active playlist hasn't been refreshed in over two weeks). */
     badgedIds: Set<String> = emptySet(),
     style: SidebarStyle = SidebarStyle.FLOATING,
-    /** Fires when the rail expands/collapses, so the shell can publish the page-content backdrop the
-     *  expanded panel frosts (only while it's open -- see [LocalPageBackdrop]). */
-    onExpandedChange: (Boolean) -> Unit = {},
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
@@ -153,13 +149,6 @@ fun AreSidebarNav(
     // those steps, purely to recompute a Boolean that did not change. Derived, the rail recomposes
     // exactly twice per visit: once when focus enters and once when it leaves.
     val expanded by remember { derivedStateOf { focusedItemId != null } }
-    // On expand, tell the shell straight away so the panel frosts the content it starts covering. On
-    // collapse, hold the report until the width animation has actually finished -- dropping the page
-    // layer the instant focus leaves would snap the still-open overhang back to ambient mid-slide.
-    LaunchedEffect(expanded) {
-        if (!expanded) delay(motion.durBaseMs.toLong())
-        onExpandedChange(expanded)
-    }
     val openWidth = if (floating) spacing.sidebarBoxWidthOpen else spacing.sidebarWidthOpen
     // NOTE: deliberately NOT `by` -- the State is passed down and read at LAYOUT/DRAW time. Reading
     // an animated Dp in composition recomposes this whole composable on every one of the ~13 frames
@@ -214,15 +203,31 @@ fun AreSidebarNav(
             // out once and the reveal is pure alpha (a draw-time property). Visually identical: the
             // rail's content is start-aligned with a static icon inset, so it never moved during the
             // animation anyway -- only the panel edge did.
-            // Two nodes, and the split is load-bearing. The OUTER node is the one that animates: it
-            // carries the tween width, the rounded clip and the edge, all of which are cheap per-frame
-            // draw ops. The INNER node carries the frost and is pinned at the open width in its own
-            // graphicsLayer, so an animation frame never invalidates its draw -- which matters because
-            // its `drawBackdrop` re-pulls the page layer whenever it draws, and satisfying that pull
-            // re-rasterizes the whole page at ~14ms/frame on the XL95. Pinned, the page is captured
-            // once per expand instead of thirteen times, and the frost is present from frame 0 (an
-            // earlier attempt deferred the frost until the tween settled, and the blur visibly popped
-            // in afterwards). See [Modifier.frostedPanel] and docs/glass-render-perf-findings.md.
+            //
+            // NO BACKDROP BLUR HERE, deliberately, and this is the measured decision -- see
+            // docs/glass-render-perf-findings.md. The expanded rail used to frost the page behind it
+            // via `drawBackdrop`. Profiled on the XL95 (Perfetto, release, 10 expand/collapse cycles,
+            // RenderThread Running -- a baseline that reproduces to +-0.6% across batches):
+            //
+            //   baseline (frosted)            2156 ms   ~60 frames over 16.7ms
+            //   blur pass removed             1502 ms    ~4 frames over 16.7ms   <- this
+            //   blur radius 28dp -> 14dp      2332 ms   -- WORSE, so it is not radius-bound
+            //   frost captured from frame 0   2141 ms   -- total-neutral, per-frame heavier
+            //
+            // The cost is the blur PASS existing at all, not its radius: it is 30% of the whole
+            // RenderThread budget and it turned 4 janky frames into 60. Halving the radius made it
+            // worse, so there is no cheap-blur setting to tune -- the choice is have it or not.
+            //
+            // What replaces it is the same `surfaceGlassSheer` fill the panel already cross-faded
+            // from, so the rail is still genuinely translucent (you see the page through it), just not
+            // blurred. That also removes the OTHER reported defect for free: there is no longer a late
+            // -arriving blur, so nothing pops in after the panel finishes opening, and no
+            // cross-dissolve is needed to hide it. One node, one fill, correct from frame 0.
+            //
+            // The shell's whole page-capture apparatus (LocalPageBackdrop, the gated
+            // `layerBackdrop(pageBackdrop)`, the settle delay) existed only to feed this blur and is
+            // deleted with it -- which also stops double-drawing the page subtree while the rail is
+            // open. Do not reintroduce a backdrop blur here without re-running that measurement.
             Box(
                 Modifier
                     .widthFrom(width)
@@ -230,10 +235,10 @@ fun AreSidebarNav(
                     // bake = false: this node's size changes every frame. See `bake`.
                     .softShadow(panelShape, bake = false)
                     .clip(panelShape)
-                    // The edge has to be stroked AFTER the child: modifier draws land beneath a node's
-                    // children, so a plain `.border()` here would sit under the frost fill. Stroked on
-                    // the animating node rather than the pinned one so the corner radius and the right
-                    // edge stay correct at every width -- pinning the frost must not cost the border.
+                    .background(colors.surfaceGlassSheer)
+                    // The edge is stroked in drawWithContent, not with a plain `.border()`, so it lands
+                    // ON TOP of the fill above rather than beneath it (modifier draws go under a node's
+                    // children, and a background is drawn before them).
                     .drawWithContent {
                         drawContent()
                         val hair = 1.dp.toPx()
@@ -245,46 +250,7 @@ fun AreSidebarNav(
                             style = Stroke(hair),
                         )
                     },
-            ) {
-                // CROSS-DISSOLVE, not a hard swap. The shell can only publish the page layer once the
-                // expand tween has settled -- capturing it while the panel is moving costs ~15ms/frame
-                // on the XL95 (measured; see docs/glass-render-perf-findings.md), which is most of the
-                // frame budget. So the blur necessarily arrives late, and hard-cutting it in is the
-                // reported "it goes blurry with a glitch once it finishes opening".
-                //
-                // Both alphas below are `graphicsLayer` properties, so this fade is FREE: the backdrop
-                // is captured once when the layer is recorded and then composited at varying alpha.
-                // Animating the blur RADIUS instead would re-run the effect -- and so re-pull the page
-                // -- on every frame of the fade, which is the expensive thing this avoids.
-                val frosted = LocalPageBackdrop.current != null && LocalGlassTier.current.hasBackdropBlur
-                val frostAlpha = animateFloatAsState(
-                    targetValue = if (frosted) 1f else 0f,
-                    // durFast, not durBase: the capture is already gated behind the panel's travel, so
-                    // this fade is pure added latency on top of it. Long enough not to be a cut, short
-                    // enough that the frost is up before the eye goes looking for it.
-                    animationSpec = tween(motion.durFastMs, easing = motion.easeOut),
-                    label = "sidebarFrost",
-                )
-                // The plain sheer fill, fading OUT as the frost fades in. Both are translucent, so they
-                // have to cross-dissolve -- simply stacking them would double the fill and darken the
-                // panel at rest.
-                Box(
-                    Modifier
-                        .width(openWidth)
-                        .fillMaxHeight()
-                        .graphicsLayer { alpha = 1f - frostAlpha.value }
-                        .background(colors.surfaceGlassSheer),
-                )
-                if (frosted) {
-                    Box(
-                        Modifier
-                            .width(openWidth)
-                            .fillMaxHeight()
-                            .graphicsLayer { alpha = frostAlpha.value }
-                            .frostedPanel(),
-                    )
-                }
-            }
+            )
             Column(
                 modifier = Modifier
                     .width(openWidth)
@@ -391,6 +357,7 @@ private fun Modifier.widthFrom(width: State<Dp>, inset: Dp = 0.dp): Modifier = l
 }
 
 /** Brand header + the scrolling item column, shared by both container styles. */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 private fun ColumnScope.SidebarNavBody(
     // PERF: deliberately does NOT take `expanded`. It took it and never read it, and because an
@@ -424,10 +391,10 @@ private fun ColumnScope.SidebarNavBody(
         modifier = Modifier
             .fillMaxWidth()
             .height(44.dp)
-            // Floating: 28dp start centres the 40dp brand mark in the 96dp collapsed capsule
-            // ((96-40)/2), matching the icons below; kept static so it doesn't shift as the label
-            // fades in on expand. Edge: the original flush-rail inset.
-            .padding(start = if (floating) 28.dp else 26.dp, end = if (floating) 20.dp else 26.dp),
+            // Floating: 32dp start centres the 32dp brand mark in the 96dp collapsed capsule
+            // ((96-32)/2); kept static so it doesn't shift as the label fades in on expand.
+            // Edge: the original flush-rail inset.
+            .padding(start = if (floating) 32.dp else 26.dp, end = if (floating) 16.dp else 26.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -492,7 +459,19 @@ private fun ColumnScope.SidebarNavBody(
                         .glassLens(RoundedCornerShape(AreIptvTheme.radius.lg)),
                 )
             }
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(
+                // Entering the rail from the content (LEFT) used to resolve by nearest-neighbour
+                // geometry, so it landed on whichever row happened to sit at the focused tile's
+                // height -- pressing LEFT from a Home poster put focus on "TV Guide" while Home was
+                // the current screen. The rail's entry point is a property of the rail, not of where
+                // the user came from: entering always lands on the row for the screen you are on.
+                // Row-to-row travel INSIDE the group doesn't re-trigger `enter`, so this costs
+                // nothing once you're in.
+                modifier = Modifier
+                    .focusProperties { enter = { focusRequesters.getValue(active) } }
+                    .focusGroup(),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 items.forEach { item ->
                     val itemInteractionSource = remember { MutableInteractionSource() }
                     SidebarNavRow(
@@ -576,7 +555,7 @@ private fun BrandMark(brand: String, colors: AreIptvColors) {
     val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(32.dp)
             // Solid accent gradient, NOT the selection lens: the brand mark is identity, not a
             // selected state. Turning it translucent drained it in the light theme, where the lens
             // is a white-over-accent wash. No glow: it read as a heavy halo.

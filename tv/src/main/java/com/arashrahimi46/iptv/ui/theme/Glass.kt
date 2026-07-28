@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asAndroidPath
@@ -32,7 +31,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.vibrancy
 
 /** Sentinel "this surface should lift" value; the actual look comes from [softShadow], not from a
@@ -210,8 +208,7 @@ fun Modifier.glassSurface(
     // hierarchy, so a translucent `fill` over it already composites to the right thing through
     // ordinary alpha blending. Sampling only buys the ability to run an effect on what's behind; with
     // no effect it re-draws the pixels that would have shown through anyway. Anything that needs an
-    // actual effect must keep the sample -- that is why Tier A (vibrancy) still takes this path, and
-    // why [frostedPanel]'s one real blur is untouched.
+    // actual effect must keep the sample -- that is why Tier A (vibrancy) still takes this path.
     //
     // NOTE this supersedes an earlier conclusion that the backdrop system had to stay because turning
     // it off changed the surfaces. That test disabled the token retune AND the sampling together; the
@@ -274,42 +271,6 @@ fun Modifier.glassSurface(
  * way -- only how much of it is revealed changes. Note this is the ONE genuine blur in the app; see
  * [Modifier.glassSurface] for why every other surface samples nothing.
  */
-/**
- * TRUE frosted glass -- a panel that floats over the page and shows the **page content** softly
- * blurred behind it. Currently the expanded sidebar, and deliberately nothing else.
- *
- * [glassSurface] can't do this: it samples [LocalAppBackdrop], the ambient wash, whose first draw op
- * is an opaque `bgBase`. Sampling it paints the page's background back over the page inside the
- * panel's bounds, so the rails the panel covers can never show through no matter how sheer the fill.
- * This samples [LocalPageBackdrop] instead -- ambient *and* content -- and blurs it.
- *
- * The blur is the whole point and is the sanctioned exception to §4's "no per-surface blur": what is
- * behind here is sharp artwork and text, so without it the panel reads as a transparent window and
- * the nav labels fight the posters underneath. One surface, one blur.
- *
- * Falls back to sheer [glassSurface] when the shell hasn't published a page layer (i.e. the sidebar is
- * collapsed, where there is no content behind it anyway) or the TV can't render one (Tier C).
- */
-@Composable
-fun Modifier.frostedPanel(): Modifier {
-    val c = AreIptvTheme.colors
-    val tier = LocalGlassTier.current
-    val page = LocalPageBackdrop.current
-    return if (page != null && tier.hasBackdropBlur) {
-        this.drawBackdrop(
-            backdrop = page,
-            // Rectangle, and no border/clip: the caller's wrapper owns the rounded edge, because the
-            // rounding is the part that animates and this node must not.
-            shape = { RectangleShape },
-            effects = { blur(28.dp.toPx()) },
-            onDrawSurface = { drawRect(c.surfaceGlassSheer) },
-        )
-    } else {
-        // Same fill `glassSurface(sheer = true)` uses on every tier -- fill only, for the same reason.
-        this.background(c.surfaceGlassSheer)
-    }
-}
-
 /** The vertical "lit edge" gradient used by every glass surface and its border brush. */
 @Composable
 fun glassBorderBrush(): Brush {

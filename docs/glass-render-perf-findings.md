@@ -563,6 +563,8 @@ applied for uniformity, and **Settings has still never been Perfetto-traced.** D
 | Keep `AmbientBackdrop` + the Tier B token retune | Locked | The retune *is* the glass look; only the redundant per-surface sampling was removed. |
 | Ambient mesh stays static (`t = 0`) | Locked | The bake depends on it. Drift would invalidate the cached bitmap every frame. |
 | ~~Keep the glass backdrop system~~ | **Superseded 2026-07-28** | Locked on emulator data that understated the cost ~4×, and on a test that conflated the token retune with the sampling. |
+| Sidebar rail has **no** backdrop blur | **Locked 2026-07-28** | Worth −48% RenderThread and 65 → 2 janky frames on the XL95; the rail stays sheer-translucent. See "The sidebar frost removed" below. |
+| One D-pad step per frame, extras dropped | **Locked 2026-07-28** | Stops focus running ahead of the renderer without throttling held-key fast scroll. See "D-pad input gating" below. |
 
 ## Open items
 
@@ -702,3 +704,98 @@ already bakes for the same tile. ~55 % on top of an existing per-tile cost, not 
 - **Debug vs release is ~2×** on the main thread (Running 4797 ms vs 2770 ms) and it *inverts which
   half dominates*: in debug, `measureAndLayout` swamps everything and the RenderThread looks minor.
   Only ever compare like with like, and prefer release — it is what ships.
+
+---
+
+## The sidebar frost removed — 2026-07-28 (session: real-TV bug sweep)
+
+Reported as two separate complaints: *"when I want to expand the sidebar it first opens it and then
+it makes it blurry"* and *"the sidebar animation is a bit laggy, it's a very simple animation that
+shouldn't be laggy."* They turned out to be the same finding.
+
+### Protocol
+
+Release build, Sony XL95 (API 31, Tier B), Perfetto `gfx view sched`, 11 s window, 10
+expand/collapse cycles driven from a single `adb shell` loop. Scored on **RenderThread `Running`**
+from `sched`, which reproduced across three separate batches at **2153 / 2179 / 2156 ms — ±0.6 %**.
+Percentiles are from `DrawFrames` on the RenderThread. First post-install run discarded each time.
+
+### What was measured
+
+| variant | RT Running | frames > 16.7 ms |
+|---|---|---|
+| baseline (frosted) | 2156 ms | ~60–65 |
+| **backdrop blur pass removed** | **1502 ms (−30 %)** | **4** |
+| frost cross-dissolve removed | 1759 ms (−18 %) | 51 |
+| blur radius 28 dp → 14 dp | 2332 ms (**+8 %, worse**) | 72 |
+| frosted node follows the animating width | 2448 ms (**+13 %, worse**) | — |
+| page captured from frame 0, dissolve kept | 2372 ms (**+10 %, worse**) | 75 |
+| panel `softShadow(bake = false)` removed | 2144 ms (−0.4 %) | 56 |
+| `scrollEdgeFade` offscreen layer removed | 2116 ms (−1.8 %) | — |
+
+### Conclusion
+
+**The 28 dp backdrop blur was the entire bottleneck and nothing else was close.** Two hypotheses
+that looked obvious in the code were tested and killed:
+
+- The panel's `softShadow(bake = false)` runs a real CPU `BlurMaskFilter` over a full-height path on
+  every draw. It reads like the worst thing in the file. It is worth **0.4 %**. Left alone.
+- Halving the blur radius made things **worse**, not better. The cost is the blur *pass* — the
+  offscreen render and backdrop sample — not the kernel width, so there is no cheap-blur setting to
+  tune. The choice is binary: have it or not.
+
+Pinning the frosted node at the open width was re-confirmed as correct (letting it follow the
+animating width costs +13 %), and the settle gate was re-confirmed as correct (capturing from
+frame 0 while keeping the dissolve costs +10 %). Both earlier decisions were right *given* the blur.
+
+### What shipped
+
+The blur is gone. The expanded rail keeps the same `surfaceGlassSheer` fill it already cross-faded
+from, so it stays genuinely translucent — the page reads through it, just unblurred. Measured
+end state, same protocol:
+
+| | baseline | shipped | |
+|---|---|---|---|
+| RenderThread Running | 2156 ms | **1113 ms** | **−48 %** |
+| frame p50 | 9.46 ms | **6.58 ms** | −30 % |
+| frame p90 | 19.21 ms | **10.17 ms** | −47 % |
+| frames > 16.7 ms | 65 | **2** | −97 % |
+
+−48 % beats the −30 % of the blur-only variant because removing the blur made the whole page-capture
+apparatus dead code: `LocalPageBackdrop`, the gated `layerBackdrop(pageBackdrop)`, the settle delay
+and `frostedPanel` are all deleted, so the page subtree is no longer drawn twice while the rail is
+open.
+
+It also fixes the "opens, then goes blurry" glitch **by construction rather than by masking it**.
+That glitch existed because the blur could only be captured after the tween settled; the
+cross-dissolve was a 150 ms alpha fade whose only job was to hide the late arrival. With no blur
+there is nothing to arrive late, so the dissolve, its two full-height `graphicsLayer` siblings and
+the second fill node all went with it. The panel is correct from frame 0.
+
+**This supersedes "keep the glass backdrop system" for the sidebar specifically.** The ambient
+backdrop and every other glass surface are untouched. Do not reintroduce a backdrop blur on the rail
+without re-running this measurement.
+
+### Trade-off accepted
+
+The deleted `frostedPanel` KDoc argued the blur was load-bearing: *"what is behind here is sharp
+artwork and text, so without it the panel reads as a transparent window and the nav labels fight the
+posters underneath."* Screenshot-verified on the XL95 over the Home poster rail — the sheer fill
+dims the content enough that the labels stay legible. This was a deliberate product call, not an
+oversight; revisit it if the rail ever sits over brighter content than Home.
+
+## D-pad input gating — 2026-07-28
+
+Reported as *"when I press arrow up/down multiple times, YouTube executes them one by one, our app
+tries to handle them at once and it glitches."*
+
+`MainActivity.dispatchKeyEvent` now accepts at most **one directional key per Choreographer frame**
+and **drops** the rest (`DPAD_CENTER`, `ACTION_UP` and every non-directional key are untouched). The
+accepted rate is therefore whatever the display is actually achieving: at the post-fix p50 of 6.6 ms
+the gate reopens every vsync (~60/s), far above the ~20/s key auto-repeat rate, so **holding a
+direction to fast-scroll the Movies / Series / Live grids is not throttled at all** — verified on
+device with a 12-press burst that moved exactly 12 rows. It only bites when a frame overruns the
+repeat interval, which is exactly when running ahead of the renderer is what produces the glitch.
+
+Dropped rather than queued deliberately: queueing preserves every press but lets focus keep
+travelling after the user has stopped, which reads as lag rather than precision.
