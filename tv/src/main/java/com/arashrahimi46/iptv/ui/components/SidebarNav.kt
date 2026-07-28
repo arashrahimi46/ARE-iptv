@@ -46,12 +46,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -145,7 +147,12 @@ fun AreSidebarNav(
     // sidebar, which was the reported "Back always lands on the sidebar" bug. The style/inset change
     // touches nothing here -- do not add a restorer.
     val focusRequesters = remember(items) { items.associate { it.id to FocusRequester() } }
-    val expanded = focusedItemId != null
+    // derivedStateOf, not a plain `focusedItemId != null`: `focusedItemId` changes on EVERY D-pad step
+    // inside the rail (row -> row), and a direct read here would recompose this whole composable --
+    // and, through it, SidebarNavBody's brand mark, selection lens and all ten rows -- on every one of
+    // those steps, purely to recompute a Boolean that did not change. Derived, the rail recomposes
+    // exactly twice per visit: once when focus enters and once when it leaves.
+    val expanded by remember { derivedStateOf { focusedItemId != null } }
     // On expand, tell the shell straight away so the panel frosts the content it starts covering. On
     // collapse, hold the report until the width animation has actually finished -- dropping the page
     // layer the instant focus leaves would snap the still-open overhang back to ambient mid-slide.
@@ -245,6 +252,7 @@ fun AreSidebarNav(
                 modifier = Modifier
                     .width(openWidth)
                     .fillMaxHeight()
+                    .clipToPanel(width)
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
@@ -293,6 +301,7 @@ fun AreSidebarNav(
                 modifier = Modifier
                     .width(openWidth)
                     .fillMaxHeight()
+                    .clipToPanel(width)
                     .padding(vertical = spacing.sp8),
             ) {
                 SidebarNavBody(
@@ -320,6 +329,24 @@ fun AreSidebarNav(
  * inside a `layout` block moves that read into the measure pass, so an animation frame invalidates
  * one node's measurement and nothing recomposes.
  */
+/**
+ * Clips this node to the panel's current animating [width], at DRAW time.
+ *
+ * The nav content is pinned at the OPEN width so an animation frame never remeasures a row (see
+ * [widthFrom]) -- but that also means a focused row's ring, fill and label are drawn at full width
+ * from frame 0, while the glass panel behind them is still collapsed. For the ~13 frames of an expand
+ * the focus ring floated *outside* the panel, over the page content. This wipes the content in with
+ * the advancing edge instead, which is what a panel sliding open should look like.
+ *
+ * A `clipRect`, not a rounded clip: the rows are inset from the panel's 28dp corners by their own
+ * horizontal/vertical padding, so a rectangular right-edge clip is indistinguishable from the panel's
+ * own rounded one -- and it costs no per-frame `Path`. Read at draw time, so this adds no layout work
+ * to the tween at all; at rest (`width` == open width) it clips nothing.
+ */
+private fun Modifier.clipToPanel(width: State<Dp>): Modifier = drawWithContent {
+    clipRect(right = width.value.toPx()) { this@drawWithContent.drawContent() }
+}
+
 private fun Modifier.widthFrom(width: State<Dp>, inset: Dp = 0.dp): Modifier = layout { measurable, constraints ->
     val w = (width.value - inset).roundToPx().coerceAtLeast(0)
     val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
@@ -463,39 +490,47 @@ private fun ColumnScope.SidebarNavBody(
  * translucent. When [opaqueFill] is set (opaque tiers) the surface is a flat colour, so painting that
  * colour as a top/bottom gradient over the rows gives the same dissolve WITHOUT an offscreen layer --
  * the per-frame render-to-texture that older TV GPUs pay for continuously, scrolling or not.
+ *
+ * PERF: `drawWithCache`, not `drawBehind`/`drawWithContent`. These gradients depend on `size.height`,
+ * so they can't be hoisted into a plain `remember` -- but built inside the draw lambda they were minted
+ * (brush + colour-stop list, twice on the opaque path) on every DRAW pass, and this node is the rail's
+ * scroll viewport: it redraws on every focus step through the rail AND on every frame of the width
+ * tween. Same treatment `glassWell` and `railFill`/`railSeam` already document, for the same reason;
+ * this call site was simply missed in that pass. The cache re-runs only on a size change.
  */
 private fun Modifier.scrollEdgeFade(fade: Dp, opaqueFill: Color?): Modifier =
     if (opaqueFill == null) {
         this
             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-            .drawWithContent {
-                drawContent()
+            .drawWithCache {
                 val f = (fade.toPx()).coerceAtMost(size.height / 2f)
-                if (f <= 0f) return@drawWithContent
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        f / size.height to Color.Black,
-                        1f - f / size.height to Color.Black,
-                        1f to Color.Transparent,
-                    ),
-                    blendMode = BlendMode.DstIn,
+                val mask = if (f <= 0f) null else Brush.verticalGradient(
+                    0f to Color.Transparent,
+                    f / size.height to Color.Black,
+                    1f - f / size.height to Color.Black,
+                    1f to Color.Transparent,
                 )
+                onDrawWithContent {
+                    drawContent()
+                    if (mask != null) drawRect(brush = mask, blendMode = BlendMode.DstIn)
+                }
             }
     } else {
-        this.drawWithContent {
-            drawContent()
+        this.drawWithCache {
             val f = (fade.toPx()).coerceAtMost(size.height / 2f)
-            if (f <= 0f) return@drawWithContent
-            drawRect(
-                brush = Brush.verticalGradient(0f to opaqueFill, f / size.height to Color.Transparent),
-                size = Size(size.width, f),
-            )
-            drawRect(
-                brush = Brush.verticalGradient(0f to Color.Transparent, 1f to opaqueFill),
-                topLeft = Offset(0f, size.height - f),
-                size = Size(size.width, f),
-            )
+            val top = if (f <= 0f) null else
+                Brush.verticalGradient(0f to opaqueFill, f / size.height to Color.Transparent)
+            val bottom = if (f <= 0f) null else
+                Brush.verticalGradient(0f to Color.Transparent, 1f to opaqueFill)
+            val edge = Size(size.width, f)
+            val bottomAt = Offset(0f, size.height - f)
+            onDrawWithContent {
+                drawContent()
+                if (top != null && bottom != null) {
+                    drawRect(brush = top, size = edge)
+                    drawRect(brush = bottom, topLeft = bottomAt, size = edge)
+                }
+            }
         }
     }
 

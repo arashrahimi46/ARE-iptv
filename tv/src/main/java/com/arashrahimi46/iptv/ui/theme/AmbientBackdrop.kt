@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -63,8 +64,15 @@ val LocalAppBackdrop = staticCompositionLocalOf<Backdrop?> { null }
  * This is also the one place a per-surface blur is warranted (§4 says blur belongs on the layer that
  * captures *sharp* content, not re-derived per surface): posters and text behind the panel are sharp,
  * and the blur is what turns "transparent window" into frosted glass while keeping the labels legible.
+ *
+ * PERF: deliberately NOT `staticCompositionLocalOf`, unlike its two neighbours. A static local is not
+ * tracked per-reader, so changing its value recomposes the provider's ENTIRE content subtree with no
+ * skipping -- and this is the one local in the app whose value actually changes at runtime: it flips
+ * on every sidebar expand and again on every collapse. That was a full-app recomposition (every rail,
+ * every tile) landing on frame 0 of the width tween, i.e. the worst possible frame for it. Tracked, the
+ * flip invalidates the single node that reads it -- [Modifier.frostedPanel].
  */
-val LocalPageBackdrop = staticCompositionLocalOf<Backdrop?> { null }
+val LocalPageBackdrop = compositionLocalOf<Backdrop?> { null }
 
 /**
  * The thing glass refracts (design spec §3) -- **the single highest-value change in Glass V2**.
