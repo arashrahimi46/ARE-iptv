@@ -856,7 +856,14 @@ The user's own A/B (hiding "Live now" + "Browse by category" from Home) was repr
 | `AndroidOwner:draw` | 232 ms | 176 ms | −24 % |
 | RenderThread Running | 1224 ms | 1004 ms | −18 % |
 
-Live-now and Categories contribute roughly equally (~+90 ms and ~+80 ms of measureAndLayout each).
+> **Correction (same day, later batch):** this table compares two *separate* capture batches. A
+> later run that interleaved rails-on/rails-off within one batch (2 reps each, alternating) showed
+> **no measure delta at all** — 574 vs 564 ms. The device baseline drifted between batches (Coil disk
+> cache, shader cache, catalogue warmth), so the +40 % above is not trustworthy. Only compare
+> variants captured **interleaved inside one batch**. What did survive is that the rails add a few
+> janky frames, not that they dominate measure.
+
+Live-now and Categories contribute roughly equally in the first batch (~+90 ms and ~+80 ms each).
 **Draw and RenderThread go DOWN** with them on — they displace poster rails, whose bitmaps are the
 draw cost. So this is purely a composition/measure problem.
 
@@ -876,3 +883,56 @@ would, and that is a rewrite, not a tweak.
 
 `TextAnnotatedStringNode:measure` is 83 → 126 ms across the whole 12 s sweep (~1.1 ms per call): real
 but a minority of the delta. The earlier framing that text measure dominates a rail is overstated.
+
+
+## The focus *sheen* + *ring* interaction — the real draw cost (2026-07-28)
+
+Chasing the above further, the biggest lever turned out to have nothing to do with the rails. In
+`TvFocusable` each focusable carries three draw decorations: the focus **sheen**, the glass
+**border**, and the focus **ring**. Removing them one at a time, and in pairs, over the same
+interleaved protocol (`AndroidOwner:draw`, 2 reps each, controls re-run in the same batch):
+
+| variant | draw | vs control |
+|---|---|---|
+| control (all three) | 204 ms | — |
+| no sheen | 200 ms | −2 % |
+| no border | 210 ms | 0 % |
+| no ring | 207 ms | −1 % |
+| no sheen + no border | 183 ms | −10 % |
+| no ring + no border | 187 ms | −8 % |
+| **no sheen + no ring** | **135 ms** | **−34 %** |
+| all three off | 126 ms | −38 % |
+
+**Sheen and ring are superadditive and the border is irrelevant.** Reproduced across three separate
+batches. No mechanism was identified — and one plausible one was ruled out:
+
+- **It is NOT per-node draw overhead.** Merging fill + sheen + border + ring into a single
+  `drawWithCache`/`onDrawWithContent` node (four draw nodes → one, on every focusable in the app)
+  bought **−4 %**, not the −34 %. That experiment was written, verified pixel-identical on device,
+  measured, and then deleted — do not re-attempt it.
+- It is not the pixels either: the ring only draws on the *one* focused element (alpha 0 elsewhere),
+  so its cost cannot be proportional to what is on screen.
+
+**Shipped:** the sheen is deleted (`focusSheen`, and `TvFocusable`'s `showFocusSheen` opt-out with
+it). The ring stays — it is the focus indicator and non-negotiable. That caps the recoverable win at
+about **−10 %** of draw; the other ~25 % is locked behind the ring.
+
+### Cumulative, original HEAD → shipped
+
+Same protocol, user's real Home layout, 2 reps each:
+
+| | HEAD | shipped |
+|---|---|---|
+| `AndroidOwner:draw` | 316 ms | **194 ms (−39 %)** |
+| frames > 16.7 ms | 17 | **10 (−41 %)** |
+| `AndroidOwner:measureAndLayout` | 577 ms | 501 ms (−13 %) |
+| main-thread Running | 2500 ms | 2358 ms (−6 %) |
+
+The `measureAndLayout` drop is the deleted "Browse by category" rail (removed as a product call, not
+a perf one).
+
+### Harness note
+
+Add a `perfBisect` `var` read from a launch extra (`am start … --ei perfBisect N`) so one release APK
+A/Bs every variant. **Always interleave variants and re-run the control inside the same batch** —
+cross-batch baselines on this device drift by more than most of the effects being measured.

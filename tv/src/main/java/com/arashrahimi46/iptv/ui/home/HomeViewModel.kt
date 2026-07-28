@@ -31,8 +31,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-data class HomeCategorySummary(val name: String, val count: Int)
-
 /** Title for the personalized "Recommended" rail, resolved to a localized string in the UI.
  *  [BecauseYouLike] names the user's dominant liked category; [ForYou] is the mixed-taste label;
  *  [Popular] is the cold-start fallback shown before there's any pin/favorite/watch signal. */
@@ -89,7 +87,6 @@ data class HomeUiState(
     val recommended: List<VodTitle> = emptyList(),
     /** Title for [recommended], resolved to a localized string in the UI (see [RecommendedLabel]). */
     val recommendedLabel: RecommendedLabel = RecommendedLabel.Popular,
-    val categories: List<HomeCategorySummary> = emptyList(),
     /** P1.2: most-recently-updated resume bookmarks, resolved to real titles/posters. Source-
      * independent (same reasoning as Favorites -- vod/episode ids are globally unique), so this
      * isn't gated behind [hasSource]/[isInitializing] like the rest of this state. */
@@ -203,17 +200,13 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         repository.favoriteVodCategoryCounts(sourceId),
                         repository.favoriteChannelCategoryCounts(sourceId),
                     ) { watched, favVod, favLive -> Triple(watched, favVod, favLive) }
-                    // Same three GROUP BY count flows drive both the "Browse by category" rail
-                    // (merged by name across catalogs, as before) and step 6's available-categories
-                    // picker (kept per-kind, since a pin must be a single real source category).
+                    // Three GROUP BY count flows feed step 6's available-categories picker, kept
+                    // per-kind since a pin must resolve to a single real source category.
                     val categoryData = combine(
                         repository.channelCategoryCounts(sourceId),
                         repository.movieCategoryCounts(sourceId),
                         repository.seriesCategoryCounts(sourceId),
                     ) { c, m, s ->
-                        val merged = linkedMapOf<String, Int>()
-                        (c + m + s).forEach { merged[it.name] = (merged[it.name] ?: 0) + it.count }
-                        val summaries = merged.map { (name, count) -> HomeCategorySummary(name, count) }
                         // Dedup by (kind, name): real Xtream catalogs can list the same category
                         // name under more than one provider category id -- step 6's picker keys its
                         // LazyColumn rows by "kind|name" (a pin must resolve to one real category by
@@ -225,13 +218,11 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                         c.forEach { availableByKey[CategoryKind.LIVE to it.name] = (availableByKey[CategoryKind.LIVE to it.name] ?: 0) + it.count }
                         m.forEach { availableByKey[CategoryKind.MOVIE to it.name] = (availableByKey[CategoryKind.MOVIE to it.name] ?: 0) + it.count }
                         s.forEach { availableByKey[CategoryKind.SERIES to it.name] = (availableByKey[CategoryKind.SERIES to it.name] ?: 0) + it.count }
-                        val available = availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
-                        summaries to available
+                        availableByKey.map { (key, count) -> HomeAvailableCategory(key.first, key.second, count) }
                     }
-                    combine(rails, categoryData, taste, settings.parentalFilter, settings.homeLayout) { (channels, movies, series), (cats, available), (watched, favVod, favLive), parental, layout ->
-                        // Parental lock: strip adult items from every pool and adult chips from the
-                        // category row, so the toggle actually hides adult content on Home too. Filter
-                        // the pools BEFORE curating so adult items can't leak into the picked rail.
+                    combine(rails, categoryData, taste, settings.parentalFilter, settings.homeLayout) { (channels, movies, series), available, (watched, favVod, favLive), parental, layout ->
+                        // Parental lock: strip adult items from every pool. Filter the pools BEFORE
+                        // curating so adult items can't leak into the picked rail.
                         val pinnedCategories = layout.filterIsInstance<HomeSection.Category>()
                         val pinned = pinnedCategories.map { it.kind to it.name }.toSet()
                         val availableCategories = available
@@ -258,7 +249,6 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                             series = HomeRailCurator.curateTitles(seriesPool, vodTaste, daySeed),
                             recommended = HomeRailCurator.recommend(moviePool, seriesPool, vodTaste, daySeed),
                             recommendedLabel = recommendedLabelFor(vodTaste),
-                            categories = cats.filterNot { parental.hidden(it.name) },
                             isInitializing = false,
                             sections = layout,
                             availableCategories = availableCategories,

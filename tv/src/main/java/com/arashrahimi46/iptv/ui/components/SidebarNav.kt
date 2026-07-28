@@ -71,8 +71,14 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
@@ -93,6 +99,9 @@ import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 data class SidebarNavItem(val id: String, val labelRes: Int, val icon: ImageVector)
+
+/** Nav-label sizes, largest first: the rail picks the first one at which this locale's labels fit. */
+private val LabelSizeSteps = listOf(14.sp, 13.sp, 12.sp, 11.sp)
 
 /** Default nav items per the app shell spec (app.jsx `navItems`), with placeholder Material icons. */
 val DefaultSidebarNavItems = listOf(
@@ -125,6 +134,9 @@ fun AreSidebarNav(
     /** Nav ids that show a small "!" attention badge on their icon (e.g. "settings" when the
      * active playlist hasn't been refreshed in over two weeks). */
     badgedIds: Set<String> = emptySet(),
+    /** Forces the rail closed even while a row still holds focus. The shell raises this the moment a
+     *  nav item is picked so the collapse tween runs BEFORE the new screen mounts -- see AppShell. */
+    collapseNow: Boolean = false,
     style: SidebarStyle = SidebarStyle.FLOATING,
 ) {
     val colors = AreIptvTheme.colors
@@ -148,16 +160,19 @@ fun AreSidebarNav(
     // and, through it, SidebarNavBody's brand mark, selection lens and all ten rows -- on every one of
     // those steps, purely to recompute a Boolean that did not change. Derived, the rail recomposes
     // exactly twice per visit: once when focus enters and once when it leaves.
-    val expanded by remember { derivedStateOf { focusedItemId != null } }
+    val expandedByFocus by remember { derivedStateOf { focusedItemId != null } }
+    // `collapseNow` is read here rather than folded into the derivedStateOf above so the derivation
+    // keeps its one job (does ANY row hold focus) and stays a pure function of `focusedItemId`. It
+    // flips exactly twice per navigation, so it costs two recompositions, not one per D-pad step.
+    val expanded = expandedByFocus && !collapseNow
     val openWidth = if (floating) spacing.sidebarBoxWidthOpen else spacing.sidebarWidthOpen
     // NOTE: deliberately NOT `by` -- the State is passed down and read at LAYOUT/DRAW time. Reading
     // an animated Dp in composition recomposes this whole composable on every one of the ~13 frames
     // of an expand, which is what made the rail stutter on weak TV SoCs.
     val width = animateDpAsState(
         targetValue = when {
-            floating && expanded -> spacing.sidebarBoxWidthOpen
+            expanded -> openWidth
             floating -> spacing.sidebarBoxWidth
-            expanded -> spacing.sidebarWidthOpen
             else -> spacing.sidebarWidth
         },
         animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
@@ -293,9 +308,13 @@ fun AreSidebarNav(
                     .drawBehind {
                         drawRect(railFill)
                         val edge = 1.dp.toPx()
+                        // The seam marks the boundary with the CONTENT, so it mirrors with the layout:
+                        // the rail sits on the right in an RTL locale and the seam has to sit on its
+                        // left. drawRect takes absolute pixels, so this is not mirrored for us.
+                        val seamX = if (layoutDirection == LayoutDirection.Rtl) 0f else size.width - edge
                         drawRect(
                             brush = railSeam,
-                            topLeft = Offset(size.width - edge, 0f),
+                            topLeft = Offset(seamX, 0f),
                             size = Size(edge, size.height),
                         )
                     },
@@ -347,7 +366,15 @@ fun AreSidebarNav(
  * to the tween at all; at rest (`width` == open width) it clips nothing.
  */
 private fun Modifier.clipToPanel(width: State<Dp>): Modifier = drawWithContent {
-    clipRect(right = width.value.toPx()) { this@drawWithContent.drawContent() }
+    val w = width.value.toPx()
+    // clipRect takes ABSOLUTE pixels, so this has to be mirrored by hand. In an RTL locale the panel
+    // grows leftwards from the right edge, and clipping `right = w` kept the strip the panel is NOT
+    // in -- the whole rail rendered empty in Persian/Arabic apart from a sliver of the lens.
+    if (layoutDirection == LayoutDirection.Rtl) {
+        clipRect(left = size.width - w) { this@drawWithContent.drawContent() }
+    } else {
+        clipRect(right = w) { this@drawWithContent.drawContent() }
+    }
 }
 
 private fun Modifier.widthFrom(width: State<Dp>, inset: Dp = 0.dp): Modifier = layout { measurable, constraints ->
@@ -382,6 +409,33 @@ private fun ColumnScope.SidebarNavBody(
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     val hPad = if (floating) 10.dp else 16.dp
+    // The rail's open width is FIXED -- it is tuned to sit inside the app shell and must not grow for
+    // a long translation. So the TYPE gives instead: the label size is the largest step at which
+    // EVERY label of the current locale still fits the label column. English and the other short
+    // languages keep the full 14sp; only the languages that need it drop a step. One size for all
+    // rows of a language, never per row -- a rail with ragged type reads broken.
+    //
+    // This is the second half of the fix; the first was shortening the translations themselves (the
+    // worst were 17-character Bulgarian/Polish "Телевизия на живо"/"Telewizja na żywo" and
+    // 16-character Persian "راهنمای تلویزیون"). Together they replace the hard mid-word cut that made
+    // German read "Einstellunge". Cost is a handful of text measurements memoised on the resolved
+    // strings and the density, so it re-runs on a locale or font-scale change and never per frame.
+    val measurer = rememberTextMeasurer()
+    val labels = LocalContext.current.resources.let { res -> items.map { res.getString(it.labelRes) } }
+    val baseLabelStyle = AreIptvTheme.typography.label
+    val density = LocalDensity.current
+    // Everything in a row that is not the label: the two Column insets, the icon's centring inset,
+    // the icon, the icon->label gap and the row's trailing pad. Mirrors the Row padding below.
+    val rowChrome = hPad * 2 + (if (floating) 26.dp else 23.dp) + 22.dp + 12.dp + 10.dp
+    val openWidth = if (floating) spacing.sidebarBoxWidthOpen else spacing.sidebarWidthOpen
+    val labelFontSize = remember(labels, baseLabelStyle, density, openWidth, rowChrome) {
+        val room = with(density) { (openWidth - rowChrome).roundToPx() }
+        // Below the last step a nav label stops being readable across a room, so a translation that
+        // still does not fit there ellipsises instead (see the label's overflow) rather than shrink on.
+        LabelSizeSteps.firstOrNull { size ->
+            labels.all { measurer.measure(it, baseLabelStyle.copy(fontSize = size)).size.width <= room }
+        } ?: LabelSizeSteps.last()
+    }
     // Blur-capable tiers keep the true alpha-mask fade (the glass is translucent, so only DstIn can
     // dissolve rows into it). Opaque tiers (older TVs) get the cheap equivalent -- a gradient in the
     // surface fill painted over the edges -- so they never pay for a per-frame offscreen layer.
@@ -394,14 +448,17 @@ private fun ColumnScope.SidebarNavBody(
             // Floating: 32dp start centres the 32dp brand mark in the 96dp collapsed capsule
             // ((96-32)/2); kept static so it doesn't shift as the label fades in on expand.
             // Edge: the original flush-rail inset.
-            .padding(start = if (floating) 32.dp else 26.dp, end = if (floating) 16.dp else 26.dp),
+            .padding(start = if (floating) 32.dp else 26.dp, end = if (floating) 8.dp else 26.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         BrandMark(brand = brand, colors = colors)
         Text(
             text = "$brand iptv",
-            style = AreIptvTheme.typography.h3,
+            // 16sp, not the 21sp h3 role: the rail was narrowed to 168dp and the 32dp mark must stay
+            // centred in the 96dp collapsed capsule, so the wordmark's budget is ~86dp. At h3 it
+            // clipped to "ARE".
+            style = AreIptvTheme.typography.h3.copy(fontSize = 16.sp),
             color = colors.textPrimary,
             maxLines = 1,
             modifier = Modifier.graphicsLayer { alpha = labelAlpha.value },
@@ -478,6 +535,7 @@ private fun ColumnScope.SidebarNavBody(
                         item = item,
                         active = item.id == active,
                         labelAlpha = labelAlpha,
+                        labelFontSize = labelFontSize,
                         badged = item.id in badgedIds,
                         // Start inset centres the 22dp icon in each container's own collapsed width.
                         startInset = if (floating) 26.dp else 23.dp,
@@ -572,6 +630,8 @@ private fun SidebarNavRow(
     item: SidebarNavItem,
     active: Boolean,
     labelAlpha: State<Float>,
+    /** Locale-fitted label size chosen once by [SidebarNavBody]; the same for every row. */
+    labelFontSize: TextUnit,
     badged: Boolean,
     startInset: Dp,
     interactionSource: MutableInteractionSource,
@@ -582,11 +642,10 @@ private fun SidebarNavRow(
 ) {
     val colors = AreIptvTheme.colors
     val label = stringResource(item.labelRes)
-    // Two states rendered on the row itself (design §6b): rest = transparent, focused = glass fill +
-    // lit-edge gradient (on top of the TvFocusable ring). The third -- current screen = accent lens --
-    // is drawn by the sliding pill BEHIND the rows (see SidebarNavBody) so selection glides, so the
-    // row stays transparent when active and only lends its icon/label the lens content colour.
-    val focused by interactionSource.collectIsFocusedAsState()
+    // The row itself renders NO focus state: focus is the TvFocusable ring, and "current screen" is
+    // the accent lens drawn by the sliding pill BEHIND the rows (see SidebarNavBody) so selection
+    // glides. Deliberately no `collectIsFocusedAsState` here -- reading it recomposed every row on
+    // every D-pad step in the rail just to swap a background that is now always transparent.
 
     TvFocusable(
         onClick = onClick,
@@ -599,13 +658,16 @@ private fun SidebarNavRow(
             .focusRequester(focusRequester),
         interactionSource = interactionSource,
         shape = RoundedCornerShape(AreIptvTheme.radius.lg),
-        // rest = transparent, focused = glass fill + lit edge. Active fill/rim come from the sliding
-        // lens, so the row adds nothing when active-and-unfocused. No shadow -- the lens sits on the
-        // flat rail, so a drop shadow reads as heavy; the lens rim marks it.
-        backgroundColor = if (focused && !active) colors.surfaceGlass else Color.Transparent,
+        // Focus is carried by the TvFocusable ring + glow ALONE. The row used to add a glass fill and
+        // a gradient lit edge on top of that, which meant every single D-pad step inside the rail
+        // dragged three stacked treatments -- ring, glow, glass chip -- from one row to the next, two
+        // of them redundant. The ring already reads unmistakably against the sheer rail, and the
+        // active row has its own accent lens, so the glass chip was decoration that only cost draws:
+        // a rounded fill plus a vertical-gradient stroke, both re-rasterized on the row being left
+        // AND the row being entered, on a surface that is already translucent. Removed 2026-07-28.
+        backgroundColor = Color.Transparent,
         backgroundBrush = null,
-        borderBrush = if (focused) glassBorderBrush() else null,
-        showFocusSheen = false,
+        borderBrush = null,
         // The selection lens is drawn behind the rows and does NOT scale, so a 6% focus grow would
         // enlarge the ring past the lens and open a gap around an active+focused row. Full-width rail
         // rows don't need the grow anyway -- the ring + glow carry focus.
@@ -657,12 +719,17 @@ private fun SidebarNavRow(
             }
             Text(
                 text = label,
-                // 14sp rather than the 16sp label role: nav labels are icon-paired and live in a
-                // fixed 212dp rail, so the legibility floor is relaxed here to keep long
-                // translations on one line.
-                style = AreIptvTheme.typography.label.copy(fontSize = 14.sp),
+                // Smaller than the 16sp label role: nav labels are icon-paired and live in a fixed
+                // rail, so the legibility floor is relaxed here to keep long translations on one
+                // line. The exact step is chosen per locale -- see [labelFontSize] in SidebarNavBody.
+                style = AreIptvTheme.typography.label.copy(fontSize = labelFontSize),
                 color = if (active) lensContentColor() else colors.textSecondary,
                 maxLines = 1,
+                // Backstop only: the rail is measured to fit this locale's longest label, so this
+                // fires solely when a translation is long enough to hit the width clamp. Explicit
+                // because `maxLines = 1` alone defaults to Clip -- a hard mid-word cut, which is
+                // what made German read "Einstellunge".
+                overflow = TextOverflow.Ellipsis,
                 // Always in the tree at the rail's open width, revealed by alpha alone. See the
                 // `labelAlpha` note in AreSidebarNav: this replaces a per-row AnimatedVisibility whose
                 // layout animation fought the container's width animation every frame.

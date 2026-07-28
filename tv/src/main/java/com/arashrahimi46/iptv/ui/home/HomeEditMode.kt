@@ -50,7 +50,6 @@ fun homeSectionLabel(section: HomeSection): String = when (section) {
     is HomeSection.Builtin -> when (section.key) {
         BuiltinSection.CONTINUE_WATCHING -> stringResource(R.string.home_section_continue_watching)
         BuiltinSection.LIVE_NOW -> stringResource(R.string.home_section_live_now)
-        BuiltinSection.CATEGORIES -> stringResource(R.string.home_section_categories)
         BuiltinSection.RECOMMENDED -> stringResource(R.string.home_section_recommended)
         BuiltinSection.MOVIES -> stringResource(R.string.home_section_movies)
         BuiltinSection.SERIES -> stringResource(R.string.home_section_series)

@@ -385,7 +385,6 @@ private fun homeSectionKey(section: HomeSection): String = when (section) {
 private fun homeSectionContentType(section: HomeSection): String = when (section) {
     is HomeSection.Builtin -> when (section.key) {
         BuiltinSection.LIVE_NOW -> "channel"
-        BuiltinSection.CATEGORIES -> "category"
         BuiltinSection.CONTINUE_WATCHING, BuiltinSection.RECOMMENDED, BuiltinSection.MOVIES, BuiltinSection.SERIES -> "poster"
     }
     is HomeSection.Category -> if (section.kind == CategoryKind.LIVE) "channel" else "poster"
@@ -417,7 +416,6 @@ private fun sectionHasContent(section: HomeSection, state: HomeUiState, recommen
     is HomeSection.Builtin -> when (section.key) {
         BuiltinSection.CONTINUE_WATCHING -> state.continueWatching.isNotEmpty()
         BuiltinSection.LIVE_NOW -> state.channels.isNotEmpty()
-        BuiltinSection.CATEGORIES -> state.categories.isNotEmpty()
         BuiltinSection.RECOMMENDED -> recommended.isNotEmpty()
         BuiltinSection.MOVIES -> state.movies.isNotEmpty()
         BuiltinSection.SERIES -> state.series.isNotEmpty()
@@ -500,16 +498,6 @@ private fun HomeSectionContent(
                                 modifier = Modifier.focusRequester(focusRequester),
                                 lockCategory = channel.categoryName,
                             )
-                        }
-                    }
-                }
-            }
-            BuiltinSection.CATEGORIES -> {
-                if (state.categories.isNotEmpty()) {
-                    val categories = remember(state.categories) { state.categories.take(20) }
-                    AreRail(title = stringResource(R.string.home_section_categories), seeAll = showSeeAll, onSeeAll = { onSeeAll("live") }, contentFocusRequester = contentFocusRequester) {
-                        items(categories, key = { it.name }) { category ->
-                            AreCategoryCard(name = category.name, onClick = { onCategorySelected(category.name) }, count = category.count, kind = AreCategoryKind.Default, width = 260.dp)
                         }
                     }
                 }

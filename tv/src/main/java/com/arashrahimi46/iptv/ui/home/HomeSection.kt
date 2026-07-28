@@ -1,13 +1,17 @@
 package com.arashrahimi46.iptv.ui.home
 
 /**
- * The six built-in Home rails, in their historical/default display order (Home.jsx). Each maps
- * 1:1 to a hardcoded rail block that used to live directly in [HomeScreen] before Home layout
- * customization: [CONTINUE_WATCHING] -> "Continue Watching", [LIVE_NOW] -> "Live now",
- * [CATEGORIES] -> "Browse by category", [RECOMMENDED] -> "Browse movies & series" (placeholder
- * recommendation rail), [MOVIES] -> "Movies", [SERIES] -> "Series".
+ * The built-in Home rails, in their default display order (Home.jsx): [CONTINUE_WATCHING] ->
+ * "Continue Watching", [LIVE_NOW] -> "Live now", [RECOMMENDED] -> personalized best-of,
+ * [MOVIES] -> "Movies", [SERIES] -> "Series".
+ *
+ * There used to be a `CATEGORIES` ("Browse by category") rail here. It was dropped as redundant --
+ * the Live tab's own channel-group list is the real way to browse categories, and pinning a
+ * specific category to Home is already a first-class feature (see [HomeSection.Category]).
+ * Removing the enum constant needs no migration: [decodeHomeLayout] already skips a line whose
+ * key doesn't resolve, so a persisted layout that still names it simply loses that row.
  */
-enum class BuiltinSection { CONTINUE_WATCHING, LIVE_NOW, CATEGORIES, RECOMMENDED, MOVIES, SERIES }
+enum class BuiltinSection { CONTINUE_WATCHING, LIVE_NOW, RECOMMENDED, MOVIES, SERIES }
 
 /** Which catalog a user-added category rail pulls from -- used by later Home customization steps. */
 enum class CategoryKind { LIVE, MOVIE, SERIES }

@@ -97,7 +97,6 @@ fun AreIconButton(
         borderColor = skin.borderColor,
         borderBrush = skin.borderBrush,
         enabled = !disabled,
-        showFocusSheen = false,
         onLongClick = onLongClick,
     ) { _, _ ->
         Box(modifier = Modifier.size(dims), contentAlignment = Alignment.Center) {

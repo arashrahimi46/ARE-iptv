@@ -65,7 +65,6 @@ fun AreChip(
         shadowElevation = skin.elevation,
         borderColor = skin.borderColor,
         borderBrush = skin.borderBrush,
-        showFocusSheen = false,
     ) { _, _ ->
         Row(
             modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
