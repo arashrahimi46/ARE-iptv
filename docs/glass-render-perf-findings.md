@@ -383,14 +383,32 @@ steady cost, not the lag.
 attribute a cause from one giant frame in one rep — this document has already been burned once by
 reading percentiles off single runs. Sums and p50 reproduced fine; maxima did not.
 
-### What is left
+### Three more rejected (same day, same protocol)
 
-Cold is RenderThread-bound (RT sum ~2× warm), spread across many frames rather than one spike, and
-**independent of content** — it survives removing every image on screen. The remaining candidate is
-first-use **shader / pipeline compilation** on the RenderThread as new shape+shader combinations
-appear, which fits every observation (cold-only, RT-bound, content-independent) and which a baseline
-profile does *not* cover. Untested. The obvious probe is a warm-up pass during the splash screen that
-draws the same surface recipes offscreen.
+| hypothesis | result |
+|---|---|
+| First-use **shader / pipeline compilation** on the RenderThread. Fitted every observation, and a baseline profile does not cover shaders. Probed with a `ShaderWarmup` composable on the splash drawing one tiny instance of each recipe (baked shadow, blurred glow, focus ring, sheen, glass fill, gradient hairline, lens, `RenderEffect` blur) at `alpha = 0.02f` so it genuinely rasterizes rather than being culled | **REJECTED.** Cold 4393→4264, inside the 4164–4628 spread of unrelated builds; the ~140ms spike untouched (137.7→139.7). Warm unchanged (2902→2907). The warm-up was reverted rather than left in as dead code. Caveat: this warms the recipes named above, so it does not *disprove* shader compilation for recipes it missed (text, image shaders, `drawBackdrop`) — but it does kill the cheap version of the idea. |
+| The cold pass is **background startup work** (Room, paging, coroutines) stealing CPU from the RenderThread on a 4-core A55, not rendering at all | **REJECTED.** Idling 90s instead of 25s before the cold window changed nothing: 4264→4360, spike 139.7→140.2. |
+| **`softShadow`'s per-tile bake.** Each newly-visible tile allocates and rasterizes its own ~1MB Gaussian `ImageBitmap` in `drawWithCache` — first-visit only, content-independent, RT-bound | **Not the cause, but the biggest single win found.** Cold 4393→4002 (−9%), p50 25.6→21.2, p90 70.3→59.2, RT sum 1447→1288. The spike survives (137.7→135.6). Note this contradicts the earlier "disable softShadow → no change" entry above, which used the *uniform* sweep; that protocol never exercises first-visit cost. |
+
+### What is left, honestly
+
+Six hypotheses tested, none of them the cause. What survives all six:
+
+- The cold/warm gap is **robust**: ~4300 vs ~2900 over 120 frames across every build, ~12ms/frame.
+- A **~140ms single frame** appears on every cold pass in every variant (135–144ms across seven
+  builds). Immune to removing images, bitmap config, the ambient blur, shaders, idle time and
+  `softShadow`. That consistency means it is structural, not content — and one frame, so it is a
+  small share of the 1400ms gap.
+- Compose is a flat ~3ms/frame tax everywhere (cold sums 421–461). Not the cold penalty.
+
+The two real (if modest) wins found are both **visual trade-offs**, not free: dropping `softShadow`
+(−9% cold) and dropping the ambient artwork wash (warm p90 −30%). Neither has been taken.
+
+Next probe should stop guessing at removals and get **per-frame attribution** for the cold pass
+specifically — a Perfetto trace over the mixed cold sequence, which is what finally named the Home
+p90 spike earlier. Removal A/Bs have now returned six nulls; that is the signal to change instrument,
+exactly as this document concluded once before.
 
 Compose, for the record, is a flat ~3ms/frame tax in every single variant (cold sums 421–445, warm
 406–443). It is not the cold penalty and it is not where the next win is.
