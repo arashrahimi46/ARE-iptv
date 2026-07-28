@@ -85,12 +85,23 @@ fun Modifier.tvFocusable(
         focused -> motion.focusScale
         else -> 1f
     }
-    val scale by animateFloatAsState(
+    // Both focus tweens are held as STATE and read inside the graphicsLayer / focus-ring lambdas
+    // below, never here.
+    //
+    // PERF: this used to be `val scale by animateFloatAsState(...)`. The `by` delegate reads `.value`
+    // during COMPOSITION, so every one of the ~8-15 tween frames recomposed this function and rebuilt
+    // the whole modifier chain -- on BOTH the element losing focus and the one gaining it, for every
+    // single D-pad step. (A previous pass believed it had fixed this by passing the ring alpha as a
+    // lambda, `{ ringAlpha }` -- but `ringAlpha` was already an unwrapped Float by then, so the lambda
+    // captured a value, not a state read, and changed nothing.) Deferring both reads to draw/layer
+    // time is worth 18% of Compose:recompose and 6% of main-thread Running on the XL95, with no
+    // visual change whatsoever.
+    val scaleState = animateFloatAsState(
         targetValue = targetScale,
         animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeEmph),
         label = "tvFocusScale",
     )
-    val ringAlpha by animateFloatAsState(
+    val ringAlphaState = animateFloatAsState(
         targetValue = if (focused) 1f else 0f,
         animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeOut),
         label = "tvFocusRingAlpha",
@@ -99,8 +110,9 @@ fun Modifier.tvFocusable(
     return this
         .then(if (ownsFocusable) Modifier.focusable(interactionSource = interactionSource) else Modifier)
         .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
+            val sc = scaleState.value
+            scaleX = sc
+            scaleY = sc
         }
         // Design system `--focus-glow-tight` was `0 0 0 3px ring, 0 0 22px glow`. The GLOW half is
         // gone: product call -- the blue halo around a focused switch/button read as a smudge, and it
@@ -111,12 +123,11 @@ fun Modifier.tvFocusable(
         // added/removed. Toggling it in/out on every focus change forced a relayout each time -- the
         // stutter felt moving the sidebar selection and travelling focus on Home.
         //
-        // It takes `alpha` as a LAMBDA so the animated value is read at DRAW time. This used to be
-        // `.border(color = glowColor.copy(alpha = ringAlpha))`, which read `ringAlpha` in
-        // COMPOSITION -- so every one of the ~8-15 tween frames rebuilt this whole modifier chain
-        // and minted a fresh Color and border node, on BOTH the leaving and the entering element,
-        // for every single D-pad step. It was the one hole in an otherwise draw-time-only chain.
-        .focusRingCached(glowColor, shape, ringWidth) { ringAlpha }
+        // It takes `alpha` as a LAMBDA that reads the State directly, so the animated value is read
+        // at DRAW time (see the note on the tweens above for why the lambda alone was not enough).
+        // This used to be `.border(color = glowColor.copy(alpha = ringAlpha))`, which additionally
+        // minted a fresh Color and border node per tween frame.
+        .focusRingCached(glowColor, shape, ringWidth) { ringAlphaState.value }
 }
 
 /**

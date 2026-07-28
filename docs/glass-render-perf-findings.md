@@ -936,3 +936,54 @@ a perf one).
 Add a `perfBisect` `var` read from a launch extra (`am start … --ei perfBisect N`) so one release APK
 A/Bs every variant. **Always interleave variants and re-run the control inside the same batch** —
 cross-batch baselines on this device drift by more than most of the effects being measured.
+
+---
+
+## Round 2: the focus tweens were read in composition (2026-07-28)
+
+Same protocol, all variants interleaved inside one batch with the control re-run alongside.
+
+### Shipped: defer the focus-tween reads to draw/layer time
+
+`tvFocusable` held both focus tweens as `val x by animateFloatAsState(...)`. The `by` delegate reads
+`.value` **during composition**, so every one of the ~8-15 tween frames recomposed `tvFocusable` and
+rebuilt the whole modifier chain — on both the element losing focus and the one gaining it, for every
+D-pad step. A previous pass believed it had fixed this by passing the ring alpha as a lambda
+(`{ ringAlpha }`), but by then `ringAlpha` was already an unwrapped `Float`, so the lambda captured a
+value rather than a state read and changed nothing. Holding the `State` and reading `.value` inside
+the `graphicsLayer` / `focusRingCached` lambdas is the actual fix.
+
+| | control | draw-time read | no animation at all |
+|---|---|---|---|
+| `Compose:recompose` | 419 ms | **343 ms (−18 %)** | 353 ms |
+| main-thread Running | 2532 ms | **2372 ms (−6 %)** | 2311 ms |
+| worst frame | 123 ms | **107 ms** | 104 ms |
+| `AndroidOwner:draw` | 216 ms | 214 ms | 180 ms |
+
+Deferring the read captures the **entire** recomposition win with zero visual change. Deleting the
+tweens outright buys a further ~16 % of draw — that is the cost of actually animating two values on
+two elements per step, and it is the only thing still on the table there.
+
+### Where the remaining jank is: composing a rail costs ~90 ms
+
+There is one ~105 ms frame at t≈2170 ms in **every** trace: the first DOWN press, i.e. Home's first
+vertical scroll. Inside it, `AndroidOwner:measureAndLayout` is a single **89 ms** call, and its
+contents are lazy-list *subcomposition happening inside the measure pass*: `Compose:recompose` 31 ms,
+`Compose:applyChanges` 22 ms, `TextAnnotatedStringNode:measure` 13 ms, Coil painter creation 11 ms.
+Composing one new rail (header + LazyRow + ~7 tiles) is ~90 ms of work and Compose does it inside
+measure. The `compose:lazy:prefetch:*` chunks (30-37 ms, top-level) are the framework trying to hide
+this in idle time and failing — no idle window at 60 Hz is 35 ms long.
+
+### More things that are NOT the problem (all measured, all ~0)
+
+- `blur(72.dp)` on the ambient artwork — a full-screen RenderEffect, and removing it did nothing.
+- The ambient artwork wash entirely.
+- Every `softShadow` in the app (`glassSurface` + `TvFocusable`).
+- `tileWash` on every tile.
+- The focus-scale `graphicsLayer` — removing it made things slightly *worse*.
+- The five duplicate `collectIsFocusedAsState`/`collectIsPressedAsState` calls per tile
+  (PosterTile ×1, TvFocusable ×2, tvFocusable ×2 on the same interaction source). Deduplicating them
+  to one pair changed nothing — they are cheap.
+
+Draw is now near its floor (`AndroidOwner:draw` 316 → ~198 ms since the start of this work). The
+remaining lever is **composition cost per tile**, paid in bursts when a rail scrolls in.
