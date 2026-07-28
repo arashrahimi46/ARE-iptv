@@ -784,18 +784,37 @@ posters underneath."* Screenshot-verified on the XL95 over the Home poster rail 
 dims the content enough that the labels stay legible. This was a deliberate product call, not an
 oversight; revisit it if the rail ever sits over brighter content than Home.
 
-## D-pad input gating — 2026-07-28
+## D-pad input pacing — 2026-07-28
 
 Reported as *"when I press arrow up/down multiple times, YouTube executes them one by one, our app
-tries to handle them at once and it glitches."*
+tries to handle them at once and it glitches"*, then again after a first attempt: *"step by step
+still doesn't work everywhere, I scrolled in Home and Settings and it jumped always."*
 
-`MainActivity.dispatchKeyEvent` now accepts at most **one directional key per Choreographer frame**
-and **drops** the rest (`DPAD_CENTER`, `ACTION_UP` and every non-directional key are untouched). The
-accepted rate is therefore whatever the display is actually achieving: at the post-fix p50 of 6.6 ms
-the gate reopens every vsync (~60/s), far above the ~20/s key auto-repeat rate, so **holding a
-direction to fast-scroll the Movies / Series / Live grids is not throttled at all** — verified on
-device with a 12-press burst that moved exactly 12 rows. It only bites when a frame overruns the
-repeat interval, which is exactly when running ahead of the renderer is what produces the glitch.
+**The first attempt gated on the Choreographer frame and was wrong.** It accepted one directional
+key per frame and dropped the rest, which sounds equivalent to pacing and is not: once the sidebar
+frost was removed frames fell to ~6.6 ms, so the gate reopened every vsync and dropped nothing at
+all. Verified on the XL95 — a true back-to-back burst (`input keyevent 20 20 20 20 20 20`, one
+process) still moved all six rails. A frame gate only stops input running ahead of a *janking*
+renderer.
 
-Dropped rather than queued deliberately: queueing preserves every press but lets focus keep
-travelling after the user has stopped, which reads as lag rather than precision.
+Note the measurement trap that hid this: an earlier "verified" burst test used one `adb shell` fork
+per key, so the presses were ~100 ms apart and never exercised the gate. **Send a burst inside a
+single `input keyevent` invocation, or you are testing nothing.**
+
+The real problem is not frames, it is that each focus move *retargets the in-flight bring-into-view
+scroll animation*, so several quick presses collapse into one scroll teleport instead of several
+visible steps. The pacing therefore has to match the scroll animation, which is many frames long.
+
+**Shipped:** `MainActivity.dispatchKeyEvent` accepts one directional key per **120 ms**
+(`DPAD_STEP_MS`, ~8 steps/second) and drops the rest. Verified on device: the same six-press burst
+now advances exactly one step. A single isolated press is never delayed, so ordinary navigation
+gains no latency — only bursts are paced.
+
+Deliberate choices:
+
+- **Steady, not accelerating** on a long hold. A constant rhythm is what lets you stop on the item
+  you want; overshoot was the original complaint.
+- **Dropped, not queued.** Queueing preserves every press but lets focus keep travelling after the
+  user has stopped, which reads as lag rather than precision.
+- `DPAD_CENTER` and `ACTION_UP` are never gated — `TvFocusable` resolves short vs long press from
+  its own down→up span, so swallowing either half would break OK entirely.

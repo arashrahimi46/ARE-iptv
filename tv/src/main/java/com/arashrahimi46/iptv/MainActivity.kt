@@ -3,6 +3,8 @@ package com.arashrahimi46.iptv
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.KeyEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.BackHandler
@@ -105,7 +107,64 @@ import kotlinx.coroutines.withContext
 /** The one allocation of the "Settings needs a refresh" badge set -- see the use site in AppShell. */
 private val SettingsBadge = setOf("settings")
 
+/**
+ * Minimum time between two accepted directional presses -- ~8 steps/second held down.
+ *
+ * Matched to how long a bring-into-view scroll takes to land, so every step is visibly its own step.
+ * Raising it makes long lists tedious; lowering it starts clipping the scroll animation and the
+ * "jump" comes back.
+ */
+private const val DPAD_STEP_MS = 120L
+
+/** The four D-pad directions the gate below paces. OK/Back/media keys are never gated. */
+private val DpadDirections = intArrayOf(
+    KeyEvent.KEYCODE_DPAD_UP,
+    KeyEvent.KEYCODE_DPAD_DOWN,
+    KeyEvent.KEYCODE_DPAD_LEFT,
+    KeyEvent.KEYCODE_DPAD_RIGHT,
+)
+
 class MainActivity : AppCompatActivity() {
+    /** Uptime of the last accepted directional key; 0 until the first one. */
+    private var lastDpadStepMs = 0L
+
+    /**
+     * Paces D-pad navigation to ONE step per [DPAD_STEP_MS], dropping everything in between.
+     *
+     * A TV remote's auto-repeat (~20/s, and bursts much faster) moves focus far more often than a
+     * step can be *seen*. Compose moves focus once per event regardless, and on a scrolling screen
+     * each move retargets the in-flight bring-into-view animation -- so six quick presses on Home
+     * collapse into one big scroll teleport instead of six visible steps. That is the reported
+     * "it jumps" and "it tries to handle them all at once".
+     *
+     * 120ms is the step, not a frame. An earlier version of this gated on the Choreographer frame
+     * instead, which sounds equivalent and is not: once the sidebar frost was removed frames fell to
+     * ~6.6ms, so the gate reopened every vsync and dropped nothing at all -- verified on the XL95,
+     * where a true back-to-back burst of six presses still moved six rails. A frame gate only stops
+     * input running ahead of a *janking* renderer; it cannot pace a step to the scroll animation,
+     * because the animation is many frames long. This is what the pacing has to match.
+     *
+     * The cadence is deliberately STEADY, with no acceleration on a long hold: a constant rhythm is
+     * what lets you stop exactly on the item you want, and overshoot was the original complaint.
+     * A single isolated press is never delayed -- the gate is open whenever 120ms have passed, so
+     * this adds no latency to ordinary navigation, only to bursts.
+     *
+     * Extra presses are DROPPED, not queued: queueing preserves every press but lets focus keep
+     * travelling after the user has stopped, which reads as lag rather than as precision.
+     *
+     * ACTION_UP is never gated (focus travel is driven by ACTION_DOWN) and neither is DPAD_CENTER --
+     * [com.arashrahimi46.iptv.ui.theme.TvFocusable] resolves short vs long press from its own
+     * down->up span, so swallowing either half would break OK entirely.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode in DpadDirections) {
+            val now = SystemClock.uptimeMillis()
+            if (now - lastDpadStepMs < DPAD_STEP_MS) return true
+            lastDpadStepMs = now
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Round 1 multi-language support: AppCompatDelegate.setApplicationLocales() only takes
