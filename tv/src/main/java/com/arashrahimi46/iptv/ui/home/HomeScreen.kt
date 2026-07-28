@@ -211,7 +211,11 @@ fun HomeScreen(
             // Home layout customization (step 1-3): rails are driven by state.sections instead of
             // being hardcoded here. With the default layout this renders byte-for-byte the same
             // rails, in the same order, as the old fixed sequence did.
-            itemsIndexed(visibleSections, key = { _, section -> homeSectionKey(section) }) { index, section ->
+            itemsIndexed(
+                visibleSections,
+                key = { _, section -> homeSectionKey(section) },
+                contentType = { _, section -> homeSectionContentType(section) },
+            ) { index, section ->
                 HomeSectionContent(
                     section = section,
                     contentFocusRequester = contentFocusRequester.takeIf { index == 0 },
@@ -371,6 +375,20 @@ fun HomeScreen(
 private fun homeSectionKey(section: HomeSection): String = when (section) {
     is HomeSection.Builtin -> "b:${section.key}"
     is HomeSection.Category -> "c:${homeCategoryRailKey(section.kind, section.name)}"
+}
+
+/** PERF: which tile shape a rail renders -- poster (2:3), channel (16:9), or category card.
+ * Without this, every rail in the outer LazyColumn shares the default null contentType, so
+ * Compose's slot-reuse pool can't tell a poster rail apart from a channel rail and may try to
+ * reuse a disposed node of the wrong shape when a differently-shaped rail scrolls into view,
+ * forcing a full rebuild instead of a cheap skip. */
+private fun homeSectionContentType(section: HomeSection): String = when (section) {
+    is HomeSection.Builtin -> when (section.key) {
+        BuiltinSection.LIVE_NOW -> "channel"
+        BuiltinSection.CATEGORIES -> "category"
+        BuiltinSection.CONTINUE_WATCHING, BuiltinSection.RECOMMENDED, BuiltinSection.MOVIES, BuiltinSection.SERIES -> "poster"
+    }
+    is HomeSection.Category -> if (section.kind == CategoryKind.LIVE) "channel" else "poster"
 }
 
 /** Animates a child to its new position within its parent whenever layout re-places it (e.g. an

@@ -220,21 +220,38 @@ single mixed-shape row -- individual rails are shape-homogeneous (all-poster or 
 rail scrolling in means Compose composes ~4 previously-never-composed tiles at once, each paying
 several text measures plus an async image painter setup, synchronously inside the animation callback.
 
-**Investigated, matched the trace, but not landed:** the outer `LazyColumn`'s
-`itemsIndexed(visibleSections, key = ...)` has no `contentType`, so poster/channel/category-card rails
-all share the default `null` type and Compose's slot-reuse pool can't tell them apart -- a textbook
-match for "new shape scrolling in costs more than it should." A `contentType` lambda
-(`homeSectionContentType`, keyed off `HomeSection`/`BuiltinSection`) was written and compiled cleanly,
-but the on-device A/B to verify it was inconclusive: repeated (reset -> 3x sweep -> framestats) runs on
-the *same unchanged build* swung from p50 19 ms/p90 20 ms/janky-legacy 2.7% to p50 19 ms/p90 34 ms/
-janky-legacy 33%, and one rep's dump showed 94 attached Views where every other rep showed 9-10 -- the
-scripted D-pad sweep (`adb shell input keyevent`, one process fork per key) isn't reliably landing on
-the same view-hierarchy state rep to rep, so a same-build-vs-same-build delta is already larger than
-any signal the real change could plausibly produce. **Reverted rather than ship an unverified change.**
-The fix is still the best lead in this document and costs nothing to re-attempt; what's missing is a
-measurement harness that doesn't drift (e.g. a single scripted `MonkeyRunner`/UI-Automator session
-instead of N separate `adb shell input` forks, or per-frame Perfetto attribution instead of aggregate
-`framestats`, so a specific frame's cost can be compared trace-to-trace rather than percentile-to-percentile).
+**Fix landed, verified by trace-to-trace diffing (not framestats).** The outer `LazyColumn`'s
+`itemsIndexed(visibleSections, key = ...)` had no `contentType`, so poster/channel/category-card rails
+all shared the default `null` type and Compose's slot-reuse pool couldn't tell them apart -- a textbook
+match for "new shape scrolling in costs more than it should." Added a `contentType` lambda
+(`homeSectionContentType`, keyed off `HomeSection`/`BuiltinSection`).
+
+The first attempt to verify this via `framestats` percentiles (see paragraph below, kept for the
+record) was noise -- aggregate percentiles are sensitive to total-frame-count and view-hierarchy state,
+which drifted rep to rep under a scripted `adb shell input keyevent` sweep. The fix: stop comparing
+aggregates and instead **diff the same named slice across two Perfetto traces**, since
+`trace_processor_shell` was already working tooling. Protocol: force-stop -> fresh launch -> settle ->
+`perfetto -o <file> -t 20s -a <pkg> gfx view res` -> identical scripted sweep -> pull -> sum
+`AndroidOwner:measureAndLayout` (the exact slice this doc's own trace pinned as the cost) on the main
+thread across the whole capture, 2 reps per build:
+
+| | before (2 reps) | after (2 reps) |
+|---|---|---|
+| `AndroidOwner:measureAndLayout` total | 748.4 / 715.2 ms | 658.8 / 650.9 ms |
+| `animation` (Recomposer) callback count | 582 / 595 | 728 / 741 |
+| **cost per callback** | **1.24 ms avg** | **0.89 ms avg** |
+
+Both reps per build cluster tightly (before: 748/715; after: 659/651) -- far less noise than the
+percentile method -- and the per-callback normalization (which controls for "after" fitting more
+callbacks into the same 20 s window) shows a consistent **~28% drop** in average recompose+measure+
+layout cost per animation callback, in both reps. Screenshot-verified pixel-identical (expected: this
+is a slot-reuse metadata hint, not a visual change). Landed.
+
+(For the record, the abandoned first verification attempt: repeated (reset -> 3x sweep -> framestats)
+runs on the *same unchanged build* swung from p50 19 ms/p90 20 ms/janky-legacy 2.7% to p50 19 ms/p90
+34 ms/janky-legacy 33%, and one rep's dump showed 94 attached Views where every other rep showed 9-10 --
+too noisy to read a verdict from. Trace-to-trace diffing of a specific named slice, not aggregate
+`framestats` percentiles, is the correct tool for small deltas on this device.)
 
 ## Earlier draw-time fixes (emulator-era, all still valid)
 
