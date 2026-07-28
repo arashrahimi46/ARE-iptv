@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,6 +25,7 @@ import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import kotlinx.coroutines.delay
 
 /**
  * App shell scaffold (app.jsx): persistent left [AreSidebarNav] rail at the
@@ -71,19 +73,34 @@ fun AreIptvAppShell(
     // while it holds focus, i.e. while the content behind is idle and redrawing nothing, so the extra
     // capture is close to free precisely when it's switched on. Collapsed, the rail sits over the
     // reserved strip with no content behind it, so it has nothing to frost anyway.
-    // NOT gated in time, and this is load-bearing. An earlier pass deferred the capture until the
-    // expand tween settled: it halved frame time, but the blur then visibly popped in a beat after the
-    // motion stopped -- worse than the jank it fixed. (The gate survived in this file for a while after
-    // the comment saying it was gone; if you are about to re-add a `delay` here, read this paragraph
-    // twice.) The per-frame cost came from the frosted node RESIZING -- its `drawBackdrop` re-pulls
-    // this layer whenever it draws, and the pull re-rasterizes the whole page, ~14ms. SidebarNav pins
-    // that node at the open width and animates a clip around it instead, so the page is captured ONCE
-    // per expand and the frost is there from frame 0. Fix the cost at the consumer, not by taking the
-    // frost away -- and do NOT "capture once and freeze" by detaching the modifier either:
-    // `layerBackdrop` discards its recording when detached, which silently turns the frost off
-    // entirely and lands exactly on the no-frost ceiling number. It reads as a perfect win in
-    // framestats and is a visual regression.
     var sidebarExpanded by remember { mutableStateOf(false) }
+    // Gated in TIME as well as in state, and this is MEASURED, not assumed. Capturing the page while
+    // the panel is moving costs ~15ms of sync+RenderThread on every frame of the tween: on the XL95,
+    // removing this gate took the open/close p50 from 36.4ms to 40.0ms a frame, with sync 2.5 -> 9.4ms
+    // and RenderThread 10.8 -> 15.4ms. So the capture waits until the tween has settled -- which is
+    // the state you actually sit and look at.
+    //
+    // An earlier pass removed this gate on the theory that pinning `frostedPanel` at the open width
+    // made the capture free (see commit 3304c50, whose comment claimed the gate was gone while the
+    // gate was in fact still here, untested, directly below it). Pinning is necessary but NOT
+    // sufficient: it stops the frosted NODE from being invalidated, and the page is still re-recorded
+    // underneath it. The numbers above are that theory being tested and failing.
+    //
+    // The blur therefore always arrives late. That is a real visual defect -- it was reported as "it
+    // goes blurry with a glitch when it opens completely" -- and it is fixed at the CONSUMER, by
+    // cross-dissolving the frost in over the plain sheer fill (see AreSidebarNav). That fade is a
+    // graphicsLayer alpha, so it composites an already-captured layer and costs nothing.
+    //
+    // Do NOT instead "capture once and freeze" by detaching the modifier: `layerBackdrop` discards its
+    // recording when detached, which silently turns the frost off entirely and lands exactly on the
+    // no-frost ceiling number. It reads as a perfect win in framestats and is a visual regression.
+    // Verify frost by pixel variance just inside the panel edge, same region collapsed vs expanded
+    // (measured here: mean|gradient| 3.39 -> 0.60, stdev 75.7 -> 29.0).
+    var capturePage by remember { mutableStateOf(false) }
+    val settleMs = AreIptvTheme.motion.durBaseMs.toLong() + 32L
+    LaunchedEffect(sidebarExpanded) {
+        if (sidebarExpanded) { delay(settleMs); capturePage = true } else capturePage = false
+    }
     // The collapsed sidebar footprint the content reserves at the left. The sidebar OVERLAYS content
     // when it expands rather than pushing it: animating the rail's real width in a Row remeasured and
     // relayouted the entire content screen (a full movie grid / guide) on every animation frame, which
@@ -99,13 +116,13 @@ fun AreIptvAppShell(
     CompositionLocalProvider(
         LocalAmbientArtwork provides artwork,
         LocalAppBackdrop provides backdrop,
-        LocalPageBackdrop provides pageBackdrop.takeIf { sidebarExpanded },
+        LocalPageBackdrop provides pageBackdrop.takeIf { capturePage },
     ) {
         Box(modifier = modifier.fillMaxSize()) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .then(if (sidebarExpanded) Modifier.layerBackdrop(pageBackdrop) else Modifier),
+                    .then(if (capturePage) Modifier.layerBackdrop(pageBackdrop) else Modifier),
             ) {
                 AmbientBackdrop(Modifier.layerBackdrop(backdrop))
                 Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {

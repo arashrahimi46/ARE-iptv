@@ -246,7 +246,41 @@ fun AreSidebarNav(
                         )
                     },
             ) {
-                Box(Modifier.width(openWidth).fillMaxHeight().graphicsLayer().frostedPanel())
+                // CROSS-DISSOLVE, not a hard swap. The shell can only publish the page layer once the
+                // expand tween has settled -- capturing it while the panel is moving costs ~15ms/frame
+                // on the XL95 (measured; see docs/glass-render-perf-findings.md), which is most of the
+                // frame budget. So the blur necessarily arrives late, and hard-cutting it in is the
+                // reported "it goes blurry with a glitch once it finishes opening".
+                //
+                // Both alphas below are `graphicsLayer` properties, so this fade is FREE: the backdrop
+                // is captured once when the layer is recorded and then composited at varying alpha.
+                // Animating the blur RADIUS instead would re-run the effect -- and so re-pull the page
+                // -- on every frame of the fade, which is the expensive thing this avoids.
+                val frosted = LocalPageBackdrop.current != null && LocalGlassTier.current.hasBackdropBlur
+                val frostAlpha = animateFloatAsState(
+                    targetValue = if (frosted) 1f else 0f,
+                    animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
+                    label = "sidebarFrost",
+                )
+                // The plain sheer fill, fading OUT as the frost fades in. Both are translucent, so they
+                // have to cross-dissolve -- simply stacking them would double the fill and darken the
+                // panel at rest.
+                Box(
+                    Modifier
+                        .width(openWidth)
+                        .fillMaxHeight()
+                        .graphicsLayer { alpha = 1f - frostAlpha.value }
+                        .background(colors.surfaceGlassSheer),
+                )
+                if (frosted) {
+                    Box(
+                        Modifier
+                            .width(openWidth)
+                            .fillMaxHeight()
+                            .graphicsLayer { alpha = frostAlpha.value }
+                            .frostedPanel(),
+                    )
+                }
             }
             Column(
                 modifier = Modifier

@@ -338,6 +338,57 @@ Each of these produced a confidently wrong answer during this investigation:
   (`ro.hardware.egl = emulation`), so `GpuCompleted` is host round-trip latency, not GPU work.
 - **Debug builds carry non-trivial overhead** — profile release.
 
+## MEASURED: the sidebar open/close on Home, XL95 (2026-07-28)
+
+The section below this one describes the composition-side fixes. This is what they were worth on the
+device, plus the one that backfired. **Protocol:** release build, `speed-profile` AOT-compiled,
+force-stop → launch → 22s settle → `gfxinfo reset` → 8 × (DPAD_LEFT, 1s, DPAD_RIGHT, 1s) →
+`framestats`. 2 reps per build, ~120 valid frames each, `Flags != 0` dropped. Reps cluster tightly.
+
+**Use `AnimationStart` as the start marker.** This document spent its whole life computing
+"composition + measure + layout" as `DrawStart - PerformTraversalsStart` and reading 0.07ms, then
+correctly worked out (via Perfetto) that Compose runs in the Choreographer ANIMATION callback, before
+traversal. `framestats` has had an `AnimationStart` column all along. **`PerformTraversalsStart -
+AnimationStart` is Compose's own recompose+measure+layout, straight out of `dumpsys`** — no Perfetto,
+no `trace_processor_shell`. Parse by column name; API 31 emits a different order than API 36.
+
+| p50 unless noted | before | frost ungated | gated | **gated + cross-fade** |
+|---|---|---|---|---|
+| compose (`AnimationStart`→`PerformTraversals`) | 1.70 | 1.41 | 1.49 | **1.17** |
+| compose, total over run | 724ms | 530ms | 517ms | **411ms** |
+| draw recording | 3.34 | 4.74 | 3.41 | **0.75** |
+| sync / upload | 2.10 | 9.39 | 2.47 | **0.43** |
+| RenderThread | 7.70 | 15.36 | 10.78 | **5.44** |
+| **TOTAL frame** | **36.78** | 40.04 | 36.42 | **20.13** |
+| TOTAL p90 | 58.85 | 54.09 | 47.70 | **40.76** |
+| frames over 16.7ms | 98% | 98% | 98% | **95%** |
+
+**~27 fps → ~50 fps on the interaction the user reported as laggy.**
+
+Three things this run settles:
+
+1. **Removing the frost time-gate is a regression, not a fix.** Commit `3304c50` pinned
+   `frostedPanel` at the open width and its comment declared the gate gone — but the gate was still in
+   the file, so the claim was never tested. Tested: ungating costs +7ms sync and +5ms RenderThread on
+   every frame of the tween. Pinning stops the frosted *node* being invalidated; the page underneath
+   is still re-recorded. **Necessary but not sufficient.**
+2. **The late blur is fixed at the consumer, not by ungating.** Cross-dissolving the frost in over the
+   plain sheer fill turns the pop into a settle. Both alphas are `graphicsLayer` properties, so the
+   fade composites an already-captured layer — and it is *not* merely free, it took total p50 from
+   36.42 to 20.13ms, because the frosted node now only exists while it is actually frosted rather than
+   sitting in the tween's layer tree the whole time. Animating the blur *radius* instead would re-run
+   the effect and re-pull the page every fade frame; don't.
+3. **Clipping the rows to the panel edge is free.** RenderThread 10.78 vs 10.76 with it removed. Keep
+   it; it fixes the ring-leads-the-panel artefact at no cost.
+
+**Verify the frost every time you touch this.** A change that silently kills it lands *exactly* on the
+no-frost ceiling and reads as a perfect win. Cheap check, no eyeballing: screenshot the same region
+collapsed vs expanded and compare high-frequency detail. Frosted here measured mean|horizontal
+gradient| **3.39 → 0.60** and stdev **75.7 → 29.0**.
+
+**Still open:** 95% of frames remain over 16.7ms and p50 is 20.13 against a 16.7 budget. The sidebar
+is no longer the dominant cost; whatever is left is shared with the rest of the app.
+
 ## The sidebar, revisited (2026-07-28) — and a trap in this document's own record
 
 The expand/collapse was re-read after the frost fix landed, on the theory that the remaining "not
