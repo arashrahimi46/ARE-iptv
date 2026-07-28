@@ -10,10 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
@@ -22,10 +25,9 @@ import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
-import com.arashrahimi46.iptv.ui.theme.LocalPageBackdrop
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import kotlinx.coroutines.delay
 
 /**
  * App shell scaffold (app.jsx): persistent left [AreSidebarNav] rail at the
@@ -65,54 +67,29 @@ fun AreIptvAppShell(
     // The blur source (§4). Captures the ambient layer ONLY -- never the page content, which would
     // feed each glass surface back into its own backdrop.
     val backdrop = rememberLayerBackdrop { drawContent() }
-    // The expanded sidebar's frost source: ambient AND page content (see LocalPageBackdrop).
-    val pageBackdrop = rememberLayerBackdrop { drawContent() }
-    // Gated, because `layerBackdrop` draws its subtree TWICE per frame (once to the screen, once into
-    // the layer) -- capturing the whole page unconditionally would double the draw cost of every rail
-    // scroll and focus move, which is exactly what weak TV SoCs feel. The sidebar is only expanded
-    // while it holds focus, i.e. while the content behind is idle and redrawing nothing, so the extra
-    // capture is close to free precisely when it's switched on. Collapsed, the rail sits over the
-    // reserved strip with no content behind it, so it has nothing to frost anyway.
-    var sidebarExpanded by remember { mutableStateOf(false) }
-    // Gated in TIME as well as in state, and this is MEASURED, not assumed. Capturing the page while
-    // the panel is moving costs ~15ms of sync+RenderThread on every frame of the tween: on the XL95,
-    // removing this gate took the open/close p50 from 36.4ms to 40.0ms a frame, with sync 2.5 -> 9.4ms
-    // and RenderThread 10.8 -> 15.4ms. So the capture waits until the tween has settled -- which is
-    // the state you actually sit and look at.
+    // Picking a nav row should hand the screen over: the rail collapses and D-pad focus lands in the
+    // content. Focus is what drives the collapse (the rail is expanded exactly while it holds focus),
+    // so moving focus out is the single action that does both. Previously nothing moved focus, so the
+    // rail stayed open with the row still focused and the newly-opened screen sat there inert until
+    // the user pressed RIGHT.
     //
-    // An earlier pass removed this gate on the theory that pinning `frostedPanel` at the open width
-    // made the capture free (see commit 3304c50, whose comment claimed the gate was gone while the
-    // gate was in fact still here, untested, directly below it). Pinning is necessary but NOT
-    // sufficient: it stops the frosted NODE from being invalidated, and the page is still re-recorded
-    // underneath it. The numbers above are that theory being tested and failing.
-    //
-    // The blur therefore always arrives late. That is a real visual defect -- it was reported as "it
-    // goes blurry with a glitch when it opens completely" -- and it is fixed at the CONSUMER, by
-    // cross-dissolving the frost in over the plain sheer fill (see AreSidebarNav). That fade is a
-    // graphicsLayer alpha, so it composites an already-captured layer and costs nothing.
-    //
-    // Do NOT instead "capture once and freeze" by detaching the modifier: `layerBackdrop` discards its
-    // recording when detached, which silently turns the frost off entirely and lands exactly on the
-    // no-frost ceiling number. It reads as a perfect win in framestats and is a visual regression.
-    // Verify frost by pixel variance just inside the panel edge, same region collapsed vs expanded
-    // (measured here: mean|gradient| 3.39 -> 0.60, stdev 75.7 -> 29.0).
-    var capturePage by remember { mutableStateOf(false) }
-    // Must outlast the ENTIRE width tween. Tried shortening it to `durFast` (150ms) on the theory that
-    // EaseOut is front-loaded enough that the panel is visually settled long before 220ms -- it is, but
-    // it does not matter: the capture still collides with live animation frames and the whole win
-    // evaporated. Measured, same protocol: total p50 20.1 -> 37.3ms, RenderThread 5.4 -> 13.8ms,
-    // sync 0.4 -> 3.5ms. "Looks stationary" is not "is not animating". Do not shorten this.
-    val settleMs = AreIptvTheme.motion.durBaseMs.toLong() + 32L
-    LaunchedEffect(sidebarExpanded) {
-        if (sidebarExpanded) { delay(settleMs); capturePage = true } else capturePage = false
+    // Owned by the shell, not by each screen: entry focus is shell-level behaviour and only Home had
+    // hand-rolled it. Every screen already declares WHERE focus should land via its own
+    // focusProperties{enter} (Settings pins the tab strip, browse screens their first tile), and
+    // requesting focus on this focusGroup honours that -- which is also why this is NOT a
+    // focusRestorer (see the note at the content Box: a restorer hijacked plain RIGHT-arrow entry
+    // with a nearest-neighbour search). This fires only on an explicit nav selection.
+    val contentFocus = remember { FocusRequester() }
+    // Counter, not a Boolean: re-selecting the tab you are already on must still hand focus over, and
+    // a Boolean would not change state on the second press.
+    var contentFocusRequests by remember { mutableIntStateOf(0) }
+    LaunchedEffect(contentFocusRequests) {
+        // requestFocusWhenReady retries across the tab swap AND re-asserts after a settle delay --
+        // needed because the sidebar row the user just clicked wins focus back for a few frames as
+        // the transition completes.
+        if (contentFocusRequests > 0) contentFocus.requestFocusWhenReady()
     }
-    // The collapsed sidebar footprint the content reserves at the left. The sidebar OVERLAYS content
-    // when it expands rather than pushing it: animating the rail's real width in a Row remeasured and
-    // relayouted the entire content screen (a full movie grid / guide) on every animation frame, which
-    // is the single biggest source of expand/collapse jank on weaker TV SoCs. Reserving only the
-    // collapsed width and floating the expanding panel on top costs the content zero per-frame layout.
-    // FLOATING already hovers inset off the edge, so overlaying is visually identical; EDGE's expanded
-    // rail simply spills over the content's left strip while the sidebar holds focus.
+
     val spacing = AreIptvTheme.spacing
     val reservedWidth = when (sidebarStyle) {
         SidebarStyle.FLOATING -> spacing.sidebarBoxWidth + spacing.sidebarInset * 2
@@ -121,14 +98,9 @@ fun AreIptvAppShell(
     CompositionLocalProvider(
         LocalAmbientArtwork provides artwork,
         LocalAppBackdrop provides backdrop,
-        LocalPageBackdrop provides pageBackdrop.takeIf { capturePage },
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .then(if (capturePage) Modifier.layerBackdrop(pageBackdrop) else Modifier),
-            ) {
+            Box(Modifier.fillMaxSize()) {
                 AmbientBackdrop(Modifier.layerBackdrop(backdrop))
                 Column(modifier = Modifier.fillMaxSize().padding(start = reservedWidth)) {
                     topBar()
@@ -146,6 +118,7 @@ fun AreIptvAppShell(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
+                            .focusRequester(contentFocus)
                             .focusGroup(),
                     ) {
                         content()
@@ -158,10 +131,12 @@ fun AreIptvAppShell(
             // branch handles the inset (FLOATING) or flush edge (EDGE).
             AreSidebarNav(
                 active = activeNav,
-                onSelect = onNavSelect,
+                onSelect = { id ->
+                    onNavSelect(id)
+                    contentFocusRequests++
+                },
                 badgedIds = badgedNavIds,
                 style = sidebarStyle,
-                onExpandedChange = { sidebarExpanded = it },
                 modifier = Modifier.align(Alignment.TopStart),
             )
         }
