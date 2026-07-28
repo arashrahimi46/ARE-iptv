@@ -68,8 +68,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -115,7 +115,6 @@ import com.arashrahimi46.iptv.ui.player.SUBTITLE_LANGUAGES
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import kotlinx.coroutines.launch
 
 /**
  * Per-tab content panes for [SettingsScreen]. Each pane is a self-contained LazyColumn that reads
@@ -160,6 +159,30 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
     var showLanguagePicker by remember { mutableStateOf(false) }
     var pendingLanguage by remember { mutableStateOf<String?>(null) }
     var confirm by remember { mutableStateOf<GeneralConfirm?>(null) }
+    // The confirmed locale, applied from OUTSIDE the confirm dialog's composition -- see the
+    // LaunchedEffect below for why that separation is the whole fix.
+    var applyLanguage by remember { mutableStateOf<String?>(null) }
+
+    // Applying a locale calls Activity.recreate() (AppCompatDelegate's pre-API-33 path). Doing that
+    // while the confirm Dialog is still on screen tears the dialog's window down mid-relaunch, and
+    // the recreated Activity then never gains a focused window: WindowManager logs "Input channel
+    // object ... was disposed without first being removed with the input manager", sits in "no window
+    // has focus but ActivityRecord may eventually add a window", and force-finishes the app ~30s
+    // later with "ANR ... Application does not have a focused window". The UI is drawn and looks fine
+    // the whole time, which is why this reads as a random crash rather than an ANR -- the app dies on
+    // the NEXT key press, not on the language change. Reproduced on the Sony XL95 (API 31).
+    //
+    // So: the confirm button only records the choice and closes the dialog; this effect lives in the
+    // pane body (it outlives the dialog) and waits for the dialog window to actually be removed
+    // before touching the locale. Two frames, not one -- dismissal runs through composition apply and
+    // then the window teardown, and one frame lands too early.
+    LaunchedEffect(applyLanguage) {
+        val tag = applyLanguage ?: return@LaunchedEffect
+        viewModel.setLanguageTag(tag)
+        withFrameNanos { }
+        withFrameNanos { }
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+    }
 
     val refreshingText = stringResource(R.string.settings_refreshing)
     val neverRefreshedText = stringResource(R.string.settings_never_refreshed)
@@ -344,7 +367,6 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
     val targetLanguage = pendingLanguage
     if (targetLanguage != null) {
         val context = LocalContext.current
-        val scope = rememberCoroutineScope()
         val copy = remember(targetLanguage) { localizedConfirmCopy(context, targetLanguage) }
         Dialog(onDismissRequest = { pendingLanguage = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             AreDialog(
@@ -355,11 +377,10 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                     AreButton(
                         copy.confirm,
                         onClick = {
-                            scope.launch {
-                                viewModel.setLanguageTag(targetLanguage)
-                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(targetLanguage))
-                                pendingLanguage = null
-                            }
+                            // Close the dialog FIRST; the effect above applies the locale once its
+                            // window is gone.
+                            pendingLanguage = null
+                            applyLanguage = targetLanguage
                         },
                         variant = AreButtonVariant.Primary,
                     )
