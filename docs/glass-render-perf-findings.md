@@ -580,3 +580,69 @@ applied for uniformity, and **Settings has still never been Perfetto-traced.** D
   ART at `status=verify` and never apply it; Play installs do. Forcing `speed-profile` took cold
   start from ~118 ms to ~103 ms on the emulator and made no difference to steady-state scroll, which
   is expected — a baseline profile buys cold start, not sustained scrolling.
+
+---
+
+## Home cold-scroll: the attribution (2026-07-28, Perfetto, XL95)
+
+Six removal A/Bs returned six nulls. Switching instrument — a real Perfetto trace over the mixed
+cold sequence, then the identical sequence again warm — named it in one pass. **Two reps, and the
+numbers are identical to the millisecond.**
+
+Protocol: force-stop → launch → settle 25 s → `perfetto -d -t 11s -b 96mb -a com.arashrahimi46.iptv
+gfx view sched freq am wm` → 16-key mixed sweep → repeat warm. The whole sweep runs in **one**
+`adb shell` loop, not one fork per key — the per-key fork was the documented source of rep-to-rep
+variance, and it also stretched the sweep past the trace window.
+
+### What it is
+
+| slice | cold r1 / r2 | warm r1 / r2 |
+|---|---|---|
+| **`flush layers`** | **48 × / 188 ms** | **8 × / 2 ms** |
+| `shader_compile` | 23 × / 42 ms | absent |
+| `Record View#draw()` | 637 / 632 ms | 471 / 469 ms |
+| `AndroidOwner:measureAndLayout` | 622 / 638 ms | 579 / 544 ms |
+| `Compose:recompose` | 413 / 413 ms | 444 / 446 ms |
+
+Thread states (`sched`), the ground truth for work vs waiting:
+
+| | cold r1 / r2 | warm r1 / r2 | delta |
+|---|---|---|---|
+| main thread Running | 2734 / 2696 ms | 2529 / 2491 ms | **+205 ms** |
+| RenderThread Running | 2098 / 2099 ms | 1799 / 1729 ms | **+335 ms** |
+| main thread R (CPU starved) | 143 / 220 ms | 193 / 155 ms | noise |
+
+Frames: cold 322 frames, **23 over 16.7 ms**; warm 331 frames, **5 over 16.7 ms**.
+
+**The RenderThread is the bigger half of the cold penalty, and `flush layers` is ~60% of it.**
+Cold draws tile- and rail-sized offscreen layers — `drawLayer [graphicsLayer] 416×704` ×35,
+`416×1000` ×10, `192×1000` ×7 — while warm draws **only** the 1920×1080 root and nothing else.
+*Compositing* those layers is trivial (16 ms total); *rasterizing* them the first time is the 188 ms.
+
+### Why every removal A/B failed
+
+The cost is the layer allocation + first rasterization, not what is painted inside it. Removing
+`softShadow`, images, or the artwork blur reduces the *content* of a layer that still has to be
+allocated and rasterized — which is exactly why `softShadow` gave a real but modest −9 % and
+everything else gave nothing.
+
+### Things now definitively ruled out
+
+- **CPU governor / clock ramp.** Cold avg 1571 MHz, warm 1549 MHz — cold ran *faster*. All four
+  A55 cores lockstep. This was a genuinely plausible "first pass slow, follow-ups fast" story and
+  it is dead.
+- **Composition.** `Compose:recompose` is 413 ms cold vs 444 ms warm — warm does *more*. Lazy
+  prefetch and `decodeBitmap` are also both higher warm. Composition is not the cold penalty, which
+  is why `contentType` (a real win, `a565ac6`) did nothing for it.
+- **CPU contention.** Runnable-but-not-running time is 143–220 ms in every condition.
+- **Shader compilation** is real but small: 42 ms, ~3 % of the gap. Consistent with the splash
+  `ShaderWarmup` test measuring nothing.
+
+### Next
+
+Find what promotes entering tiles to offscreen layers. `TvFocusable` puts
+`graphicsLayer { scaleX; scaleY }` on **every** focusable, i.e. every tile — the prime suspect. Test
+`CompositingStrategy.ModulateAlpha` there (alpha is always 1, so it is visually a no-op) and re-run
+this exact protocol. **Verify against `flush layers` count/total, not against wall-clock percentiles**
+— that counter reproduced at 48/188 and 8/2 across independent reps and is the cleanest signal in
+this document.
