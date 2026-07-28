@@ -57,6 +57,13 @@ private val GROUP_ORDER = listOf(
     RecordingGroup.UNAVAILABLE,
 )
 
+// PERF: the two shapes this list composes -- a bare group heading and a full RecordingCard. Without
+// them both share the default null contentType, so Compose's slot-reuse pool can't tell a heading
+// apart from a card and may try to reuse a disposed node of the wrong shape when the next group
+// scrolls into view, forcing a full rebuild instead of a cheap skip.
+private const val RecordingsItemHeader = "header"
+private const val RecordingsItemCard = "card"
+
 /**
  * Recordings tab (Live TV Recording V1, design §7): DB-driven, grouped by state. Completed/interrupted
  * recordings play (partials as `≈`) via the existing player path; unavailable/missing are greyed with
@@ -75,6 +82,11 @@ fun RecordingsScreen(
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
     var toDelete by remember { mutableStateOf<Recording?>(null) }
+
+    // Grouped once per `rows` change, not inside the LazyListScope builder -- that lambda re-runs
+    // whenever the item provider is rebuilt, and re-scanning the whole list per group there is work
+    // the layout pass pays for repeatedly. Ordered by GROUP_ORDER, which is the render order.
+    val grouped = remember(rows) { GROUP_ORDER.map { group -> group to rows.filter { it.group == group } } }
 
     // Initial D-pad focus, matching every other tab: the shell leaves focus on the sidebar, so the
     // list reads as dead until the user blindly presses RIGHT. Lands on the first card's primary
@@ -104,10 +116,9 @@ fun RecordingsScreen(
             contentPadding = PaddingValues(horizontal = spacing.safeX, vertical = spacing.sp4),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            GROUP_ORDER.forEach { group ->
-                val groupRows = rows.filter { it.group == group }
+            grouped.forEach { (group, groupRows) ->
                 if (groupRows.isNotEmpty()) {
-                    item(key = "header-$group") {
+                    item(key = "header-$group", contentType = RecordingsItemHeader) {
                         Text(
                             text = groupTitle(group),
                             style = AreIptvTheme.typography.h3,
@@ -115,7 +126,7 @@ fun RecordingsScreen(
                             modifier = Modifier.padding(top = 10.dp, bottom = 2.dp),
                         )
                     }
-                    items(groupRows, key = { it.recording.id }) { row ->
+                    items(groupRows, key = { it.recording.id }, contentType = { RecordingsItemCard }) { row ->
                         RecordingCard(
                             row = row,
                             onPlay = { onPlay(row.recording.id) },

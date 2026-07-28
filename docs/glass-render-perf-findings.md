@@ -338,6 +338,97 @@ Each of these produced a confidently wrong answer during this investigation:
   (`ro.hardware.egl = emulation`), so `GpuCompleted` is host round-trip latency, not GPU work.
 - **Debug builds carry non-trivial overhead** — profile release.
 
+## The sidebar, revisited (2026-07-28) — and a trap in this document's own record
+
+The expand/collapse was re-read after the frost fix landed, on the theory that the remaining "not
+buttery" feel was composition-side. It was, and none of it is visible to `framestats` for the reason
+the Home section above establishes.
+
+**The gate that was documented as removed but never was.** Commit `3304c50` pinned `frostedPanel` at
+the open width and added a comment to `AppShell.kt` reading "NOT gated in time … the frost is there
+from frame 0". It only added the comment. The `capturePage` `LaunchedEffect(delay(durBaseMs + 32))`
+stayed in the file directly underneath, so the blur went on popping in a beat after the motion
+stopped — the exact defect that commit was written to remove — for as long as both paragraphs sat
+there contradicting each other. **A comment is not a diff.** When this document says something was
+fixed, check the code.
+
+**`staticCompositionLocalOf` for a value that changes.** `LocalPageBackdrop` was static. Static
+locals are not tracked per-reader, so changing one recomposes the provider's entire content subtree
+with **no skipping** — and this is the only local in the app whose value changes at runtime: it flips
+on every expand and again on every collapse. Every rail and every tile in the app was recomposing on
+frame 0 of the width tween. `compositionLocalOf` reaches the one node that reads it (`frostedPanel`).
+`LocalAppBackdrop` and `LocalAmbientArtwork` are correctly static — their *values* never change (the
+artwork one provides a stable `MutableState`), which is the condition that makes static right.
+
+**`expanded` was a direct read of `focusedItemId`.** That id changes on every D-pad step *inside* the
+rail, so each step recomposed the nav, the brand mark, the selection lens and all ten rows — to
+recompute a `Boolean` that had not changed. `derivedStateOf` makes it twice per visit instead of once
+per step. Worth checking anywhere a coarse flag is derived from a fine-grained state.
+
+**The focus ring led the panel.** The nav content is pinned at the open width so an animation frame
+never remeasures a row — but that also meant a focused row's ring, fill and label were drawn at full
+width from frame 0 while the panel behind them was still collapsed. For the ~13 frames of an expand
+the ring floated *outside* the panel, over the page content. Fixed with a draw-time `clipRect` at the
+animating width (`clipToPanel`), which wipes the rows in with the advancing edge and adds no layout
+work. **Do not fix this by making the rows track the panel width at layout time** — that reintroduces
+a per-frame remeasure of ten rows, each of which re-measures its label, which is the expensive thing
+the pinning exists to avoid.
+
+### The same composition-scope bug, found in three more places
+
+`animateFloatAsState` declared with `by` and then *used in composition scope* turns a draw-time
+property into a per-frame recomposition of everything around it. `Focus.kt` and `SidebarNav.kt` model
+the fix (keep the `State`, read it inside the `graphicsLayer`/`offset`/`layout` lambda). Three sites
+did not:
+
+| site | what recomposed per frame | when it fired |
+|---|---|---|
+| `LiveMiniPlayer` — three tweens resolved to `Float` before the lambdas | `AndroidView`/PlayerView factory block, badge, title | its FADE tween runs on *losing* focus, i.e. while browsing Home |
+| `AreSegmentedControl` — `animW` in an `if` guard and `Modifier.width(Dp)` | track, lens, and the whole `forEachIndexed` (N × `TvFocusable` + `Text`) | every tab switch, four call sites, long spring tail |
+| `RecordingIndicator` — an **infinite** transition read in composition | the row, both labels, their `stringResource`s, `formatRecElapsed` | continuously, for as long as a recording runs |
+
+The segmented control's guard is the subtle one: `if (animW > 0f)` looks like a null check but is a
+composition read of an animating value. `if (target != null)` asks the same "is geometry known yet"
+question against the *measured* bounds, which only change on layout.
+
+## Eager lists: three screens that composed everything at once (2026-07-28)
+
+The Home fix (`contentType`, `a565ac6`) made a *virtualized* list reuse slots better. These three were
+not virtualized at all along the axis that mattered.
+
+**The Guide's programme lanes.** The rows went lazy in P0.2, but each visible row then composed EVERY
+cell of the whole ~6h window regardless of horizontal scroll position — 12-20 cells × 2-3 `Text`s
+each × ~6 visible rows, so a few hundred text measures per Guide entry.
+
+It cannot be a `LazyRow`. Every lane and the timeline header share **one pixel `ScrollState`**, which
+is what keeps the grid aligned by *time*; a `LazyRow` scrolls by item index, and lanes have different
+programme boundaries, so rows would drift out of lockstep. So the lane keeps the shared scroll and
+culls by hand: `rememberGuideLane` precomputes each cell's x and width (exactly the values
+`spacedBy(6.dp)` produced, so it is pixel-identical), a full-width spacer holds the scroll extent, and
+a `derivedStateOf` picks the visible index range.
+
+Two things there are load-bearing and easy to get wrong:
+- **The buffer is one full viewport on each side, not a comfort margin.** D-pad focus can only travel
+  to a *composed* focusable. Too small a buffer and the guide dead-ends at the edge of the culled
+  region — reaching an unbuilt cell would take one keypress crossing the whole visible width.
+- **`key(slot.startMs)` around each cell.** A plain loop memoizes by POSITION, so as the range slides,
+  slot 0 becomes a different programme and Compose rebuilds each cell's remembered state *under the
+  focused node* — dropping D-pad focus mid-scroll. Same guarantee `items(key = …)` gives a lazy list.
+
+**Search composed up to ~90 glass tiles at once** — two eager `FlowRow`s over 30 channels + 60 titles,
+each with its own image, shadow bake and several text measures. Migrated to the chunked-rows
+`LazyColumn` pattern Favorites and Browse already use (`BoxWithConstraints` + `chunked()` reproduces
+FlowRow's ragged left-aligned packing; a `LazyVerticalGrid` would spread the leftover width and widen
+the gaps). Consequence, matching those screens: the query field and scope chips are now pinned and
+only results scroll, and the route moved from `ScrollableTab` to `FullSizeTab` — a lazy layout cannot
+nest in a same-axis unbounded scroll.
+
+**Settings and Recordings got `contentType`.** Recordings is the real one (bare heading vs. glass card
+are genuinely different shapes), and its per-group `rows.filter {}` moved out of the `LazyListScope`
+builder, where it re-scanned the whole list once per group every time the item provider was rebuilt.
+Settings is honestly marginal — four of its six panes have a single item, so the hint is inert there;
+applied for uniformity, and **Settings has still never been Perfetto-traced.** Do not cite it as a win.
+
 ## Locked decisions
 
 | decision | status | why |

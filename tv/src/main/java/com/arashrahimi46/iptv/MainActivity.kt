@@ -678,7 +678,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
                 arguments = listOf(navArgument("category") { type = NavType.StringType; nullable = true; defaultValue = null }),
             ) { entry ->
                 val category = entry.arguments?.getString("category")
-                ScrollableTab {
+                // Search owns a real LazyColumn now (see SearchResults there), so it needs a
+                // bounded height -- FullSizeTab, not ScrollableTab. Under the old verticalScroll
+                // every result tile stayed composed and in the display list at once.
+                FullSizeTab {
                     SearchScreen(
                         onChannelSelected = { channel -> rootNav.navigate("player/${channel.id}") },
                         onTitleSelected = { title -> openDetail(if (title.isSeries) "series" else "movie", title.id) },

@@ -127,6 +127,16 @@ import kotlinx.coroutines.launch
 // keeps the last row clear of the screen edge.
 private val PaneBottomPad = PaddingValues(top = 8.dp, bottom = 40.dp)
 
+// PERF: which shape a pane item composes -- a stack of SettingsRows, a section carrying a text-field
+// form block, or a read-only provider info panel. Without these, every item in a pane's LazyColumn
+// shares the default null contentType, so Compose's slot-reuse pool can't tell them apart and may
+// try to reuse a disposed node of the wrong shape when a differently-shaped section scrolls into
+// view, forcing a full rebuild instead of a cheap skip. Reuse is per-lazy-layout, so these only
+// need to be distinct within one pane -- the same three constants serve every pane.
+private const val PaneItemRows = "rows"
+private const val PaneItemForm = "form"
+private const val PaneItemPanel = "panel"
+
 // =============================================================================================
 // GENERAL — playlists, provider, language, metadata, catalog reminder, storage & reset
 // =============================================================================================
@@ -157,7 +167,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
     val staleSuffix = stringResource(R.string.settings_refresh_stale)
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "playlists", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_playlists)) {
                 val refreshing = refreshState is RefreshState.Refreshing
                 val stale = activeSource?.lastRefreshedAtMs.isStale(staleWindowDays)
@@ -198,7 +208,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
             }
         }
 
-        item {
+        item(key = "preferences", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_preferences)) {
                 SettingsRow(
                     icon = Icons.Filled.Home,
@@ -238,21 +248,21 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
 
         // Provider account panel -- Xtream/Stalker carry account metadata; M3U playlists don't.
         if (activeSource?.type == SourceType.XTREAM) {
-            item {
+            item(key = "provider-xtream", contentType = PaneItemPanel) {
                 SettingsSection(title = stringResource(R.string.settings_section_provider)) {
                     ProviderPanel(info = providerInfo)
                 }
             }
         }
         if (activeSource?.type == SourceType.STALKER) {
-            item {
+            item(key = "provider-stalker", contentType = PaneItemPanel) {
                 SettingsSection(title = stringResource(R.string.settings_section_provider)) {
                     StalkerProviderPanel(info = stalkerInfo)
                 }
             }
         }
 
-        item {
+        item(key = "language", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_language)) {
                 SettingsRow(
                     icon = Icons.Filled.Language,
@@ -268,13 +278,13 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
             }
         }
 
-        item {
+        item(key = "metadata", contentType = PaneItemForm) {
             SettingsSection(title = stringResource(R.string.settings_section_metadata)) {
                 OmdbBlock(omdbKey, omdbValidation, omdbKeyInput, { omdbKeyInput = it }, { guide = IntegrationGuide.Omdb }, viewModel)
             }
         }
 
-        item {
+        item(key = "storage", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_storage)) {
                 SettingsRow(
                     icon = Icons.Filled.Image,
@@ -479,7 +489,7 @@ internal fun DisplayPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
     val is24HourClock by viewModel.is24HourClock.collectAsState()
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "appearance", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
                 SettingsRow(
                     icon = Icons.Filled.DarkMode,
@@ -650,7 +660,7 @@ internal fun PlaybackPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
     var showHudEditor by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "playback", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_playback)) {
                 SettingsRow(
                     icon = Icons.Filled.HighQuality,
@@ -786,7 +796,7 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
     var showSubtitlePicker by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "subtitles", contentType = PaneItemForm) {
             SettingsSection(title = stringResource(R.string.settings_section_subtitles)) {
                 SettingsRow(
                     icon = Icons.Filled.ClosedCaption,
@@ -910,7 +920,7 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
             }
         }
 
-        item {
+        item(key = "subtitle-appearance", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_subtitle_appearance)) {
                 SettingsRow(
                     icon = Icons.Filled.FormatSize,
@@ -1012,7 +1022,7 @@ internal fun ParentalPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
     var keywordInput by remember { mutableStateOf("") }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "parental", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_parental)) {
                 SettingsRow(
                     icon = Icons.Filled.Lock,
@@ -1051,7 +1061,7 @@ internal fun ParentalPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
             }
         }
 
-        item {
+        item(key = "content-locking", contentType = PaneItemForm) {
             SettingsSection(title = stringResource(R.string.settings_section_content_locking)) {
                 SettingsRow(
                     icon = Icons.Filled.Schedule,
@@ -1193,7 +1203,7 @@ internal fun AboutPane(viewModel: SettingsViewModel, modifier: Modifier = Modifi
     var showSupport by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = modifier.fillMaxWidth(), contentPadding = PaneBottomPad) {
-        item {
+        item(key = "about", contentType = PaneItemRows) {
             SettingsSection(title = stringResource(R.string.settings_section_about)) {
                 SettingsRow(icon = Icons.Filled.Info, title = stringResource(R.string.settings_version_title), desc = stringResource(R.string.settings_version_value, BuildConfig.VERSION_NAME)) {
                     AreButton(

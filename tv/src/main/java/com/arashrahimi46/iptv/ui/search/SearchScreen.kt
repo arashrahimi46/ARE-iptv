@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -87,7 +90,10 @@ fun SearchScreen(
     // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner field+
     // results Row alone (round 1) and on this outer root Column (round 2) were real fixes
     // but didn't touch the actual root cause -- see the BoxWithConstraints comment below.
-    Column(modifier = modifier.fillMaxWidth().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp2, bottom = spacing.sp6)) {
+    // fillMaxSize (not just fillMaxWidth) so the results list below inherits a real bounded
+    // height for its LazyColumn -- this screen scrolls its own results now, see MainActivity's
+    // FullSizeTab.
+    Column(modifier = modifier.fillMaxSize().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp2, bottom = spacing.sp6)) {
 
         // Same class as the QA MEDIUM text-wrap defect elsewhere in this screen: neither
         // column can safely shrink (the field column's fixed width and the categories
@@ -104,9 +110,9 @@ fun SearchScreen(
         val fieldColumnWidth = 420.dp
         val columnGap = 32.dp
         val minResultsWidth = 320.dp
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             if (maxWidth < fieldColumnWidth + columnGap + minResultsWidth) {
-                Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                     SearchFieldColumn(
                         modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
@@ -114,7 +120,7 @@ fun SearchScreen(
                         fieldFocus = fieldFocus,
                     )
                     SearchResultsColumn(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().weight(1f),
                         state = state,
                         colors = colors,
                         favoriteChannelIds = favoriteChannelIds,
@@ -125,7 +131,7 @@ fun SearchScreen(
                     )
                 }
             } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(columnGap)) {
+                Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(columnGap)) {
                     SearchFieldColumn(
                         modifier = Modifier.width(fieldColumnWidth),
                         query = state.query,
@@ -133,7 +139,7 @@ fun SearchScreen(
                         fieldFocus = fieldFocus,
                     )
                     SearchResultsColumn(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
                         state = state,
                         colors = colors,
                         favoriteChannelIds = favoriteChannelIds,
@@ -194,8 +200,8 @@ private fun SearchResultsColumn(
         // omitted, an accepted v1 scope cut (see product-lead ruling). QA MEDIUM defect:
         // a plain Row here doesn't reflow, so when the sidebar auto-expands (104->280dp)
         // and steals width from this column, the trailing chips get pushed past the
-        // physical screen edge and clip almost entirely out of view -- FlowRow (already
-        // used for the results below) wraps them to a second line instead.
+        // physical screen edge and clip almost entirely out of view -- FlowRow wraps them
+        // to a second line instead.
         AreSegmentedControl(
             options = listOf(SearchScope.All, SearchScope.LiveTv, SearchScope.Movies, SearchScope.Series),
             selected = state.scope,
@@ -234,46 +240,126 @@ private fun SearchResultsColumn(
             val label = state.categoryFilter ?: state.query
             Text(text = stringResource(R.string.search_no_results, label), style = AreIptvTheme.typography.body, color = colors.textSecondary)
         } else {
-            if (state.channelResults.isNotEmpty()) {
-                Text(text = stringResource(R.string.search_section_live), style = AreIptvTheme.typography.h3, color = colors.textSecondary)
-                Box(Modifier.padding(top = 12.dp, bottom = 22.dp)) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                        state.channelResults.forEach { channel ->
-                            val focusRequester = rememberPlaybackFocusRequester(lastChannelId, channel.id) { lastChannelId = null }
-                            AreChannelTile(
-                                channel = channel.name,
-                                onClick = { lastChannelId = channel.id; onChannelSelected(channel) },
-                                number = channel.number,
-                                category = channel.categoryName,
-                                isRadio = channel.isRadio,
-                                logoUrl = channel.logoUrl,
-                                isFavorite = channel.id in favoriteChannelIds,
-                                onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
-                                modifier = Modifier.focusRequester(focusRequester),
-                                lockCategory = channel.categoryName,
-                            )
-                        }
+            SearchResults(
+                modifier = Modifier.weight(1f),
+                channels = state.channelResults,
+                titles = state.titleResults,
+                colors = colors,
+                channelTile = { channel ->
+                    val focusRequester = rememberPlaybackFocusRequester(lastChannelId, channel.id) { lastChannelId = null }
+                    AreChannelTile(
+                        channel = channel.name,
+                        onClick = { lastChannelId = channel.id; onChannelSelected(channel) },
+                        number = channel.number,
+                        category = channel.categoryName,
+                        isRadio = channel.isRadio,
+                        logoUrl = channel.logoUrl,
+                        isFavorite = channel.id in favoriteChannelIds,
+                        onToggleFavorite = { viewModel.toggleChannelFavorite(channel.id) },
+                        modifier = Modifier.focusRequester(focusRequester),
+                        lockCategory = channel.categoryName,
+                    )
+                },
+                titleTile = { title ->
+                    val focusRequester = rememberPlaybackFocusRequester(lastTitleId, title.id) { lastTitleId = null }
+                    ArePosterTile(
+                        title = title.name,
+                        onClick = { lastTitleId = title.id; onTitleSelected(title) },
+                        meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
+                        rating = title.rating,
+                        posterUrl = title.posterUrl,
+                        isFavorite = title.id in favoriteVodIds,
+                        onToggleFavorite = { viewModel.toggleVodFavorite(title) },
+                        focusRequester = focusRequester,
+                        lockCategory = title.categoryName,
+                    )
+                },
+            )
+        }
+    }
+}
+
+/**
+ * PERF: what the two result [androidx.compose.foundation.layout.FlowRow]s used to do here, but
+ * virtualized -- the same fix Favorites got (see `TileRows` there) and Browse got before it. Both
+ * FlowRows were eager: with [SearchViewModel.RESULT_LIMIT] at 30 per catalog and titles being
+ * movies+series concatenated, a broad query composed and measured up to ~90 glass tiles in a single
+ * frame -- each one an [coil.compose.AsyncImage], a glass border, a softShadow bake and three-odd
+ * text measures (~1-1.5ms each on the target Cortex-A55) -- and then kept all of them in the
+ * display list to be re-recorded every scroll frame. Now only the on-screen rows exist.
+ *
+ * Chunked rows rather than a [androidx.compose.foundation.lazy.grid.LazyVerticalGrid], for the same
+ * reason as Favorites: the tiles are fixed-width, so rows of `floor((width + gap) / (tileWidth +
+ * gap))` reproduce FlowRow's exact packing -- left-aligned, 18dp gaps, ragged last row -- while a
+ * grid would have distributed the leftover width across the columns and widened the gaps. Channels
+ * and titles share ONE LazyColumn so the two sections still scroll as one surface, but they are
+ * different shapes with different per-row counts, so every item carries a `contentType`: key alone
+ * is not enough (see CLAUDE.md) -- without it the slot-reuse pool hands a poster row's slot to a
+ * channel row and the whole row re-measures from scratch.
+ */
+@Composable
+private fun SearchResults(
+    modifier: Modifier = Modifier,
+    channels: List<Channel>,
+    titles: List<VodTitle>,
+    colors: AreIptvColors,
+    channelTile: @Composable (Channel) -> Unit,
+    titleTile: @Composable (VodTitle) -> Unit,
+) {
+    val gap = 18.dp
+    val spacing = AreIptvTheme.spacing
+    BoxWithConstraints(modifier = modifier) {
+        val channelsPerRow = ((maxWidth + gap) / (spacing.tileLandWidth + gap)).toInt().coerceAtLeast(1)
+        val titlesPerRow = ((maxWidth + gap) / (spacing.tilePosterWidth + gap)).toInt().coerceAtLeast(1)
+        val channelRows = remember(channels, channelsPerRow) { channels.chunked(channelsPerRow) }
+        val titleRows = remember(titles, titlesPerRow) { titles.chunked(titlesPerRow) }
+        // No verticalArrangement: FlowRow put its 18dp gap BETWEEN tile rows only, and the section
+        // headers carry their own (12dp under, 22dp above the second section) -- a list-wide
+        // arrangement would have applied the same gap around the headers too and shifted everything.
+        LazyColumn {
+            if (channelRows.isNotEmpty()) {
+                item(key = "header-live", contentType = "header") {
+                    Text(
+                        text = stringResource(R.string.search_section_live),
+                        style = AreIptvTheme.typography.h3,
+                        color = colors.textSecondary,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+                }
+                itemsIndexed(
+                    channelRows,
+                    key = { _, row -> "channel-${row.first().id}" },
+                    contentType = { _, _ -> "channelRow" },
+                ) { index, row ->
+                    Row(
+                        modifier = if (index == 0) Modifier else Modifier.padding(top = gap),
+                        horizontalArrangement = Arrangement.spacedBy(gap),
+                    ) {
+                        row.forEach { channel -> channelTile(channel) }
                     }
                 }
             }
-            if (state.titleResults.isNotEmpty()) {
-                Text(text = stringResource(R.string.search_section_titles), style = AreIptvTheme.typography.h3, color = colors.textSecondary)
-                Box(Modifier.padding(top = 12.dp)) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                        state.titleResults.forEach { title ->
-                            val focusRequester = rememberPlaybackFocusRequester(lastTitleId, title.id) { lastTitleId = null }
-                            ArePosterTile(
-                                title = title.name,
-                                onClick = { lastTitleId = title.id; onTitleSelected(title) },
-                                meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
-                                rating = title.rating,
-                                posterUrl = title.posterUrl,
-                                isFavorite = title.id in favoriteVodIds,
-                                onToggleFavorite = { viewModel.toggleVodFavorite(title) },
-                                focusRequester = focusRequester,
-                                lockCategory = title.categoryName,
-                            )
-                        }
+            if (titleRows.isNotEmpty()) {
+                item(key = "header-titles", contentType = "header") {
+                    Text(
+                        text = stringResource(R.string.search_section_titles),
+                        style = AreIptvTheme.typography.h3,
+                        color = colors.textSecondary,
+                        modifier = Modifier.padding(top = if (channelRows.isEmpty()) 0.dp else 22.dp, bottom = 12.dp),
+                    )
+                }
+                itemsIndexed(
+                    titleRows,
+                    // Movies and series are separate tables concatenated into one list, so their
+                    // ids can collide -- key on both to keep the row keys unique.
+                    key = { _, row -> "title-${row.first().isSeries}-${row.first().id}" },
+                    contentType = { _, _ -> "titleRow" },
+                ) { index, row ->
+                    Row(
+                        modifier = if (index == 0) Modifier else Modifier.padding(top = gap),
+                        horizontalArrangement = Arrangement.spacedBy(gap),
+                    ) {
+                        row.forEach { title -> titleTile(title) }
                     }
                 }
             }
