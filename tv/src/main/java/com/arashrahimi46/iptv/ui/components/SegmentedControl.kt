@@ -27,7 +27,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
@@ -80,9 +80,12 @@ fun <T> AreSegmentedControl(
     // Spring toward the selected segment for a smooth, premium settle. First composition starts AT
     // the target (initialValue == target) so it appears in place instead of sliding in from x=0.
     val slide = spring<Float>(dampingRatio = 0.82f, stiffness = Spring.StiffnessMediumLow)
-    val animX by animateFloatAsState(target?.first ?: 0f, animationSpec = slide, label = "segmentX")
-    val animW by animateFloatAsState(target?.second ?: 0f, animationSpec = slide, label = "segmentW")
-    val density = LocalDensity.current
+    // Neither is `by`: both are read inside layout-time lambdas below. `animX` always was; `animW`
+    // was resolved into composition scope (an `if` guard plus `Modifier.width(Dp)`), so every frame
+    // of the spring's long settle recomposed the track, the lens and the whole `forEachIndexed` over
+    // the segments -- N x TvFocusable + Text, on four call sites the user hits constantly.
+    val animX = animateFloatAsState(target?.first ?: 0f, animationSpec = slide, label = "segmentX")
+    val animW = animateFloatAsState(target?.second ?: 0f, animationSpec = slide, label = "segmentW")
 
     Box(
         modifier = modifier
@@ -97,14 +100,23 @@ fun <T> AreSegmentedControl(
         // The sliding glass-lens indicator, behind the labels. No shadow: it lives INSIDE the glass
         // track, so a drop shadow reads as a hard smudge -- the lens (more glass + a brighter rim,
         // not opaque paint) is the marker.
-        if (animW > 0f) {
+        // Guarded on the MEASURED bounds, not on the animated width: `target != null` is the same
+        // "geometry is known yet?" question and it only changes on layout, where `animW > 0f` changed
+        // on every spring frame.
+        if (target != null) {
             Box(
                 modifier = Modifier
                     // Absolute alignment + absoluteOffset: the measured x from positionInParent is
                     // always from the left edge, so the indicator must NOT be mirrored in RTL.
                     .align(AbsoluteAlignment.TopLeft)
-                    .absoluteOffset { IntOffset(animX.roundToInt(), 0) }
-                    .width(with(density) { animW.toDp() })
+                    .absoluteOffset { IntOffset(animX.value.roundToInt(), 0) }
+                    // Width fixed at MEASURE time from the animated State, so a spring frame
+                    // invalidates one node's measurement instead of recomposing the control.
+                    .layout { measurable, constraints ->
+                        val w = animW.value.roundToInt().coerceAtLeast(0)
+                        val placeable = measurable.measure(constraints.copy(minWidth = w, maxWidth = w))
+                        layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+                    }
                     .fillMaxHeight()
                     .then(
                         if (lensSkin.fillBrush != null) Modifier.background(lensSkin.fillBrush, pill)

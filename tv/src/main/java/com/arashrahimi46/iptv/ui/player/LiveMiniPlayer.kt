@@ -165,12 +165,14 @@ fun LiveMiniPlayerOverlay(
     val targetAlpha = if (faded) 0.5f else 1f
     val targetScale = if (faded) 0.85f else 1f
 
-    val animOffsetX by animateFloatAsState(targetOffsetX, label = "miniDodgeX")
-    val animAlpha by animateFloatAsState(targetAlpha, label = "miniAlpha")
-    val animScale by animateFloatAsState(targetScale, label = "miniScale")
-    val offsetX = if (reducedMotion) targetOffsetX else animOffsetX
-    val alpha = if (reducedMotion) targetAlpha else animAlpha
-    val scale = if (reducedMotion) targetScale else animScale
+    // NOT `by`: these States are read inside the `offset`/`graphicsLayer` lambdas below, i.e. at
+    // LAYOUT and DRAW time. Resolving them into plain Floats here would defeat that -- the lambdas
+    // would capture already-settled values and every frame of all three tweens would recompose this
+    // composable, which owns an AndroidView/PlayerView factory block, a badge and a title. And the
+    // FADE tween fires on losing focus, i.e. exactly while the user is D-pad browsing behind it.
+    val animOffsetX = animateFloatAsState(targetOffsetX, label = "miniDodgeX")
+    val animAlpha = animateFloatAsState(targetAlpha, label = "miniAlpha")
+    val animScale = animateFloatAsState(targetScale, label = "miniScale")
 
     Box(modifier = modifier.fillMaxSize().onGloballyPositioned { containerRect = it.boundsInRoot() }) {
         Box(
@@ -180,8 +182,15 @@ fun LiveMiniPlayerOverlay(
                 .fillMaxWidth(0.25f)
                 .aspectRatio(ratio)
                 .onGloballyPositioned { miniSize = it.size }
-                .offset { IntOffset(offsetX.roundToInt(), 0) }
-                .graphicsLayer { this.alpha = alpha; scaleX = scale; scaleY = scale }
+                .offset {
+                    IntOffset((if (reducedMotion) targetOffsetX else animOffsetX.value).roundToInt(), 0)
+                }
+                .graphicsLayer {
+                    this.alpha = if (reducedMotion) targetAlpha else animAlpha.value
+                    val s = if (reducedMotion) targetScale else animScale.value
+                    scaleX = s
+                    scaleY = s
+                }
                 .clip(RoundedCornerShape(AreIptvTheme.radius.lg))
                 .background(Color.Black)
                 .border(

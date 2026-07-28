@@ -15,10 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -46,17 +45,19 @@ fun RecordingIndicator(
     val dotColor = if (reconnecting) colors.warning else colors.danger
 
     // Pulse the dot: scale 1.0 -> 1.4 on a ~750ms ease-in-out loop. Steady when reduced-motion.
-    val scale = if (reducedMotion) {
-        1f
-    } else {
+    // Kept as a State and read at DRAW time in the `graphicsLayer` below -- NOT unwrapped to a Float
+    // here. This is an INFINITE animation, so a composition-scope read is a 60fps recomposition of
+    // this Row, both labels, their `stringResource` lookups and `formatRecElapsed`, for as long as the
+    // recording runs -- i.e. permanently, on top of live decode. It is a pulsing dot; it must cost a
+    // layer property and nothing else.
+    val pulse = if (reducedMotion) null else {
         val transition = rememberInfiniteTransition(label = "rec-pulse")
-        val s by transition.animateFloat(
+        transition.animateFloat(
             initialValue = 1f,
             targetValue = 1.4f,
             animationSpec = infiniteRepeatable(tween(750, easing = FastOutSlowInEasing), RepeatMode.Reverse),
             label = "rec-dot-scale",
         )
-        s
     }
 
     Row(
@@ -66,7 +67,15 @@ fun RecordingIndicator(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box(Modifier.size(10.dp).scale(scale).background(dotColor, CircleShape))
+        Box(
+            Modifier
+                .size(10.dp)
+                .then(
+                    if (pulse == null) Modifier
+                    else Modifier.graphicsLayer { scaleX = pulse.value; scaleY = pulse.value },
+                )
+                .background(dotColor, CircleShape),
+        )
         Text(
             text = if (reconnecting) stringResource(R.string.player_recording_reconnecting)
                 else stringResource(R.string.player_recording_label),
