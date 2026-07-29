@@ -234,15 +234,28 @@ class MainActivity : AppCompatActivity() {
         // read here blocked the main thread on a cold disk read during cold start, ANR'ing low-end
         // API < 33 devices for non-English users (Sentry ANDROID-1, BRAVIA / Android 12). The
         // re-check of isEmpty inside the coroutine keeps this a no-op once the service has restored.
-        if (AppCompatDelegate.getApplicationLocales().isEmpty) {
-            lifecycleScope.launch {
-                val tag = withContext(Dispatchers.IO) {
-                    UserSettings(applicationContext).languageTag.first()
-                }
-                if (tag.isNotBlank() && tag != "en" && AppCompatDelegate.getApplicationLocales().isEmpty) {
+        // Reconciles BOTH ways. It used to only run when the delegate was empty, which let the two
+        // stores disagree permanently: Settings read the DataStore mirror and announced "فارسی"
+        // over an English UI, and because the delegate was non-empty the resync never fired again.
+        // The delegate is authoritative for what actually renders (it is also what Android 13's
+        // system per-app language setting writes, which never touches our mirror), so when they
+        // disagree the mirror follows it -- not the other way round.
+        lifecycleScope.launch {
+            val settings = UserSettings(applicationContext)
+            val stored = withContext(Dispatchers.IO) { settings.languageTag.first() }
+            val applied = AppCompatDelegate.getApplicationLocales()
+            if (applied.isEmpty) {
+                // Cold start before AppLocalesMetadataHolderService restored the delegate's own
+                // store (API < 33): the mirror is the only record of the choice, so apply it.
+                if (stored.isNotBlank() && stored != "en" && AppCompatDelegate.getApplicationLocales().isEmpty) {
                     AppCompatDelegate.setApplicationLocales(
-                        androidx.core.os.LocaleListCompat.forLanguageTags(tag)
+                        androidx.core.os.LocaleListCompat.forLanguageTags(stored)
                     )
+                }
+            } else {
+                val effective = applied[0]?.toLanguageTag().orEmpty()
+                if (effective.isNotBlank() && !effective.equals(stored, ignoreCase = true)) {
+                    settings.setLanguageTag(effective)
                 }
             }
         }

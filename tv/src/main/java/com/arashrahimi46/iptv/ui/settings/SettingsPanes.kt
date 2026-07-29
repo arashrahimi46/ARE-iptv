@@ -292,9 +292,24 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                     title = stringResource(R.string.settings_language_row_title),
                     desc = stringResource(R.string.settings_language_row_desc),
                 ) {
+                    // Show the locale that is ACTUALLY rendering, not the DataStore mirror. The two
+                    // can diverge -- e.g. the apply below is a LaunchedEffect that waits two frames
+                    // before calling setApplicationLocales, and if the pane leaves composition in
+                    // that window the effect is cancelled while setLanguageTag (on viewModelScope)
+                    // has already persisted. The row then claimed "فارسی" over an English UI, with
+                    // no way back because MainActivity's resync only fires when the delegate is
+                    // empty. The delegate is the single source of truth for what the user sees; the
+                    // mirror is only a fallback for a cold start before it has been restored.
+                    val effectiveTag = AppCompatDelegate.getApplicationLocales()
+                        .takeUnless { it.isEmpty }?.get(0)?.toLanguageTag() ?: languageTag
                     SelectionChangeControl(
-                        current = AreLanguageOptions.firstOrNull { it.tag.equals(languageTag, ignoreCase = true) }
-                            ?.let { stringResource(it.nativeNameRes) } ?: languageTag,
+                        current = AreLanguageOptions.firstOrNull { it.tag.equals(effectiveTag, ignoreCase = true) }
+                            ?.let { stringResource(it.nativeNameRes) }
+                        // A tag like "pt-BR" can come back region-tagged ("pt-BR") or bare ("pt");
+                        // fall back to a language-only match before giving up and showing the raw tag.
+                            ?: AreLanguageOptions.firstOrNull {
+                                it.tag.substringBefore('-').equals(effectiveTag.substringBefore('-'), ignoreCase = true)
+                            }?.let { stringResource(it.nativeNameRes) } ?: effectiveTag,
                         onChange = { showLanguagePicker = true },
                     )
                 }
