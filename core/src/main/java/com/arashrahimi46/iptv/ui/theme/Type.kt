@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 
 /*
  * Font families. The design system specifies Space Grotesk (display),

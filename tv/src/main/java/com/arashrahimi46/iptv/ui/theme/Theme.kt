@@ -2,18 +2,12 @@ package com.arashrahimi46.iptv.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
-
-// [AreIptvTypography] (Type.kt) stays in :tv -- it reads font resources (R.font.*) from :tv's
-// res/font, which :core has no equivalent of. Every other design token CompositionLocal
-// (LocalAreIptvColors/Spacing/Radius, LocalThemeIsDark) lives in :core's Theme.kt.
-val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
 
 /**
  * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /
