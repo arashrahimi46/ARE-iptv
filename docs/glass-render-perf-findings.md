@@ -987,3 +987,51 @@ this in idle time and failing — no idle window at 60 Hz is 35 ms long.
 
 Draw is now near its floor (`AndroidOwner:draw` 316 → ~198 ms since the start of this work). The
 remaining lever is **composition cost per tile**, paid in bursts when a rail scrolls in.
+
+---
+
+## Round 3: the focus ring was re-recording every tile it ringed (2026-07-29)
+
+`focusRingCached` wraps the element's own draw — `onDrawWithContent { drawContent(); ring }`. So
+animating its alpha invalidates and **re-records the entire element's display list on every tween
+frame**: poster bitmap, texts, badges and all, on both the tile losing focus and the one gaining it,
+for every single D-pad step.
+
+Split the two focus tweens and it is unmistakable (`AndroidOwner:draw`, interleaved batch):
+
+| variant | draw |
+|---|---|
+| control | 112 ms |
+| snap the **scale** (no grow animation) | 119 ms — nothing |
+| snap the **ring alpha** (no fade) | 71 ms — **−36 %** |
+| snap both | 70 ms |
+| **ring as a sibling overlay, fade intact** | **61 ms — −45 %** |
+
+**Shipped: the ring is now a sibling `Box` with its own `graphicsLayer` whose alpha animates.** A
+RenderNode alpha property update costs nothing to re-record, and the overlay never wraps the content
+draw. It beats *deleting the animation entirely* (61 vs 71 ms) while keeping the fade. Screenshot-
+verified: 0.17 % of sampled pixels differ, all anti-aliasing along the 3 dp stroke.
+
+`Modifier.tvFocusable` keeps a `drawRing` parameter (default true) for `AreTextField`, the one
+standalone user — a single control, not one of forty tiles, and it has no `BoxScope` for an overlay.
+
+This also retroactively explains round 2's sheen+ring superadditivity: **both** wrapped `drawContent`,
+so removing either one alone left the other still invalidating the element every frame.
+
+### Composing a rail: where the ~90 ms actually goes
+
+A flattening ladder on `ArePosterTile`, measured against the reproducible first-DOWN frame:
+
+| tile content | worst frame | measureAndLayout | recompose |
+|---|---|---|---|
+| full (control) | 107 ms | 265 ms | 182 ms |
+| no `AsyncImage` | 78 ms | 221 ms | 149 ms |
+| `TvFocusable` + 2 texts only | 68 ms | 203 ms | 149 ms |
+| bare focusable Box + 2 texts | 60 ms | 193 ms | 140 ms |
+
+So of the ~107 ms: **Coil's `AsyncImage` is ~29 ms (27 %)**, the rest of PosterTile ~10 ms, and
+`TvFocusable` itself ~8 ms. Flattening the tile's *layout* is not where the money is — the image is.
+
+Tried and worth **nothing**: giving `AsyncImage` a remembered, explicitly-sized `ImageRequest` to skip
+Coil's `ConstraintsSizeResolver` (111 vs 112 ms). If the Coil cost is to be attacked, it is
+`rememberAsyncImagePainter` + `onRemembered` themselves, not request construction.

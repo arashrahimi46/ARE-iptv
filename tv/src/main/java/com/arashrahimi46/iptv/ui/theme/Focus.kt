@@ -74,6 +74,22 @@ fun Modifier.tvFocusable(
     ringWidth: Dp = 3.dp,
     disableScale: Boolean = false,
     ownsFocusable: Boolean = true,
+    /**
+     * Set FALSE when the caller draws the ring itself as a sibling overlay ([TvFocusable] does).
+     *
+     * PERF, and why that overlay exists at all: [focusRingCached] wraps the element's own draw
+     * (`onDrawWithContent { drawContent(); ring }`), so animating its alpha invalidates and
+     * **re-records the whole element's display list on every tween frame** -- poster bitmap and all,
+     * on both the tile losing focus and the one gaining it, for every D-pad step. Drawn instead as a
+     * sibling with its own graphics layer, the fade is a RenderNode alpha property and nothing is
+     * re-recorded. Measured on the XL95: `AndroidOwner:draw` 112 -> 61 ms (-45%), with the fade
+     * intact (snapping the alpha instead only reached 71 ms). Screenshot-verified: differences are
+     * confined to anti-aliasing along the 3dp stroke.
+     *
+     * Kept true for [com.arashrahimi46.iptv.ui.components.AreTextField], which is a single control
+     * rather than one of forty tiles and has no BoxScope to hang an overlay in.
+     */
+    drawRing: Boolean = true,
 ): Modifier {
     val motion = AreIptvTheme.motion
     val focused by interactionSource.collectIsFocusedAsState()
@@ -127,8 +143,12 @@ fun Modifier.tvFocusable(
         // at DRAW time (see the note on the tweens above for why the lambda alone was not enough).
         // This used to be `.border(color = glowColor.copy(alpha = ringAlpha))`, which additionally
         // minted a fresh Color and border node per tween frame.
-        .focusRingCached(glowColor, shape, ringWidth) { ringAlphaState.value }
+        .then(
+            if (drawRing) Modifier.focusRingCached(glowColor, shape, ringWidth) { ringAlphaState.value }
+            else Modifier,
+        )
 }
+
 
 /**
  * The crisp focus ring, drawn at DRAW time from an [alpha] lambda -- a drop-in replacement for
@@ -316,9 +336,15 @@ fun TvFocusable(
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()
+    val motionT = AreIptvTheme.motion
+    val ringAlphaOverlay = animateFloatAsState(
+        targetValue = if (focused) 1f else 0f,
+        animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeOut),
+        label = "tvFocusRingOverlay",
+    )
     Box(
         modifier = modifier
-            .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale)
+            .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale, drawRing = false)
             .then(if (shadowElevation > 0.dp) Modifier.softShadow(shape) else Modifier)
             .then(
                 if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
@@ -361,8 +387,19 @@ fun TvFocusable(
             },
     ) {
         content(focused, pressed)
+        // The focus ring, as a SIBLING of the content with its own graphics layer -- see the
+        // `drawRing` note on [tvFocusable] for why this is not a modifier on the Box above.
+        Box(
+            Modifier
+                .matchParentSize()
+                .graphicsLayer { alpha = ringAlphaOverlay.value }
+                .focusRingCached(glowColor, shape, FocusRingWidth) { 1f },
+        )
     }
 }
+
+/** Stroke width of the focus ring. */
+private val FocusRingWidth = 3.dp
 
 /** Hold threshold (ms) separating a tap from a long-press on the OK/select button. */
 private const val LONG_PRESS_MS = 400L
