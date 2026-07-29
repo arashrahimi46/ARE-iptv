@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Aggiornato %1$d ore fa</string>
     <string name="settings_last_updated_mins">Aggiornato %1$d min fa</string>
     <string name="settings_last_updated_now">Aggiornato proprio ora</string>
+
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_desc">Scegli scuro, chiaro o come il dispositivo</string>
+    <string name="settings_theme_dark">Scuro</string>
+    <string name="settings_theme_light">Chiaro</string>
+    <string name="settings_theme_system">Sistema</string>
+
+    <string name="settings_section_appearance">Aspetto</string>
 </resources>

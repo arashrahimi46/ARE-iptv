@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Последно обновено преди %1$d ч.</string>
     <string name="settings_last_updated_mins">Последно обновено преди %1$d мин</string>
     <string name="settings_last_updated_now">Последно обновено току-що</string>
+
+    <string name="settings_theme_title">Тема</string>
+    <string name="settings_theme_desc">Изберете тъмна, светла или по устройството</string>
+    <string name="settings_theme_dark">Тъмна</string>
+    <string name="settings_theme_light">Светла</string>
+    <string name="settings_theme_system">Система</string>
+
+    <string name="settings_section_appearance">Външен вид</string>
 </resources>

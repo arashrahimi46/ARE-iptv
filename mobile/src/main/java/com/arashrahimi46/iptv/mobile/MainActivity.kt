@@ -7,6 +7,7 @@ import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.mobile.ui.nav.AppBottomBar
 import com.arashrahimi46.iptv.mobile.ui.nav.AppNavHost
@@ -43,7 +45,14 @@ class MainActivity : ComponentActivity() {
         val settings = UserSettings(applicationContext)
 
         setContent {
-            val isDark by settings.isDarkTheme.collectAsStateWithLifecycle(initialValue = true)
+            // Mirrors :tv's MainActivity: DARK/LIGHT force a mode, SYSTEM resolves via
+            // isSystemInDarkTheme() (a Composable API, so it can't live in UserSettings itself).
+            val themeMode by settings.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.DARK)
+            val isDark = when (themeMode) {
+                ThemeMode.DARK -> true
+                ThemeMode.LIGHT -> false
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
             AreIptvMobileTheme(isDark = isDark) {
                 // Every branch below (including the splash/onboarding ones, which don't mount a
                 // Scaffold) needs the theme's own background painted -- without this the Activity's

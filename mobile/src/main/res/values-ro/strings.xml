@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Actualizat acum %1$d ore</string>
     <string name="settings_last_updated_mins">Actualizat acum %1$d min</string>
     <string name="settings_last_updated_now">Actualizat chiar acum</string>
+
+    <string name="settings_theme_title">Temă</string>
+    <string name="settings_theme_desc">Alegeți întunecat, luminos sau conform dispozitivului</string>
+    <string name="settings_theme_dark">Întunecat</string>
+    <string name="settings_theme_light">Luminos</string>
+    <string name="settings_theme_system">Sistem</string>
+
+    <string name="settings_section_appearance">Aspect</string>
 </resources>

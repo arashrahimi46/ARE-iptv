@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Sidst opdateret for %1$d timer siden</string>
     <string name="settings_last_updated_mins">Sidst opdateret for %1$d min siden</string>
     <string name="settings_last_updated_now">Sidst opdateret lige nu</string>
+
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_desc">Vælg mørkt, lyst eller følg din enhed</string>
+    <string name="settings_theme_dark">Mørkt</string>
+    <string name="settings_theme_light">Lyst</string>
+    <string name="settings_theme_system">System</string>
+
+    <string name="settings_section_appearance">Udseende</string>
 </resources>

@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">آخر تحديث قبل %1$d ساعة</string>
     <string name="settings_last_updated_mins">آخر تحديث قبل %1$d دقيقة</string>
     <string name="settings_last_updated_now">تم التحديث للتو</string>
+
+    <string name="settings_theme_title">المظهر</string>
+    <string name="settings_theme_desc">اختر الداكن أو الفاتح أو اتبع جهازك</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_system">النظام</string>
+
+    <string name="settings_section_appearance">المظهر</string>
 </resources>

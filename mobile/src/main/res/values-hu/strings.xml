@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Utoljára frissítve %1$d órája</string>
     <string name="settings_last_updated_mins">Utoljára frissítve %1$d perce</string>
     <string name="settings_last_updated_now">Épp most frissült</string>
+
+    <string name="settings_theme_title">Téma</string>
+    <string name="settings_theme_desc">Válasszon sötét, világos vagy eszköz szerinti beállítást</string>
+    <string name="settings_theme_dark">Sötét</string>
+    <string name="settings_theme_light">Világos</string>
+    <string name="settings_theme_system">Rendszer</string>
+
+    <string name="settings_section_appearance">Megjelenés</string>
 </resources>

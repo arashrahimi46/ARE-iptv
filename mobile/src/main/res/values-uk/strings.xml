@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Оновлено %1$d год. тому</string>
     <string name="settings_last_updated_mins">Оновлено %1$d хв тому</string>
     <string name="settings_last_updated_now">Оновлено щойно</string>
+
+    <string name="settings_theme_title">Тема</string>
+    <string name="settings_theme_desc">Виберіть темну, світлу або як на пристрої</string>
+    <string name="settings_theme_dark">Темна</string>
+    <string name="settings_theme_light">Світла</string>
+    <string name="settings_theme_system">Системна</string>
+
+    <string name="settings_section_appearance">Оформлення</string>
 </resources>

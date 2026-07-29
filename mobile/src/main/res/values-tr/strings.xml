@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Son güncelleme %1$d saat önce</string>
     <string name="settings_last_updated_mins">Son güncelleme %1$d dk önce</string>
     <string name="settings_last_updated_now">Son güncelleme az önce</string>
+
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_desc">Koyu, açık ya da cihazınızın ayarını izleyin</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_system">Sistem</string>
+
+    <string name="settings_section_appearance">Görünüm</string>
 </resources>

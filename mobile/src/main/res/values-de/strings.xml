@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Vor %1$d Stunden aktualisiert</string>
     <string name="settings_last_updated_mins">Vor %1$d Min. aktualisiert</string>
     <string name="settings_last_updated_now">Gerade eben aktualisiert</string>
+
+    <string name="settings_theme_title">Design</string>
+    <string name="settings_theme_desc">Dunkel, hell oder Gerät folgen</string>
+    <string name="settings_theme_dark">Dunkel</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_system">System</string>
+
+    <string name="settings_section_appearance">Erscheinungsbild</string>
 </resources>

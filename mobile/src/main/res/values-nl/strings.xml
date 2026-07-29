@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">%1$d uur geleden bijgewerkt</string>
     <string name="settings_last_updated_mins">%1$d min geleden bijgewerkt</string>
     <string name="settings_last_updated_now">Zojuist bijgewerkt</string>
+
+    <string name="settings_theme_title">Thema</string>
+    <string name="settings_theme_desc">Kies donker, licht of volg je apparaat</string>
+    <string name="settings_theme_dark">Donker</string>
+    <string name="settings_theme_light">Licht</string>
+    <string name="settings_theme_system">Systeem</string>
+
+    <string name="settings_section_appearance">Weergave</string>
 </resources>

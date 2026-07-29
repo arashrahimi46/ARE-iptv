@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Atualizado pela última vez há %1$d horas</string>
     <string name="settings_last_updated_mins">Atualizado pela última vez há %1$d min</string>
     <string name="settings_last_updated_now">Atualizado agora mesmo</string>
+
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_desc">Escolha escuro, claro ou seguir o dispositivo</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_system">Sistema</string>
+
+    <string name="settings_section_appearance">Aspeto</string>
 </resources>

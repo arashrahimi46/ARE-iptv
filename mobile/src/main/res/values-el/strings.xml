@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Τελευταία ενημέρωση πριν από %1$d ώρες</string>
     <string name="settings_last_updated_mins">Τελευταία ενημέρωση πριν από %1$d λεπτά</string>
     <string name="settings_last_updated_now">Μόλις ενημερώθηκε</string>
+
+    <string name="settings_theme_title">Θέμα</string>
+    <string name="settings_theme_desc">Επιλέξτε σκούρο, ανοιχτό ή αυτόματο βάσει συσκευής</string>
+    <string name="settings_theme_dark">Σκούρο</string>
+    <string name="settings_theme_light">Ανοιχτό</string>
+    <string name="settings_theme_system">Σύστημα</string>
+
+    <string name="settings_section_appearance">Εμφάνιση</string>
 </resources>

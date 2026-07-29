@@ -13,6 +13,7 @@ import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,10 +41,17 @@ sealed interface MobileRefreshState {
  * there (and vice versa) without any extra plumbing.
  *
  * Deliberately NOT the full port of :tv's `SettingsViewModel`: that class also owns OMDb/
- * OpenSubtitles account integration, the accent/theme picker, the HUD layout editor, and
- * storage/reset actions -- all outside the "subtitles/EPG/quality/parental panes" scope this
- * follow-up was asked to cover, and mobile has no theme picker or HUD editor UI to back in the
- * first place. See the Phase 3 report for this scope call.
+ * OpenSubtitles account integration, the accent picker, the HUD layout editor, and storage/reset
+ * actions -- all outside the "subtitles/EPG/quality/parental panes" scope this follow-up was
+ * asked to cover, and mobile has no accent picker or HUD editor UI to back in the first place.
+ * See the Phase 3 report for this scope call.
+ *
+ * Dark/Light/System [themeMode] IS included even though it wasn't in the original Phase 3 list:
+ * mobile's `MainActivity` shipped only reading the legacy [com.arashrahimi46.iptv.data.settings.UserSettings.isDarkTheme]
+ * boolean (always true, i.e. permanently dark) with no way for the user to change it, which left
+ * light theme -- explicitly called out as needing to be best-in-class -- unreachable in the app.
+ * Ported minimally: just the picker, not :tv's whole "Display" pane (accent/reduce-motion/list-
+ * mode/clock), which is out of scope here.
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SettingsViewModel(app: Application) : AndroidViewModel(app) {
@@ -52,6 +60,10 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun <T> flowState(flow: kotlinx.coroutines.flow.Flow<T>, initial: T): StateFlow<T> =
         flow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), initial)
+
+    // --- Display ---
+    val themeMode: StateFlow<ThemeMode> = flowState(settings.themeMode, ThemeMode.DARK)
+    fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { settings.setThemeMode(mode) }
 
     // --- Catalog / EPG ---
     val activeSource: StateFlow<PlaylistSource?> =

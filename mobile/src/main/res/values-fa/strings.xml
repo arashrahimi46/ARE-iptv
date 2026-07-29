@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">%1$d ساعت پیش به‌روز شده</string>
     <string name="settings_last_updated_mins">%1$d دقیقه پیش به‌روز شده</string>
     <string name="settings_last_updated_now">همین الان به‌روز شد</string>
+
+    <string name="settings_theme_title">تم</string>
+    <string name="settings_theme_desc">تیره، روشن، یا هماهنگ با دستگاه شما</string>
+    <string name="settings_theme_dark">تیره</string>
+    <string name="settings_theme_light">روشن</string>
+    <string name="settings_theme_system">سیستم</string>
+
+    <string name="settings_section_appearance">ظاهر</string>
 </resources>

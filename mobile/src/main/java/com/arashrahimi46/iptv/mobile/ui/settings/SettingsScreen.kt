@@ -44,6 +44,7 @@ import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 
@@ -132,6 +133,7 @@ private fun <T> SettingsChoiceRow(title: String, desc: String?, options: List<T>
 
 @Composable
 private fun GeneralPane(viewModel: SettingsViewModel) {
+    val themeMode by viewModel.themeMode.collectAsState()
     val activeSource by viewModel.activeSource.collectAsState()
     val refreshState by viewModel.refreshState.collectAsState()
     val staleWindowDays by viewModel.staleWindowDays.collectAsState()
@@ -142,6 +144,15 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
+            SettingsSectionTitle(stringResource(R.string.settings_section_appearance))
+            SettingsChoiceRow(
+                title = stringResource(R.string.settings_theme_title),
+                desc = stringResource(R.string.settings_theme_desc),
+                options = ThemeMode.entries,
+                selected = themeMode,
+                label = { stringResource(it.labelRes()) },
+                onSelect = viewModel::setThemeMode,
+            )
             SettingsSectionTitle(stringResource(R.string.settings_section_playlists))
             ListItem(
                 headlineContent = { Text(stringResource(R.string.settings_refresh_catalog)) },
@@ -208,6 +219,12 @@ private fun AutoRefreshInterval.labelRes(): Int = when (this) {
     AutoRefreshInterval.OFF -> R.string.settings_auto_refresh_off
     AutoRefreshInterval.DAILY -> R.string.settings_auto_refresh_daily
     AutoRefreshInterval.WEEKLY -> R.string.settings_auto_refresh_weekly
+}
+
+private fun ThemeMode.labelRes(): Int = when (this) {
+    ThemeMode.DARK -> R.string.settings_theme_dark
+    ThemeMode.LIGHT -> R.string.settings_theme_light
+    ThemeMode.SYSTEM -> R.string.settings_theme_system
 }
 
 // =============================================================================================

@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Päivitetty viimeksi %1$d tuntia sitten</string>
     <string name="settings_last_updated_mins">Päivitetty viimeksi %1$d min sitten</string>
     <string name="settings_last_updated_now">Päivitetty juuri nyt</string>
+
+    <string name="settings_theme_title">Teema</string>
+    <string name="settings_theme_desc">Valitse tumma, vaalea tai laitteen mukaan</string>
+    <string name="settings_theme_dark">Tumma</string>
+    <string name="settings_theme_light">Vaalea</string>
+    <string name="settings_theme_system">Järjestelmä</string>
+
+    <string name="settings_section_appearance">Ulkoasu</string>
 </resources>

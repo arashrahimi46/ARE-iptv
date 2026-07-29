@@ -140,4 +140,12 @@
     <string name="settings_last_updated_hours_plural">Naposledy aktualizováno před %1$d hodinami</string>
     <string name="settings_last_updated_mins">Naposledy aktualizováno před %1$d min</string>
     <string name="settings_last_updated_now">Naposledy aktualizováno právě teď</string>
+
+    <string name="settings_theme_title">Motiv</string>
+    <string name="settings_theme_desc">Zvolte tmavý, světlý nebo podle zařízení</string>
+    <string name="settings_theme_dark">Tmavý</string>
+    <string name="settings_theme_light">Světlý</string>
+    <string name="settings_theme_system">Systém</string>
+
+    <string name="settings_section_appearance">Vzhled</string>
 </resources>
