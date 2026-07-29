@@ -17,7 +17,7 @@
     <string name="action_sign_in">Přihlásit se</string>
     <string name="action_sign_out">Odhlásit se</string>
     <string name="action_search">Hledat</string>
-    <string name="action_buy_coffee">Kup mi kávu</string>
+    <string name="action_buy_coffee">Pozvěte mě na kávu</string>
     <string name="content_desc_account">Účet</string>
 
     <!-- Shell -->
@@ -63,7 +63,7 @@
     <string name="onboarding_confirm_error_title">Playlist se nepodařilo přidat</string>
     <string name="onboarding_confirm_added">Přidáno</string>
     <string name="onboarding_confirm_ready">Připraveno k přidání</string>
-    <string name="onboarding_confirm_channels_badge">%1$d kanálů</string>
+    <string name="onboarding_confirm_channels_badge">Kanály: %1$d</string>
     <string name="onboarding_confirm_downloading">Stahování a import vašich kanálů. Velké playlisty mohou chvíli trvat — ponechte prosím aplikaci otevřenou.</string>
     <string name="onboarding_confirm_row_portal">Portál</string>
     <string name="onboarding_confirm_default_portal_name">Můj playlist</string>
@@ -74,7 +74,7 @@
     <string name="onboarding_confirm_auto_matched">Automaticky spárováno</string>
     <string name="onboarding_confirm_custom_xmltv">Vlastní XMLTV</string>
     <string name="onboarding_confirm_row_catalog">Katalog</string>
-    <string name="onboarding_confirm_catalog_summary">%1$d kanálů · %2$d filmů · %3$d seriálů</string>
+    <string name="onboarding_confirm_catalog_summary">Kanály: %1$d · Filmy: %2$d · Seriály: %3$d</string>
 
     <!-- Privacy & Terms -->
     <string name="privacy_title">Soukromí a podmínky</string>
@@ -84,6 +84,42 @@
     <string name="privacy_read_full">Přečíst celé Zásady ochrany osobních údajů a Podmínky</string>
     <string name="privacy_crash_label">Odesílat anonymní hlášení o pádech a údaje o používání</string>
     <string name="privacy_updated_note">Aktualizovali jsme Zásady ochrany osobních údajů a Podmínky. Před pokračováním si je prosím přečtěte a přijměte.</string>
+
+    <!-- Privacy & Terms: the binding document. The English text governs (see §13). -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Objevit bezplatné IPTV playlisty</string>
+    <string name="sources_from_explore">Z nabídky Objevit</string>
+    <string name="explore_title">Objevit bezplatné IPTV</string>
+    <string name="explore_subtitle">Veřejně uváděné playlisty s volně vysílanými kanály, spravované komunitou. ARE iptv tyto streamy nehostuje ani nad nimi nemá kontrolu a jejich dostupnost se liší podle země.</string>
+    <string name="explore_used_count">Použito %1$d z %2$d playlistů</string>
+    <string name="explore_channels_approx">Kanály: ~%1$d</string>
+    <string name="explore_hint">Počty kanálů jsou přibližné a často se mění.</string>
+    <string name="explore_add_title">Přidat „%1$s“</string>
+    <string name="explore_add_body">Pojmenujte jej, jak chcete — přejmenovat jej můžete kdykoli později.</string>
+    <string name="explore_add_action">Přidat playlist</string>
+    <string name="explore_name_label">Název playlistu</string>
+    <string name="explore_adding_title">Přidávání playlistu…</string>
+    <string name="explore_adding_body">Načítá se „%1$s“. U velkého seznamu to může chvíli trvat.</string>
+    <string name="explore_failed_title">Playlist se nepodařilo přidat</string>
+    <string name="explore_failed_body">„%1$s“ se nepodařilo načíst. Seznam se možná přesunul nebo je dočasně nedostupný — potíž je na straně playlistu, ne vašeho zařízení. Zkuste jiný.</string>
+    <string name="explore_cap_title">Počet vašich playlistů: %1$d</string>
+    <string name="explore_cap_body">To je maximum. Chcete-li přidat další, jeden ze seznamu odeberte.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Zvolte playlist</string>
@@ -142,11 +178,11 @@
     <string name="settings_sidebar_style_floating">Plovoucí</string>
     <string name="settings_sidebar_style_edge">Plná výška</string>
     <string name="settings_clock_title">Formát hodin</string>
-    <string name="settings_clock_desc">Jak se časy zobrazují v Průvodci a přehrávači</string>
+    <string name="settings_clock_desc">Jak se zobrazují časy v TV programu a v přehrávači</string>
     <string name="settings_clock_24h">24hodinový</string>
     <string name="settings_clock_12h">12hodinový</string>
     <string name="settings_stale_title">Připomenutí obnovení</string>
-    <string name="settings_stale_desc">Upozornit na obnovení, když katalog zestárne</string>
+    <string name="settings_stale_desc">Připomenout obnovení, když katalog zastará</string>
     <string name="settings_stale_7d">7 dní</string>
     <string name="settings_stale_14d">14 dní</string>
     <string name="settings_stale_30d">30 dní</string>
@@ -193,14 +229,14 @@
     <string name="settings_clear_history_confirm">Vymazat veškerý postup Pokračovat ve sledování? Tuto akci nelze vrátit zpět.</string>
     <string name="settings_reset_title">Obnovit výchozí</string>
     <string name="settings_reset_desc">Obnovit nastavení vzhledu a přehrávání</string>
-    <string name="settings_reset_confirm">Obnovit nastavení vzhledu a přehrávání na výchozí? Vaše seznamy, přihlášení, jazyk a rodičovský zámek zůstanou zachovány.</string>
+    <string name="settings_reset_confirm">Obnovit nastavení vzhledu a přehrávání na výchozí? Vaše playlisty, přihlášení, jazyk a rodičovský zámek zůstanou zachovány.</string>
     <string name="settings_reset_action">Obnovit</string>
     <string name="settings_section_playlists">Playlisty a synchronizace</string>
     <string name="settings_refresh_catalog">Obnovit katalog</string>
     <string name="settings_refresh_now">Obnovit nyní</string>
     <string name="settings_refreshing">Obnovování…</string>
     <string name="settings_refresh_syncing">Synchronizace s poskytovatelem…</string>
-    <string name="settings_refresh_success">Aktualizováno: %1$d kanálů, %2$d filmů, %3$d seriálů</string>
+    <string name="settings_refresh_success">Aktualizováno — kanály: %1$d, filmy: %2$d, seriály: %3$d</string>
     <string name="settings_refresh_stale">Starší než 2 týdny — obnovte, abyste získali nové kanály a tituly</string>
     <string name="settings_never_refreshed">Nikdy neobnoveno</string>
     <string name="settings_last_updated_days">Naposledy aktualizováno před %1$d dnem</string>
@@ -249,12 +285,12 @@
     <string name="settings_account">Účet</string>
     <string name="settings_account_signed_in">Přihlášen jako %1$s -- stahování titulků je povoleno.</string>
     <string name="settings_signin_title">Přihlaste se ke stahování titulků</string>
-    <string name="settings_signin_desc">Poslední krok -- pro online titulky je vyžadován API klíč i přihlášení k účtu. Přihlaste se pomocí uživatelského jména a hesla opensubtitles.com; stahování využívá denní kvótu vašeho účtu. Zůstaneme za vás přihlášeni.</string>
+    <string name="settings_signin_desc">Poslední krok -- pro online titulky je vyžadován API klíč i přihlášení k účtu. Přihlaste se pomocí uživatelského jména a hesla opensubtitles.com; stahování čerpá z denního limitu vašeho účtu. Přihlášení za vás udržíme.</string>
     <string name="settings_placeholder_username">Uživatelské jméno</string>
     <string name="settings_placeholder_password">Heslo</string>
     <string name="settings_signing_in">Přihlašování…</string>
     <string name="settings_opensubs_key_title">API klíč OpenSubtitles</string>
-    <string name="settings_opensubs_key_desc">Online titulky vyžadují bezplatný účet opensubtitles.com se dvěma věcmi: tímto API klíčem (pro vyhledávání) a přihlášením k účtu (pro stahování). Krok 1 -- vložte API klíč; přihlásíte se poté. Před uložením jej ověříme.</string>
+    <string name="settings_opensubs_key_desc">Online titulky vyžadují bezplatný účet opensubtitles.com a dvě věci: tento API klíč (pro vyhledávání) a přihlášení k účtu (pro stahování). Krok 1 -- vložte API klíč; přihlásíte se poté. Před uložením jej ověříme.</string>
     <string name="settings_placeholder_api_key">API klíč</string>
     <string name="settings_checking">Kontrola…</string>
     <string name="settings_section_metadata">Informace o filmech a seriálech</string>
@@ -289,7 +325,7 @@
     <string name="settings_version_title">Verze</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Podpořte tuto aplikaci</string>
-    <string name="settings_support_desc">Kupte mi kávu, pokud je pro vás ARE iptv užitečná.</string>
+    <string name="settings_support_desc">Pozvěte mě na kávu, pokud vám ARE iptv dobře slouží.</string>
     <string name="settings_feedback_title">Odeslat zpětnou vazbu</string>
     <string name="settings_feedback_desc">Řekněte nám, co zlepšit — zabere to pár vteřin.</string>
     <string name="settings_feedback_action">Zanechat zpětnou vazbu</string>
@@ -330,7 +366,7 @@
     <string name="feedback_title">Odeslat zpětnou vazbu</string>
     <string name="feedback_subtitle">Vaše zpětná vazba utváří to, co vytvoříme dál. Děkujeme za pomoc.</string>
     <string name="feedback_rating_label">Jak byste aplikaci ohodnotili?</string>
-    <string name="feedback_star_cd">%1$d hvězdiček</string>
+    <string name="feedback_star_cd">Počet hvězdiček: %1$d</string>
     <string name="feedback_category_label">Čeho se to týká?</string>
     <string name="feedback_message_label">Chcete něco dodat? (nepovinné)</string>
     <string name="feedback_message_placeholder">Řekněte nám víc…</string>
@@ -364,12 +400,12 @@
     <string name="home_no_playlist_title">Zatím žádný playlist</string>
     <string name="home_no_playlist_body">Přidejte playlist z bočního panelu, abyste zde viděli své kanály, filmy a seriály.</string>
     <string name="home_section_continue_watching">Pokračovat ve sledování</string>
-    <string name="home_section_live_now">Živě právě teď</string>
+    <string name="home_section_live_now">Právě běží</string>
     <string name="home_section_categories">Procházet podle kategorie</string>
     <string name="home_section_recommended">Pro vás</string>
     <string name="home_section_for_you">Pro vás</string>
     <string name="home_section_popular">Populární</string>
-    <string name="home_section_because_you_like">Protože máte rádi %1$s</string>
+    <string name="home_section_because_you_like">Protože se vám líbí %1$s</string>
     <string name="home_section_movies">Filmy</string>
     <string name="home_section_series">Seriály</string>
     <string name="home_add_section_dialog_title">Přidat sekci</string>
@@ -377,8 +413,8 @@
     <string name="home_category_live">Živě</string>
     <string name="home_category_movie">Film</string>
     <string name="home_category_series">Seriál</string>
-    <string name="home_edit_grabbed_desc">Uchopeno -- Nahoru/Dolů pro přesun, OK pro položení</string>
-    <string name="home_edit_grab_desc">Uchopte pro změnu pořadí</string>
+    <string name="home_edit_grabbed_desc">Uchopeno -- nahoru/dolů přesun · OK položení</string>
+    <string name="home_edit_grab_desc">Uchopením změníte pořadí</string>
     <string name="home_edit_show_section">Zobrazit sekci</string>
     <string name="home_edit_hide_section">Skrýt sekci</string>
     <string name="home_edit_remove_section">Odebrat sekci</string>
@@ -388,9 +424,9 @@
     <string name="guide_title">TV program</string>
     <string name="guide_epg_unavailable">Zdroj EPG není dostupný -- kanály se zobrazují bez dat o programu.</string>
     <string name="guide_no_channel_placeholder">--</string>
-    <string name="guide_focus_hint">Zaostřete pořad pro zobrazení podrobností</string>
+    <string name="guide_focus_hint">Vyberte pořad a zobrazí se podrobnosti</string>
     <string name="guide_live_badge">ŽIVĚ</string>
-    <string name="guide_catchup_available_desc">Zpětné přehrání dostupné</string>
+    <string name="guide_catchup_available_desc">Dostupné v archivu</string>
     <string name="guide_day_yesterday">Včera</string>
     <string name="guide_day_today">Dnes</string>
     <string name="guide_day_tomorrow">Zítra</string>
@@ -399,23 +435,23 @@
     <string name="live_no_source">Přidejte playlist z bočního panelu, abyste zde viděli živé kanály.</string>
     <string name="live_title">Živá TV</string>
     <string name="live_channel_groups">Skupiny kanálů</string>
-    <string name="live_count_channels">%1$d kanálů</string>
+    <string name="live_count_channels">Kanály: %1$d</string>
     <string name="live_empty_group">V této skupině zatím nejsou žádné kanály.</string>
-    <string name="live_on_air_now">PRÁVĚ VYSÍLÁME</string>
+    <string name="live_on_air_now">PRÁVĚ SE VYSÍLÁ</string>
 
     <!-- Movies -->
     <string name="movies_no_source">Přidejte playlist z bočního panelu, abyste zde viděli filmy.</string>
     <string name="movies_title">Filmy</string>
     <string name="movies_genres">Žánry</string>
-    <string name="movies_count_titles">%1$d titulů</string>
-    <string name="category_count_items">%1$d položek</string>
+    <string name="movies_count_titles">Tituly: %1$d</string>
+    <string name="category_count_items">Položky: %1$d</string>
     <string name="movies_empty_genre">V tomto žánru zatím nejsou žádné filmy.</string>
 
     <!-- Series -->
     <string name="series_no_source">Přidejte playlist z bočního panelu, abyste zde viděli seriály.</string>
     <string name="series_title">Seriály</string>
     <string name="series_empty_genre">V tomto žánru zatím nejsou žádné seriály.</string>
-    <string name="series_episode_count">%1$d dílů</string>
+    <string name="series_episode_count">Díly: %1$d</string>
 
     <!-- Favorites -->
     <string name="favorites_no_source">Přidejte playlist z bočního panelu a poté si přidejte kanály nebo tituly do oblíbených, abyste je zde viděli.</string>
@@ -436,11 +472,19 @@
     <string name="search_scope_movies">Filmy</string>
     <string name="search_scope_series">Seriály</string>
     <string name="search_category_label">Kategorie: %1$s</string>
-    <string name="search_type_to_search">Pište pro vyhledání ve svém katalogu.</string>
-    <string name="search_min_chars">Pro vyhledávání napište alespoň %1$d znaky.</string>
-    <string name="search_no_results">Žádné výsledky pro \"%1$s\".</string>
+    <string name="search_type_to_search">Začněte psát a prohledejte svůj katalog.</string>
+    <string name="search_min_chars">Minimální počet znaků pro vyhledávání: %1$d</string>
+    <string name="search_no_results">Žádné výsledky pro „%1$s“.</string>
     <string name="search_section_live">Živá TV</string>
     <string name="search_section_titles">Filmy a seriály</string>
+
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Hledat kategorie</string>
+    <string name="browse_category_search_empty">Žádné odpovídající kategorie</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Pokračovat</string>
+    <string name="tile_action_play_from_start">Přehrát od začátku</string>
 
     <!-- Detail -->
     <string name="detail_loading">Načítání…</string>
@@ -453,10 +497,10 @@
     <string name="detail_cast_label">Obsazení:</string>
     <string name="detail_director_label">Režie:</string>
     <string name="detail_episodes_header">Díly</string>
-    <string name="detail_episodes_header_seasons">Díly · %1$d sérií · %2$d celkem</string>
-    <string name="detail_episodes_header_total">Díly · %1$d celkem</string>
+    <string name="detail_episodes_header_seasons">Díly · série: %1$d · celkem: %2$d</string>
+    <string name="detail_episodes_header_total">Díly · celkem: %1$d</string>
     <string name="detail_season_label">Série %1$d</string>
-    <string name="detail_season_episode_count">Série %1$s · %2$d dílů</string>
+    <string name="detail_season_episode_count">Série %1$s · díly: %2$d</string>
     <string name="detail_m3u_no_episodes">Tato položka playlistu nemá data o sériích/dílech -- použijte Přehrát výše a sledujte ji jako jednu položku.</string>
     <string name="detail_episodes_load_error">Nepodařilo se načíst díly: %1$s</string>
     <string name="detail_episodes_loading">Načítání dílů…</string>
@@ -464,7 +508,7 @@
     <!-- Player -->
     <string name="player_content_not_found">Obsah nenalezen</string>
     <string name="player_playback_failed">Přehrávání selhalo</string>
-    <string name="player_buffering">Ukládání do vyrovnávací paměti…</string>
+    <string name="player_buffering">Načítání…</string>
     <string name="player_up_next">Následuje</string>
     <string name="player_up_next_channel">Následuje -- %1$s</string>
     <string name="player_no_programme_data">Žádná data o programu</string>
@@ -524,12 +568,12 @@
     <string name="multiview_add_to">Přidat do Více oken</string>
     <string name="multiview_add_channel">Přidat kanál</string>
     <string name="multiview_pane_watch">Sledovat na celou obrazovku</string>
-    <string name="multiview_pane_menu_body">Otevřete tento kanál na celou obrazovku, nebo jej odeberte z multizobrazení.</string>
+    <string name="multiview_pane_menu_body">Otevřete tento kanál na celou obrazovku, nebo jej odeberte z Více oken.</string>
     <string name="multiview_added_toast">Přidáno do Více oken</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Přizpůsobit</string>
-    <string name="shell_multi_view_desc">Více obrazovek</string>
+    <string name="shell_multi_view_desc">Více oken</string>
     <string name="shell_add_playlist_desc">Přidat playlist</string>
     <string name="nav_home">Domů</string>
     <string name="nav_live_tv">Živá TV</string>
@@ -554,7 +598,7 @@
     <!-- Shared components -->
     <string name="badge_live">Živě</string>
     <string name="badge_radio">Rádio</string>
-    <string name="badge_catchup">Zpětné přehrání</string>
+    <string name="badge_catchup">Archiv</string>
     <string name="badge_smart">Smart</string>
     <string name="health_stable">Stabilní</string>
     <string name="health_moderate">Střední</string>
@@ -579,10 +623,10 @@
     <string name="settings_provider_server_time">Čas serveru</string>
     <string name="settings_provider_timezone">Časové pásmo</string>
     <string name="settings_provider_connections">Připojení</string>
-    <string name="settings_provider_connections_value">%1$d z %2$d se používá</string>
+    <string name="settings_provider_connections_value">Používá se %1$d z %2$d</string>
     <string name="settings_provider_connections_max">max. %1$d</string>
     <string name="settings_provider_expires">Vyprší</string>
-    <string name="settings_provider_expires_days">%1$s · zbývá %2$d dní</string>
+    <string name="settings_provider_expires_days">%1$s · zbývajících dní: %2$d</string>
     <string name="settings_provider_expires_today">%1$s · vyprší dnes</string>
     <string name="settings_provider_expired">Vypršelo</string>
     <string name="settings_provider_trial">Typ účtu</string>
@@ -617,7 +661,7 @@
     <string name="recording_pick_volume_title">Nahrát do</string>
     <string name="recording_volume_internal">Interní úložiště</string>
     <string name="recording_volume_usb">USB disk</string>
-    <string name="recording_volume_free">%1$s volných</string>
+    <string name="recording_volume_free">Volné místo: %1$s</string>
     <string name="recording_reason_stream_lost">Stream ztracen</string>
     <string name="recording_reason_disk_full">Disk je plný</string>
     <string name="recording_reason_drive_removed">Disk odebrán</string>
@@ -635,11 +679,11 @@
     <string name="recordings_delete_body">Tímto se z vašeho zařízení odebere „%1$s“.</string>
     <string name="recordings_status_interrupted">Přerušeno</string>
     <string name="recordings_status_failed">Selhalo</string>
-    <string name="recordings_unavailable_reconnect">Znovu připojte %1$s pro sledování</string>
-    <string name="recordings_unavailable_generic">Znovu připojte disk pro sledování</string>
+    <string name="recordings_unavailable_reconnect">Chcete-li sledovat, znovu připojte: %1$s</string>
+    <string name="recordings_unavailable_generic">Chcete-li sledovat, znovu připojte disk</string>
     <string name="recordings_missing">Soubor už na disku není</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
-    <string name="recordings_parts">počet částí: %1$d</string>
+    <string name="recordings_parts">Části: %1$d</string>
     <string name="onboarding_stalker_title">Stalker Portal</string>
     <string name="onboarding_stalker_desc">URL portálu + MAC adresa. Pro portály typu MAG, které vás identifikují podle MAC.</string>
     <string name="onboarding_portal_url_label">URL portálu</string>
@@ -679,7 +723,7 @@
     <string name="settings_sub_font_mono">Mono</string>
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
     <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
-    <string name="guide_catchup_label">Zpětné přehrávání</string>
+    <string name="guide_catchup_label">Archiv</string>
     <string name="guide_catchup_aired">Odvysíláno %1$s – %2$s</string>
     <string name="guide_catchup_watch_from_start">Přehrát od začátku</string>
     <string name="guide_catchup_go_live">Přejít na živé vysílání</string>
@@ -687,7 +731,7 @@
     <string name="player_previous_program">Předchozí pořad</string>
     <string name="player_next_program">Další pořad</string>
     <string name="support_dialog_title">Líbí se vám ARE iptv?</string>
-    <string name="support_dialog_body">Tvoří a udržuje ji jeden člověk po večerech a o víkendech. Žádné předplatné, žádné reklamy, žádné sledování toho, co díváte — prostě aplikace, která funguje. Pokud si své místo na vaší TV zaslouží, jedna káva ji udrží při životě.</string>
+    <string name="support_dialog_body">Vyvíjí a udržuje ji jeden člověk, po večerech a o víkendech. Žádné předplatné, žádné reklamy, žádné sledování toho, na co se díváte — prostě aplikace, která funguje. Pokud si své místo u vaší televize zaslouží, jedna káva pomůže, aby to tak zůstalo.</string>
     <string name="support_dialog_scan">Naskenujte a otevřete v telefonu</string>
-    <string name="support_dialog_visit">Nebo navštivte</string>
+    <string name="support_dialog_visit">Nebo přejděte na:</string>
 </resources>

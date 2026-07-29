@@ -17,7 +17,7 @@
     <string name="action_sign_in">Daxil ol</string>
     <string name="action_sign_out">Çıxış et</string>
     <string name="action_search">Axtar</string>
-    <string name="action_buy_coffee">Mənə bir qəhvə al</string>
+    <string name="action_buy_coffee">Mənə bir qəhvə qonaq et</string>
     <string name="content_desc_account">Hesab</string>
 
     <!-- Shell -->
@@ -125,12 +125,12 @@
     <string name="language_confirm_cancel">Ləğv et</string>
 
     <!-- Settings -->
-    <string name="settings_title">Parametrlər</string>
+    <string name="settings_title">Ayarlar</string>
     <string name="settings_tab_general">Ümumi</string>
     <string name="settings_tab_display">Ekran</string>
-    <string name="settings_tab_playback">Oxutma</string>
+    <string name="settings_tab_playback">Oynatma</string>
     <string name="settings_tab_subtitles">Altyazılar</string>
-    <string name="settings_tab_parental">Valideyn nəzarəti</string>
+    <string name="settings_tab_parental">Valideyn</string>
     <string name="settings_tab_about">Haqqında</string>
     <string name="settings_theme_title">Tema</string>
     <string name="settings_theme_desc">Qaranlıq, işıqlı və ya cihazınıza uyğun seçin</string>
@@ -150,20 +150,20 @@
     <string name="settings_stale_7d">7 gün</string>
     <string name="settings_stale_14d">14 gün</string>
     <string name="settings_stale_30d">30 gün</string>
-    <string name="settings_stale_off">Söndür</string>
+    <string name="settings_stale_off">Söndürülüb</string>
     <string name="settings_section_preferences">Seçimlər</string>
     <string name="settings_start_screen_title">Başlanğıc ekranı</string>
     <string name="settings_start_screen_desc">Tətbiq açılanda hansı ekran açılır.</string>
     <string name="settings_start_last_used">Son istifadə</string>
     <string name="settings_auto_refresh_title">Açılışda avtomatik yenilə</string>
     <string name="settings_auto_refresh_desc">Tətbiq açılanda kataloqu arxa planda yenilə.</string>
-    <string name="settings_auto_refresh_off">Söndür</string>
+    <string name="settings_auto_refresh_off">Söndürülüb</string>
     <string name="settings_auto_refresh_daily">Gündəlik</string>
     <string name="settings_auto_refresh_weekly">Həftəlik</string>
     <string name="settings_confirm_exit_title">Çıxışdan əvvəl təsdiqlə</string>
     <string name="settings_confirm_exit_desc">Tətbiqdən çıxarkən təsdiq istə.</string>
     <string name="settings_section_content_locking">Məzmun kilidi</string>
-    <string name="settings_relock_title">Sonra yenidən kilidlə</string>
+    <string name="settings_relock_title">Avtomatik yenidən kilidləmə</string>
     <string name="settings_relock_desc">PIN açması yetkin məzmunu nə qədər görünən saxlayır.</string>
     <string name="settings_relock_immediately">Dərhal</string>
     <string name="settings_relock_15min">15 dəq</string>
@@ -190,10 +190,10 @@
     <string name="settings_clear_cache_confirm">Keşlənmiş afişalar və kanal loqoları təmizlənsin? Növbəti dəfə göstəriləndə yenidən yüklənəcək.</string>
     <string name="settings_clear_history_title">İzləmə tarixçəsini təmizlə</string>
     <string name="settings_clear_history_desc">Bütün İzləməyə davam elementlərini sil</string>
-    <string name="settings_clear_history_confirm">Bütün İzləməyə davam irəliləyişi silinsin? Bu geri qaytarıla bilməz.</string>
-    <string name="settings_reset_title">Defolt olaraq sıfırla</string>
-    <string name="settings_reset_desc">Görünüş və oxutma parametrlərini bərpa et</string>
-    <string name="settings_reset_confirm">Görünüş və oxutma parametrləri defolta sıfırlansın? Pleylistləriniz, girişləriniz, dil və valideyn kilidi saxlanılır.</string>
+    <string name="settings_clear_history_confirm">İzləməyə davam bölməsindəki bütün irəliləyiş silinsin? Bu geri qaytarıla bilməz.</string>
+    <string name="settings_reset_title">İlkin ayarlara qaytar</string>
+    <string name="settings_reset_desc">Görünüş və oynatma ayarlarını bərpa et</string>
+    <string name="settings_reset_confirm">Görünüş və oynatma ayarları ilkin vəziyyətə qaytarılsın? Pleylistləriniz, girişləriniz, dil və valideyn kilidi saxlanılır.</string>
     <string name="settings_reset_action">Sıfırla</string>
     <string name="settings_section_playlists">Pleylistlər və sinxronlaşma</string>
     <string name="settings_refresh_catalog">Kataloqu yenilə</string>
@@ -226,11 +226,11 @@
     <string name="settings_hardware_decoding">Aparat dekodlaşdırma</string>
     <string name="settings_hardware_decoding_desc">Aparat dekoderlərinə üstünlük verir; axın tələb edərsə proqram təminatına keçir.</string>
     <string name="settings_autoplay_next">Növbəti epizodu avtomatik oynat</string>
-    <string name="settings_autoplay_next_desc">Hələlik yalnız üstünlükdür -- avtomatik keçid hələ qoşulmayıb; növbəti epizodu Detaldan seçin.</string>
+    <string name="settings_autoplay_next_desc">Hələlik sadəcə bir ayardır -- avtomatik keçid hələ qoşulmayıb; növbəti epizodu Detaldan seçin.</string>
     <string name="settings_mini_player_behavior">Mini pleyer davranışı</string>
-    <string name="settings_mini_player_behavior_desc">Dayanmış mini pleyerin yaxınlığında gəzərkən: onu boş küncə sürüşdür, yoxsa söndürüb kiçilt.</string>
+    <string name="settings_mini_player_behavior_desc">Yerləşdirilmiş mini pleyerin yaxınlığında gəzərkən: onu boş küncə sürüşdürün, ya da solğunlaşdırıb kiçildin.</string>
     <string name="settings_mini_player_dodge">Avtomatik yayın</string>
-    <string name="settings_mini_player_fade">Sön və kiçilt</string>
+    <string name="settings_mini_player_fade">Solğunlaşdır və kiçilt</string>
     <string name="settings_section_parental">Valideyn nəzarəti</string>
     <string name="settings_lock_adult">Yetkinlər üçün kateqoriyaları kilidlə</string>
     <string name="settings_lock_adult_desc">Aktiv edildikdən sonra söndürmək üçün PIN tələb olunur.</string>
@@ -249,7 +249,7 @@
     <string name="settings_account">Hesab</string>
     <string name="settings_account_signed_in">%1$s kimi daxil olundu -- altyazı yükləmələri aktivdir.</string>
     <string name="settings_signin_title">Altyazıları yükləmək üçün daxil olun</string>
-    <string name="settings_signin_desc">Son addım -- onlayn altyazılar üçün həm API açarı, həm də hesab girişiniz tələb olunur. opensubtitles.com istifadəçi adınız və parolunuzla daxil olun; yükləmələr hesabınızın gündəlik kvotasından istifadə edir. Sizin üçün daxil olmuş qalırıq.</string>
+    <string name="settings_signin_desc">Son addım -- onlayn altyazılar üçün həm API açarı, həm də hesab girişiniz tələb olunur. opensubtitles.com istifadəçi adınız və parolunuzla daxil olun; yükləmələr hesabınızın gündəlik kvotasından istifadə edir. Girişinizi sizin üçün açıq saxlayırıq.</string>
     <string name="settings_placeholder_username">İstifadəçi adı</string>
     <string name="settings_placeholder_password">Parol</string>
     <string name="settings_signing_in">Daxil olunur…</string>
@@ -288,8 +288,8 @@
     <string name="settings_section_about">Haqqında</string>
     <string name="settings_version_title">Versiya</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
-    <string name="settings_support_title">Bu tətbiqi dəstəklə</string>
-    <string name="settings_support_desc">ARE iptv sizin üçün faydalıdırsa, mənə bir qəhvə alın.</string>
+    <string name="settings_support_title">Bu tətbiqi dəstəkləyin</string>
+    <string name="settings_support_desc">ARE iptv işinizə yarayırsa, mənə bir qəhvə qonaq edin.</string>
     <string name="settings_feedback_title">Rəy göndərin</string>
     <string name="settings_feedback_desc">Nəyi yaxşılaşdırmağımızı bizə deyin — cəmi bir neçə saniyə çəkir.</string>
     <string name="settings_feedback_action">Rəy bildirin</string>
@@ -324,7 +324,7 @@
     <string name="hud_ctl_skip_previous">Əvvəlki</string>
     <string name="hud_ctl_skip_next">Sonrakı</string>
     <string name="hud_ctl_favorite">Sevimli</string>
-    <string name="hud_ctl_record">Yaz</string>
+    <string name="hud_ctl_record">Qeyd</string>
     <string name="player_recording_label">REC</string>
     <string name="player_recording_reconnecting">Yenidən qoşulur…</string>
     <string name="feedback_title">Rəy göndərin</string>
@@ -333,14 +333,14 @@
     <string name="feedback_star_cd">%1$d ulduz</string>
     <string name="feedback_category_label">Nə haqqındadır?</string>
     <string name="feedback_message_label">Əlavə etmək istədiyiniz bir şey varmı? (istəyə bağlı)</string>
-    <string name="feedback_message_placeholder">Bizə daha çox danışın…</string>
+    <string name="feedback_message_placeholder">Bizə daha ətraflı yazın…</string>
     <string name="feedback_send">Göndər</string>
     <string name="feedback_sending">Göndərilir…</string>
     <string name="feedback_thanks">Təşəkkürlər! Rəyiniz göndərildi.</string>
     <string name="feedback_error">İndi göndərmək alınmadı. Bağlantınızı yoxlayıb yenidən cəhd edin.</string>
     <string name="feedback_qr_title">Daha çox yazmaq istəyirsiniz?</string>
     <string name="feedback_qr_desc">Rəy formasını açmaq və əsl klaviaturada yazmaq üçün bunu telefonunuzla skan edin.</string>
-    <string name="feedback_cat_playback">Oxutma</string>
+    <string name="feedback_cat_playback">Oynatma</string>
     <string name="feedback_cat_guide">TV Bələdçisi</string>
     <string name="feedback_cat_layout">Tərtibat</string>
     <string name="feedback_cat_favorites">Sevimlilər</string>
@@ -358,12 +358,12 @@
 
     <!-- Home -->
     <string name="home_add_section">Bölmə əlavə et</string>
-    <string name="home_remove_continue_watching_title">İzləməyə davam etdən silinsin?</string>
+    <string name="home_remove_continue_watching_title">İzləməyə davam bölməsindən silinsin?</string>
     <string name="home_remove_continue_watching_body">“%1$s” burada göstərilməyi dayandıracaq. Yeriniz saxlanılmır.</string>
     <string name="home_loading_catalog">Kataloqunuz yüklənir…</string>
     <string name="home_no_playlist_title">Hələ pleylist yoxdur</string>
     <string name="home_no_playlist_body">Kanallarınızı, filmlərinizi və seriallarınızı burada görmək üçün yan paneldən pleylist əlavə edin.</string>
-    <string name="home_section_continue_watching">İzləməyə davam et</string>
+    <string name="home_section_continue_watching">İzləməyə davam</string>
     <string name="home_section_live_now">İndi canlı</string>
     <string name="home_section_categories">Kateqoriyaya görə bax</string>
     <string name="home_section_recommended">Sizin üçün</string>
@@ -429,7 +429,7 @@
 
     <!-- Search -->
     <string name="search_no_source">Kataloqunuzu axtarmaq üçün yan paneldən pleylist əlavə edin.</string>
-    <string name="search_title">Axtar</string>
+    <string name="search_title">Axtarış</string>
     <string name="search_placeholder">Kanalları, filmləri, serialları axtar…</string>
     <string name="search_scope_all">Hamısı</string>
     <string name="search_scope_live">Canlı TV</string>
@@ -455,8 +455,8 @@
     <string name="detail_episodes_header">Epizodlar</string>
     <string name="detail_episodes_header_seasons">Epizodlar · %1$d mövsüm · cəmi %2$d</string>
     <string name="detail_episodes_header_total">Epizodlar · cəmi %1$d</string>
-    <string name="detail_season_label">%1$d-ci mövsüm</string>
-    <string name="detail_season_episode_count">%1$s mövsüm · %2$d epizod</string>
+    <string name="detail_season_label">Mövsüm %1$d</string>
+    <string name="detail_season_episode_count">Mövsüm %1$s · %2$d epizod</string>
     <string name="detail_m3u_no_episodes">Bu pleylist qeydində mövsüm/epizod məlumatı yoxdur -- onu tək element kimi izləmək üçün yuxarıdakı Oynat düyməsindən istifadə edin.</string>
     <string name="detail_episodes_load_error">Epizodlar yüklənə bilmədi: %1$s</string>
     <string name="detail_episodes_loading">Epizodlar yüklənir…</string>
@@ -481,7 +481,7 @@
     <string name="player_audio_track">Səs cığırı</string>
     <string name="player_subtitles">Altyazılar</string>
     <string name="player_aspect_ratio">Tərəflər nisbəti</string>
-    <string name="player_playback_speed">Oxutma sürəti</string>
+    <string name="player_playback_speed">Oynatma sürəti</string>
     <string name="player_audio_delay">Səs sinxronizasiyası</string>
     <string name="player_aspect_fit">Sığdır</string>
     <string name="player_aspect_fill">Doldur</string>
@@ -529,16 +529,16 @@
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Fərdiləşdir</string>
-    <string name="shell_multi_view_desc">Çoxekranlı görünüş</string>
+    <string name="shell_multi_view_desc">Çoxlu görünüş</string>
     <string name="shell_add_playlist_desc">Pleylist əlavə et</string>
     <string name="nav_home">Ana səhifə</string>
     <string name="nav_live_tv">Canlı TV</string>
     <string name="nav_tv_guide">TV Bələdçisi</string>
     <string name="nav_movies">Filmlər</string>
     <string name="nav_series">Seriallar</string>
-    <string name="nav_search">Axtar</string>
+    <string name="nav_search">Axtarış</string>
     <string name="nav_favorites">Sevimlilər</string>
-    <string name="nav_settings">Parametrlər</string>
+    <string name="nav_settings">Ayarlar</string>
 
     <!-- Browse layout (shared Live/Movies/Series) -->
     <string name="browse_categories_header">Kateqoriyalar</string>
@@ -635,7 +635,7 @@
     <string name="recordings_delete_body">Bu, “%1$s” elementini cihazınızdan silir.</string>
     <string name="recordings_status_interrupted">Kəsildi</string>
     <string name="recordings_status_failed">Alınmadı</string>
-    <string name="recordings_unavailable_reconnect">Baxmaq üçün %1$s-i yenidən qoşun</string>
+    <string name="recordings_unavailable_reconnect">Baxmaq üçün %1$s diskini yenidən qoşun</string>
     <string name="recordings_unavailable_generic">Baxmaq üçün diski yenidən qoşun</string>
     <string name="recordings_missing">Fayl artıq diskdə deyil</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
@@ -651,10 +651,10 @@
     <string name="settings_preferred_audio_title">Tərcih edilən səs</string>
     <string name="settings_preferred_audio_desc">Mümkün olduqda bu səs dilini avtomatik seç</string>
     <string name="settings_audio_auto">Avtomatik</string>
-    <string name="settings_autoplay_off">Söndür</string>
+    <string name="settings_autoplay_off">Söndürülüb</string>
     <string name="settings_section_subtitle_appearance">Altyazı görünüşü</string>
     <string name="settings_sub_size_title">Mətn ölçüsü</string>
-    <string name="settings_sub_size_desc">Oxutma zamanı altyazı mətninin ölçüsü</string>
+    <string name="settings_sub_size_desc">Oynatma zamanı altyazı mətninin ölçüsü</string>
     <string name="settings_sub_style_title">Üslub</string>
     <string name="settings_sub_style_desc">Altyazının video üzərində çəkilmə tərzi</string>
     <string name="settings_sub_style_box">Qutu</string>
@@ -664,10 +664,10 @@
     <string name="settings_sub_color_desc">Altyazı mətninin rəngi</string>
     <string name="settings_sub_font_title">Şrift</string>
     <string name="settings_sub_font_desc">Altyazı şrifti</string>
-    <string name="settings_sub_font_default">Defolt</string>
+    <string name="settings_sub_font_default">Standart</string>
     <string name="player_autoplay_next_title">Növbəti</string>
     <string name="player_autoplay_next_in">Növbəti epizod %1$d saniyəyə…</string>
-    <string name="player_autoplay_play_now">İndi oxut</string>
+    <string name="player_autoplay_play_now">İndi oynat</string>
     <string name="settings_autoplay_5s">5s</string>
     <string name="settings_autoplay_10s">10s</string>
     <string name="settings_sub_size_s">S</string>
@@ -683,11 +683,32 @@
     <string name="guide_catchup_aired">Yayımlandı %1$s – %2$s</string>
     <string name="guide_catchup_watch_from_start">Əvvəldən izlə</string>
     <string name="guide_catchup_go_live">Canlıya keç</string>
-    <string name="guide_catchup_record_soon">Yaz (tezliklə)</string>
+    <string name="guide_catchup_record_soon">Qeyd et (tezliklə)</string>
     <string name="player_previous_program">Əvvəlki proqram</string>
     <string name="player_next_program">Növbəti proqram</string>
-    <string name="support_dialog_title">ARE iptv xoşunuza gəlir?</string>
-    <string name="support_dialog_body">Onu bir nəfər axşamları və həftəsonları hazırlayır və saxlayır. Abunə yoxdur, reklam yoxdur, nəyə baxdığınız izlənmir — sadəcə işləyən bir tətbiq. Televizorunuzda yerini doğruldursa, bir qəhvə onu davam etdirər.</string>
+    <string name="support_dialog_title">ARE iptv xoşunuza gəlirmi?</string>
+    <string name="support_dialog_body">Onu tək bir adam axşamlar və həftəsonları yazır və yeniləyir. Abunə yoxdur, reklam yoxdur, nəyə baxdığınız izlənmir — sadəcə işləyən bir tətbiq. Televizorunuzda yerini qazanıbsa, bir qəhvə bu işi davam etdirməyə bəs edər.</string>
     <string name="support_dialog_scan">Telefonunuzda açmaq üçün skan edin</string>
-    <string name="support_dialog_visit">Və ya ziyarət edin</string>
+    <string name="support_dialog_visit">Və ya bu ünvana keçin:</string>
+    <string name="explore_link">Pulsuz IPTV pleylistlərini kəşf edin</string>
+    <string name="sources_from_explore">Kəşf bölməsindən</string>
+    <string name="explore_title">Pulsuz IPTV kəşfi</string>
+    <string name="explore_subtitle">İctimai siyahıda olan, pulsuz yayımlanan və icma tərəfindən saxlanılan pleylistlər. ARE iptv bu yayımları saxlamır və onlara nəzarət etmir; əlçatanlıq ölkəyə görə dəyişir.</string>
+    <string name="explore_used_count">%2$d pleylistdən %1$d istifadədə</string>
+    <string name="explore_channels_approx">~%1$d kanal</string>
+    <string name="explore_hint">Kanal sayları təxminidir və tez-tez dəyişir.</string>
+    <string name="explore_add_title">“%1$s” əlavə et</string>
+    <string name="explore_add_body">İstədiyiniz adı verin — sonra dəyişə bilərsiniz.</string>
+    <string name="explore_add_action">Pleylist əlavə et</string>
+    <string name="explore_name_label">Pleylist adı</string>
+    <string name="explore_adding_title">Pleylist əlavə edilir…</string>
+    <string name="explore_adding_body">“%1$s” gətirilir. Böyük siyahıda bu bir qədər vaxt apara bilər.</string>
+    <string name="explore_failed_title">Bu pleylist əlavə edilə bilmədi</string>
+    <string name="explore_failed_body">“%1$s” yüklənə bilmədi. Siyahı yerini dəyişmiş və ya müvəqqəti olaraq əlçatmaz ola bilər — problem cihazınızda deyil, pleylistdədir. Başqasını sınayın.</string>
+    <string name="explore_cap_title">%1$d pleylistiniz var</string>
+    <string name="explore_cap_body">Bu, maksimumdur. Yenisini əlavə etmək üçün siyahınızdan birini silin.</string>
+    <string name="browse_category_search_placeholder">Kateqoriya axtar</string>
+    <string name="browse_category_search_empty">Uyğun kateqoriya yoxdur</string>
+    <string name="tile_action_resume">Davam et</string>
+    <string name="tile_action_play_from_start">Əvvəldən oynat</string>
 </resources>

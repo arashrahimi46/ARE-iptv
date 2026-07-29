@@ -130,10 +130,10 @@
     <string name="settings_tab_display">Görüntü</string>
     <string name="settings_tab_playback">Oynatma</string>
     <string name="settings_tab_subtitles">Altyazılar</string>
-    <string name="settings_tab_parental">Ebeveyn denetimi</string>
+    <string name="settings_tab_parental">Ebeveyn</string>
     <string name="settings_tab_about">Hakkında</string>
     <string name="settings_theme_title">Tema</string>
-    <string name="settings_theme_desc">Koyu, açık veya cihaza uygun seçin</string>
+    <string name="settings_theme_desc">Koyu, açık ya da cihazınızın ayarını izleyin</string>
     <string name="settings_theme_dark">Koyu</string>
     <string name="settings_theme_light">Açık</string>
     <string name="settings_theme_system">Sistem</string>
@@ -163,7 +163,7 @@
     <string name="settings_confirm_exit_title">Çıkmadan önce onayla</string>
     <string name="settings_confirm_exit_desc">Uygulamadan çıkarken onay iste.</string>
     <string name="settings_section_content_locking">İçerik kilidi</string>
-    <string name="settings_relock_title">Şundan sonra yeniden kilitle</string>
+    <string name="settings_relock_title">Otomatik yeniden kilitleme</string>
     <string name="settings_relock_desc">PIN ile açmanın yetişkin içeriğini ne kadar görünür tutacağı.</string>
     <string name="settings_relock_immediately">Hemen</string>
     <string name="settings_relock_15min">15 dk</string>
@@ -289,7 +289,7 @@
     <string name="settings_version_title">Sürüm</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Bu uygulamaya destek olun</string>
-    <string name="settings_support_desc">ARE iptv sizin için faydalıysa bana bir kahve ısmarlayın.</string>
+    <string name="settings_support_desc">ARE iptv işinize yarıyorsa bana bir kahve ısmarlayın.</string>
     <string name="settings_feedback_title">Geri bildirim gönder</string>
     <string name="settings_feedback_desc">Neyi iyileştirmemiz gerektiğini söyleyin — yalnızca birkaç saniye sürer.</string>
     <string name="settings_feedback_action">Geri bildirimde bulun</string>
@@ -390,7 +390,7 @@
     <string name="guide_no_channel_placeholder">--</string>
     <string name="guide_focus_hint">Ayrıntıları görmek için bir programa odaklanın</string>
     <string name="guide_live_badge">CANLI</string>
-    <string name="guide_catchup_available_desc">Geri sarma mevcut</string>
+    <string name="guide_catchup_available_desc">Tekrar izleme mevcut</string>
     <string name="guide_day_yesterday">Dün</string>
     <string name="guide_day_today">Bugün</string>
     <string name="guide_day_tomorrow">Yarın</string>
@@ -407,7 +407,7 @@
     <string name="movies_no_source">Filmleri burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
     <string name="movies_title">Filmler</string>
     <string name="movies_genres">Türler</string>
-    <string name="movies_count_titles">%1$d başlık</string>
+    <string name="movies_count_titles">%1$d film</string>
     <string name="category_count_items">%1$d öğe</string>
     <string name="movies_empty_genre">Bu türde henüz film yok.</string>
 
@@ -418,7 +418,7 @@
     <string name="series_episode_count">%1$d bölüm</string>
 
     <!-- Favorites -->
-    <string name="favorites_no_source">Kenar çubuğundan bir oynatma listesi ekleyin, ardından kanalları veya başlıkları favorilere ekleyerek burada görün.</string>
+    <string name="favorites_no_source">Kenar çubuğundan bir oynatma listesi ekleyin; favorilere eklediğiniz kanallar ve içerikler burada görünür.</string>
     <string name="favorites_title">Favoriler</string>
     <string name="favorites_tab_channels">Kanallar</string>
     <string name="favorites_tab_movies">Filmler</string>
@@ -446,7 +446,7 @@
     <string name="detail_loading">Yükleniyor…</string>
     <string name="detail_not_found">Başlık bulunamadı</string>
     <string name="detail_play">Oynat</string>
-    <string name="detail_play_episode">Oynat S%1$d · B%2$d</string>
+    <string name="detail_play_episode">S%1$d · B%2$d oynat</string>
     <string name="detail_add_to_favorites">Favorilere ekle</string>
     <string name="detail_remove_from_favorites">Favorilerden kaldır</string>
     <string name="detail_storyline">Konu</string>
@@ -464,7 +464,7 @@
     <!-- Player -->
     <string name="player_content_not_found">İçerik bulunamadı</string>
     <string name="player_playback_failed">Oynatma başarısız</string>
-    <string name="player_buffering">Ara belleğe alınıyor…</string>
+    <string name="player_buffering">Arabelleğe alınıyor…</string>
     <string name="player_up_next">Sıradaki</string>
     <string name="player_up_next_channel">Sıradaki -- %1$s</string>
     <string name="player_no_programme_data">Program verisi yok</string>
@@ -554,7 +554,7 @@
     <!-- Shared components -->
     <string name="badge_live">Canlı</string>
     <string name="badge_radio">Radyo</string>
-    <string name="badge_catchup">Geri sarma</string>
+    <string name="badge_catchup">Tekrar izle</string>
     <string name="badge_smart">Akıllı</string>
     <string name="health_stable">Kararlı</string>
     <string name="health_moderate">Orta</string>
@@ -583,7 +583,7 @@
     <string name="settings_provider_connections_max">en fazla %1$d</string>
     <string name="settings_provider_expires">Bitiş</string>
     <string name="settings_provider_expires_days">%1$s · %2$d gün kaldı</string>
-    <string name="settings_provider_expires_today">%1$s · bugün doluyor</string>
+    <string name="settings_provider_expires_today">%1$s · süresi bugün doluyor</string>
     <string name="settings_provider_expired">Süresi doldu</string>
     <string name="settings_provider_trial">Hesap türü</string>
     <string name="settings_provider_trial_value">Deneme</string>
@@ -680,14 +680,35 @@
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
     <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
     <string name="guide_catchup_label">Tekrar izle</string>
-    <string name="guide_catchup_aired">Yayınlandı %1$s – %2$s</string>
+    <string name="guide_catchup_aired">%1$s – %2$s arasında yayınlandı</string>
     <string name="guide_catchup_watch_from_start">Baştan izle</string>
     <string name="guide_catchup_go_live">Canlıya geç</string>
     <string name="guide_catchup_record_soon">Kaydet (yakında)</string>
     <string name="player_previous_program">Önceki program</string>
     <string name="player_next_program">Sonraki program</string>
     <string name="support_dialog_title">ARE iptv hoşunuza gidiyor mu?</string>
-    <string name="support_dialog_body">Tek bir kişi tarafından akşamları ve hafta sonları geliştirilip bakımı yapılıyor. Abonelik yok, reklam yok, ne izlediğinizin takibi yok — sadece çalışan bir uygulama. Televizyonunuzdaki yerini hak ediyorsa, bir kahve onu ayakta tutar.</string>
+    <string name="support_dialog_body">Akşamları ve hafta sonları tek bir kişi geliştiriyor ve bakımını yapıyor. Abonelik yok, reklam yok, ne izlediğinizin takibi yok — sadece çalışan bir uygulama. Televizyonunuzdaki yerini hak ediyorsa, bir kahve yoluna devam etmesine yeter.</string>
     <string name="support_dialog_scan">Telefonunuzda açmak için tarayın</string>
-    <string name="support_dialog_visit">Ya da şu adresi ziyaret edin</string>
+    <string name="support_dialog_visit">Ya da şu adresi ziyaret edin:</string>
+    <string name="explore_link">Ücretsiz IPTV listelerini keşfedin</string>
+    <string name="sources_from_explore">Keşfet\'ten</string>
+    <string name="explore_title">Ücretsiz IPTV keşfi</string>
+    <string name="explore_subtitle">Topluluk tarafından bakımı yapılan, herkese açık ve ücretsiz oynatma listeleri. ARE iptv bu yayınları barındırmaz ve denetlemez; erişilebilirlik ülkeye göre değişir.</string>
+    <string name="explore_used_count">%2$d listeden %1$d tanesi kullanımda</string>
+    <string name="explore_channels_approx">~%1$d kanal</string>
+    <string name="explore_hint">Kanal sayıları yaklaşıktır ve sık sık değişir.</string>
+    <string name="explore_add_title">“%1$s” ekle</string>
+    <string name="explore_add_body">Dilediğiniz adı verin — sonradan değiştirebilirsiniz.</string>
+    <string name="explore_add_action">Oynatma listesi ekle</string>
+    <string name="explore_name_label">Oynatma listesi adı</string>
+    <string name="explore_adding_title">Oynatma listesi ekleniyor…</string>
+    <string name="explore_adding_body">“%1$s” alınıyor. Büyük bir listede bu biraz zaman alabilir.</string>
+    <string name="explore_failed_title">Bu oynatma listesi eklenemedi</string>
+    <string name="explore_failed_body">“%1$s” yüklenemedi. Liste taşınmış ya da geçici olarak erişilemiyor olabilir — sorun cihazınızda değil, oynatma listesinde. Başka birini deneyin.</string>
+    <string name="explore_cap_title">%1$d oynatma listeniz var</string>
+    <string name="explore_cap_body">Bu, üst sınırdır. Yeni bir tane eklemek için listenizden birini kaldırın.</string>
+    <string name="browse_category_search_placeholder">Kategori ara</string>
+    <string name="browse_category_search_empty">Eşleşen kategori yok</string>
+    <string name="tile_action_resume">Devam et</string>
+    <string name="tile_action_play_from_start">Baştan oynat</string>
 </resources>

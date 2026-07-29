@@ -17,7 +17,7 @@
     <string name="action_sign_in">Se connecter</string>
     <string name="action_sign_out">Se déconnecter</string>
     <string name="action_search">Rechercher</string>
-    <string name="action_buy_coffee">Offre-moi un café</string>
+    <string name="action_buy_coffee">Offrez-moi un café</string>
     <string name="content_desc_account">Compte</string>
 
     <!-- Shell -->
@@ -80,7 +80,7 @@
     <string name="privacy_title">Confidentialité et conditions</string>
     <string name="privacy_subtitle">Merci de lire et d\'accepter avant de continuer.</string>
     <string name="privacy_accept_label">J\'ai lu et j\'accepte la politique de confidentialité et les conditions d\'utilisation.</string>
-    <string name="privacy_summary">Vos playlists, mots de passe et historique de lecture restent sur cet appareil — nous ne les recevons jamais. Nous collectons des diagnostics anonymes de plantage et d\'utilisation, que vous pouvez désactiver ci-dessous ou dans les Réglages à tout moment. ARE iptv ne fournit aucune chaîne ni contenu : vous apportez vos propres sources.</string>
+    <string name="privacy_summary">Vos playlists, mots de passe et historique de lecture restent sur cet appareil — nous ne les recevons jamais. Nous collectons des diagnostics anonymes de plantage et d\'utilisation, que vous pouvez désactiver ci-dessous ou dans les Paramètres à tout moment. ARE iptv ne fournit aucune chaîne ni contenu : vous apportez vos propres sources.</string>
     <string name="privacy_read_full">Lire l\'intégralité de la politique de confidentialité et des conditions</string>
     <string name="privacy_crash_label">Envoyer des rapports de plantage et données d\'utilisation anonymes</string>
     <string name="privacy_updated_note">Nous avons mis à jour notre politique de confidentialité et nos conditions. Veuillez les lire et les accepter pour continuer.</string>
@@ -687,7 +687,35 @@
     <string name="player_previous_program">Programme précédent</string>
     <string name="player_next_program">Programme suivant</string>
     <string name="support_dialog_title">ARE iptv vous plaît ?</string>
-    <string name="support_dialog_body">Elle est conçue et maintenue par une seule personne, le soir et le week-end. Pas d\'abonnement, pas de publicité, aucun suivi de ce que vous regardez — juste une appli qui fonctionne. Si elle mérite sa place sur votre téléviseur, un café la garde en vie.</string>
+    <string name="support_dialog_body">Elle est développée et maintenue par une seule personne, le soir et le week-end. Pas d\'abonnement, pas de publicité, aucun suivi de ce que vous regardez — juste une appli qui fonctionne. Si elle mérite sa place sur votre téléviseur, un café l\'aide à avancer.</string>
     <string name="support_dialog_scan">Scannez pour ouvrir sur votre téléphone</string>
-    <string name="support_dialog_visit">Ou rendez-vous sur</string>
+    <string name="support_dialog_visit">Ou rendez-vous sur :</string>
+
+    <!-- Explore free playlists -->
+    <string name="explore_link">Explorer des playlists IPTV gratuites</string>
+    <string name="sources_from_explore">Depuis Explorer</string>
+    <string name="explore_title">Explorer l\'IPTV gratuite</string>
+    <string name="explore_subtitle">Des playlists en clair, répertoriées publiquement et maintenues par la communauté. ARE iptv n\'héberge ni ne contrôle ces flux, et leur disponibilité varie selon les pays.</string>
+    <string name="explore_used_count">%1$d playlists sur %2$d utilisées</string>
+    <string name="explore_channels_approx">~%1$d chaînes</string>
+    <string name="explore_hint">Le nombre de chaînes est approximatif et change souvent.</string>
+    <string name="explore_add_title">Ajouter « %1$s »</string>
+    <string name="explore_add_body">Donnez-lui le nom que vous voulez — vous pourrez le changer plus tard.</string>
+    <string name="explore_add_action">Ajouter la playlist</string>
+    <string name="explore_name_label">Nom de la playlist</string>
+    <string name="explore_adding_title">Ajout de la playlist…</string>
+    <string name="explore_adding_body">Récupération de « %1$s ». Cela peut prendre un moment sur une grande liste.</string>
+    <string name="explore_failed_title">Impossible d\'ajouter cette playlist</string>
+    <string name="explore_failed_body">« %1$s » n\'a pas pu être chargée. La liste a peut-être été déplacée ou est temporairement indisponible — le problème vient de la playlist, pas de votre appareil. Essayez-en une autre.</string>
+    <string name="explore_cap_title">Vous avez %1$d playlists</string>
+    <string name="explore_cap_body">C\'est le maximum. Retirez-en une de votre liste pour en ajouter une autre.</string>
+
+    <!-- Category browse search -->
+    <string name="browse_category_search_placeholder">Rechercher des catégories</string>
+    <string name="browse_category_search_empty">Aucune catégorie correspondante</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Reprendre</string>
+    <string name="tile_action_play_from_start">Lire depuis le début</string>
+
 </resources>

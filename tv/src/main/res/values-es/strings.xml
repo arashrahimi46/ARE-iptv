@@ -624,7 +624,7 @@
     <string name="recording_reason_slow_disk">Unidad lenta: se descartaron algunos datos</string>
     <string name="recording_reason_crash">Recuperada tras una interrupción inesperada</string>
     <string name="recordings_title">Grabaciones</string>
-    <string name="recordings_empty">Aún no hay grabaciones. Pulsa ● REC mientras ves la TV en directo.</string>
+    <string name="recordings_empty">Aún no hay grabaciones. Pulsa ● REC mientras ves la TV en vivo.</string>
     <string name="recordings_group_recording_now">Grabando ahora</string>
     <string name="recordings_group_completed">Completadas</string>
     <string name="recordings_group_interrupted">Interrumpidas</string>
@@ -688,6 +688,34 @@
     <string name="player_next_program">Programa siguiente</string>
     <string name="support_dialog_title">¿Te gusta ARE iptv?</string>
     <string name="support_dialog_body">La crea y mantiene una sola persona, por las tardes y los fines de semana. Sin suscripción, sin anuncios, sin rastrear lo que ves: solo una app que funciona. Si se gana su sitio en tu tele, un café la mantiene en marcha.</string>
-    <string name="support_dialog_scan">Escanea para abrirlo en tu móvil</string>
-    <string name="support_dialog_visit">O visita</string>
+    <string name="support_dialog_scan">Escanea para abrir la página en tu móvil</string>
+    <string name="support_dialog_visit">O visita:</string>
+
+    <!-- Explore free playlists -->
+    <string name="explore_link">Explorar listas IPTV gratuitas</string>
+    <string name="sources_from_explore">Desde Explorar</string>
+    <string name="explore_title">Explorar IPTV gratuita</string>
+    <string name="explore_subtitle">Listas en abierto, publicadas y mantenidas por la comunidad. ARE iptv no aloja ni controla estas emisiones, y la disponibilidad varía según el país.</string>
+    <string name="explore_used_count">%1$d de %2$d listas usadas</string>
+    <string name="explore_channels_approx">~%1$d canales</string>
+    <string name="explore_hint">El número de canales es aproximado y cambia a menudo.</string>
+    <string name="explore_add_title">Añadir «%1$s»</string>
+    <string name="explore_add_body">Ponle el nombre que quieras; puedes cambiarlo más adelante.</string>
+    <string name="explore_add_action">Añadir lista</string>
+    <string name="explore_name_label">Nombre de la lista</string>
+    <string name="explore_adding_title">Añadiendo lista…</string>
+    <string name="explore_adding_body">Obteniendo «%1$s». En una lista grande puede tardar un momento.</string>
+    <string name="explore_failed_title">No se pudo añadir esa lista</string>
+    <string name="explore_failed_body">No se pudo cargar «%1$s». Puede que la lista haya cambiado de sitio o no esté disponible ahora mismo: el problema es de la lista, no de tu dispositivo. Prueba con otra.</string>
+    <string name="explore_cap_title">Tienes %1$d listas</string>
+    <string name="explore_cap_body">Es el máximo. Quita una de tus listas para añadir otra.</string>
+
+    <!-- Category browse search -->
+    <string name="browse_category_search_placeholder">Buscar categorías</string>
+    <string name="browse_category_search_empty">No hay categorías que coincidan</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Reanudar</string>
+    <string name="tile_action_play_from_start">Reproducir desde el principio</string>
+
 </resources>

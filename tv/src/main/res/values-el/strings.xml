@@ -17,7 +17,7 @@
     <string name="action_sign_in">Σύνδεση</string>
     <string name="action_sign_out">Αποσύνδεση</string>
     <string name="action_search">Αναζήτηση</string>
-    <string name="action_buy_coffee">Κέρασέ με έναν καφέ</string>
+    <string name="action_buy_coffee">Κεράστε με έναν καφέ</string>
     <string name="content_desc_account">Λογαριασμός</string>
 
     <!-- Shell -->
@@ -133,7 +133,7 @@
     <string name="settings_tab_parental">Γονικός έλεγχος</string>
     <string name="settings_tab_about">Σχετικά</string>
     <string name="settings_theme_title">Θέμα</string>
-    <string name="settings_theme_desc">Επιλέξτε σκούρο, ανοιχτό ή ακολουθία συσκευής</string>
+    <string name="settings_theme_desc">Επιλέξτε σκούρο, ανοιχτό ή αυτόματο βάσει συσκευής</string>
     <string name="settings_theme_dark">Σκούρο</string>
     <string name="settings_theme_light">Ανοιχτό</string>
     <string name="settings_theme_system">Σύστημα</string>
@@ -142,7 +142,7 @@
     <string name="settings_sidebar_style_floating">Αιωρούμενο</string>
     <string name="settings_sidebar_style_edge">Πλήρες ύψος</string>
     <string name="settings_clock_title">Μορφή ώρας</string>
-    <string name="settings_clock_desc">Πώς εμφανίζονται οι ώρες στον Οδηγό και το πρόγραμμα</string>
+    <string name="settings_clock_desc">Πώς εμφανίζονται οι ώρες στον Οδηγό και στον αναπαραγωγέα</string>
     <string name="settings_clock_24h">24 ώρες</string>
     <string name="settings_clock_12h">12 ώρες</string>
     <string name="settings_stale_title">Υπενθύμιση ανανέωσης</string>
@@ -288,7 +288,7 @@
     <string name="settings_section_about">Σχετικά</string>
     <string name="settings_version_title">Έκδοση</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
-    <string name="settings_support_title">Υποστηρίξτε αυτήν την εφαρμογή</string>
+    <string name="settings_support_title">Στηρίξτε την εφαρμογή</string>
     <string name="settings_support_desc">Κεράστε με έναν καφέ αν το ARE iptv σας φαίνεται χρήσιμο.</string>
     <string name="settings_feedback_title">Αποστολή σχολίων</string>
     <string name="settings_feedback_desc">Πείτε μας τι να βελτιώσουμε — παίρνει μόνο λίγα δευτερόλεπτα.</string>
@@ -301,13 +301,13 @@
     <string name="settings_legal_desc">Διαβάστε το έγγραφο που αποδεχθήκατε κατά τη ρύθμιση της εφαρμογής.</string>
     <string name="settings_legal_action">Ανάγνωση</string>
     <string name="settings_recording_indicator_title">Ένδειξη εγγραφής</string>
-    <string name="settings_recording_indicator_desc">Εμφάνιση ενός παλλόμενου σήματος REC στην αναπαραγωγή κατά τη διάρκεια της εγγραφής.</string>
+    <string name="settings_recording_indicator_desc">Εμφάνιση ενός παλλόμενου σήματος REC στον αναπαραγωγέα κατά τη διάρκεια της εγγραφής.</string>
     <string name="settings_rearrange_hud">Αναδιάταξη χειριστηρίων αναπαραγωγής</string>
     <string name="settings_rearrange_hud_desc">Αναδιατάξτε ή αποκρύψτε τα κουμπιά στο HUD του αναπαραγωγέα.</string>
     <string name="hud_editor_context_live">Ζωντανή TV</string>
     <string name="hud_editor_context_vod">Ταινίες και σειρές</string>
     <string name="hud_editor_tray_title">Κρυφά κουμπιά</string>
-    <string name="hud_editor_tray_empty">Όλα τα κουμπιά είναι στο HUD. Πατήστε πάνω σε κάποιο από αυτά για να το αποκρύψετε εδώ.</string>
+    <string name="hud_editor_tray_empty">Όλα τα κουμπιά είναι στο HUD. Πατήστε το πάνω βέλος σε κάποιο για να το αποκρύψετε εδώ.</string>
     <string name="hud_editor_sample_title">Όνομα καναλιού</string>
     <string name="hud_editor_sample_subtitle">Παίζει τώρα</string>
     <string name="hud_editor_sample_title_vod">Όνομα ταινίας</string>
@@ -316,7 +316,7 @@
     <string name="hud_editor_hint_grabbed">Αριστερά/δεξιά για μετακίνηση · Πάνω για απόκρυψη · Κρατήστε OK για ολόκληρη την ομάδα · OK για απόθεση</string>
     <string name="hud_editor_hint_group">Αριστερά/δεξιά για εναλλαγή των δύο ομάδων · OK για απόθεση</string>
     <string name="hud_editor_hint_grabbed_tray">Κάτω για επιστροφή στο HUD · OK για απόθεση</string>
-    <string name="hud_editor_locked_note">Η αναπαραγωγή, η επαναφορά και η γρήγορη προώθηση εμφανίζονται πάντα.</string>
+    <string name="hud_editor_locked_note">Η αναπαραγωγή, η γρήγορη επαναφορά και η γρήγορη προώθηση εμφανίζονται πάντα.</string>
     <string name="hud_editor_budget">Εμφανίζονται %1$d από %2$d προαιρετικά κουμπιά</string>
     <string name="hud_editor_at_cap">Στο όριο — απενεργοποιήστε ένα για να προσθέσετε άλλο.</string>
     <string name="hud_editor_reset">Επαναφορά προεπιλογής</string>
@@ -464,7 +464,7 @@
     <!-- Player -->
     <string name="player_content_not_found">Το περιεχόμενο δεν βρέθηκε</string>
     <string name="player_playback_failed">Η αναπαραγωγή απέτυχε</string>
-    <string name="player_buffering">Προσωρινή αποθήκευση…</string>
+    <string name="player_buffering">Γίνεται φόρτωση…</string>
     <string name="player_up_next">Ακολουθεί</string>
     <string name="player_up_next_channel">Ακολουθεί -- %1$s</string>
     <string name="player_no_programme_data">Χωρίς δεδομένα προγράμματος</string>
@@ -474,7 +474,7 @@
     <string name="player_next_episode">Επόμενο επεισόδιο</string>
     <string name="player_back_10_min">Πίσω 10 λεπτά</string>
     <string name="player_forward_10_min">Μπροστά 10 λεπτά</string>
-    <string name="player_rewind">Επαναφορά</string>
+    <string name="player_rewind">Γρήγορη επαναφορά</string>
     <string name="player_pause">Παύση</string>
     <string name="player_play">Αναπαραγωγή</string>
     <string name="player_fast_forward">Γρήγορη προώθηση</string>
@@ -611,7 +611,7 @@
     <string name="recording_started_toast">Η εγγραφή ξεκίνησε</string>
     <string name="recording_stopped_reason">Η εγγραφή διακόπηκε: %1$s</string>
     <string name="recording_error_generic">Δεν ήταν δυνατή η έναρξη της εγγραφής</string>
-    <string name="recording_error_not_writable">Δεν είναι δυνατή η εγγραφή σε αυτόν τον δίσκο· επίλεξε άλλον</string>
+    <string name="recording_error_not_writable">Δεν είναι δυνατή η εγγραφή σε αυτόν τον δίσκο· επιλέξτε άλλον</string>
     <string name="recording_error_low_space">Ανεπαρκής ελεύθερος χώρος σε αυτόν τον δίσκο</string>
     <string name="recording_error_hls">Αυτή η ροή δεν μπορεί να εγγραφεί ακόμη</string>
     <string name="recording_pick_volume_title">Εγγραφή σε</string>
@@ -624,19 +624,19 @@
     <string name="recording_reason_slow_disk">Αργός δίσκος: κάποια δεδομένα χάθηκαν</string>
     <string name="recording_reason_crash">Ανακτήθηκε μετά από απροσδόκητη διακοπή</string>
     <string name="recordings_title">Εγγραφές</string>
-    <string name="recordings_empty">Δεν υπάρχουν εγγραφές ακόμη. Πάτησε ● REC ενώ βλέπεις ζωντανή TV.</string>
+    <string name="recordings_empty">Δεν υπάρχουν εγγραφές ακόμη. Πατήστε ● REC ενώ βλέπετε ζωντανή TV.</string>
     <string name="recordings_group_recording_now">Γίνεται εγγραφή τώρα</string>
     <string name="recordings_group_completed">Ολοκληρωμένες</string>
-    <string name="recordings_group_interrupted">Διακοπείσες</string>
+    <string name="recordings_group_interrupted">Με διακοπή</string>
     <string name="recordings_group_unavailable">Μη διαθέσιμες</string>
     <string name="recordings_play">Αναπαραγωγή</string>
     <string name="recordings_delete">Διαγραφή</string>
     <string name="recordings_delete_title">Διαγραφή εγγραφής;</string>
-    <string name="recordings_delete_body">Αυτό αφαιρεί το «%1$s» από τη συσκευή σου.</string>
+    <string name="recordings_delete_body">Αυτό αφαιρεί το «%1$s» από τη συσκευή σας.</string>
     <string name="recordings_status_interrupted">Διακόπηκε</string>
     <string name="recordings_status_failed">Απέτυχε</string>
-    <string name="recordings_unavailable_reconnect">Επανασύνδεσε το %1$s για προβολή</string>
-    <string name="recordings_unavailable_generic">Επανασύνδεσε τον δίσκο για προβολή</string>
+    <string name="recordings_unavailable_reconnect">Επανασυνδέστε το %1$s για προβολή</string>
+    <string name="recordings_unavailable_generic">Επανασυνδέστε τον δίσκο για προβολή</string>
     <string name="recordings_missing">Το αρχείο δεν είναι πλέον στον δίσκο</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d μέρη</string>
@@ -682,12 +682,33 @@
     <string name="guide_catchup_label">Επανάληψη</string>
     <string name="guide_catchup_aired">Προβλήθηκε %1$s – %2$s</string>
     <string name="guide_catchup_watch_from_start">Παρακολούθηση από την αρχή</string>
-    <string name="guide_catchup_go_live">Μετάβαση σε ζωντανή</string>
+    <string name="guide_catchup_go_live">Μετάβαση στη ζωντανή μετάδοση</string>
     <string name="guide_catchup_record_soon">Εγγραφή (σύντομα)</string>
     <string name="player_previous_program">Προηγούμενο πρόγραμμα</string>
     <string name="player_next_program">Επόμενο πρόγραμμα</string>
     <string name="support_dialog_title">Σας αρέσει το ARE iptv;</string>
-    <string name="support_dialog_body">Φτιάχνεται και συντηρείται από ένα άτομο, τα βράδια και τα σαββατοκύριακα. Χωρίς συνδρομή, χωρίς διαφημίσεις, χωρίς καταγραφή του τι βλέπετε — απλώς μια εφαρμογή που δουλεύει. Αν αξίζει τη θέση της στην τηλεόρασή σας, ένας καφές τη κρατά ζωντανή.</string>
+    <string name="support_dialog_body">Φτιάχνεται και συντηρείται από ένα άτομο, τα βράδια και τα σαββατοκύριακα. Χωρίς συνδρομή, χωρίς διαφημίσεις, χωρίς καταγραφή του τι βλέπετε — απλώς μια εφαρμογή που δουλεύει. Αν αξίζει τη θέση της στην τηλεόρασή σας, ένας καφές αρκεί για να συνεχίσει.</string>
     <string name="support_dialog_scan">Σαρώστε για άνοιγμα στο κινητό</string>
-    <string name="support_dialog_visit">Ή επισκεφθείτε</string>
+    <string name="support_dialog_visit">Ή επισκεφτείτε:</string>
+    <string name="explore_link">Εξερευνήστε δωρεάν λίστες IPTV</string>
+    <string name="sources_from_explore">Από την Εξερεύνηση</string>
+    <string name="explore_title">Εξερεύνηση δωρεάν IPTV</string>
+    <string name="explore_subtitle">Δημόσια καταχωρισμένες, ελεύθερα διαθέσιμες λίστες που συντηρεί η κοινότητα. Το ARE iptv δεν φιλοξενεί ούτε ελέγχει αυτές τις ροές, και η διαθεσιμότητα διαφέρει ανά χώρα.</string>
+    <string name="explore_used_count">%1$d από %2$d λίστες σε χρήση</string>
+    <string name="explore_channels_approx">~%1$d κανάλια</string>
+    <string name="explore_hint">Οι αριθμοί καναλιών είναι κατά προσέγγιση και αλλάζουν συχνά.</string>
+    <string name="explore_add_title">Προσθήκη «%1$s»</string>
+    <string name="explore_add_body">Δώστε όποιο όνομα θέλετε — μπορείτε να το αλλάξετε αργότερα.</string>
+    <string name="explore_add_action">Προσθήκη λίστας</string>
+    <string name="explore_name_label">Όνομα λίστας</string>
+    <string name="explore_adding_title">Προσθήκη λίστας…</string>
+    <string name="explore_adding_body">Γίνεται λήψη του «%1$s». Σε μεγάλες λίστες μπορεί να πάρει λίγη ώρα.</string>
+    <string name="explore_failed_title">Δεν ήταν δυνατή η προσθήκη της λίστας</string>
+    <string name="explore_failed_body">Δεν ήταν δυνατή η φόρτωση του «%1$s». Η λίστα μπορεί να έχει μετακινηθεί ή να μην είναι προσωρινά διαθέσιμη — το πρόβλημα είναι στη λίστα, όχι στη συσκευή σας. Δοκιμάστε μια άλλη.</string>
+    <string name="explore_cap_title">Έχετε %1$d λίστες</string>
+    <string name="explore_cap_body">Αυτό είναι το ανώτατο όριο. Αφαιρέστε μία από τις λίστες σας για να προσθέσετε άλλη.</string>
+    <string name="tile_action_resume">Συνέχιση</string>
+    <string name="tile_action_play_from_start">Αναπαραγωγή από την αρχή</string>
+    <string name="browse_category_search_placeholder">Αναζήτηση κατηγοριών</string>
+    <string name="browse_category_search_empty">Δεν βρέθηκαν κατηγορίες</string>
 </resources>

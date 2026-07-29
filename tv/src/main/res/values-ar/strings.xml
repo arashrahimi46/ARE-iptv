@@ -17,7 +17,7 @@
     <string name="action_sign_in">تسجيل الدخول</string>
     <string name="action_sign_out">تسجيل الخروج</string>
     <string name="action_search">بحث</string>
-    <string name="action_buy_coffee">اشترِ لي قهوة</string>
+    <string name="action_buy_coffee">ادعُني على قهوة</string>
     <string name="content_desc_account">الحساب</string>
 
     <!-- Shell -->
@@ -81,7 +81,7 @@
     <string name="privacy_title">الخصوصية والشروط</string>
     <string name="privacy_subtitle">يرجى المراجعة والقبول قبل المتابعة.</string>
     <string name="privacy_accept_label">لقد قرأت سياسة الخصوصية وشروط الخدمة وأوافق عليها.</string>
-    <string name="privacy_summary">تبقى قوائم التشغيل وكلمات المرور وسجل المشاهدة على هذا الجهاز — nحن لا نتلقاها أبدًا. نجمع تشخيصات مجهولة للأعطال والاستخدام، ويمكنك إيقافها أدناه أو من الإعدادات في أي وقت. لا يوفّر ARE iptv أي قنوات أو محتوى خاص به: أنت من يضيف مصادرك.</string>
+    <string name="privacy_summary">تبقى قوائم التشغيل وكلمات المرور وسجل المشاهدة على هذا الجهاز — نحن لا نتلقّاها أبدًا. نجمع تشخيصات مجهولة للأعطال والاستخدام، ويمكنك إيقافها أدناه أو من الإعدادات في أي وقت. لا يوفّر ARE iptv أي قنوات أو محتوى خاص به: أنت من يضيف مصادرك.</string>
     <string name="privacy_read_full">اقرأ سياسة الخصوصية والشروط كاملة</string>
     <string name="privacy_crash_label">إرسال تقارير أعطال وبيانات استخدام مجهولة</string>
     <string name="privacy_updated_note">لقد حدّثنا سياسة الخصوصية والشروط. يُرجى مراجعتها وقبولها للمتابعة.</string>
@@ -315,7 +315,7 @@
     <string name="settings_version_title">الإصدار</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">ادعم هذا التطبيق</string>
-    <string name="settings_support_desc">اشترِ لي قهوة إذا كان ARE iptv مفيدًا لك.</string>
+    <string name="settings_support_desc">إذا كان ARE iptv مفيدًا لك، فادعُني على فنجان قهوة.</string>
 
     <!-- Parental PIN dialog -->
     <string name="pin_set_title">اضبط رمز PIN من 4 أرقام</string>
@@ -662,5 +662,62 @@
     <string name="support_dialog_title">هل يعجبك ARE iptv؟</string>
     <string name="support_dialog_body">يطوّره ويصونه شخص واحد في أمسياته وعطلاته. لا اشتراك ولا إعلانات ولا تتبّع لما تشاهده — مجرد تطبيق يعمل. إذا كان يستحق مكانه على تلفازك، فإن فنجان قهوة يبقيه مستمرًا.</string>
     <string name="support_dialog_scan">امسح الرمز لفتحه على هاتفك</string>
-    <string name="support_dialog_visit">أو زر</string>
+    <string name="support_dialog_visit">أو عبر الرابط:</string>
+
+    <string name="browse_category_search_placeholder">ابحث في الفئات</string>
+    <string name="browse_category_search_empty">لا توجد فئات مطابقة</string>
+    <string name="tile_action_resume">استئناف</string>
+    <string name="tile_action_play_from_start">التشغيل من البداية</string>
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">استكشف قوائم تشغيل IPTV المجانية</string>
+    <string name="sources_from_explore">من الاستكشاف</string>
+    <string name="explore_title">استكشف IPTV المجاني</string>
+    <string name="explore_subtitle">قوائم تشغيل مجانية مُدرَجة علنًا يتولّى المجتمع صيانتها. لا يستضيف ARE iptv هذه البثوث ولا يتحكّم بها، ويختلف توفّرها من بلد إلى آخر.</string>
+    <string name="explore_used_count">%1$d من %2$d قوائم تشغيل مستخدَمة</string>
+    <string name="explore_channels_approx">نحو %1$d قناة</string>
+    <string name="explore_hint">أعداد القنوات تقريبية وتتغيّر كثيرًا.</string>
+    <string name="explore_add_title">إضافة «%1$s»</string>
+    <string name="explore_add_body">سمّها كما تشاء — يمكنك إعادة تسميتها لاحقًا.</string>
+    <string name="explore_add_action">إضافة قائمة التشغيل</string>
+    <string name="explore_name_label">اسم قائمة التشغيل</string>
+    <string name="explore_adding_title">جارٍ إضافة قائمة التشغيل…</string>
+    <string name="explore_adding_body">جارٍ جلب «%1$s». قد يستغرق ذلك لحظة مع القوائم الكبيرة.</string>
+    <string name="explore_failed_title">تعذّرت إضافة قائمة التشغيل</string>
+    <string name="explore_failed_body">تعذّر تحميل «%1$s». ربما تغيّر موقع القائمة أو أنها غير متاحة مؤقتًا — المشكلة في قائمة التشغيل لا في جهازك. جرّب واحدة أخرى.</string>
+    <string name="explore_cap_title">لديك %1$d قوائم تشغيل</string>
+    <string name="explore_cap_body">هذا هو الحد الأقصى. أزل واحدة من قائمة قوائم التشغيل لديك لإضافة أخرى.</string>
+
+    <!-- Sidebar style / HUD editor settings -->
+    <string name="settings_sidebar_style">نمط الشريط الجانبي</string>
+    <string name="settings_sidebar_style_desc">لوحة زجاجية عائمة، أو شريط بكامل الارتفاع ملاصق للحافة</string>
+    <string name="settings_sidebar_style_floating">عائم</string>
+    <string name="settings_sidebar_style_edge">بكامل الارتفاع</string>
+    <string name="settings_rearrange_hud">إعادة ترتيب أزرار المشغّل</string>
+    <string name="settings_rearrange_hud_desc">أعد ترتيب أزرار شريط المشغّل أو أخفِها.</string>
+
+    <!-- HUD editor -->
+    <string name="hud_editor_context_live">البث المباشر</string>
+    <string name="hud_editor_context_vod">الأفلام والمسلسلات</string>
+    <string name="hud_editor_tray_title">الأزرار المخفية</string>
+    <string name="hud_editor_tray_empty">كل الأزرار معروضة على شريط المشغّل. اضغط للأعلى على أحدها لإخفائه هنا.</string>
+    <string name="hud_editor_sample_title">اسم القناة</string>
+    <string name="hud_editor_sample_subtitle">ما يُعرض الآن</string>
+    <string name="hud_editor_sample_title_vod">عنوان الفيلم</string>
+    <string name="hud_editor_sample_subtitle_vod">الموسم 1 · الحلقة 3</string>
+    <string name="hud_editor_hint_idle">اضغط OK لالتقاط زر.</string>
+    <string name="hud_editor_hint_grabbed">يمين/يسار للتحريك · للأعلى للإخفاء · اضغط OK مطوّلًا لالتقاط المجموعة كاملة · OK للإفلات</string>
+    <string name="hud_editor_hint_group">يمين/يسار لتبديل المجموعتين · OK للإفلات</string>
+    <string name="hud_editor_hint_grabbed_tray">للأسفل لإعادته إلى شريط المشغّل · OK للإفلات</string>
+    <string name="hud_editor_locked_note">تظل أزرار التشغيل والإرجاع والتقديم السريع معروضة دائمًا.</string>
+    <string name="hud_editor_reset">إعادة التعيين إلى الافتراضي</string>
+    <string name="hud_editor_done">تم</string>
+    <string name="hud_ctl_skip_previous">السابق</string>
+    <string name="hud_ctl_skip_next">التالي</string>
+    <string name="hud_ctl_favorite">المفضّلة</string>
+    <string name="hud_ctl_record">تسجيل</string>
+    <string name="player_playback_speed">سرعة التشغيل</string>
+    <string name="player_audio_delay">مزامنة الصوت</string>
+
+    <!-- Privacy policy &amp; terms of service -->
 </resources>

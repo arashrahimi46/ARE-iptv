@@ -17,7 +17,7 @@
     <string name="action_sign_in">Log ind</string>
     <string name="action_sign_out">Log ud</string>
     <string name="action_search">Søg</string>
-    <string name="action_buy_coffee">Køb mig en kaffe</string>
+    <string name="action_buy_coffee">Giv en kop kaffe</string>
     <string name="content_desc_account">Konto</string>
 
     <!-- Shell -->
@@ -80,10 +80,29 @@
     <string name="privacy_title">Privatliv &amp; vilkår</string>
     <string name="privacy_subtitle">Gennemgå og accepter, før du fortsætter.</string>
     <string name="privacy_accept_label">Jeg har læst og accepterer privatlivspolitikken og servicevilkårene.</string>
-    <string name="privacy_summary">Dine afspilningslister, adgangskoder og seerhistorik bliver på denne enhed — vi modtager dem aldrig. Vi indsamler anonym diagnostik om nedbrud og brug, som du kan slå fra nedenfor eller i Indstillinger når som helst. ARE iptv leverer ingen egne kanaler eller indhold: du medbringer dine egne kilder.</string>
+    <string name="privacy_summary">Dine playlister, adgangskoder og seerhistorik bliver på denne enhed — vi modtager dem aldrig. Vi indsamler anonym diagnostik om nedbrud og brug, som du kan slå fra nedenfor eller i Indstillinger når som helst. ARE iptv leverer ingen egne kanaler eller indhold: du medbringer dine egne kilder.</string>
     <string name="privacy_read_full">Læs hele privatlivspolitikken og betingelserne</string>
     <string name="privacy_crash_label">Send anonyme nedbrudsrapporter og brugsdata</string>
     <string name="privacy_updated_note">Vi har opdateret vores privatlivspolitik og betingelser. Gennemgå og accepter dem for at fortsætte.</string>
+
+    <!-- Udforsk gratis IPTV -->
+    <string name="explore_link">Udforsk gratis IPTV-playlister</string>
+    <string name="sources_from_explore">Fra Udforsk</string>
+    <string name="explore_title">Udforsk gratis IPTV</string>
+    <string name="explore_subtitle">Offentligt listede, gratis playlister vedligeholdt af fællesskabet. ARE iptv hoster eller kontrollerer ikke disse streams, og tilgængeligheden varierer fra land til land.</string>
+    <string name="explore_used_count">%1$d af %2$d playlister i brug</string>
+    <string name="explore_channels_approx">~%1$d kanaler</string>
+    <string name="explore_hint">Kanaltallene er omtrentlige og ændrer sig ofte.</string>
+    <string name="explore_add_title">Tilføj “%1$s”</string>
+    <string name="explore_add_body">Kald den, hvad du vil — du kan omdøbe den senere.</string>
+    <string name="explore_add_action">Tilføj playliste</string>
+    <string name="explore_name_label">Navn på playliste</string>
+    <string name="explore_adding_title">Tilføjer playliste…</string>
+    <string name="explore_adding_body">Henter “%1$s”. Det kan tage et øjeblik ved en stor liste.</string>
+    <string name="explore_failed_title">Kunne ikke tilføje den playliste</string>
+    <string name="explore_failed_body">“%1$s” kunne ikke indlæses. Listen kan være flyttet eller være midlertidigt utilgængelig — det er et problem med playlisten, ikke med din enhed. Prøv en anden.</string>
+    <string name="explore_cap_title">Du har %1$d playlister</string>
+    <string name="explore_cap_body">Det er maksimum. Fjern en fra din liste for at tilføje en ny.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Vælg en playliste</string>
@@ -226,9 +245,9 @@
     <string name="settings_hardware_decoding">Hardwareafkodning</string>
     <string name="settings_hardware_decoding_desc">Foretræk hardwareafkodere; falder tilbage til software, hvis en stream kræver det.</string>
     <string name="settings_autoplay_next">Afspil næste afsnit automatisk</string>
-    <string name="settings_autoplay_next_desc">Kun en indstilling for nu -- automatisk fremrykning er ikke koblet til endnu; vælg det næste afsnit fra Detalje.</string>
+    <string name="settings_autoplay_next_desc">Kun en indstilling for nu -- automatisk skift til næste afsnit er ikke koblet til endnu; vælg det næste afsnit fra Detalje.</string>
     <string name="settings_mini_player_behavior">Miniafspillerens adfærd</string>
-    <string name="settings_mini_player_behavior_desc">Når du browser tæt på den dockede miniafspiller: skub den til det ledige hjørne, eller ton den ud og gør den mindre.</string>
+    <string name="settings_mini_player_behavior_desc">Når du bladrer tæt på den dockede miniafspiller: skub den til det ledige hjørne, eller ton den ud og gør den mindre.</string>
     <string name="settings_mini_player_dodge">Undvig automatisk</string>
     <string name="settings_mini_player_fade">Ton ud &amp; forminsk</string>
     <string name="settings_section_parental">Forældrekontrol</string>
@@ -265,25 +284,25 @@
     <!-- Integrationsguider (OMDb / OpenSubtitles) -->
     <string name="settings_howto_key">Sådan får du en nøgle</string>
     <string name="settings_howto_account">Mangler du en konto?</string>
-    <string name="guide_qr_title">Skan med din telefon</string>
+    <string name="guide_qr_title">Scan med din telefon</string>
     <string name="guide_qr_or">Eller skriv dette i en browser:</string>
     <string name="guide_omdb_title">Sådan får du en OMDb-nøgle</string>
     <string name="guide_omdb_intro">Bedømmelser, handling og medvirkende til dine film og serier. Det er gratis og tager cirka to minutter.</string>
-    <string name="guide_omdb_step1">Skan koden med din telefon.</string>
+    <string name="guide_omdb_step1">Scan koden med din telefon.</string>
     <string name="guide_omdb_step2">Vælg kontotypen FREE -- 1.000 opslag om dagen, intet kort påkrævet.</string>
     <string name="guide_omdb_step3">Indtast din e-mailadresse og send formularen.</string>
     <string name="guide_omdb_step4">Åbn e-mailen fra OMDb og klik på aktiveringslinket. Nøglen virker ikke, før du gør det.</string>
     <string name="guide_omdb_step5">Kopiér nøglen fra den e-mail og skriv den i feltet her.</string>
     <string name="guide_opensubs_title">Sådan får du en OpenSubtitles-nøgle</string>
     <string name="guide_opensubs_intro">Søg og download undertekster til alt, du ser. Det er gratis.</string>
-    <string name="guide_opensubs_step1">Skan koden med din telefon.</string>
+    <string name="guide_opensubs_step1">Scan koden med din telefon.</string>
     <string name="guide_opensubs_step2">Log ind, eller opret en gratis konto, hvis du ikke har en.</string>
     <string name="guide_opensubs_step3">Under \"My consumers\" skal du klikke på \"New consumer\" og give den et navn -- \"My TV\" er fint.</string>
     <string name="guide_opensubs_step4">Kopiér den API-nøgle, der vises, og skriv den i feltet her.</string>
     <string name="guide_opensubs_account_title">Log ind på OpenSubtitles</string>
     <string name="guide_opensubs_account_intro">Din API-nøgle lader appen søge efter undertekster. Download kræver også din konto.</string>
     <string name="guide_opensubs_account_step1">Brug samme brugernavn og adgangskode som på opensubtitles.com.</string>
-    <string name="guide_opensubs_account_step2">Ingen konto endnu? Skan koden og opret en -- det er gratis.</string>
+    <string name="guide_opensubs_account_step2">Ingen konto endnu? Scan koden og opret en -- det er gratis.</string>
     <string name="guide_opensubs_account_step3">Kom tilbage hertil og log ind.</string>
     <string name="settings_section_about">Om</string>
     <string name="settings_version_title">Version</string>
@@ -296,7 +315,7 @@
     <string name="settings_analytics_title">Brugsstatistik</string>
     <string name="settings_analytics_desc">Del anonym brugsstatistik for at hjælpe os med at forbedre appen. Der indsamles ingen personlige oplysninger.</string>
     <string name="settings_crash_title">Nedbrudsrapporter</string>
-    <string name="settings_crash_desc">Send diagnostik, når appen går ned eller fryser. Indeholder aldrig dine afspilningslister eller adgangskoder.</string>
+    <string name="settings_crash_desc">Send diagnostik, når appen går ned eller fryser. Indeholder aldrig dine playlister eller adgangskoder.</string>
     <string name="settings_legal_title">Privatlivspolitik og betingelser</string>
     <string name="settings_legal_desc">Læs det dokument, du accepterede, da du satte appen op.</string>
     <string name="settings_legal_action">Læs</string>
@@ -359,7 +378,7 @@
     <!-- Home -->
     <string name="home_add_section">Tilføj sektion</string>
     <string name="home_remove_continue_watching_title">Fjern fra Fortsæt med at se?</string>
-    <string name="home_remove_continue_watching_body">”%1$s” vil ikke længere blive vist her. Din placering gemmes ikke.</string>
+    <string name="home_remove_continue_watching_body">”%1$s” vil ikke længere blive vist her. Din position gemmes ikke.</string>
     <string name="home_loading_catalog">Indlæser dit katalog…</string>
     <string name="home_no_playlist_title">Ingen playliste endnu</string>
     <string name="home_no_playlist_body">Tilføj en playliste fra sidebjælken for at se dine kanaler, film og serier her.</string>
@@ -442,7 +461,12 @@
     <string name="search_section_live">Live-tv</string>
     <string name="search_section_titles">Film &amp; serier</string>
 
+
     <!-- Detail -->
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Genoptag</string>
+    <string name="tile_action_play_from_start">Afspil fra start</string>
+
     <string name="detail_loading">Indlæser…</string>
     <string name="detail_not_found">Titlen blev ikke fundet</string>
     <string name="detail_play">Afspil</string>
@@ -495,7 +519,7 @@
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Fra</string>
-    <string name="subtitle_none_in_stream">Ingen undertekster i denne stream.</string>
+    <string name="subtitle_none_in_stream">Ingen undertekster i dette stream.</string>
     <string name="subtitle_search_online">Søg online…</string>
     <string name="subtitle_selected">Valgt</string>
     <string name="subtitle_picker_title">Undertekster</string>
@@ -549,6 +573,8 @@
     <string name="browse_unpin">Frigør</string>
     <string name="browse_pin">Fastgør</string>
     <string name="browse_category_pinned_desc">Fastgjort</string>
+    <string name="browse_category_search_placeholder">Søg i kategorier</string>
+    <string name="browse_category_search_empty">Ingen kategorier matcher</string>
     <string name="browse_see_all">Se alle  ›</string>
 
     <!-- Shared components -->
@@ -565,7 +591,7 @@
     <string name="browse_all_channels">Alle kanaler</string>
     <string name="browse_all_movies">Alle film</string>
     <string name="browse_all_series">Alle serier</string>
-    <string name="settings_refresh_no_playlist">Ingen aktiv afspilningsliste at opdatere.</string>
+    <string name="settings_refresh_no_playlist">Ingen aktiv playliste at opdatere.</string>
     <string name="settings_refresh_failed">Opdatering mislykkedes — tjek din forbindelse, og prøv igen.</string>
     <string name="settings_subs_connect_key_first">Tilslut din API-nøgle først.</string>
     <string name="onboarding_error_generic">Noget gik galt</string>
@@ -588,16 +614,16 @@
     <string name="settings_provider_trial">Kontotype</string>
     <string name="settings_provider_trial_value">Prøve</string>
     <string name="settings_provider_unlimited">Ubegrænset</string>
-    <string name="sources_delete_title">Slet afspilningsliste?</string>
+    <string name="sources_delete_title">Slet playliste?</string>
     <string name="sources_delete_body">Dette sletter permanent “%1$s” og alt i den — kanaler, film, serier, favoritter og afspilningshistorik — fra denne enhed. Dette kan ikke fortrydes.</string>
-    <string name="sources_delete_hint">Hold OK nede på en afspilningsliste for flere valgmuligheder.</string>
-    <string name="sources_options_body">Vælg, hvad du vil gøre med denne afspilningsliste.</string>
-    <string name="sources_rename_title">Omdøb afspilningsliste</string>
-    <string name="sources_rename_body">Dette ændrer kun, hvordan afspilningslisten vises på din liste. Dens kanaler, favoritter og seerhistorik forbliver præcis som de er.</string>
-    <string name="sources_rename_label">Navn på afspilningsliste</string>
+    <string name="sources_delete_hint">Hold OK nede på en playliste for flere valgmuligheder.</string>
+    <string name="sources_options_body">Vælg, hvad du vil gøre med denne playliste.</string>
+    <string name="sources_rename_title">Omdøb playliste</string>
+    <string name="sources_rename_body">Dette ændrer kun, hvordan playlisten vises på din liste. Dens kanaler, favoritter og seerhistorik forbliver præcis som de er.</string>
+    <string name="sources_rename_label">Navn på playliste</string>
     <string name="nav_streams">Streams</string>
     <string name="streams_open">Åbn netværksstream</string>
-    <string name="streams_empty">Ingen streams endnu. Åbn en netværksstream for at komme i gang.</string>
+    <string name="streams_empty">Ingen streams endnu. Åbn et netværksstream for at komme i gang.</string>
     <string name="streams_url_placeholder">http://server/stream.m3u8</string>
     <string name="streams_url_helper">Indsæt et direkte videolink (HLS, DASH, MP4, RTSP…)</string>
     <string name="streams_rename">Omdøb</string>
@@ -665,7 +691,7 @@
     <string name="settings_sub_font_title">Skrifttype</string>
     <string name="settings_sub_font_desc">Skrifttype for undertekster</string>
     <string name="settings_sub_font_default">Standard</string>
-    <string name="player_autoplay_next_title">Op næst</string>
+    <string name="player_autoplay_next_title">Næste</string>
     <string name="player_autoplay_next_in">Næste afsnit om %1$d s…</string>
     <string name="player_autoplay_play_now">Afspil nu</string>
     <string name="settings_autoplay_5s">5s</string>
@@ -687,7 +713,7 @@
     <string name="player_previous_program">Forrige program</string>
     <string name="player_next_program">Næste program</string>
     <string name="support_dialog_title">Kan du lide ARE iptv?</string>
-    <string name="support_dialog_body">Den er bygget og vedligeholdt af én person, om aftenen og i weekenden. Intet abonnement, ingen reklamer, ingen sporing af hvad du ser — bare en app, der virker. Hvis den fortjener sin plads på dit tv, holder en kop kaffe den i gang.</string>
+    <string name="support_dialog_body">Den er bygget og vedligeholdt af én person, om aftenen og i weekenden. Intet abonnement, ingen reklamer, ingen sporing af, hvad du ser — bare en app, der virker. Hvis den fortjener sin plads på dit tv, holder en kop kaffe den i gang.</string>
     <string name="support_dialog_scan">Scan for at åbne på din telefon</string>
-    <string name="support_dialog_visit">Eller besøg</string>
+    <string name="support_dialog_visit">Eller besøg:</string>
 </resources>

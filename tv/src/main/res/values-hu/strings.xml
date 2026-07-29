@@ -17,7 +17,7 @@
     <string name="action_sign_in">Bejelentkezés</string>
     <string name="action_sign_out">Kijelentkezés</string>
     <string name="action_search">Keresés</string>
-    <string name="action_buy_coffee">Fizess nekem egy kávét</string>
+    <string name="action_buy_coffee">Hívjon meg egy kávéra</string>
     <string name="content_desc_account">Fiók</string>
 
     <!-- Shell -->
@@ -130,7 +130,7 @@
     <string name="settings_tab_display">Kijelző</string>
     <string name="settings_tab_playback">Lejátszás</string>
     <string name="settings_tab_subtitles">Feliratok</string>
-    <string name="settings_tab_parental">Szülői felügyelet</string>
+    <string name="settings_tab_parental">Szülői zár</string>
     <string name="settings_tab_about">Névjegy</string>
     <string name="settings_theme_title">Téma</string>
     <string name="settings_theme_desc">Válasszon sötét, világos vagy eszköz szerinti beállítást</string>
@@ -151,7 +151,7 @@
     <string name="settings_stale_14d">14 nap</string>
     <string name="settings_stale_30d">30 nap</string>
     <string name="settings_stale_off">Ki</string>
-    <string name="settings_section_preferences">Beállítások</string>
+    <string name="settings_section_preferences">Preferenciák</string>
     <string name="settings_start_screen_title">Kezdőképernyő</string>
     <string name="settings_start_screen_desc">Melyik képernyő nyílik meg az alkalmazás indításakor.</string>
     <string name="settings_start_last_used">Legutóbb használt</string>
@@ -163,7 +163,7 @@
     <string name="settings_confirm_exit_title">Megerősítés kilépés előtt</string>
     <string name="settings_confirm_exit_desc">Megerősítés kérése az alkalmazásból való kilépéskor.</string>
     <string name="settings_section_content_locking">Tartalomzár</string>
-    <string name="settings_relock_title">Újrazárolás ennyi után</string>
+    <string name="settings_relock_title">Automatikus újrazárolás</string>
     <string name="settings_relock_desc">Meddig marad látható a felnőtt tartalom a PIN-es feloldás után.</string>
     <string name="settings_relock_immediately">Azonnal</string>
     <string name="settings_relock_15min">15 perc</string>
@@ -247,9 +247,9 @@
     <string name="settings_opensubs_ready">Kész -- az online keresés és letöltés engedélyezve.</string>
     <string name="settings_opensubs_key_connected">API-kulcs csatlakoztatva. Jelentkezzen be lent is -- az online feliratokhoz mindkettő szükséges.</string>
     <string name="settings_account">Fiók</string>
-    <string name="settings_account_signed_in">Bejelentkezve mint %1$s -- a feliratletöltések engedélyezve.</string>
+    <string name="settings_account_signed_in">Bejelentkezve %1$s néven -- a feliratletöltések engedélyezve.</string>
     <string name="settings_signin_title">Jelentkezzen be a feliratok letöltéséhez</string>
-    <string name="settings_signin_desc">Utolsó lépés -- az online feliratokhoz az API-kulcs és a fiókbejelentkezése egyaránt szükséges. Jelentkezzen be az opensubtitles.com felhasználónevével és jelszavával; a letöltések a fiókja napi kvótáját használják. Bejelentkezve tartjuk Önt.</string>
+    <string name="settings_signin_desc">Utolsó lépés -- az online feliratokhoz az API-kulcs és a fiókbejelentkezése egyaránt szükséges. Jelentkezzen be az opensubtitles.com felhasználónevével és jelszavával; a letöltések a fiókja napi kvótáját használják. Bejelentkezve tartjuk.</string>
     <string name="settings_placeholder_username">Felhasználónév</string>
     <string name="settings_placeholder_password">Jelszó</string>
     <string name="settings_signing_in">Bejelentkezés…</string>
@@ -288,13 +288,13 @@
     <string name="settings_section_about">Névjegy</string>
     <string name="settings_version_title">Verzió</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
-    <string name="settings_support_title">Támogassa ezt az alkalmazást</string>
-    <string name="settings_support_desc">Vegyen nekem egy kávét, ha az ARE iptv hasznos az Ön számára.</string>
+    <string name="settings_support_title">Támogassa az alkalmazást</string>
+    <string name="settings_support_desc">Ha hasznosnak találja az ARE iptv-t, hívjon meg egy kávéra.</string>
     <string name="settings_feedback_title">Visszajelzés küldése</string>
     <string name="settings_feedback_desc">Mondja el, mit javítsunk — csak pár másodperc.</string>
     <string name="settings_feedback_action">Visszajelzés adása</string>
     <string name="settings_analytics_title">Használati statisztika</string>
-    <string name="settings_analytics_desc">Ossz meg anonim használati statisztikákat, hogy segíts nekünk fejleszteni az alkalmazást. Nem gyűjtünk személyes adatokat.</string>
+    <string name="settings_analytics_desc">Osszon meg névtelen használati statisztikákat, hogy segítsen fejleszteni az alkalmazást. Nem gyűjtünk személyes adatokat.</string>
     <string name="settings_crash_title">Összeomlási jelentések</string>
     <string name="settings_crash_desc">Diagnosztika küldése, ha az alkalmazás összeomlik vagy lefagy. Soha nem tartalmazza a listáit vagy jelszavait.</string>
     <string name="settings_legal_title">Adatvédelem és feltételek</string>
@@ -341,7 +341,7 @@
     <string name="feedback_qr_title">Szeretne többet írni?</string>
     <string name="feedback_qr_desc">Olvassa be ezt a telefonjával, hogy megnyissa az űrlapot, és igazi billentyűzeten gépeljen.</string>
     <string name="feedback_cat_playback">Lejátszás</string>
-    <string name="feedback_cat_guide">Tv-műsor</string>
+    <string name="feedback_cat_guide">TV-műsor</string>
     <string name="feedback_cat_layout">Elrendezés</string>
     <string name="feedback_cat_favorites">Kedvencek</string>
     <string name="feedback_cat_missing">Hiányzó funkció</string>
@@ -407,7 +407,7 @@
     <string name="movies_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a filmeket.</string>
     <string name="movies_title">Filmek</string>
     <string name="movies_genres">Műfajok</string>
-    <string name="movies_count_titles">%1$d cím</string>
+    <string name="movies_count_titles">%1$d film</string>
     <string name="category_count_items">%1$d elem</string>
     <string name="movies_empty_genre">Ebben a műfajban még nincsenek filmek.</string>
 
@@ -514,18 +514,18 @@
     <string name="mini_player_stop">Leállítás</string>
 
     <!-- MultiView -->
-    <string name="multiview_title">Többnézetes</string>
+    <string name="multiview_title">Osztott nézet</string>
     <string name="multiview_4up">4 kép</string>
     <string name="multiview_2up">2 kép</string>
     <string name="multiview_no_source">Nincs aktív lejátszási lista</string>
-    <string name="multiview_no_channels">Nincs elérhető élő csatorna a többnézetes megjelenítéshez</string>
+    <string name="multiview_no_channels">Nincs elérhető élő csatorna az osztott nézethez</string>
     <string name="multiview_audio_badge">Hang</string>
     <string name="multiview_audio_only">Rádióállomás — csak hang</string>
-    <string name="multiview_add_to">Hozzáadás a Többnézeteshez</string>
+    <string name="multiview_add_to">Hozzáadás az Osztott nézethez</string>
     <string name="multiview_add_channel">Csatorna hozzáadása</string>
     <string name="multiview_pane_watch">Megtekintés teljes képernyőn</string>
-    <string name="multiview_pane_menu_body">Nyissa meg ezt a csatornát teljes képernyőn, vagy távolítsa el a többnézetből.</string>
-    <string name="multiview_added_toast">Hozzáadva a Többnézeteshez</string>
+    <string name="multiview_pane_menu_body">Nyissa meg ezt a csatornát teljes képernyőn, vagy távolítsa el az osztott nézetből.</string>
+    <string name="multiview_added_toast">Hozzáadva az Osztott nézethez</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Testreszabás</string>
@@ -575,8 +575,8 @@
     <string name="settings_provider_status">Állapot</string>
     <string name="settings_provider_loading">Frissítsen a szolgáltató adatainak betöltéséhez</string>
     <string name="settings_provider_unknown">—</string>
-    <string name="settings_provider_server">Kiszolgáló</string>
-    <string name="settings_provider_server_time">Kiszolgáló ideje</string>
+    <string name="settings_provider_server">Szerver</string>
+    <string name="settings_provider_server_time">Szerver ideje</string>
     <string name="settings_provider_timezone">Időzóna</string>
     <string name="settings_provider_connections">Kapcsolatok</string>
     <string name="settings_provider_connections_value">%1$d / %2$d használatban</string>
@@ -680,14 +680,35 @@
     <string name="settings_sub_font_vazirmatn">Vazirmatn</string>
     <!-- Catch-up / archive (docs/catchup-v1-design.md) -->
     <string name="guide_catchup_label">Visszanézés</string>
-    <string name="guide_catchup_aired">Sugározva %1$s – %2$s</string>
+    <string name="guide_catchup_aired">Sugározva: %1$s – %2$s</string>
     <string name="guide_catchup_watch_from_start">Megtekintés az elejétől</string>
     <string name="guide_catchup_go_live">Ugrás az élő adásra</string>
     <string name="guide_catchup_record_soon">Felvétel (hamarosan)</string>
     <string name="player_previous_program">Előző műsor</string>
     <string name="player_next_program">Következő műsor</string>
     <string name="support_dialog_title">Tetszik az ARE iptv?</string>
-    <string name="support_dialog_body">Egyetlen ember készíti és tartja karban, esténként és hétvégéken. Nincs előfizetés, nincs reklám, nincs követés arról, mit néz — csak egy alkalmazás, ami működik. Ha kiérdemli a helyét a tévéjén, egy kávé életben tartja.</string>
-    <string name="support_dialog_scan">Olvassa be a telefonján való megnyitáshoz</string>
-    <string name="support_dialog_visit">Vagy látogasson el ide</string>
+    <string name="support_dialog_body">Egyetlen ember készíti és tartja karban, esténként és hétvégéken. Nincs előfizetés, nincs reklám, senki nem figyeli, mit néz — csak egy alkalmazás, ami működik. Ha kiérdemli a helyét a tévéjén, egy kávé viszi tovább.</string>
+    <string name="support_dialog_scan">Olvassa be a telefonjával a megnyitáshoz</string>
+    <string name="support_dialog_visit">Vagy látogasson el ide:</string>
+    <string name="explore_link">Ingyenes IPTV-listák felfedezése</string>
+    <string name="sources_from_explore">A Felfedezésből</string>
+    <string name="explore_title">Ingyenes IPTV felfedezése</string>
+    <string name="explore_subtitle">Nyilvánosan közzétett, szabadon fogható lejátszási listák, amelyeket a közösség tart karban. Az ARE iptv nem tárolja és nem felügyeli ezeket az adatfolyamokat, elérhetőségük országonként eltér.</string>
+    <string name="explore_used_count">%2$d listából %1$d használatban</string>
+    <string name="explore_channels_approx">kb. %1$d csatorna</string>
+    <string name="explore_hint">A csatornaszámok hozzávetőlegesek, és gyakran változnak.</string>
+    <string name="explore_add_title">„%1$s” hozzáadása</string>
+    <string name="explore_add_body">Nevezze el tetszés szerint — később átnevezheti.</string>
+    <string name="explore_add_action">Lista hozzáadása</string>
+    <string name="explore_name_label">Lista neve</string>
+    <string name="explore_adding_title">Lista hozzáadása…</string>
+    <string name="explore_adding_body">A(z) „%1$s” letöltése folyamatban. Nagy listánál ez eltarthat egy ideig.</string>
+    <string name="explore_failed_title">Nem sikerült hozzáadni a listát</string>
+    <string name="explore_failed_body">A(z) „%1$s” nem tölthető be. Lehet, hogy a lista elköltözött, vagy átmenetileg nem érhető el — a hiba a lejátszási listában van, nem az eszközében. Próbáljon meg egy másikat.</string>
+    <string name="explore_cap_title">%1$d lejátszási listája van</string>
+    <string name="explore_cap_body">Ez a maximum. Újabb hozzáadásához távolítson el egyet a listái közül.</string>
+    <string name="browse_category_search_placeholder">Kategóriák keresése</string>
+    <string name="browse_category_search_empty">Nincs találat a kategóriák közt</string>
+    <string name="tile_action_resume">Folytatás</string>
+    <string name="tile_action_play_from_start">Lejátszás elejétől</string>
 </resources>

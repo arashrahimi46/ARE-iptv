@@ -17,7 +17,7 @@
     <string name="action_sign_in">Logg inn</string>
     <string name="action_sign_out">Logg ut</string>
     <string name="action_search">Søk</string>
-    <string name="action_buy_coffee">Kjøp meg en kaffe</string>
+    <string name="action_buy_coffee">Spander en kaffe</string>
     <string name="content_desc_account">Konto</string>
 
     <!-- Shell -->
@@ -84,6 +84,42 @@
     <string name="privacy_read_full">Les hele personvernerklæringen og vilkårene</string>
     <string name="privacy_crash_label">Send anonyme krasjrapporter og bruksdata</string>
     <string name="privacy_updated_note">Vi har oppdatert personvernerklæringen og vilkårene våre. Les gjennom og godta dem for å fortsette.</string>
+
+    <!-- Personvern og vilkår (juridisk dokument) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Utforsk gratis IPTV -->
+    <string name="explore_link">Utforsk gratis IPTV-spillelister</string>
+    <string name="sources_from_explore">Fra Utforsk</string>
+    <string name="explore_title">Utforsk gratis IPTV</string>
+    <string name="explore_subtitle">Offentlig oppførte, gratis spillelister vedlikeholdt av fellesskapet. ARE iptv er ikke vert for og kontrollerer ikke disse strømmene, og tilgjengeligheten varierer fra land til land.</string>
+    <string name="explore_used_count">%1$d av %2$d spillelister brukt</string>
+    <string name="explore_channels_approx">~%1$d kanaler</string>
+    <string name="explore_hint">Kanaltallene er omtrentlige og endrer seg ofte.</string>
+    <string name="explore_add_title">Legg til «%1$s»</string>
+    <string name="explore_add_body">Gi den det navnet du vil — du kan gi den nytt navn senere.</string>
+    <string name="explore_add_action">Legg til spilleliste</string>
+    <string name="explore_name_label">Navn på spilleliste</string>
+    <string name="explore_adding_title">Legger til spilleliste…</string>
+    <string name="explore_adding_body">Henter «%1$s». Dette kan ta litt tid ved en stor liste.</string>
+    <string name="explore_failed_title">Kunne ikke legge til den spillelisten</string>
+    <string name="explore_failed_body">«%1$s» kunne ikke lastes inn. Listen kan ha blitt flyttet eller være midlertidig utilgjengelig — dette er et problem med spillelisten, ikke med enheten din. Prøv en annen.</string>
+    <string name="explore_cap_title">Du har %1$d spillelister</string>
+    <string name="explore_cap_body">Det er maksimum. Fjern en fra listen din for å legge til en ny.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Velg en spilleliste</string>
@@ -289,7 +325,7 @@
     <string name="settings_version_title">Versjon</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Støtt denne appen</string>
-    <string name="settings_support_desc">Kjøp meg en kaffe hvis ARE iptv er nyttig for deg.</string>
+    <string name="settings_support_desc">Spander en kaffe hvis ARE iptv er nyttig for deg.</string>
     <string name="settings_feedback_title">Send tilbakemelding</string>
     <string name="settings_feedback_desc">Fortell oss hva vi kan forbedre — det tar noen sekunder.</string>
     <string name="settings_feedback_action">Gi tilbakemelding</string>
@@ -438,11 +474,15 @@
     <string name="search_category_label">Kategori: %1$s</string>
     <string name="search_type_to_search">Skriv for å søke i katalogen din.</string>
     <string name="search_min_chars">Skriv minst %1$d tegn for å søke.</string>
-    <string name="search_no_results">Ingen resultater for \"%1$s\".</string>
+    <string name="search_no_results">Ingen resultater for «%1$s».</string>
     <string name="search_section_live">Direkte-TV</string>
     <string name="search_section_titles">Filmer &amp; serier</string>
 
     <!-- Detail -->
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Fortsett</string>
+    <string name="tile_action_play_from_start">Spill fra start</string>
+
     <string name="detail_loading">Laster…</string>
     <string name="detail_not_found">Tittel ikke funnet</string>
     <string name="detail_play">Spill av</string>
@@ -548,6 +588,8 @@
     <string name="browse_pin_dialog_unpinned_body">Fest denne kategorien til toppen av listen.</string>
     <string name="browse_unpin">Løsne</string>
     <string name="browse_pin">Fest</string>
+    <string name="browse_category_search_placeholder">Søk i kategorier</string>
+    <string name="browse_category_search_empty">Ingen kategorier passer</string>
     <string name="browse_category_pinned_desc">Festet</string>
     <string name="browse_see_all">Se alle  ›</string>
 
@@ -687,7 +729,7 @@
     <string name="player_previous_program">Forrige program</string>
     <string name="player_next_program">Neste program</string>
     <string name="support_dialog_title">Liker du ARE iptv?</string>
-    <string name="support_dialog_body">Den lages og vedlikeholdes av én person, på kvelder og i helger. Ingen abonnement, ingen reklame, ingen sporing av hva du ser — bare en app som virker. Hvis den fortjener plassen på TV-en din, holder en kaffe den i gang.</string>
+    <string name="support_dialog_body">Den lages og vedlikeholdes av én person, på kvelder og i helger. Ingen abonnementer, ingen reklame, ingen sporing av hva du ser — bare en app som virker. Hvis den fortjener plassen på TV-en din, holder en kaffe den i gang.</string>
     <string name="support_dialog_scan">Skann for å åpne på telefonen</string>
-    <string name="support_dialog_visit">Eller gå til</string>
+    <string name="support_dialog_visit">Eller gå til:</string>
 </resources>

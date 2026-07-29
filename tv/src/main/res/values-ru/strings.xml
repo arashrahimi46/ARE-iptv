@@ -17,7 +17,7 @@
     <string name="action_sign_in">Войти</string>
     <string name="action_sign_out">Выйти</string>
     <string name="action_search">Поиск</string>
-    <string name="action_buy_coffee">Купи мне кофе</string>
+    <string name="action_buy_coffee">Угостить кофе</string>
     <string name="content_desc_account">Аккаунт</string>
 
     <!-- Shell -->
@@ -36,7 +36,7 @@
     <string name="onboarding_step_confirm">Подтверждение</string>
     <string name="onboarding_title">Добавить плейлист</string>
     <string name="onboarding_subtitle">Используйте свою подписку IPTV. ARE iptv никогда не хранит ваши данные за пределами устройства.</string>
-    <string name="onboarding_skip_for_now">Пропустить пока</string>
+    <string name="onboarding_skip_for_now">Пока пропустить</string>
     <string name="onboarding_go_to_home">На главную</string>
     <string name="onboarding_add_playlist">Добавить плейлист</string>
 
@@ -63,7 +63,7 @@
     <string name="onboarding_confirm_error_title">Не удалось добавить плейлист</string>
     <string name="onboarding_confirm_added">Добавлено</string>
     <string name="onboarding_confirm_ready">Готово к добавлению</string>
-    <string name="onboarding_confirm_channels_badge">%1$d каналов</string>
+    <string name="onboarding_confirm_channels_badge">Каналов: %1$d</string>
     <string name="onboarding_confirm_downloading">Загрузка и импорт ваших каналов. Большие плейлисты могут занять некоторое время — пожалуйста, не закрывайте приложение.</string>
     <string name="onboarding_confirm_row_portal">Портал</string>
     <string name="onboarding_confirm_default_portal_name">Мой плейлист</string>
@@ -74,7 +74,7 @@
     <string name="onboarding_confirm_auto_matched">Автоподбор</string>
     <string name="onboarding_confirm_custom_xmltv">Свой XMLTV</string>
     <string name="onboarding_confirm_row_catalog">Каталог</string>
-    <string name="onboarding_confirm_catalog_summary">%1$d каналов · %2$d фильмов · %3$d сериалов</string>
+    <string name="onboarding_confirm_catalog_summary">Каналов: %1$d · Фильмов: %2$d · Сериалов: %3$d</string>
 
     <!-- Privacy & Terms -->
     <string name="privacy_title">Конфиденциальность и условия</string>
@@ -84,6 +84,41 @@
     <string name="privacy_read_full">Читать полную Политику конфиденциальности и Условия</string>
     <string name="privacy_crash_label">Отправлять анонимные отчёты о сбоях и данные об использовании</string>
     <string name="privacy_updated_note">Мы обновили Политику конфиденциальности и Условия. Пожалуйста, ознакомьтесь и примите их, чтобы продолжить.</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Бесплатные IPTV-плейлисты</string>
+    <string name="sources_from_explore">Из подборки</string>
+    <string name="explore_title">Бесплатное IPTV</string>
+    <string name="explore_subtitle">Общедоступные бесплатные (free-to-air) плейлисты, которые поддерживает сообщество. ARE iptv не размещает эти потоки и не управляет ими, а их доступность зависит от страны.</string>
+    <string name="explore_used_count">Использовано плейлистов: %1$d из %2$d</string>
+    <string name="explore_channels_approx">Каналов: ~%1$d</string>
+    <string name="explore_hint">Количество каналов указано приблизительно и часто меняется.</string>
+    <string name="explore_add_title">Добавить «%1$s»</string>
+    <string name="explore_add_body">Название может быть любым — позже его можно изменить.</string>
+    <string name="explore_add_action">Добавить плейлист</string>
+    <string name="explore_name_label">Название плейлиста</string>
+    <string name="explore_adding_title">Добавление плейлиста…</string>
+    <string name="explore_adding_body">Загружаем «%1$s». Для большого списка это может занять некоторое время.</string>
+    <string name="explore_failed_title">Не удалось добавить плейлист</string>
+    <string name="explore_failed_body">Не удалось загрузить «%1$s». Список мог переехать или быть временно недоступен — проблема в самом плейлисте, а не в вашем устройстве. Попробуйте другой.</string>
+    <string name="explore_cap_title">Плейлистов у вас: %1$d</string>
+    <string name="explore_cap_body">Это максимум. Удалите один плейлист из своего списка, чтобы добавить другой.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Выберите плейлист</string>
@@ -176,7 +211,7 @@
     <string name="settings_pin_launch_title">Запрашивать PIN при запуске</string>
     <string name="settings_pin_launch_desc">Запрашивать родительский PIN при каждом запуске приложения.</string>
     <string name="settings_keywords_title">Свои запрещённые слова</string>
-    <string name="settings_keywords_desc">Категории, содержащие любое из этих слов, тоже блокируются. Коснитесь слова, чтобы удалить его.</string>
+    <string name="settings_keywords_desc">Категории, содержащие любое из этих слов, тоже блокируются. Выберите слово, чтобы удалить его.</string>
     <string name="settings_keywords_placeholder">Добавить слово</string>
     <string name="settings_keywords_add">Добавить</string>
     <string name="settings_whats_new">Что нового</string>
@@ -191,22 +226,22 @@
     <string name="settings_clear_history_title">Очистить историю просмотра</string>
     <string name="settings_clear_history_desc">Удалить все записи «Продолжить просмотр»</string>
     <string name="settings_clear_history_confirm">Очистить весь прогресс «Продолжить просмотр»? Это действие нельзя отменить.</string>
-    <string name="settings_reset_title">Сбросить к стандартным</string>
+    <string name="settings_reset_title">Сбросить настройки</string>
     <string name="settings_reset_desc">Восстановить настройки оформления и воспроизведения</string>
-    <string name="settings_reset_confirm">Сбросить настройки оформления и воспроизведения к стандартным? Ваши плейлисты, входы, язык и родительский замок сохранятся.</string>
+    <string name="settings_reset_confirm">Сбросить настройки оформления и воспроизведения к значениям по умолчанию? Ваши плейлисты, учётные записи, язык и родительский контроль сохранятся.</string>
     <string name="settings_reset_action">Сбросить</string>
     <string name="settings_section_playlists">Плейлисты и синхронизация</string>
     <string name="settings_refresh_catalog">Обновить каталог</string>
     <string name="settings_refresh_now">Обновить сейчас</string>
     <string name="settings_refreshing">Обновление…</string>
     <string name="settings_refresh_syncing">Синхронизация с провайдером…</string>
-    <string name="settings_refresh_success">Обновлено: %1$d каналов, %2$d фильмов, %3$d сериалов</string>
+    <string name="settings_refresh_success">Обновлено — каналов: %1$d, фильмов: %2$d, сериалов: %3$d</string>
     <string name="settings_refresh_stale">Старше 2 недель — обновите, чтобы получить новые каналы и материалы</string>
     <string name="settings_never_refreshed">Никогда не обновлялось</string>
-    <string name="settings_last_updated_days">Обновлено %1$d день назад</string>
-    <string name="settings_last_updated_days_plural">Обновлено %1$d дней назад</string>
-    <string name="settings_last_updated_hours">Обновлено %1$d час назад</string>
-    <string name="settings_last_updated_hours_plural">Обновлено %1$d часов назад</string>
+    <string name="settings_last_updated_days">Обновлено %1$d дн. назад</string>
+    <string name="settings_last_updated_days_plural">Обновлено %1$d дн. назад</string>
+    <string name="settings_last_updated_hours">Обновлено %1$d ч. назад</string>
+    <string name="settings_last_updated_hours_plural">Обновлено %1$d ч. назад</string>
     <string name="settings_last_updated_mins">Обновлено %1$d мин. назад</string>
     <string name="settings_last_updated_now">Обновлено только что</string>
     <string name="settings_section_appearance">Оформление</string>
@@ -289,7 +324,7 @@
     <string name="settings_version_title">Версия</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Поддержать это приложение</string>
-    <string name="settings_support_desc">Купите мне кофе, если ARE iptv вам полезен.</string>
+    <string name="settings_support_desc">Пользуетесь ARE iptv? Угостите меня кофе.</string>
     <string name="settings_feedback_title">Отправить отзыв</string>
     <string name="settings_feedback_desc">Расскажите, что улучшить — это займёт несколько секунд.</string>
     <string name="settings_feedback_action">Оставить отзыв</string>
@@ -317,7 +352,7 @@
     <string name="hud_editor_hint_group">Влево/вправо — поменять группы местами · OK — отпустить</string>
     <string name="hud_editor_hint_grabbed_tray">Вниз — вернуть на HUD · OK — отпустить</string>
     <string name="hud_editor_locked_note">Воспроизведение, перемотка назад и вперёд отображаются всегда.</string>
-    <string name="hud_editor_budget">Показано %1$d из %2$d дополнительных кнопок</string>
+    <string name="hud_editor_budget">Дополнительных кнопок показано: %1$d из %2$d</string>
     <string name="hud_editor_at_cap">Достигнут предел — отключите одну, чтобы добавить другую.</string>
     <string name="hud_editor_reset">Сбросить по умолчанию</string>
     <string name="hud_editor_done">Готово</string>
@@ -330,7 +365,7 @@
     <string name="feedback_title">Отправить отзыв</string>
     <string name="feedback_subtitle">Ваш отзыв определяет, что мы создадим дальше. Спасибо за помощь.</string>
     <string name="feedback_rating_label">Как бы вы оценили приложение?</string>
-    <string name="feedback_star_cd">%1$d звёзд</string>
+    <string name="feedback_star_cd">Звёзд: %1$d</string>
     <string name="feedback_category_label">О чём речь?</string>
     <string name="feedback_message_label">Хотите что-то добавить? (необязательно)</string>
     <string name="feedback_message_placeholder">Расскажите подробнее…</string>
@@ -351,7 +386,7 @@
     <string name="pin_set_title">Задайте 4-значный PIN</string>
     <string name="pin_confirm_title">Подтвердите PIN</string>
     <string name="pin_enter_title">Введите PIN</string>
-    <string name="pin_lockout_message">Слишком много неверных попыток -- повторите через %1$dс</string>
+    <string name="pin_lockout_message">Слишком много неверных попыток -- повторите через %1$d с</string>
     <string name="pin_mismatch_error">PIN не совпадают -- попробуйте снова</string>
     <string name="pin_incorrect_error">Неверный PIN</string>
     <string name="pin_checking">Проверка…</string>
@@ -377,7 +412,7 @@
     <string name="home_category_live">Прямой эфир</string>
     <string name="home_category_movie">Фильм</string>
     <string name="home_category_series">Сериал</string>
-    <string name="home_edit_grabbed_desc">Захвачено -- Вверх/Вниз для перемещения, OK чтобы отпустить</string>
+    <string name="home_edit_grabbed_desc">Захвачено -- Вверх/Вниз — переместить · OK — отпустить</string>
     <string name="home_edit_grab_desc">Захватить для перестановки</string>
     <string name="home_edit_show_section">Показать раздел</string>
     <string name="home_edit_hide_section">Скрыть раздел</string>
@@ -399,7 +434,7 @@
     <string name="live_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь прямые каналы.</string>
     <string name="live_title">Прямой эфир</string>
     <string name="live_channel_groups">Группы каналов</string>
-    <string name="live_count_channels">%1$d каналов</string>
+    <string name="live_count_channels">Каналов: %1$d</string>
     <string name="live_empty_group">В этой группе пока нет каналов.</string>
     <string name="live_on_air_now">В ЭФИРЕ СЕЙЧАС</string>
 
@@ -407,15 +442,15 @@
     <string name="movies_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь фильмы.</string>
     <string name="movies_title">Фильмы</string>
     <string name="movies_genres">Жанры</string>
-    <string name="movies_count_titles">%1$d наименований</string>
-    <string name="category_count_items">%1$d элементов</string>
+    <string name="movies_count_titles">Всего: %1$d</string>
+    <string name="category_count_items">Элементов: %1$d</string>
     <string name="movies_empty_genre">В этом жанре пока нет фильмов.</string>
 
     <!-- Series -->
     <string name="series_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь сериалы.</string>
     <string name="series_title">Сериалы</string>
     <string name="series_empty_genre">В этом жанре пока нет сериалов.</string>
-    <string name="series_episode_count">%1$d серий</string>
+    <string name="series_episode_count">Серий: %1$d</string>
 
     <!-- Favorites -->
     <string name="favorites_no_source">Добавьте плейлист из боковой панели, затем добавьте каналы или материалы в избранное, чтобы увидеть их здесь.</string>
@@ -438,13 +473,21 @@
     <string name="search_category_label">Категория: %1$s</string>
     <string name="search_type_to_search">Введите текст для поиска в каталоге.</string>
     <string name="search_min_chars">Введите не менее %1$d символов для поиска.</string>
-    <string name="search_no_results">Нет результатов по запросу \"%1$s\".</string>
+    <string name="search_no_results">Нет результатов по запросу «%1$s».</string>
     <string name="search_section_live">Прямой эфир</string>
     <string name="search_section_titles">Фильмы и сериалы</string>
 
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Поиск по категориям</string>
+    <string name="browse_category_search_empty">Категории не найдены</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Продолжить</string>
+    <string name="tile_action_play_from_start">Смотреть с начала</string>
+
     <!-- Detail -->
     <string name="detail_loading">Загрузка…</string>
-    <string name="detail_not_found">Наименование не найдено</string>
+    <string name="detail_not_found">Материал не найден</string>
     <string name="detail_play">Смотреть</string>
     <string name="detail_play_episode">Смотреть С%1$d · Э%2$d</string>
     <string name="detail_add_to_favorites">В избранное</string>
@@ -453,10 +496,10 @@
     <string name="detail_cast_label">В ролях:</string>
     <string name="detail_director_label">Режиссёр:</string>
     <string name="detail_episodes_header">Серии</string>
-    <string name="detail_episodes_header_seasons">Серии · %1$d сезонов · %2$d всего</string>
-    <string name="detail_episodes_header_total">Серии · %1$d всего</string>
+    <string name="detail_episodes_header_seasons">Серии · сезонов: %1$d · всего: %2$d</string>
+    <string name="detail_episodes_header_total">Серии · всего: %1$d</string>
     <string name="detail_season_label">Сезон %1$d</string>
-    <string name="detail_season_episode_count">Сезон %1$s · %2$d серий</string>
+    <string name="detail_season_episode_count">Сезон %1$s · серий: %2$d</string>
     <string name="detail_m3u_no_episodes">У этой записи плейлиста нет данных о сезонах/сериях -- используйте «Смотреть» выше, чтобы воспроизвести как один элемент.</string>
     <string name="detail_episodes_load_error">Не удалось загрузить серии: %1$s</string>
     <string name="detail_episodes_loading">Загрузка серий…</string>
@@ -476,7 +519,7 @@
     <string name="player_forward_10_min">Вперёд на 10 минут</string>
     <string name="player_rewind">Перемотка назад</string>
     <string name="player_pause">Пауза</string>
-    <string name="player_play">Смотреть</string>
+    <string name="player_play">Воспроизвести</string>
     <string name="player_fast_forward">Перемотка вперёд</string>
     <string name="player_audio_track">Аудиодорожка</string>
     <string name="player_subtitles">Субтитры</string>
@@ -532,7 +575,7 @@
     <string name="shell_multi_view_desc">Мультиэкран</string>
     <string name="shell_add_playlist_desc">Добавить плейлист</string>
     <string name="nav_home">Главная</string>
-    <string name="nav_live_tv">Прямой эфир</string>
+    <string name="nav_live_tv">Эфир</string>
     <string name="nav_tv_guide">Телегид</string>
     <string name="nav_movies">Фильмы</string>
     <string name="nav_series">Сериалы</string>
@@ -579,7 +622,7 @@
     <string name="settings_provider_server_time">Время сервера</string>
     <string name="settings_provider_timezone">Часовой пояс</string>
     <string name="settings_provider_connections">Подключения</string>
-    <string name="settings_provider_connections_value">%1$d из %2$d используется</string>
+    <string name="settings_provider_connections_value">Используется: %1$d из %2$d</string>
     <string name="settings_provider_connections_max">макс. %1$d</string>
     <string name="settings_provider_expires">Истекает</string>
     <string name="settings_provider_expires_days">%1$s · осталось %2$d дн.</string>
@@ -639,7 +682,7 @@
     <string name="recordings_unavailable_generic">Подключите накопитель снова для просмотра</string>
     <string name="recordings_missing">Файла больше нет на накопителе</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
-    <string name="recordings_parts">%1$d частей</string>
+    <string name="recordings_parts">Частей: %1$d</string>
     <string name="onboarding_stalker_title">Stalker Portal</string>
     <string name="onboarding_stalker_desc">URL портала + MAC-адрес. Для порталов типа MAG, которые определяют вас по MAC.</string>
     <string name="onboarding_portal_url_label">URL портала</string>
@@ -666,10 +709,10 @@
     <string name="settings_sub_font_desc">Шрифт субтитров</string>
     <string name="settings_sub_font_default">Стандартный</string>
     <string name="player_autoplay_next_title">Далее</string>
-    <string name="player_autoplay_next_in">Следующий эпизод через %1$d с…</string>
+    <string name="player_autoplay_next_in">Следующая серия через %1$d с…</string>
     <string name="player_autoplay_play_now">Смотреть сейчас</string>
-    <string name="settings_autoplay_5s">5s</string>
-    <string name="settings_autoplay_10s">10s</string>
+    <string name="settings_autoplay_5s">5 с</string>
+    <string name="settings_autoplay_10s">10 с</string>
     <string name="settings_sub_size_s">S</string>
     <string name="settings_sub_size_m">M</string>
     <string name="settings_sub_size_l">L</string>
@@ -687,7 +730,7 @@
     <string name="player_previous_program">Предыдущая программа</string>
     <string name="player_next_program">Следующая программа</string>
     <string name="support_dialog_title">Нравится ARE iptv?</string>
-    <string name="support_dialog_body">Его создаёт и поддерживает один человек по вечерам и выходным. Без подписки, без рекламы, без слежки за тем, что вы смотрите — просто приложение, которое работает. Если оно заслужило место на вашем телевизоре, чашка кофе поможет ему жить дальше.</string>
+    <string name="support_dialog_body">Его создаёт и поддерживает один человек, по вечерам и по выходным. Без подписки, без рекламы, без слежки за тем, что вы смотрите — просто приложение, которое работает. Если оно заслужило место на вашем телевизоре, чашка кофе поможет мне его развивать.</string>
     <string name="support_dialog_scan">Отсканируйте, чтобы открыть на телефоне</string>
-    <string name="support_dialog_visit">Или зайдите на</string>
+    <string name="support_dialog_visit">Или откройте:</string>
 </resources>

@@ -53,7 +53,7 @@
     <string name="onboarding_password_label">Parolă</string>
     <string name="onboarding_m3u_url_label">URL listă de redare M3U</string>
     <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
-    <string name="onboarding_epg_auto_title">Potrivește automat EPG &amp; siglele</string>
+    <string name="onboarding_epg_auto_title">Potrivește automat EPG-ul și siglele</string>
     <string name="onboarding_epg_auto_desc">Preia automat datele din ghid, siglele canalelor și posterele.</string>
     <string name="onboarding_epg_url_label">URL EPG XMLTV (opțional)</string>
     <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
@@ -80,7 +80,7 @@
     <string name="privacy_title">Confidențialitate &amp; Termeni</string>
     <string name="privacy_subtitle">Te rugăm să citești și să accepți înainte de a continua.</string>
     <string name="privacy_accept_label">Am citit și accept Politica de confidențialitate și Termenii de utilizare.</string>
-    <string name="privacy_summary">Playlisturile, parolele și istoricul tău de vizionare rămân pe acest dispozitiv — nu le primim niciodată. Colectăm diagnostice anonime despre erori și utilizare, pe care le poți dezactiva mai jos sau în Setări oricând. ARE iptv nu oferă canale sau conținut propriu: sursele le aduci tu.</string>
+    <string name="privacy_summary">Listele tale de redare, parolele și istoricul de vizionare rămân pe acest dispozitiv — nu le primim niciodată. Colectăm diagnostice anonime despre erori și utilizare, pe care le poți dezactiva mai jos sau în Setări oricând. ARE iptv nu oferă canale sau conținut propriu: sursele le aduci tu.</string>
     <string name="privacy_read_full">Citește integral Politica de confidențialitate și Termenii</string>
     <string name="privacy_crash_label">Trimite rapoarte de eroare și date de utilizare anonime</string>
     <string name="privacy_updated_note">Ne-am actualizat Politica de confidențialitate și Termenii. Te rugăm să îi citești și să îi accepți pentru a continua.</string>
@@ -228,7 +228,7 @@
     <string name="settings_autoplay_next">Redă automat episodul următor</string>
     <string name="settings_autoplay_next_desc">Deocamdată doar o preferință -- avansarea automată nu este încă funcțională; alege episodul următor din Detalii.</string>
     <string name="settings_mini_player_behavior">Comportamentul mini-playerului</string>
-    <string name="settings_mini_player_behavior_desc">Când navighezi lângă mini-playerul andocat: mută-l în colțul liber sau estompează-l și micșorează-l.</string>
+    <string name="settings_mini_player_behavior_desc">Când navighezi lângă mini-playerul andocat: alunecă în colțul liber sau se estompează și se micșorează.</string>
     <string name="settings_mini_player_dodge">Evitare automată</string>
     <string name="settings_mini_player_fade">Estompează &amp; micșorează</string>
     <string name="settings_section_parental">Control parental</string>
@@ -261,7 +261,7 @@
     <string name="settings_omdb_title">OMDb</string>
     <string name="settings_omdb_connected">Conectat -- scorurile IMDb &amp; Rotten Tomatoes, subiectul și distribuția apar în Detalii.</string>
     <string name="settings_omdb_key_title">Cheie API OMDb</string>
-    <string name="settings_omdb_key_desc">Lipește o cheie gratuită de la omdbapi.com pentru a îmbogăți filmele și serialele cu scoruri IMDb &amp; Rotten Tomatoes, un rezumat și distribuția. O validăm înainte de salvare.</string>
+    <string name="settings_omdb_key_desc">Lipește o cheie gratuită de la omdbapi.com pentru a îmbogăți filmele și serialele cu scoruri IMDb și Rotten Tomatoes, un rezumat și distribuția. O validăm înainte de salvare.</string>
     <!-- Integration setup guides (OMDb / OpenSubtitles) -->
     <string name="settings_howto_key">Cum obții o cheie</string>
     <string name="settings_howto_account">Ai nevoie de un cont?</string>
@@ -296,7 +296,7 @@
     <string name="settings_analytics_title">Statistici de utilizare</string>
     <string name="settings_analytics_desc">Partajează statistici de utilizare anonime pentru a ne ajuta să îmbunătățim aplicația. Nu se colectează date personale.</string>
     <string name="settings_crash_title">Rapoarte de eroare</string>
-    <string name="settings_crash_desc">Trimite diagnostice când aplicația se blochează sau se închide. Nu include niciodată playlisturile sau parolele tale.</string>
+    <string name="settings_crash_desc">Trimite diagnostice când aplicația se blochează sau se închide. Nu include niciodată listele tale de redare sau parolele.</string>
     <string name="settings_legal_title">Confidențialitate și termeni</string>
     <string name="settings_legal_desc">Citește documentul pe care l-ai acceptat la configurarea aplicației.</string>
     <string name="settings_legal_action">Citește</string>
@@ -359,7 +359,7 @@
     <!-- Home -->
     <string name="home_add_section">Adaugă secțiune</string>
     <string name="home_remove_continue_watching_title">Elimini din Continuă vizionarea?</string>
-    <string name="home_remove_continue_watching_body">„%1$s” nu va mai fi afișat aici. Locul tău nu este păstrat.</string>
+    <string name="home_remove_continue_watching_body">„%1$s” nu va mai fi afișat aici. Progresul tău nu este păstrat.</string>
     <string name="home_loading_catalog">Se încarcă catalogul tău…</string>
     <string name="home_no_playlist_title">Nicio listă de redare încă</string>
     <string name="home_no_playlist_body">Adaugă o listă de redare din bara laterală pentru a-ți vedea aici canalele, filmele și serialele.</string>
@@ -373,7 +373,7 @@
     <string name="home_section_movies">Filme</string>
     <string name="home_section_series">Seriale</string>
     <string name="home_add_section_dialog_title">Adaugă o secțiune</string>
-    <string name="home_add_section_empty">Fiecare categorie din lista ta de redare este deja fixată pe Acasă.</string>
+    <string name="home_add_section_empty">Toate categoriile din lista ta de redare sunt deja fixate pe Acasă.</string>
     <string name="home_category_live">Live</string>
     <string name="home_category_movie">Film</string>
     <string name="home_category_series">Serial</string>
@@ -423,12 +423,12 @@
     <string name="favorites_tab_channels">Canale</string>
     <string name="favorites_tab_movies">Filme</string>
     <string name="favorites_tab_series">Seriale</string>
-    <string name="favorites_empty_channels">Niciun canal favorit încă -- apasă pe inima de pe o dală de canal pentru a adăuga unul.</string>
-    <string name="favorites_empty_movies">Niciun film favorit încă -- apasă pe inima de pe o dală de film pentru a adăuga unul.</string>
-    <string name="favorites_empty_series">Niciun serial favorit încă -- apasă pe inima de pe o dală de serial pentru a adăuga unul.</string>
+    <string name="favorites_empty_channels">Niciun canal favorit încă -- apasă pe inima unui canal pentru a-l adăuga.</string>
+    <string name="favorites_empty_movies">Niciun film favorit încă -- apasă pe inima unui film pentru a-l adăuga.</string>
+    <string name="favorites_empty_series">Niciun serial favorit încă -- apasă pe inima unui serial pentru a-l adăuga.</string>
 
     <!-- Search -->
-    <string name="search_no_source">Adaugă o listă de redare din bara laterală pentru a-ți căuta catalogul.</string>
+    <string name="search_no_source">Adaugă o listă de redare din bara laterală pentru a căuta în catalogul tău.</string>
     <string name="search_title">Caută</string>
     <string name="search_placeholder">Caută canale, filme, seriale…</string>
     <string name="search_scope_all">Toate</string>
@@ -588,13 +588,13 @@
     <string name="settings_provider_trial">Tip de cont</string>
     <string name="settings_provider_trial_value">Probă</string>
     <string name="settings_provider_unlimited">Nelimitat</string>
-    <string name="sources_delete_title">Ștergi playlistul?</string>
+    <string name="sources_delete_title">Ștergi lista de redare?</string>
     <string name="sources_delete_body">Aceasta șterge definitiv „%1$s” și tot ce conține — canale, filme, seriale, favorite și istoricul vizionărilor — de pe acest dispozitiv. Această acțiune nu poate fi anulată.</string>
-    <string name="sources_delete_hint">Ține apăsat OK pe un playlist pentru mai multe opțiuni.</string>
-    <string name="sources_options_body">Alege ce vrei să faci cu acest playlist.</string>
-    <string name="sources_rename_title">Redenumește playlistul</string>
-    <string name="sources_rename_body">Aceasta schimbă doar modul în care playlistul apare în lista ta. Canalele, favoritele și istoricul de vizionare rămân neschimbate.</string>
-    <string name="sources_rename_label">Numele playlistului</string>
+    <string name="sources_delete_hint">Ține apăsat OK pe o listă de redare pentru mai multe opțiuni.</string>
+    <string name="sources_options_body">Alege ce vrei să faci cu această listă de redare.</string>
+    <string name="sources_rename_title">Redenumește lista de redare</string>
+    <string name="sources_rename_body">Aceasta schimbă doar modul în care lista de redare apare în lista ta. Canalele, favoritele și istoricul de vizionare rămân neschimbate.</string>
+    <string name="sources_rename_label">Numele listei de redare</string>
     <string name="nav_streams">Fluxuri</string>
     <string name="streams_open">Deschide un flux de rețea</string>
     <string name="streams_empty">Încă nu există fluxuri. Deschide un flux de rețea pentru a începe.</string>
@@ -687,7 +687,35 @@
     <string name="player_previous_program">Programul anterior</string>
     <string name="player_next_program">Programul următor</string>
     <string name="support_dialog_title">Îți place ARE iptv?</string>
-    <string name="support_dialog_body">Este creată și întreținută de o singură persoană, seara și în weekend. Fără abonament, fără reclame, fără urmărirea a ceea ce vizionezi — doar o aplicație care funcționează. Dacă își merită locul pe televizorul tău, o cafea o ține în viață.</string>
+    <string name="support_dialog_body">Este creată și întreținută de o singură persoană, seara și în weekend. Fără abonament, fără reclame, fără să urmărească ce vizionezi — doar o aplicație care funcționează. Dacă își merită locul pe televizorul tău, o cafea o duce mai departe.</string>
     <string name="support_dialog_scan">Scanează pentru a deschide pe telefon</string>
-    <string name="support_dialog_visit">Sau vizitează</string>
+    <string name="support_dialog_visit">Sau vizitează:</string>
+
+    <!-- Explore free playlists -->
+    <string name="explore_link">Explorează liste IPTV gratuite</string>
+    <string name="sources_from_explore">Din Explorează</string>
+    <string name="explore_title">Explorează IPTV gratuit</string>
+    <string name="explore_subtitle">Liste în clar, publicate și întreținute de comunitate. ARE iptv nu găzduiește și nu controlează aceste fluxuri, iar disponibilitatea diferă de la o țară la alta.</string>
+    <string name="explore_used_count">%1$d din %2$d liste folosite</string>
+    <string name="explore_channels_approx">~%1$d canale</string>
+    <string name="explore_hint">Numărul de canale este aproximativ și se schimbă des.</string>
+    <string name="explore_add_title">Adaugă „%1$s”</string>
+    <string name="explore_add_body">Dă-i ce nume vrei — îl poți schimba mai târziu.</string>
+    <string name="explore_add_action">Adaugă lista de redare</string>
+    <string name="explore_name_label">Numele listei de redare</string>
+    <string name="explore_adding_title">Se adaugă lista de redare…</string>
+    <string name="explore_adding_body">Se preia „%1$s”. La o listă mare poate dura un moment.</string>
+    <string name="explore_failed_title">Nu s-a putut adăuga acea listă</string>
+    <string name="explore_failed_body">„%1$s” nu a putut fi încărcată. Este posibil ca lista să fi fost mutată sau să fie temporar indisponibilă — problema este a listei, nu a dispozitivului tău. Încearcă alta.</string>
+    <string name="explore_cap_title">Ai %1$d liste de redare</string>
+    <string name="explore_cap_body">Acesta este maximul. Elimină una din lista ta pentru a adăuga alta.</string>
+
+    <!-- Category browse search -->
+    <string name="browse_category_search_placeholder">Caută categorii</string>
+    <string name="browse_category_search_empty">Nicio categorie potrivită</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Reia</string>
+    <string name="tile_action_play_from_start">Redă de la început</string>
+
 </resources>

@@ -289,14 +289,14 @@
     <string name="settings_version_title">Versão</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Apoie este app</string>
-    <string name="settings_support_desc">Me pague um café se o ARE iptv for útil para você.</string>
+    <string name="settings_support_desc">Me paga um café se o ARE iptv for útil para você.</string>
     <string name="settings_feedback_title">Enviar feedback</string>
     <string name="settings_feedback_desc">Conte o que podemos melhorar — leva alguns segundos.</string>
     <string name="settings_feedback_action">Dar feedback</string>
     <string name="settings_analytics_title">Análise de uso</string>
     <string name="settings_analytics_desc">Compartilhe estatísticas de uso anônimas para nos ajudar a melhorar o app. Nenhum dado pessoal é coletado.</string>
     <string name="settings_crash_title">Relatórios de falhas</string>
-    <string name="settings_crash_desc">Enviar diagnósticos quando o app travar ou fechar. Nunca inclui suas playlists ou senhas.</string>
+    <string name="settings_crash_desc">Enviar diagnósticos quando o app fecha sozinho ou trava. Nunca inclui suas playlists ou senhas.</string>
     <string name="settings_legal_title">Política de Privacidade e Termos</string>
     <string name="settings_legal_desc">Leia o documento que você aceitou ao configurar o app.</string>
     <string name="settings_legal_action">Ler</string>
@@ -344,7 +344,7 @@
     <string name="feedback_cat_guide">Guia de TV</string>
     <string name="feedback_cat_layout">Layout</string>
     <string name="feedback_cat_favorites">Favoritos</string>
-    <string name="feedback_cat_missing">Recurso ausente</string>
+    <string name="feedback_cat_missing">Falta um recurso</string>
     <string name="feedback_cat_other">Outro</string>
 
     <!-- Parental PIN dialog -->
@@ -687,7 +687,35 @@
     <string name="player_previous_program">Programa anterior</string>
     <string name="player_next_program">Próximo programa</string>
     <string name="support_dialog_title">Curtindo o ARE iptv?</string>
-    <string name="support_dialog_body">Ele é feito e mantido por uma pessoa só, à noite e nos fins de semana. Sem assinatura, sem anúncios, sem rastrear o que você assiste — só um app que funciona. Se ele merece o lugar na sua TV, um café mantém tudo em pé.</string>
+    <string name="support_dialog_body">É feito e mantido por uma pessoa só, à noite e nos fins de semana. Sem assinatura, sem anúncios, sem rastrear o que você assiste — só um app que funciona. Se ele merece o lugar na sua TV, um café ajuda a seguir em frente.</string>
     <string name="support_dialog_scan">Escaneie para abrir no celular</string>
-    <string name="support_dialog_visit">Ou acesse</string>
+    <string name="support_dialog_visit">Ou acesse:</string>
+
+    <!-- Explore free playlists -->
+    <string name="explore_link">Explorar playlists IPTV gratuitas</string>
+    <string name="sources_from_explore">Do Explorar</string>
+    <string name="explore_title">Explorar IPTV gratuita</string>
+    <string name="explore_subtitle">Playlists abertas, listadas publicamente e mantidas pela comunidade. O ARE iptv não hospeda nem controla essas transmissões, e a disponibilidade muda de país para país.</string>
+    <string name="explore_used_count">%1$d de %2$d playlists usadas</string>
+    <string name="explore_channels_approx">~%1$d canais</string>
+    <string name="explore_hint">A contagem de canais é aproximada e muda com frequência.</string>
+    <string name="explore_add_title">Adicionar “%1$s”</string>
+    <string name="explore_add_body">Dê o nome que quiser — você pode renomear depois.</string>
+    <string name="explore_add_action">Adicionar playlist</string>
+    <string name="explore_name_label">Nome da playlist</string>
+    <string name="explore_adding_title">Adicionando playlist…</string>
+    <string name="explore_adding_body">Buscando “%1$s”. Em uma lista grande, isso pode demorar um pouco.</string>
+    <string name="explore_failed_title">Não foi possível adicionar essa playlist</string>
+    <string name="explore_failed_body">Não foi possível carregar “%1$s”. A lista pode ter mudado de lugar ou estar indisponível no momento — o problema é da playlist, não do seu dispositivo. Tente outra.</string>
+    <string name="explore_cap_title">Você tem %1$d playlists</string>
+    <string name="explore_cap_body">Esse é o máximo. Remova uma da sua lista de playlists para adicionar outra.</string>
+
+    <!-- Category browse search -->
+    <string name="browse_category_search_placeholder">Pesquisar categorias</string>
+    <string name="browse_category_search_empty">Nenhuma categoria correspondente</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Retomar</string>
+    <string name="tile_action_play_from_start">Reproduzir do início</string>
+
 </resources>

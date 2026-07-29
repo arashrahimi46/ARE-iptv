@@ -85,6 +85,43 @@
     <string name="privacy_crash_label">Skicka anonyma kraschrapporter och användningsdata</string>
     <string name="privacy_updated_note">Vi har uppdaterat vår integritetspolicy och våra villkor. Läs igenom och godkänn dem för att fortsätta.</string>
 
+    <!-- Privacy & Terms: the binding document. The English text governs (§13); this Swedish
+         translation is provided for convenience only. -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Utforska gratis IPTV-spellistor</string>
+    <string name="sources_from_explore">Från Utforska</string>
+    <string name="explore_title">Utforska gratis IPTV</string>
+    <string name="explore_subtitle">Offentligt listade, fritt tillgängliga spellistor som underhålls av gemenskapen. ARE iptv varken lagrar eller kontrollerar dessa strömmar, och tillgängligheten varierar mellan länder.</string>
+    <string name="explore_used_count">%1$d av %2$d spellistor använda</string>
+    <string name="explore_channels_approx">~%1$d kanaler</string>
+    <string name="explore_hint">Kanalantalen är ungefärliga och ändras ofta.</string>
+    <string name="explore_add_title">Lägg till ”%1$s”</string>
+    <string name="explore_add_body">Döp den till vad du vill – du kan byta namn senare.</string>
+    <string name="explore_add_action">Lägg till spellista</string>
+    <string name="explore_name_label">Spellistans namn</string>
+    <string name="explore_adding_title">Lägger till spellista…</string>
+    <string name="explore_adding_body">Hämtar ”%1$s”. Det kan ta en stund för en stor lista.</string>
+    <string name="explore_failed_title">Det gick inte att lägga till spellistan</string>
+    <string name="explore_failed_body">”%1$s” kunde inte läsas in. Listan kan ha flyttats eller vara tillfälligt otillgänglig – det är ett problem med spellistan, inte med din enhet. Prova en annan.</string>
+    <string name="explore_cap_title">Du har %1$d spellistor</string>
+    <string name="explore_cap_body">Det är maxantalet. Ta bort en från din spellistelista för att lägga till en annan.</string>
+
     <!-- Select source -->
     <string name="sources_choose_title">Välj en spellista</string>
     <string name="sources_choose_subtitle">Välj vilken av dina tillagda spellistor du vill öppna.</string>
@@ -341,7 +378,7 @@
     <string name="feedback_qr_title">Vill du skriva mer?</string>
     <string name="feedback_qr_desc">Skanna detta med telefonen för att öppna feedbackformuläret och skriva på ett riktigt tangentbord.</string>
     <string name="feedback_cat_playback">Uppspelning</string>
-    <string name="feedback_cat_guide">Tv-guide</string>
+    <string name="feedback_cat_guide">TV-guide</string>
     <string name="feedback_cat_layout">Layout</string>
     <string name="feedback_cat_favorites">Favoriter</string>
     <string name="feedback_cat_missing">Saknad funktion</string>
@@ -441,6 +478,14 @@
     <string name="search_no_results">Inga resultat för \"%1$s\".</string>
     <string name="search_section_live">Live-TV</string>
     <string name="search_section_titles">Filmer &amp; serier</string>
+
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Sök kategorier</string>
+    <string name="browse_category_search_empty">Inga matchande kategorier</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Återuppta</string>
+    <string name="tile_action_play_from_start">Spela från början</string>
 
     <!-- Detail -->
     <string name="detail_loading">Laddar…</string>
@@ -665,7 +710,7 @@
     <string name="settings_sub_font_title">Teckensnitt</string>
     <string name="settings_sub_font_desc">Teckensnitt för undertexter</string>
     <string name="settings_sub_font_default">Standard</string>
-    <string name="player_autoplay_next_title">Näst</string>
+    <string name="player_autoplay_next_title">Nästa</string>
     <string name="player_autoplay_next_in">Nästa avsnitt om %1$d s…</string>
     <string name="player_autoplay_play_now">Spela nu</string>
     <string name="settings_autoplay_5s">5s</string>
@@ -687,7 +732,7 @@
     <string name="player_previous_program">Föregående program</string>
     <string name="player_next_program">Nästa program</string>
     <string name="support_dialog_title">Gillar du ARE iptv?</string>
-    <string name="support_dialog_body">Den byggs och underhålls av en enda person, på kvällar och helger. Ingen prenumeration, inga annonser, ingen spårning av vad du tittar på — bara en app som fungerar. Om den förtjänar sin plats i din tv håller en kopp kaffe den vid liv.</string>
+    <string name="support_dialog_body">Den byggs och underhålls av en enda person, på kvällar och helger. Ingen prenumeration, inga annonser, ingen spårning av vad du tittar på — bara en app som fungerar. Om den förtjänar sin plats på din tv håller en kopp kaffe den igång.</string>
     <string name="support_dialog_scan">Skanna för att öppna i telefonen</string>
-    <string name="support_dialog_visit">Eller besök</string>
+    <string name="support_dialog_visit">Eller besök:</string>
 </resources>

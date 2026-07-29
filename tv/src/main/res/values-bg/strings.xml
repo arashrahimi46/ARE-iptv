@@ -5,25 +5,25 @@
     <!-- Common -->
     <string name="action_back">Назад</string>
     <string name="action_cancel">Отказ</string>
-    <string name="action_continue">Продължи</string>
-    <string name="action_retry">Опитай отново</string>
-    <string name="action_close">Затвори</string>
-    <string name="action_remove">Премахни</string>
-    <string name="action_clear">Изчисти</string>
-    <string name="action_rename">Преименувай</string>
-    <string name="action_save">Запази</string>
-    <string name="action_connect">Свържи</string>
-    <string name="action_disconnect">Прекъсни връзката</string>
+    <string name="action_continue">Продължаване</string>
+    <string name="action_retry">Опитайте отново</string>
+    <string name="action_close">Затваряне</string>
+    <string name="action_remove">Премахване</string>
+    <string name="action_clear">Изчистване</string>
+    <string name="action_rename">Преименуване</string>
+    <string name="action_save">Запазване</string>
+    <string name="action_connect">Свързване</string>
+    <string name="action_disconnect">Прекъсване на връзката</string>
     <string name="action_sign_in">Вход</string>
     <string name="action_sign_out">Изход</string>
     <string name="action_search">Търсене</string>
-    <string name="action_buy_coffee">Почерпи ме с кафе</string>
+    <string name="action_buy_coffee">Почерпете ме с кафе</string>
     <string name="content_desc_account">Профил</string>
 
     <!-- Shell -->
     <string name="shell_leave_app_title">Изход от ARE iptv?</string>
-    <string name="shell_stay">Остани</string>
-    <string name="shell_leave">Излез</string>
+    <string name="shell_stay">Останете</string>
+    <string name="shell_leave">Излезте</string>
     <string name="shell_leave_app_body">Искате ли да излезете от ARE iptv?</string>
 
     <!-- Splash -->
@@ -35,10 +35,10 @@
     <string name="onboarding_step_epg">EPG</string>
     <string name="onboarding_step_confirm">Потвърждение</string>
     <string name="onboarding_title">Добавяне на плейлист</string>
-    <string name="onboarding_subtitle">Използвайте своя собствена IPTV абонамент. ARE iptv никога не съхранява данните ви за вход извън устройството.</string>
-    <string name="onboarding_skip_for_now">Пропусни засега</string>
+    <string name="onboarding_subtitle">Използвайте своя собствен IPTV абонамент. ARE iptv никога не съхранява данните ви за вход извън устройството.</string>
+    <string name="onboarding_skip_for_now">Пропуснете засега</string>
     <string name="onboarding_go_to_home">Към Начало</string>
-    <string name="onboarding_add_playlist">Добави плейлист</string>
+    <string name="onboarding_add_playlist">Добавяне на плейлист</string>
 
     <!-- Onboarding steps -->
     <string name="onboarding_xtream_title">Xtream Codes</string>
@@ -53,7 +53,7 @@
     <string name="onboarding_password_label">Парола</string>
     <string name="onboarding_m3u_url_label">URL на M3U плейлист</string>
     <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
-    <string name="onboarding_epg_auto_title">Автоматично съпоставяне на EPG &amp; лога</string>
+    <string name="onboarding_epg_auto_title">Автоматично съпоставяне на EPG и логата</string>
     <string name="onboarding_epg_auto_desc">Изтегляйте данни за програмата, лога на канали и постери автоматично.</string>
     <string name="onboarding_epg_url_label">XMLTV EPG URL (по избор)</string>
     <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
@@ -63,7 +63,7 @@
     <string name="onboarding_confirm_error_title">Плейлистът не можа да се добави</string>
     <string name="onboarding_confirm_added">Добавено</string>
     <string name="onboarding_confirm_ready">Готово за добавяне</string>
-    <string name="onboarding_confirm_channels_badge">%1$d канала</string>
+    <string name="onboarding_confirm_channels_badge">Канали: %1$d</string>
     <string name="onboarding_confirm_downloading">Изтегляне и импортиране на вашите канали. Големите плейлисти може да отнемат известно време — моля, дръжте приложението отворено.</string>
     <string name="onboarding_confirm_row_portal">Портал</string>
     <string name="onboarding_confirm_default_portal_name">Моят плейлист</string>
@@ -74,10 +74,10 @@
     <string name="onboarding_confirm_auto_matched">Автоматично съпоставено</string>
     <string name="onboarding_confirm_custom_xmltv">Персонализиран XMLTV</string>
     <string name="onboarding_confirm_row_catalog">Каталог</string>
-    <string name="onboarding_confirm_catalog_summary">%1$d канала · %2$d филма · %3$d сериала</string>
+    <string name="onboarding_confirm_catalog_summary">Канали: %1$d · Филми: %2$d · Сериали: %3$d</string>
 
     <!-- Privacy & Terms -->
-    <string name="privacy_title">Поверителност &amp; Условия</string>
+    <string name="privacy_title">Поверителност и условия</string>
     <string name="privacy_subtitle">Моля, прегледайте и приемете, преди да продължите.</string>
     <string name="privacy_accept_label">Прочетох и приемам Политиката за поверителност и Общите условия.</string>
     <string name="privacy_summary">Вашите плейлисти, пароли и история на гледане остават на това устройство — ние никога не ги получаваме. Събираме анонимна диагностика за сривове и употреба, която можете да изключите по-долу или в Настройки по всяко време. ARE iptv не предоставя собствени канали или съдържание: източниците са ваши.</string>
@@ -85,12 +85,31 @@
     <string name="privacy_crash_label">Изпращане на анонимни отчети за сривове и данни за употреба</string>
     <string name="privacy_updated_note">Актуализирахме Политиката за поверителност и Условията. Моля, прегледайте ги и ги приемете, за да продължите.</string>
 
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Разгледайте безплатни IPTV плейлисти</string>
+    <string name="sources_from_explore">От безплатните</string>
+    <string name="explore_title">Безплатни IPTV плейлисти</string>
+    <string name="explore_subtitle">Публично достъпни, свободно излъчвани плейлисти, поддържани от общността. ARE iptv не хоства и не контролира тези потоци, а наличността им се различава според държавата.</string>
+    <string name="explore_used_count">Използвани плейлисти: %1$d от %2$d</string>
+    <string name="explore_channels_approx">Канали: ~%1$d</string>
+    <string name="explore_hint">Броят на каналите е приблизителен и се променя често.</string>
+    <string name="explore_add_title">Добавяне на „%1$s“</string>
+    <string name="explore_add_body">Наречете го както искате — можете да го преименувате по-късно.</string>
+    <string name="explore_add_action">Добавяне на плейлист</string>
+    <string name="explore_name_label">Име на плейлиста</string>
+    <string name="explore_adding_title">Добавяне на плейлист…</string>
+    <string name="explore_adding_body">Изтегляне на „%1$s“. При голям списък това може да отнеме известно време.</string>
+    <string name="explore_failed_title">Плейлистът не можа да се добави</string>
+    <string name="explore_failed_body">„%1$s“ не можа да се зареди. Списъкът може да е преместен или временно недостъпен — проблемът е в плейлиста, а не във вашето устройство. Опитайте с друг.</string>
+    <string name="explore_cap_title">Имате %1$d плейлиста</string>
+    <string name="explore_cap_body">Това е максимумът. Премахнете един от списъка си, за да добавите друг.</string>
+
     <!-- Select source -->
     <string name="sources_choose_title">Изберете плейлист</string>
     <string name="sources_choose_subtitle">Изберете кой от добавените плейлисти да отворите.</string>
     <string name="sources_type_xtream">Xtream</string>
     <string name="sources_type_m3u">M3U</string>
-    <string name="sources_add_new_playlist">Добави нов плейлист</string>
+    <string name="sources_add_new_playlist">Добавяне на нов плейлист</string>
 
     <!-- Language selector / first run -->
     <string name="language_select_title">Изберете своя език</string>
@@ -121,7 +140,7 @@
     <string name="language_name_fa">فارسی</string>
     <string name="language_name_ar">العربية</string>
     <string name="language_confirm_title">Сигурни ли сте, че искате да смените езика?</string>
-    <string name="language_confirm_action">Потвърди</string>
+    <string name="language_confirm_action">Потвърждаване</string>
     <string name="language_confirm_cancel">Отказ</string>
 
     <!-- Settings -->
@@ -142,7 +161,7 @@
     <string name="settings_sidebar_style_floating">Плаващ</string>
     <string name="settings_sidebar_style_edge">Пълна височина</string>
     <string name="settings_clock_title">Формат на часа</string>
-    <string name="settings_clock_desc">Как се показват часовете в Справочника и плейъра</string>
+    <string name="settings_clock_desc">Как се показват часовете в ТВ програмата и в плейъра</string>
     <string name="settings_clock_24h">24-часов</string>
     <string name="settings_clock_12h">12-часов</string>
     <string name="settings_stale_title">Напомняне за опресняване</string>
@@ -170,15 +189,15 @@
     <string name="settings_relock_1hour">1 час</string>
     <string name="settings_relock_never">Никога</string>
     <string name="settings_locked_display_title">Заключено съдържание</string>
-    <string name="settings_locked_display_desc">Скрий изцяло съдържанието за възрастни или го покажи замъглено зад PIN.</string>
-    <string name="settings_locked_hide">Скрий</string>
-    <string name="settings_locked_blur">Замъгли</string>
+    <string name="settings_locked_display_desc">Пълно скриване на съдържанието за възрастни или показване замъглено зад PIN.</string>
+    <string name="settings_locked_hide">Скриване</string>
+    <string name="settings_locked_blur">Замъгляване</string>
     <string name="settings_pin_launch_title">PIN при стартиране</string>
     <string name="settings_pin_launch_desc">Искане на родителския PIN при всяко стартиране.</string>
     <string name="settings_keywords_title">Персонални блокирани думи</string>
-    <string name="settings_keywords_desc">Категориите, съдържащи някоя от тези думи, също се заключват. Докоснете дума, за да я премахнете.</string>
-    <string name="settings_keywords_placeholder">Добави дума</string>
-    <string name="settings_keywords_add">Добави</string>
+    <string name="settings_keywords_desc">Категориите, съдържащи някоя от тези думи, също се заключват. Изберете дума, за да я премахнете.</string>
+    <string name="settings_keywords_placeholder">Добавете дума</string>
+    <string name="settings_keywords_add">Добавяне</string>
     <string name="settings_whats_new">Какво ново</string>
     <string name="settings_whats_new_title">Какво ново</string>
     <string name="settings_changelog_1">Отстранени различни проблеми и грешки.</string>
@@ -189,24 +208,24 @@
     <string name="settings_clear_cache_desc">Освобождаване на място от кешираните постери и лога</string>
     <string name="settings_clear_cache_confirm">Да се изчистят кешираните постери и лога на канали? Ще се изтеглят отново при показване.</string>
     <string name="settings_clear_history_title">Изчистване на историята</string>
-    <string name="settings_clear_history_desc">Премахване на всички записи от Продължи гледането</string>
-    <string name="settings_clear_history_confirm">Да се изчисти целият напредък в Продължи гледането? Това не може да се отмени.</string>
+    <string name="settings_clear_history_desc">Премахване на всички записи от „Продължете гледането“</string>
+    <string name="settings_clear_history_confirm">Да се изчисти целият напредък в „Продължете гледането“? Това не може да се отмени.</string>
     <string name="settings_reset_title">Връщане към стандартните</string>
     <string name="settings_reset_desc">Възстановяване на настройките за облик и възпроизвеждане</string>
-    <string name="settings_reset_confirm">Да се върнат настройките за облик и възпроизвеждане към стандартните? Вашите плейлисти, входове, език и родителско заключване се запазват.</string>
+    <string name="settings_reset_confirm">Да се върнат настройките за облик и възпроизвеждане към стандартните? Вашите плейлисти, данни за вход, език и родителско заключване се запазват.</string>
     <string name="settings_reset_action">Нулиране</string>
-    <string name="settings_section_playlists">Плейлисти &amp; синхронизация</string>
-    <string name="settings_refresh_catalog">Обнови каталога</string>
-    <string name="settings_refresh_now">Обнови сега</string>
+    <string name="settings_section_playlists">Плейлисти и синхронизация</string>
+    <string name="settings_refresh_catalog">Обновяване на каталога</string>
+    <string name="settings_refresh_now">Обновете сега</string>
     <string name="settings_refreshing">Обновяване…</string>
     <string name="settings_refresh_syncing">Синхронизиране с доставчика…</string>
-    <string name="settings_refresh_success">Обновено: %1$d канала, %2$d филма, %3$d сериала</string>
-    <string name="settings_refresh_stale">На повече от 2 седмици — обновете, за да получите нови канали &amp; заглавия</string>
+    <string name="settings_refresh_success">Обновено · канали: %1$d, филми: %2$d, сериали: %3$d</string>
+    <string name="settings_refresh_stale">На повече от 2 седмици — обновете, за да получите нови канали и заглавия</string>
     <string name="settings_never_refreshed">Никога не е обновявано</string>
     <string name="settings_last_updated_days">Последно обновено преди %1$d ден</string>
-    <string name="settings_last_updated_days_plural">Последно обновено преди %1$d дни</string>
+    <string name="settings_last_updated_days_plural">Последно обновено преди %1$d д.</string>
     <string name="settings_last_updated_hours">Последно обновено преди %1$d час</string>
-    <string name="settings_last_updated_hours_plural">Последно обновено преди %1$d часа</string>
+    <string name="settings_last_updated_hours_plural">Последно обновено преди %1$d ч.</string>
     <string name="settings_last_updated_mins">Последно обновено преди %1$d мин</string>
     <string name="settings_last_updated_now">Последно обновено току-що</string>
     <string name="settings_section_appearance">Външен вид</string>
@@ -215,10 +234,10 @@
     <string name="settings_accent_color">Акцентен цвят</string>
     <string name="settings_accent_color_desc_dark">Прилага се към тъмната тема. Превключете към светъл режим, за да зададете акцента на светлата тема.</string>
     <string name="settings_accent_color_desc_light">Прилага се към светлата тема. Превключете към тъмен режим, за да зададете акцента на тъмната тема.</string>
-    <string name="settings_reduce_motion">Намали анимациите</string>
+    <string name="settings_reduce_motion">По-малко анимации</string>
     <string name="settings_reduce_motion_desc">По-меки анимации при фокус.</string>
     <string name="settings_list_view">Изглед списък</string>
-    <string name="settings_list_view_desc">Показвай каналите, филмите и сериалите като списък вместо мрежа от плочки.</string>
+    <string name="settings_list_view_desc">Показване на каналите, филмите и сериалите като списък вместо мрежа от плочки.</string>
     <string name="settings_section_language">Език</string>
     <string name="settings_language_row_title">Език на приложението</string>
     <string name="settings_language_row_desc">Изберете езика, използван в цялото приложение.</string>
@@ -228,18 +247,18 @@
     <string name="settings_autoplay_next">Автоматично пускане на следващ епизод</string>
     <string name="settings_autoplay_next_desc">Засега само предпочитание -- автоматичното преминаване още не е внедрено; изберете следващия епизод от Детайли.</string>
     <string name="settings_mini_player_behavior">Поведение на мини плейъра</string>
-    <string name="settings_mini_player_behavior_desc">Когато разглеждате близо до закачения мини плейър: премести го в свободния ъгъл или го избледни и смали.</string>
+    <string name="settings_mini_player_behavior_desc">Когато разглеждате близо до закачения мини плейър: премества се в свободния ъгъл или избледнява и се смалява.</string>
     <string name="settings_mini_player_dodge">Автоматично отдръпване</string>
-    <string name="settings_mini_player_fade">Избледняване &amp; смаляване</string>
+    <string name="settings_mini_player_fade">Избледняване и смаляване</string>
     <string name="settings_section_parental">Родителски контрол</string>
-    <string name="settings_lock_adult">Заключи категориите за възрастни</string>
+    <string name="settings_lock_adult">Заключване на категориите за възрастни</string>
     <string name="settings_lock_adult_desc">След като е включено, изключването изисква вашия PIN.</string>
-    <string name="settings_change_pin">Смени PIN</string>
+    <string name="settings_change_pin">Смяна на PIN</string>
     <string name="settings_pin_loading">Зареждане…</string>
     <string name="settings_pin_is_set">Зададен е PIN.</string>
     <string name="settings_pin_not_set">Още няма зададен PIN.</string>
-    <string name="settings_change">Смени</string>
-    <string name="settings_set_pin">Задай PIN</string>
+    <string name="settings_change">Смяна</string>
+    <string name="settings_set_pin">Задайте PIN</string>
     <string name="settings_section_subtitles">Субтитри</string>
     <string name="settings_subtitle_lang_title">Предпочитан език</string>
     <string name="settings_subtitle_lang_desc">Избран предварително, когато търсите субтитри онлайн. Все още можете да го промените за всяко видео.</string>
@@ -257,11 +276,11 @@
     <string name="settings_opensubs_key_desc">Онлайн субтитрите изискват безплатен профил в opensubtitles.com с две неща: този API ключ (за търсене) и вашия вход в профила (за изтегляне). Стъпка 1 -- поставете API ключа; след това ще влезете. Проверяваме го преди запазване.</string>
     <string name="settings_placeholder_api_key">API ключ</string>
     <string name="settings_checking">Проверка…</string>
-    <string name="settings_section_metadata">Информация за филми &amp; сериали</string>
+    <string name="settings_section_metadata">Информация за филми и сериали</string>
     <string name="settings_omdb_title">OMDb</string>
-    <string name="settings_omdb_connected">Свързано -- оценките от IMDb &amp; Rotten Tomatoes, сюжетът и актьорският състав се показват в Детайли.</string>
+    <string name="settings_omdb_connected">Свързано -- оценките от IMDb и Rotten Tomatoes, сюжетът и актьорският състав се показват в Детайли.</string>
     <string name="settings_omdb_key_title">OMDb API ключ</string>
-    <string name="settings_omdb_key_desc">Поставете безплатен ключ от omdbapi.com, за да обогатите филмите и сериалите с оценки от IMDb &amp; Rotten Tomatoes, резюме и актьорски състав. Проверяваме го преди запазване.</string>
+    <string name="settings_omdb_key_desc">Поставете безплатен ключ от omdbapi.com, за да обогатите филмите и сериалите с оценки от IMDb и Rotten Tomatoes, резюме и актьорски състав. Проверяваме го преди запазване.</string>
     <!-- Integration setup guides (OMDb / OpenSubtitles) -->
     <string name="settings_howto_key">Как да получите ключ</string>
     <string name="settings_howto_account">Нужен ли ви е акаунт?</string>
@@ -289,7 +308,7 @@
     <string name="settings_version_title">Версия</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Подкрепете това приложение</string>
-    <string name="settings_support_desc">Почерпете ме с кафе, ако ARE iptv ви е полезно.</string>
+    <string name="settings_support_desc">Почерпете ме с кафе, ако ARE iptv ви върши работа.</string>
     <string name="settings_feedback_title">Изпратете отзив</string>
     <string name="settings_feedback_desc">Кажете ни какво да подобрим — отнема няколко секунди.</string>
     <string name="settings_feedback_action">Дайте отзив</string>
@@ -330,18 +349,18 @@
     <string name="feedback_title">Изпратете отзив</string>
     <string name="feedback_subtitle">Вашият отзив определя какво ще създадем след това. Благодарим за помощта.</string>
     <string name="feedback_rating_label">Как бихте оценили приложението?</string>
-    <string name="feedback_star_cd">%1$d звезди</string>
+    <string name="feedback_star_cd">Оценка %1$d</string>
     <string name="feedback_category_label">За какво се отнася?</string>
     <string name="feedback_message_label">Искате ли да добавите нещо? (незадължително)</string>
     <string name="feedback_message_placeholder">Разкажете ни повече…</string>
-    <string name="feedback_send">Изпрати</string>
+    <string name="feedback_send">Изпратете</string>
     <string name="feedback_sending">Изпращане…</string>
     <string name="feedback_thanks">Благодарим! Вашият отзив беше изпратен.</string>
     <string name="feedback_error">Изпращането не бе възможно в момента. Проверете връзката си и опитайте отново.</string>
     <string name="feedback_qr_title">Искате да напишете повече?</string>
     <string name="feedback_qr_desc">Сканирайте това с телефона си, за да отворите формуляра за отзиви и да пишете на истинска клавиатура.</string>
     <string name="feedback_cat_playback">Възпроизвеждане</string>
-    <string name="feedback_cat_guide">ТВ справочник</string>
+    <string name="feedback_cat_guide">ТВ програма</string>
     <string name="feedback_cat_layout">Оформление</string>
     <string name="feedback_cat_favorites">Любими</string>
     <string name="feedback_cat_missing">Липсваща функция</string>
@@ -351,19 +370,19 @@
     <string name="pin_set_title">Задайте 4-цифрен PIN</string>
     <string name="pin_confirm_title">Потвърдете своя PIN</string>
     <string name="pin_enter_title">Въведете PIN</string>
-    <string name="pin_lockout_message">Твърде много грешни опити -- опитайте отново след %1$ds</string>
+    <string name="pin_lockout_message">Твърде много грешни опити -- опитайте отново след %1$d сек.</string>
     <string name="pin_mismatch_error">PIN кодовете не съвпадат -- опитайте отново</string>
     <string name="pin_incorrect_error">Грешен PIN</string>
     <string name="pin_checking">Проверка…</string>
 
     <!-- Home -->
-    <string name="home_add_section">Добави секция</string>
-    <string name="home_remove_continue_watching_title">Премахване от Продължи гледането?</string>
+    <string name="home_add_section">Добавяне на секция</string>
+    <string name="home_remove_continue_watching_title">Премахване от „Продължете гледането“?</string>
     <string name="home_remove_continue_watching_body">„%1$s“ повече няма да се показва тук. Мястото ви не се запазва.</string>
     <string name="home_loading_catalog">Зареждане на вашия каталог…</string>
     <string name="home_no_playlist_title">Още няма плейлист</string>
     <string name="home_no_playlist_body">Добавете плейлист от страничната лента, за да видите каналите, филмите и сериалите си тук.</string>
-    <string name="home_section_continue_watching">Продължи гледането</string>
+    <string name="home_section_continue_watching">Продължете гледането</string>
     <string name="home_section_live_now">На живо сега</string>
     <string name="home_section_categories">Разгледай по категория</string>
     <string name="home_section_recommended">За вас</string>
@@ -372,16 +391,16 @@
     <string name="home_section_because_you_like">Защото харесвате %1$s</string>
     <string name="home_section_movies">Филми</string>
     <string name="home_section_series">Сериали</string>
-    <string name="home_add_section_dialog_title">Добави секция</string>
+    <string name="home_add_section_dialog_title">Добавяне на секция</string>
     <string name="home_add_section_empty">Всяка категория от вашия плейлист вече е закачена в Начало.</string>
     <string name="home_category_live">На живо</string>
     <string name="home_category_movie">Филм</string>
     <string name="home_category_series">Сериал</string>
     <string name="home_edit_grabbed_desc">Хванато -- Нагоре/Надолу за преместване, OK за пускане</string>
-    <string name="home_edit_grab_desc">Хвани, за да пренаредиш</string>
-    <string name="home_edit_show_section">Покажи секцията</string>
-    <string name="home_edit_hide_section">Скрий секцията</string>
-    <string name="home_edit_remove_section">Премахни секцията</string>
+    <string name="home_edit_grab_desc">Хванете, за да пренаредите</string>
+    <string name="home_edit_show_section">Показване на секцията</string>
+    <string name="home_edit_hide_section">Скриване на секцията</string>
+    <string name="home_edit_remove_section">Премахване на секцията</string>
 
     <!-- Guide -->
     <string name="guide_no_source">Добавете плейлист от страничната лента, за да видите ТВ програмата тук.</string>
@@ -399,7 +418,7 @@
     <string name="live_no_source">Добавете плейлист от страничната лента, за да видите каналите на живо тук.</string>
     <string name="live_title">Телевизия на живо</string>
     <string name="live_channel_groups">Групи канали</string>
-    <string name="live_count_channels">%1$d канала</string>
+    <string name="live_count_channels">Канали: %1$d</string>
     <string name="live_empty_group">Още няма канали в тази група.</string>
     <string name="live_on_air_now">В ЕФИР СЕГА</string>
 
@@ -407,15 +426,15 @@
     <string name="movies_no_source">Добавете плейлист от страничната лента, за да видите филмите тук.</string>
     <string name="movies_title">Филми</string>
     <string name="movies_genres">Жанрове</string>
-    <string name="movies_count_titles">%1$d заглавия</string>
-    <string name="category_count_items">%1$d елемента</string>
+    <string name="movies_count_titles">Заглавия: %1$d</string>
+    <string name="category_count_items">Елементи: %1$d</string>
     <string name="movies_empty_genre">Още няма филми в този жанр.</string>
 
     <!-- Series -->
     <string name="series_no_source">Добавете плейлист от страничната лента, за да видите сериалите тук.</string>
     <string name="series_title">Сериали</string>
     <string name="series_empty_genre">Още няма сериали в този жанр.</string>
-    <string name="series_episode_count">%1$d епизода</string>
+    <string name="series_episode_count">Епизоди: %1$d</string>
 
     <!-- Favorites -->
     <string name="favorites_no_source">Добавете плейлист от страничната лента, след което маркирайте канали или заглавия като любими, за да ги видите тук.</string>
@@ -438,26 +457,34 @@
     <string name="search_category_label">Категория: %1$s</string>
     <string name="search_type_to_search">Пишете, за да търсите в каталога си.</string>
     <string name="search_min_chars">Въведете поне %1$d символа, за да търсите.</string>
-    <string name="search_no_results">Няма резултати за \"%1$s\".</string>
+    <string name="search_no_results">Няма резултати за „%1$s“.</string>
     <string name="search_section_live">Телевизия на живо</string>
-    <string name="search_section_titles">Филми &amp; сериали</string>
+    <string name="search_section_titles">Филми и сериали</string>
+
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Търсене в категориите</string>
+    <string name="browse_category_search_empty">Няма съвпадащи категории</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Продължаване</string>
+    <string name="tile_action_play_from_start">Пускане отначало</string>
 
     <!-- Detail -->
     <string name="detail_loading">Зареждане…</string>
     <string name="detail_not_found">Заглавието не е намерено</string>
-    <string name="detail_play">Пусни</string>
-    <string name="detail_play_episode">Пусни С%1$d · Е%2$d</string>
-    <string name="detail_add_to_favorites">Добави в любими</string>
-    <string name="detail_remove_from_favorites">Премахни от любими</string>
+    <string name="detail_play">Пускане</string>
+    <string name="detail_play_episode">Пускане на С%1$d · Е%2$d</string>
+    <string name="detail_add_to_favorites">Добавяне в любими</string>
+    <string name="detail_remove_from_favorites">Премахване от любими</string>
     <string name="detail_storyline">Сюжет</string>
     <string name="detail_cast_label">Актьори:</string>
     <string name="detail_director_label">Режисьор:</string>
     <string name="detail_episodes_header">Епизоди</string>
-    <string name="detail_episodes_header_seasons">Епизоди · %1$d сезона · %2$d общо</string>
-    <string name="detail_episodes_header_total">Епизоди · %1$d общо</string>
+    <string name="detail_episodes_header_seasons">Епизоди · сезони: %1$d · общо %2$d</string>
+    <string name="detail_episodes_header_total">Епизоди · общо %1$d</string>
     <string name="detail_season_label">Сезон %1$d</string>
-    <string name="detail_season_episode_count">Сезон %1$s · %2$d епизода</string>
-    <string name="detail_m3u_no_episodes">Този запис в плейлиста няма данни за сезон/епизод -- използвайте Пусни горе, за да го гледате като едно заглавие.</string>
+    <string name="detail_season_episode_count">Сезон %1$s · епизоди: %2$d</string>
+    <string name="detail_m3u_no_episodes">Този запис в плейлиста няма данни за сезон/епизод -- използвайте бутона „Пускане“ горе, за да го гледате като едно заглавие.</string>
     <string name="detail_episodes_load_error">Епизодите не можаха да се заредят: %1$s</string>
     <string name="detail_episodes_loading">Зареждане на епизоди…</string>
 
@@ -476,7 +503,7 @@
     <string name="player_forward_10_min">Напред с 10 минути</string>
     <string name="player_rewind">Превъртане назад</string>
     <string name="player_pause">Пауза</string>
-    <string name="player_play">Пусни</string>
+    <string name="player_play">Възпроизвеждане</string>
     <string name="player_fast_forward">Превъртане напред</string>
     <string name="player_audio_track">Аудио пътечка</string>
     <string name="player_subtitles">Субтитри</string>
@@ -487,7 +514,7 @@
     <string name="player_aspect_fill">Запълване</string>
     <string name="player_aspect_stretch">Разтягане</string>
     <string name="player_aspect_toast">Съотношение: %1$s</string>
-    <string name="player_minimize_to_corner">Смали в ъгъла</string>
+    <string name="player_minimize_to_corner">Смаляване в ъгъла</string>
     <string name="player_mini_player">Мини плейър</string>
     <string name="player_up_next_action">Следва</string>
     <string name="player_open_guide">Отвори програмата</string>
@@ -496,13 +523,13 @@
     <!-- Subtitle menu -->
     <string name="subtitle_off">Изключено</string>
     <string name="subtitle_none_in_stream">Няма субтитри в този поток.</string>
-    <string name="subtitle_search_online">Търси онлайн…</string>
+    <string name="subtitle_search_online">Търсене онлайн…</string>
     <string name="subtitle_selected">Избрано</string>
     <string name="subtitle_picker_title">Субтитри</string>
-    <string name="subtitle_search_title">Търси субтитри онлайн</string>
+    <string name="subtitle_search_title">Търсене на субтитри онлайн</string>
     <string name="subtitle_search_placeholder">Заглавие</string>
     <string name="subtitle_searching">Търсене…</string>
-    <string name="subtitle_search_action">Търси</string>
+    <string name="subtitle_search_action">Търсене</string>
     <string name="subtitle_status_searching">Търсене в OpenSubtitles…</string>
     <string name="subtitle_status_downloading">Изтегляне на субтитри…</string>
     <string name="subtitle_status_no_matches">Няма съвпадения -- опитайте с друго заглавие или език.</string>
@@ -511,7 +538,7 @@
     <!-- Live mini player -->
     <string name="mini_player_stop_title">Спиране на мини плейъра?</string>
     <string name="mini_player_stop_body">Да се спре ли възпроизвеждането на „%1$s“ и мини плейърът да се затвори?</string>
-    <string name="mini_player_stop">Спри</string>
+    <string name="mini_player_stop">Спиране</string>
 
     <!-- MultiView -->
     <string name="multiview_title">Мулти-изглед</string>
@@ -528,9 +555,9 @@
     <string name="multiview_added_toast">Добавено към Мулти-изглед</string>
 
     <!-- Shell / top bar / sidebar -->
-    <string name="shell_customize">Персонализирай</string>
+    <string name="shell_customize">Персонализиране</string>
     <string name="shell_multi_view_desc">Мулти изглед</string>
-    <string name="shell_add_playlist_desc">Добави плейлист</string>
+    <string name="shell_add_playlist_desc">Добавяне на плейлист</string>
     <string name="nav_home">Начало</string>
     <string name="nav_live_tv">На живо</string>
     <string name="nav_tv_guide">ТВ програма</string>
@@ -544,22 +571,22 @@
     <string name="browse_categories_header">Категории</string>
     <string name="browse_empty_default">Още няма елементи в тази категория.</string>
     <string name="browse_load_error">Зареждането е неуспешно — опитайте отново</string>
-    <string name="browse_pin_dialog_pinned_body">Премахни тази категория от началото на списъка.</string>
-    <string name="browse_pin_dialog_unpinned_body">Закачи тази категория в началото на списъка.</string>
-    <string name="browse_unpin">Откачи</string>
-    <string name="browse_pin">Закачи</string>
+    <string name="browse_pin_dialog_pinned_body">Премахнете тази категория от началото на списъка.</string>
+    <string name="browse_pin_dialog_unpinned_body">Закачете тази категория в началото на списъка.</string>
+    <string name="browse_unpin">Откачане</string>
+    <string name="browse_pin">Закачане</string>
     <string name="browse_category_pinned_desc">Закачено</string>
-    <string name="browse_see_all">Виж всички  ›</string>
+    <string name="browse_see_all">Вижте всички  ›</string>
 
     <!-- Shared components -->
     <string name="badge_live">На живо</string>
     <string name="badge_radio">Радио</string>
-    <string name="badge_catchup">По-късно</string>
+    <string name="badge_catchup">Архив</string>
     <string name="badge_smart">Умен</string>
     <string name="health_stable">Стабилна</string>
     <string name="health_moderate">Умерена</string>
     <string name="health_poor">Слаба</string>
-    <string name="continue_card_resume_desc">Продължи</string>
+    <string name="continue_card_resume_desc">Продължаване</string>
     <string name="channel_tile_now">Сега · %1$s</string>
     <string name="channel_tile_next">Следва · %1$s</string>
     <string name="browse_all_channels">Всички канали</string>
@@ -570,7 +597,7 @@
     <string name="settings_subs_connect_key_first">Първо свържете своя API ключ.</string>
     <string name="onboarding_error_generic">Нещо се обърка</string>
     <!-- Provider details & playlist deletion -->
-    <string name="action_delete">Изтрий</string>
+    <string name="action_delete">Изтриване</string>
     <string name="settings_section_provider">Доставчик</string>
     <string name="settings_provider_status">Състояние</string>
     <string name="settings_provider_loading">Опреснете, за да заредите данните за доставчика</string>
@@ -582,14 +609,14 @@
     <string name="settings_provider_connections_value">%1$d от %2$d в употреба</string>
     <string name="settings_provider_connections_max">макс. %1$d</string>
     <string name="settings_provider_expires">Изтича</string>
-    <string name="settings_provider_expires_days">%1$s · остават %2$d дни</string>
+    <string name="settings_provider_expires_days">%1$s · още %2$d д.</string>
     <string name="settings_provider_expires_today">%1$s · изтича днес</string>
     <string name="settings_provider_expired">Изтекъл</string>
     <string name="settings_provider_trial">Тип акаунт</string>
     <string name="settings_provider_trial_value">Пробен</string>
     <string name="settings_provider_unlimited">Неограничено</string>
     <string name="sources_delete_title">Изтриване на плейлиста?</string>
-    <string name="sources_delete_body">Това изтрива за постоянно „%1$s“ и цялото ѝ съдържание — канали, филми, сериали, любими и история на гледане — от това устройство. Действието е необратимо.</string>
+    <string name="sources_delete_body">Това изтрива за постоянно „%1$s“ и цялото му съдържание — канали, филми, сериали, любими и история на гледане — от това устройство. Действието е необратимо.</string>
     <string name="sources_delete_hint">Задръжте OK върху плейлист за повече опции.</string>
     <string name="sources_options_body">Изберете какво да направите с този плейлист.</string>
     <string name="sources_rename_title">Преименуване на плейлиста</string>
@@ -606,7 +633,7 @@
     <!-- Live TV Recording (V1) -->
     <string name="nav_recordings">Записи</string>
     <string name="recording_start">Запис</string>
-    <string name="recording_stop">Спри записа</string>
+    <string name="recording_stop">Спиране на записа</string>
     <string name="recording_not_supported">Записът не се поддържа за този поток</string>
     <string name="recording_started_toast">Записът започна</string>
     <string name="recording_stopped_reason">Записът е спрян: %1$s</string>
@@ -629,8 +656,8 @@
     <string name="recordings_group_completed">Завършени</string>
     <string name="recordings_group_interrupted">Прекъснати</string>
     <string name="recordings_group_unavailable">Недостъпни</string>
-    <string name="recordings_play">Пусни</string>
-    <string name="recordings_delete">Изтрий</string>
+    <string name="recordings_play">Пускане</string>
+    <string name="recordings_delete">Изтриване</string>
     <string name="recordings_delete_title">Да се изтрие ли записът?</string>
     <string name="recordings_delete_body">Това премахва „%1$s“ от устройството ви.</string>
     <string name="recordings_status_interrupted">Прекъснат</string>
@@ -639,7 +666,7 @@
     <string name="recordings_unavailable_generic">Свържете отново устройството, за да гледате</string>
     <string name="recordings_missing">Файлът вече го няма на устройството</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
-    <string name="recordings_parts">%1$d части</string>
+    <string name="recordings_parts">Части: %1$d</string>
     <string name="onboarding_stalker_title">Stalker Portal</string>
     <string name="onboarding_stalker_desc">URL на портала + MAC адрес. За портали от типа MAG, които ви идентифицират по MAC.</string>
     <string name="onboarding_portal_url_label">URL на портала</string>
@@ -667,7 +694,7 @@
     <string name="settings_sub_font_default">Стандартен</string>
     <string name="player_autoplay_next_title">Следва</string>
     <string name="player_autoplay_next_in">Следващ епизод след %1$d сек…</string>
-    <string name="player_autoplay_play_now">Пусни сега</string>
+    <string name="player_autoplay_play_now">Пуснете сега</string>
     <string name="settings_autoplay_5s">5s</string>
     <string name="settings_autoplay_10s">10s</string>
     <string name="settings_sub_size_s">S</string>
@@ -687,7 +714,7 @@
     <string name="player_previous_program">Предишно предаване</string>
     <string name="player_next_program">Следващо предаване</string>
     <string name="support_dialog_title">Харесва ли ви ARE iptv?</string>
-    <string name="support_dialog_body">Създава се и се поддържа от един човек, вечер и през почивните дни. Без абонамент, без реклами, без следене какво гледате — просто приложение, което работи. Ако си заслужава мястото на телевизора ви, едно кафе го поддържа живо.</string>
-    <string name="support_dialog_scan">Сканирайте, за да отворите на телефона си</string>
-    <string name="support_dialog_visit">Или посетете</string>
+    <string name="support_dialog_body">Създава го и го поддържа един човек, вечер и през почивните дни. Без абонамент, без реклами, без следене какво гледате — просто приложение, което работи. Ако си е заслужило мястото на телевизора ви, едно кафе помага нещата да продължат.</string>
+    <string name="support_dialog_scan">Сканирайте, за да го отворите на телефона си</string>
+    <string name="support_dialog_visit">Или отворете:</string>
 </resources>

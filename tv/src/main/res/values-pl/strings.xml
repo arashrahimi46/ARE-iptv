@@ -63,7 +63,7 @@
     <string name="onboarding_confirm_error_title">Nie udało się dodać playlisty</string>
     <string name="onboarding_confirm_added">Dodano</string>
     <string name="onboarding_confirm_ready">Gotowe do dodania</string>
-    <string name="onboarding_confirm_channels_badge">%1$d kanałów</string>
+    <string name="onboarding_confirm_channels_badge">Kanały: %1$d</string>
     <string name="onboarding_confirm_downloading">Pobieranie i importowanie Twoich kanałów. Duże playlisty mogą chwilę potrwać — prosimy, nie zamykaj aplikacji.</string>
     <string name="onboarding_confirm_row_portal">Portal</string>
     <string name="onboarding_confirm_default_portal_name">Moja playlista</string>
@@ -74,7 +74,7 @@
     <string name="onboarding_confirm_auto_matched">Dopasowano automatycznie</string>
     <string name="onboarding_confirm_custom_xmltv">Własny XMLTV</string>
     <string name="onboarding_confirm_row_catalog">Katalog</string>
-    <string name="onboarding_confirm_catalog_summary">%1$d kanałów · %2$d filmów · %3$d seriali</string>
+    <string name="onboarding_confirm_catalog_summary">Kanały: %1$d · Filmy: %2$d · Seriale: %3$d</string>
 
     <!-- Privacy & Terms -->
     <string name="privacy_title">Prywatność &amp; Regulamin</string>
@@ -84,6 +84,42 @@
     <string name="privacy_read_full">Przeczytaj pełną Politykę prywatności i Regulamin</string>
     <string name="privacy_crash_label">Wysyłaj anonimowe raporty o awariach i dane o użyciu</string>
     <string name="privacy_updated_note">Zaktualizowaliśmy naszą Politykę prywatności i Regulamin. Zapoznaj się z nimi i zaakceptuj, aby kontynuować.</string>
+
+    <!-- Full legal document (Privacy Policy & Terms of Service) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Odkryj darmowe playlisty IPTV</string>
+    <string name="sources_from_explore">Z sekcji Odkrywaj</string>
+    <string name="explore_title">Odkrywaj darmowe IPTV</string>
+    <string name="explore_subtitle">Publicznie udostępniane, bezpłatne playlisty utrzymywane przez społeczność. ARE iptv nie hostuje tych strumieni ani ich nie kontroluje, a ich dostępność zależy od kraju.</string>
+    <string name="explore_used_count">W użyciu: %1$d z %2$d playlist</string>
+    <string name="explore_channels_approx">Kanały: ~%1$d</string>
+    <string name="explore_hint">Liczby kanałów są przybliżone i często się zmieniają.</string>
+    <string name="explore_add_title">Dodaj „%1$s”</string>
+    <string name="explore_add_body">Nazwij ją, jak chcesz — nazwę możesz później zmienić.</string>
+    <string name="explore_add_action">Dodaj playlistę</string>
+    <string name="explore_name_label">Nazwa playlisty</string>
+    <string name="explore_adding_title">Dodawanie playlisty…</string>
+    <string name="explore_adding_body">Trwa pobieranie „%1$s”. Przy dużej liście może to chwilę potrwać.</string>
+    <string name="explore_failed_title">Nie udało się dodać playlisty</string>
+    <string name="explore_failed_body">Nie udało się wczytać „%1$s”. Lista mogła zostać przeniesiona lub jest chwilowo niedostępna — to problem z playlistą, a nie z Twoim urządzeniem. Spróbuj innej.</string>
+    <string name="explore_cap_title">Liczba playlist: %1$d</string>
+    <string name="explore_cap_body">To maksimum. Usuń jedną ze swojej listy playlist, aby dodać kolejną.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Wybierz playlistę</string>
@@ -146,7 +182,7 @@
     <string name="settings_clock_24h">24-godzinny</string>
     <string name="settings_clock_12h">12-godzinny</string>
     <string name="settings_stale_title">Przypomnienie o odświeżeniu</string>
-    <string name="settings_stale_desc">Przypominaj o odświeżeniu, gdy katalog się zestarzeje</string>
+    <string name="settings_stale_desc">Przypominaj o odświeżeniu, gdy katalog będzie nieaktualny</string>
     <string name="settings_stale_7d">7 dni</string>
     <string name="settings_stale_14d">14 dni</string>
     <string name="settings_stale_30d">30 dni</string>
@@ -200,13 +236,13 @@
     <string name="settings_refresh_now">Odśwież teraz</string>
     <string name="settings_refreshing">Odświeżanie…</string>
     <string name="settings_refresh_syncing">Synchronizowanie z dostawcą…</string>
-    <string name="settings_refresh_success">Zaktualizowano: %1$d kanałów, %2$d filmów, %3$d seriali</string>
+    <string name="settings_refresh_success">Zaktualizowano — kanały: %1$d, filmy: %2$d, seriale: %3$d</string>
     <string name="settings_refresh_stale">Starsze niż 2 tygodnie — odśwież, aby uzyskać nowe kanały &amp; tytuły</string>
     <string name="settings_never_refreshed">Nigdy nie odświeżono</string>
     <string name="settings_last_updated_days">Ostatnia aktualizacja %1$d dzień temu</string>
     <string name="settings_last_updated_days_plural">Ostatnia aktualizacja %1$d dni temu</string>
     <string name="settings_last_updated_hours">Ostatnia aktualizacja %1$d godzinę temu</string>
-    <string name="settings_last_updated_hours_plural">Ostatnia aktualizacja %1$d godzin temu</string>
+    <string name="settings_last_updated_hours_plural">Ostatnia aktualizacja %1$d godz. temu</string>
     <string name="settings_last_updated_mins">Ostatnia aktualizacja %1$d min temu</string>
     <string name="settings_last_updated_now">Ostatnia aktualizacja przed chwilą</string>
     <string name="settings_section_appearance">Wygląd</string>
@@ -249,7 +285,7 @@
     <string name="settings_account">Konto</string>
     <string name="settings_account_signed_in">Zalogowano jako %1$s -- pobieranie napisów jest włączone.</string>
     <string name="settings_signin_title">Zaloguj się, aby pobierać napisy</string>
-    <string name="settings_signin_desc">Ostatni krok -- do napisów online wymagane są zarówno klucz API, jak i logowanie do konta. Zaloguj się nazwą użytkownika i hasłem opensubtitles.com; pobierania wykorzystują dzienny limit Twojego konta. Pozostajemy zalogowani za Ciebie.</string>
+    <string name="settings_signin_desc">Ostatni krok -- do napisów online wymagane są zarówno klucz API, jak i logowanie do konta. Zaloguj się nazwą użytkownika i hasłem opensubtitles.com; pobierania wykorzystują dzienny limit Twojego konta. Sesja pozostaje aktywna — nie trzeba logować się za każdym razem.</string>
     <string name="settings_placeholder_username">Nazwa użytkownika</string>
     <string name="settings_placeholder_password">Hasło</string>
     <string name="settings_signing_in">Logowanie…</string>
@@ -289,7 +325,7 @@
     <string name="settings_version_title">Wersja</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Wesprzyj tę aplikację</string>
-    <string name="settings_support_desc">Postaw mi kawę, jeśli ARE iptv jest dla Ciebie przydatne.</string>
+    <string name="settings_support_desc">Postaw mi kawę, jeśli ARE iptv Ci się przydaje.</string>
     <string name="settings_feedback_title">Wyślij opinię</string>
     <string name="settings_feedback_desc">Powiedz nam, co ulepszyć — to zajmie kilka sekund.</string>
     <string name="settings_feedback_action">Prześlij opinię</string>
@@ -330,7 +366,7 @@
     <string name="feedback_title">Wyślij opinię</string>
     <string name="feedback_subtitle">Twoja opinia kształtuje to, co stworzymy dalej. Dziękujemy za pomoc.</string>
     <string name="feedback_rating_label">Jak oceniasz aplikację?</string>
-    <string name="feedback_star_cd">%1$d gwiazdek</string>
+    <string name="feedback_star_cd">Ocena: %1$d</string>
     <string name="feedback_category_label">Czego dotyczy?</string>
     <string name="feedback_message_label">Chcesz coś dodać? (opcjonalnie)</string>
     <string name="feedback_message_placeholder">Napisz nam więcej…</string>
@@ -369,7 +405,7 @@
     <string name="home_section_recommended">Dla Ciebie</string>
     <string name="home_section_for_you">Dla Ciebie</string>
     <string name="home_section_popular">Popularne</string>
-    <string name="home_section_because_you_like">Ponieważ lubisz %1$s</string>
+    <string name="home_section_because_you_like">Skoro lubisz: %1$s</string>
     <string name="home_section_movies">Filmy</string>
     <string name="home_section_series">Seriale</string>
     <string name="home_add_section_dialog_title">Dodaj sekcję</string>
@@ -377,7 +413,7 @@
     <string name="home_category_live">Na żywo</string>
     <string name="home_category_movie">Film</string>
     <string name="home_category_series">Serial</string>
-    <string name="home_edit_grabbed_desc">Chwycono -- Góra/Dół, aby przenieść, OK, aby upuścić</string>
+    <string name="home_edit_grabbed_desc">Chwycono -- Góra/Dół przenosi · OK upuszcza</string>
     <string name="home_edit_grab_desc">Chwyć, aby zmienić kolejność</string>
     <string name="home_edit_show_section">Pokaż sekcję</string>
     <string name="home_edit_hide_section">Ukryj sekcję</string>
@@ -399,7 +435,7 @@
     <string name="live_no_source">Dodaj playlistę z paska bocznego, aby zobaczyć tu kanały na żywo.</string>
     <string name="live_title">Telewizja na żywo</string>
     <string name="live_channel_groups">Grupy kanałów</string>
-    <string name="live_count_channels">%1$d kanałów</string>
+    <string name="live_count_channels">Kanały: %1$d</string>
     <string name="live_empty_group">Brak kanałów w tej grupie.</string>
     <string name="live_on_air_now">NA ANTENIE</string>
 
@@ -407,15 +443,15 @@
     <string name="movies_no_source">Dodaj playlistę z paska bocznego, aby zobaczyć tu filmy.</string>
     <string name="movies_title">Filmy</string>
     <string name="movies_genres">Gatunki</string>
-    <string name="movies_count_titles">%1$d tytułów</string>
-    <string name="category_count_items">%1$d elementów</string>
+    <string name="movies_count_titles">Tytuły: %1$d</string>
+    <string name="category_count_items">Pozycje: %1$d</string>
     <string name="movies_empty_genre">Brak filmów w tym gatunku.</string>
 
     <!-- Series -->
     <string name="series_no_source">Dodaj playlistę z paska bocznego, aby zobaczyć tu seriale.</string>
     <string name="series_title">Seriale</string>
     <string name="series_empty_genre">Brak seriali w tym gatunku.</string>
-    <string name="series_episode_count">%1$d odcinków</string>
+    <string name="series_episode_count">Odcinki: %1$d</string>
 
     <!-- Favorites -->
     <string name="favorites_no_source">Dodaj playlistę z paska bocznego, a następnie oznacz kanały lub tytuły jako ulubione, aby zobaczyć je tutaj.</string>
@@ -437,10 +473,18 @@
     <string name="search_scope_series">Seriale</string>
     <string name="search_category_label">Kategoria: %1$s</string>
     <string name="search_type_to_search">Wpisz, aby przeszukać swój katalog.</string>
-    <string name="search_min_chars">Wpisz co najmniej %1$d znaki, aby wyszukać.</string>
-    <string name="search_no_results">Brak wyników dla \"%1$s\".</string>
+    <string name="search_min_chars">Wpisz więcej znaków, aby wyszukać (minimum: %1$d).</string>
+    <string name="search_no_results">Brak wyników dla „%1$s”.</string>
     <string name="search_section_live">Telewizja na żywo</string>
     <string name="search_section_titles">Filmy &amp; seriale</string>
+
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Szukaj kategorii</string>
+    <string name="browse_category_search_empty">Brak pasujących kategorii</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Wznów</string>
+    <string name="tile_action_play_from_start">Odtwórz od początku</string>
 
     <!-- Detail -->
     <string name="detail_loading">Ładowanie…</string>
@@ -453,10 +497,10 @@
     <string name="detail_cast_label">Obsada:</string>
     <string name="detail_director_label">Reżyser:</string>
     <string name="detail_episodes_header">Odcinki</string>
-    <string name="detail_episodes_header_seasons">Odcinki · %1$d sezonów · %2$d łącznie</string>
-    <string name="detail_episodes_header_total">Odcinki · %1$d łącznie</string>
+    <string name="detail_episodes_header_seasons">Odcinki · sezony: %1$d · łącznie: %2$d</string>
+    <string name="detail_episodes_header_total">Odcinki · łącznie: %1$d</string>
     <string name="detail_season_label">Sezon %1$d</string>
-    <string name="detail_season_episode_count">Sezon %1$s · %2$d odcinków</string>
+    <string name="detail_season_episode_count">Sezon %1$s · odcinki: %2$d</string>
     <string name="detail_m3u_no_episodes">Ten wpis playlisty nie ma danych o sezonach/odcinkach -- użyj Odtwórz powyżej, aby obejrzeć go jako pojedynczą pozycję.</string>
     <string name="detail_episodes_load_error">Nie udało się załadować odcinków: %1$s</string>
     <string name="detail_episodes_loading">Ładowanie odcinków…</string>
@@ -488,7 +532,7 @@
     <string name="player_aspect_stretch">Rozciągnij</string>
     <string name="player_aspect_toast">Proporcje: %1$s</string>
     <string name="player_minimize_to_corner">Zminimalizuj do rogu</string>
-    <string name="player_mini_player">Mini odtwarzacz</string>
+    <string name="player_mini_player">Miniodtwarzacz</string>
     <string name="player_up_next_action">Następnie</string>
     <string name="player_open_guide">Otwórz program</string>
     <string name="player_live_badge">Na żywo</string>
@@ -514,18 +558,18 @@
     <string name="mini_player_stop">Zatrzymaj</string>
 
     <!-- MultiView -->
-    <string name="multiview_title">Widok wielokanałowy</string>
+    <string name="multiview_title">Multiwidok</string>
     <string name="multiview_4up">4 naraz</string>
     <string name="multiview_2up">2 naraz</string>
     <string name="multiview_no_source">Brak aktywnej playlisty</string>
-    <string name="multiview_no_channels">Brak dostępnych kanałów na żywo do widoku wielokanałowego</string>
+    <string name="multiview_no_channels">Brak dostępnych kanałów na żywo do multiwidoku</string>
     <string name="multiview_audio_badge">Dźwięk</string>
     <string name="multiview_audio_only">Stacja radiowa — tylko dźwięk</string>
-    <string name="multiview_add_to">Dodaj do widoku wielokanałowego</string>
+    <string name="multiview_add_to">Dodaj do multiwidoku</string>
     <string name="multiview_add_channel">Dodaj kanał</string>
     <string name="multiview_pane_watch">Oglądaj na pełnym ekranie</string>
-    <string name="multiview_pane_menu_body">Otwórz ten kanał na pełnym ekranie lub usuń go z widoku wielokanałowego.</string>
-    <string name="multiview_added_toast">Dodano do widoku wielokanałowego</string>
+    <string name="multiview_pane_menu_body">Otwórz ten kanał na pełnym ekranie lub usuń go z multiwidoku.</string>
+    <string name="multiview_added_toast">Dodano do multiwidoku</string>
 
     <!-- Shell / top bar / sidebar -->
     <string name="shell_customize">Dostosuj</string>
@@ -582,7 +626,7 @@
     <string name="settings_provider_connections_value">%1$d z %2$d w użyciu</string>
     <string name="settings_provider_connections_max">maks. %1$d</string>
     <string name="settings_provider_expires">Wygasa</string>
-    <string name="settings_provider_expires_days">%1$s · pozostało %2$d dni</string>
+    <string name="settings_provider_expires_days">%1$s · pozostało dni: %2$d</string>
     <string name="settings_provider_expires_today">%1$s · wygasa dzisiaj</string>
     <string name="settings_provider_expired">Wygasło</string>
     <string name="settings_provider_trial">Typ konta</string>
@@ -617,14 +661,14 @@
     <string name="recording_pick_volume_title">Nagrywaj do</string>
     <string name="recording_volume_internal">Pamięć wewnętrzna</string>
     <string name="recording_volume_usb">Dysk USB</string>
-    <string name="recording_volume_free">%1$s wolne</string>
+    <string name="recording_volume_free">Wolne: %1$s</string>
     <string name="recording_reason_stream_lost">Utracono strumień</string>
     <string name="recording_reason_disk_full">Dysk pełny</string>
     <string name="recording_reason_drive_removed">Dysk odłączony</string>
     <string name="recording_reason_slow_disk">Wolny dysk: część danych pominięto</string>
     <string name="recording_reason_crash">Odzyskano po nieoczekiwanym zatrzymaniu</string>
     <string name="recordings_title">Nagrania</string>
-    <string name="recordings_empty">Brak nagrań. Naciśnij ● REC podczas oglądania telewizji na żywo.</string>
+    <string name="recordings_empty">Nie masz jeszcze nagrań. Naciśnij ● REC podczas oglądania telewizji na żywo.</string>
     <string name="recordings_group_recording_now">Trwa nagrywanie</string>
     <string name="recordings_group_completed">Ukończone</string>
     <string name="recordings_group_interrupted">Przerwane</string>
@@ -635,7 +679,7 @@
     <string name="recordings_delete_body">Spowoduje to usunięcie „%1$s” z urządzenia.</string>
     <string name="recordings_status_interrupted">Przerwane</string>
     <string name="recordings_status_failed">Nie powiodło się</string>
-    <string name="recordings_unavailable_reconnect">Podłącz ponownie %1$s, aby oglądać</string>
+    <string name="recordings_unavailable_reconnect">Aby oglądać, podłącz ponownie: %1$s</string>
     <string name="recordings_unavailable_generic">Podłącz ponownie dysk, aby oglądać</string>
     <string name="recordings_missing">Pliku już nie ma na dysku</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
@@ -687,7 +731,7 @@
     <string name="player_previous_program">Poprzedni program</string>
     <string name="player_next_program">Następny program</string>
     <string name="support_dialog_title">Podoba Ci się ARE iptv?</string>
-    <string name="support_dialog_body">Tworzy ją i utrzymuje jedna osoba, wieczorami i w weekendy. Bez abonamentu, bez reklam, bez śledzenia tego, co oglądasz — po prostu aplikacja, która działa. Jeśli zasługuje na miejsce w Twoim telewizorze, kawa utrzyma ją przy życiu.</string>
+    <string name="support_dialog_body">Tworzy ją i utrzymuje jedna osoba, wieczorami i w weekendy. Bez abonamentu, bez reklam, bez śledzenia tego, co oglądasz — po prostu aplikacja, która działa. Jeśli zasłużyła na miejsce w Twoim telewizorze, kawa pomoże mi ją rozwijać.</string>
     <string name="support_dialog_scan">Zeskanuj, aby otworzyć na telefonie</string>
-    <string name="support_dialog_visit">Lub odwiedź</string>
+    <string name="support_dialog_visit">Lub wejdź na:</string>
 </resources>

@@ -17,7 +17,7 @@
     <string name="action_sign_in">Anmelden</string>
     <string name="action_sign_out">Abmelden</string>
     <string name="action_search">Suchen</string>
-    <string name="action_buy_coffee">Spendier mir einen Kaffee</string>
+    <string name="action_buy_coffee">Einen Kaffee spendieren</string>
     <string name="content_desc_account">Konto</string>
 
     <!-- Shell -->
@@ -84,6 +84,42 @@
     <string name="privacy_read_full">Vollständige Datenschutzerklärung und Nutzungsbedingungen lesen</string>
     <string name="privacy_crash_label">Anonyme Absturzberichte und Nutzungsdaten senden</string>
     <string name="privacy_updated_note">Wir haben unsere Datenschutzerklärung und Nutzungsbedingungen aktualisiert. Bitte lesen und akzeptieren Sie sie, um fortzufahren.</string>
+
+    <!-- Legal document (Privacy Policy & Terms) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Kostenlose IPTV-Playlists entdecken</string>
+    <string name="sources_from_explore">Aus „Entdecken“</string>
+    <string name="explore_title">Kostenloses IPTV entdecken</string>
+    <string name="explore_subtitle">Öffentlich gelistete, frei empfangbare Playlists, die von der Community gepflegt werden. ARE iptv hostet oder kontrolliert diese Streams nicht, und die Verfügbarkeit ist je nach Land unterschiedlich.</string>
+    <string name="explore_used_count">%1$d von %2$d Playlists verwendet</string>
+    <string name="explore_channels_approx">~%1$d Sender</string>
+    <string name="explore_hint">Die Senderzahlen sind ungefähr und ändern sich häufig.</string>
+    <string name="explore_add_title">„%1$s“ hinzufügen</string>
+    <string name="explore_add_body">Benennen Sie sie, wie Sie möchten — Sie können sie später umbenennen.</string>
+    <string name="explore_add_action">Playlist hinzufügen</string>
+    <string name="explore_name_label">Playlist-Name</string>
+    <string name="explore_adding_title">Playlist wird hinzugefügt…</string>
+    <string name="explore_adding_body">„%1$s“ wird abgerufen. Bei einer großen Liste kann das einen Moment dauern.</string>
+    <string name="explore_failed_title">Diese Playlist konnte nicht hinzugefügt werden</string>
+    <string name="explore_failed_body">„%1$s“ konnte nicht geladen werden. Die Liste wurde möglicherweise verschoben oder ist vorübergehend nicht verfügbar — das Problem liegt bei der Playlist, nicht an Ihrem Gerät. Versuchen Sie eine andere.</string>
+    <string name="explore_cap_title">Sie haben %1$d Playlists</string>
+    <string name="explore_cap_body">Das ist das Maximum. Entfernen Sie eine aus Ihrer Playlist-Liste, um eine weitere hinzuzufügen.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Playlist auswählen</string>
@@ -172,7 +208,7 @@
     <string name="settings_locked_display_title">Gesperrte Inhalte</string>
     <string name="settings_locked_display_desc">Nicht jugendfreie Inhalte ganz ausblenden oder hinter einer PIN verschwommen zeigen.</string>
     <string name="settings_locked_hide">Ausblenden</string>
-    <string name="settings_locked_blur">Verwischen</string>
+    <string name="settings_locked_blur">Weichzeichnen</string>
     <string name="settings_pin_launch_title">PIN beim Start verlangen</string>
     <string name="settings_pin_launch_desc">Bei jedem App-Start die Eltern-PIN abfragen.</string>
     <string name="settings_keywords_title">Eigene gesperrte Wörter</string>
@@ -193,7 +229,7 @@
     <string name="settings_clear_history_confirm">Den gesamten Fortschritt unter Weiterschauen löschen? Dies kann nicht rückgängig gemacht werden.</string>
     <string name="settings_reset_title">Auf Standard zurücksetzen</string>
     <string name="settings_reset_desc">Darstellungs- und Wiedergabeeinstellungen wiederherstellen</string>
-    <string name="settings_reset_confirm">Darstellungs- und Wiedergabeeinstellungen auf Standard zurücksetzen? Deine Playlists, Anmeldungen, Sprache und Kindersicherung bleiben erhalten.</string>
+    <string name="settings_reset_confirm">Darstellungs- und Wiedergabeeinstellungen auf Standard zurücksetzen? Ihre Playlists, Anmeldungen, Sprache und Kindersicherung bleiben erhalten.</string>
     <string name="settings_reset_action">Zurücksetzen</string>
     <string name="settings_section_playlists">Playlists &amp; Synchronisierung</string>
     <string name="settings_refresh_catalog">Katalog aktualisieren</string>
@@ -289,12 +325,12 @@
     <string name="settings_version_title">Version</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Diese App unterstützen</string>
-    <string name="settings_support_desc">Spendieren Sie mir einen Kaffee, wenn ARE iptv für Sie nützlich ist.</string>
+    <string name="settings_support_desc">Wenn ARE iptv Ihnen nützt, spendieren Sie mir gern einen Kaffee.</string>
     <string name="settings_feedback_title">Feedback senden</string>
     <string name="settings_feedback_desc">Sagen Sie uns, was wir verbessern können — es dauert nur ein paar Sekunden.</string>
     <string name="settings_feedback_action">Feedback geben</string>
     <string name="settings_analytics_title">Nutzungsstatistik</string>
-    <string name="settings_analytics_desc">Teile anonyme Nutzungsstatistiken, um uns bei der Verbesserung der App zu helfen. Es werden keine personenbezogenen Daten erfasst.</string>
+    <string name="settings_analytics_desc">Teilen Sie anonyme Nutzungsstatistiken, um uns bei der Verbesserung der App zu helfen. Es werden keine personenbezogenen Daten erfasst.</string>
     <string name="settings_crash_title">Absturzberichte</string>
     <string name="settings_crash_desc">Diagnosen senden, wenn die App abstürzt oder einfriert. Enthält nie Ihre Playlists oder Passwörter.</string>
     <string name="settings_legal_title">Datenschutz und Nutzungsbedingungen</string>
@@ -303,16 +339,16 @@
     <string name="settings_recording_indicator_title">Aufnahmeanzeige</string>
     <string name="settings_recording_indicator_desc">Ein pulsierendes REC-Symbol im Player anzeigen, während eine Aufnahme läuft.</string>
     <string name="settings_rearrange_hud">Player-Steuerung neu anordnen</string>
-    <string name="settings_rearrange_hud_desc">Ordne die Schaltflächen im Player-HUD neu an oder blende sie aus.</string>
+    <string name="settings_rearrange_hud_desc">Ordnen Sie die Schaltflächen im Player-HUD neu an oder blenden Sie sie aus.</string>
     <string name="hud_editor_context_live">Live-TV</string>
     <string name="hud_editor_context_vod">Filme und Serien</string>
     <string name="hud_editor_tray_title">Ausgeblendete Schaltflächen</string>
-    <string name="hud_editor_tray_empty">Alle Schaltflächen sind im HUD. Drücke bei einer nach oben, um sie hier auszublenden.</string>
-    <string name="hud_editor_sample_title">Kanalname</string>
+    <string name="hud_editor_tray_empty">Alle Schaltflächen sind im HUD. Drücken Sie bei einer nach oben, um sie hier auszublenden.</string>
+    <string name="hud_editor_sample_title">Sendername</string>
     <string name="hud_editor_sample_subtitle">Läuft gerade</string>
     <string name="hud_editor_sample_title_vod">Filmtitel</string>
     <string name="hud_editor_sample_subtitle_vod">Staffel 1 · Folge 3</string>
-    <string name="hud_editor_hint_idle">Drücke OK, um eine Schaltfläche aufzunehmen.</string>
+    <string name="hud_editor_hint_idle">Drücken Sie OK, um eine Schaltfläche aufzunehmen.</string>
     <string name="hud_editor_hint_grabbed">Links/rechts zum Verschieben · Oben zum Ausblenden · OK halten für die ganze Gruppe · OK zum Ablegen</string>
     <string name="hud_editor_hint_group">Links/rechts vertauscht die beiden Gruppen · OK zum Ablegen</string>
     <string name="hud_editor_hint_grabbed_tray">Unten zum Zurücklegen ins HUD · OK zum Ablegen</string>
@@ -341,7 +377,7 @@
     <string name="feedback_qr_title">Möchten Sie mehr schreiben?</string>
     <string name="feedback_qr_desc">Scannen Sie dies mit Ihrem Telefon, um das Feedback-Formular zu öffnen und auf einer echten Tastatur zu schreiben.</string>
     <string name="feedback_cat_playback">Wiedergabe</string>
-    <string name="feedback_cat_guide">TV-Guide</string>
+    <string name="feedback_cat_guide">TV-Programm</string>
     <string name="feedback_cat_layout">Layout</string>
     <string name="feedback_cat_favorites">Favoriten</string>
     <string name="feedback_cat_missing">Fehlende Funktion</string>
@@ -366,10 +402,10 @@
     <string name="home_section_continue_watching">Weiterschauen</string>
     <string name="home_section_live_now">Jetzt live</string>
     <string name="home_section_categories">Nach Kategorie durchsuchen</string>
-    <string name="home_section_recommended">Filme &amp; Serien durchsuchen</string>
-    <string name="home_section_for_you">Für dich</string>
+    <string name="home_section_recommended">Für Sie</string>
+    <string name="home_section_for_you">Für Sie</string>
     <string name="home_section_popular">Beliebt</string>
-    <string name="home_section_because_you_like">Weil dir %1$s gefällt</string>
+    <string name="home_section_because_you_like">Weil Ihnen %1$s gefällt</string>
     <string name="home_section_movies">Filme</string>
     <string name="home_section_series">Serien</string>
     <string name="home_add_section_dialog_title">Einen Bereich hinzufügen</string>
@@ -384,8 +420,8 @@
     <string name="home_edit_remove_section">Bereich entfernen</string>
 
     <!-- Guide -->
-    <string name="guide_no_source">Fügen Sie über die Seitenleiste eine Playlist hinzu, um hier den TV-Guide zu sehen.</string>
-    <string name="guide_title">TV-Guide</string>
+    <string name="guide_no_source">Fügen Sie über die Seitenleiste eine Playlist hinzu, um hier das TV-Programm zu sehen.</string>
+    <string name="guide_title">TV-Programm</string>
     <string name="guide_epg_unavailable">EPG-Quelle nicht erreichbar — Sender werden ohne Programmdaten angezeigt.</string>
     <string name="guide_no_channel_placeholder">--</string>
     <string name="guide_focus_hint">Wählen Sie ein Programm für Details aus</string>
@@ -442,6 +478,14 @@
     <string name="search_section_live">Live-TV</string>
     <string name="search_section_titles">Filme &amp; Serien</string>
 
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Kategorien suchen</string>
+    <string name="browse_category_search_empty">Keine passenden Kategorien</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Fortsetzen</string>
+    <string name="tile_action_play_from_start">Von Anfang an</string>
+
     <!-- Detail -->
     <string name="detail_loading">Wird geladen…</string>
     <string name="detail_not_found">Titel nicht gefunden</string>
@@ -490,7 +534,7 @@
     <string name="player_minimize_to_corner">In die Ecke verkleinern</string>
     <string name="player_mini_player">Mini-Player</string>
     <string name="player_up_next_action">Als Nächstes</string>
-    <string name="player_open_guide">Guide öffnen</string>
+    <string name="player_open_guide">Programm öffnen</string>
     <string name="player_live_badge">Live</string>
 
     <!-- Subtitle menu -->
@@ -522,7 +566,7 @@
     <string name="multiview_audio_badge">Ton</string>
     <string name="multiview_audio_only">Radiosender — nur Ton</string>
     <string name="multiview_add_to">Zur Multi-Ansicht hinzufügen</string>
-    <string name="multiview_add_channel">Kanal hinzufügen</string>
+    <string name="multiview_add_channel">Sender hinzufügen</string>
     <string name="multiview_pane_watch">Vollbild ansehen</string>
     <string name="multiview_pane_menu_body">Diesen Sender im Vollbild öffnen oder aus der Multi-View entfernen.</string>
     <string name="multiview_added_toast">Zur Multi-Ansicht hinzugefügt</string>
@@ -533,7 +577,7 @@
     <string name="shell_add_playlist_desc">Playlist hinzufügen</string>
     <string name="nav_home">Start</string>
     <string name="nav_live_tv">Live-TV</string>
-    <string name="nav_tv_guide">TV-Guide</string>
+    <string name="nav_tv_guide">TV-Programm</string>
     <string name="nav_movies">Filme</string>
     <string name="nav_series">Serien</string>
     <string name="nav_search">Suche</string>
@@ -566,8 +610,8 @@
     <string name="browse_all_movies">Alle Filme</string>
     <string name="browse_all_series">Alle Serien</string>
     <string name="settings_refresh_no_playlist">Keine aktive Playlist zum Aktualisieren.</string>
-    <string name="settings_refresh_failed">Aktualisierung fehlgeschlagen — überprüfe deine Verbindung und versuche es erneut.</string>
-    <string name="settings_subs_connect_key_first">Verbinde zuerst deinen API-Schlüssel.</string>
+    <string name="settings_refresh_failed">Aktualisierung fehlgeschlagen — überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.</string>
+    <string name="settings_subs_connect_key_first">Verbinden Sie zuerst Ihren API-Schlüssel.</string>
     <string name="onboarding_error_generic">Etwas ist schiefgelaufen</string>
     <!-- Provider details & playlist deletion -->
     <string name="action_delete">Löschen</string>
@@ -597,9 +641,9 @@
     <string name="sources_rename_label">Playlist-Name</string>
     <string name="nav_streams">Streams</string>
     <string name="streams_open">Netzwerkstream öffnen</string>
-    <string name="streams_empty">Noch keine Streams. Öffne einen Netzwerkstream, um zu beginnen.</string>
+    <string name="streams_empty">Noch keine Streams. Öffnen Sie einen Netzwerkstream, um zu beginnen.</string>
     <string name="streams_url_placeholder">http://server/stream.m3u8</string>
-    <string name="streams_url_helper">Füge einen direkten Videolink ein (HLS, DASH, MP4, RTSP…)</string>
+    <string name="streams_url_helper">Fügen Sie einen direkten Videolink ein (HLS, DASH, MP4, RTSP…)</string>
     <string name="streams_rename">Umbenennen</string>
     <string name="streams_save">Speichern</string>
     <string name="streams_rename_placeholder">Namen eingeben</string>
@@ -611,7 +655,7 @@
     <string name="recording_started_toast">Aufnahme gestartet</string>
     <string name="recording_stopped_reason">Aufnahme beendet: %1$s</string>
     <string name="recording_error_generic">Aufnahme konnte nicht gestartet werden</string>
-    <string name="recording_error_not_writable">Schreiben auf dieses Laufwerk nicht möglich – wähle ein anderes</string>
+    <string name="recording_error_not_writable">Schreiben auf dieses Laufwerk nicht möglich – wählen Sie ein anderes</string>
     <string name="recording_error_low_space">Nicht genug freier Speicher auf diesem Laufwerk</string>
     <string name="recording_error_hls">Dieser Stream kann noch nicht aufgenommen werden</string>
     <string name="recording_pick_volume_title">Aufnehmen auf</string>
@@ -624,7 +668,7 @@
     <string name="recording_reason_slow_disk">Langsames Laufwerk – einige Daten verworfen</string>
     <string name="recording_reason_crash">Nach unerwartetem Abbruch wiederhergestellt</string>
     <string name="recordings_title">Aufnahmen</string>
-    <string name="recordings_empty">Noch keine Aufnahmen. Drücke ● REC während Live-TV.</string>
+    <string name="recordings_empty">Noch keine Aufnahmen. Drücken Sie ● REC während Live-TV.</string>
     <string name="recordings_group_recording_now">Nimmt gerade auf</string>
     <string name="recordings_group_completed">Abgeschlossen</string>
     <string name="recordings_group_interrupted">Unterbrochen</string>
@@ -632,11 +676,11 @@
     <string name="recordings_play">Abspielen</string>
     <string name="recordings_delete">Löschen</string>
     <string name="recordings_delete_title">Aufnahme löschen?</string>
-    <string name="recordings_delete_body">Dadurch wird „%1$s“ von deinem Gerät entfernt.</string>
+    <string name="recordings_delete_body">Dadurch wird „%1$s“ von Ihrem Gerät entfernt.</string>
     <string name="recordings_status_interrupted">Unterbrochen</string>
     <string name="recordings_status_failed">Fehlgeschlagen</string>
-    <string name="recordings_unavailable_reconnect">Verbinde %1$s erneut zum Ansehen</string>
-    <string name="recordings_unavailable_generic">Verbinde das Laufwerk erneut zum Ansehen</string>
+    <string name="recordings_unavailable_reconnect">Verbinden Sie %1$s erneut zum Ansehen</string>
+    <string name="recordings_unavailable_generic">Verbinden Sie das Laufwerk erneut zum Ansehen</string>
     <string name="recordings_missing">Datei nicht mehr auf dem Laufwerk</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
     <string name="recordings_parts">%1$d Teile</string>
@@ -687,7 +731,7 @@
     <string name="player_previous_program">Vorherige Sendung</string>
     <string name="player_next_program">Nächste Sendung</string>
     <string name="support_dialog_title">Gefällt Ihnen ARE iptv?</string>
-    <string name="support_dialog_body">Entwickelt und gepflegt von einer einzelnen Person, abends und am Wochenende. Kein Abo, keine Werbung, kein Mitschreiben, was Sie schauen — einfach eine App, die funktioniert. Wenn sie ihren Platz auf Ihrem Fernseher verdient, hält ein Kaffee sie am Leben.</string>
+    <string name="support_dialog_body">Entwickelt und gepflegt von einer einzelnen Person, abends und am Wochenende. Kein Abo, keine Werbung, keine Aufzeichnung dessen, was Sie schauen — einfach eine App, die funktioniert. Wenn sie bei Ihnen einen festen Platz hat, freue ich mich über einen Kaffee.</string>
     <string name="support_dialog_scan">Scannen, um auf dem Handy zu öffnen</string>
-    <string name="support_dialog_visit">Oder besuchen Sie</string>
+    <string name="support_dialog_visit">Oder besuchen Sie:</string>
 </resources>

@@ -328,7 +328,7 @@
     <string name="player_recording_label">REC</string>
     <string name="player_recording_reconnecting">Riconnessione…</string>
     <string name="feedback_title">Invia un feedback</string>
-    <string name="feedback_subtitle">Il tuo feedback plasma ciò che creeremo dopo. Grazie per l\'aiuto.</string>
+    <string name="feedback_subtitle">Il tuo feedback decide cosa costruiremo dopo. Grazie per l\'aiuto.</string>
     <string name="feedback_rating_label">Come valuteresti l\'app?</string>
     <string name="feedback_star_cd">%1$d stelle</string>
     <string name="feedback_category_label">Di cosa si tratta?</string>
@@ -687,7 +687,35 @@
     <string name="player_previous_program">Programma precedente</string>
     <string name="player_next_program">Programma successivo</string>
     <string name="support_dialog_title">Ti piace ARE iptv?</string>
-    <string name="support_dialog_body">È creata e mantenuta da una sola persona, la sera e nei weekend. Nessun abbonamento, nessuna pubblicità, nessun tracciamento di ciò che guardi: solo un\'app che funziona. Se si merita il suo posto sulla tua TV, un caffè la tiene in vita.</string>
-    <string name="support_dialog_scan">Inquadra per aprirlo sul telefono</string>
-    <string name="support_dialog_visit">Oppure visita</string>
+    <string name="support_dialog_body">È sviluppata e mantenuta da una sola persona, la sera e nel fine settimana. Nessun abbonamento, nessuna pubblicità, nessun tracciamento di ciò che guardi: solo un\'app che funziona. Se si merita il suo posto sulla tua TV, un caffè la manda avanti.</string>
+    <string name="support_dialog_scan">Inquadra per aprire la pagina sul telefono</string>
+    <string name="support_dialog_visit">Oppure vai su:</string>
+
+    <!-- Explore free playlists -->
+    <string name="explore_link">Esplora playlist IPTV gratuite</string>
+    <string name="sources_from_explore">Da Esplora</string>
+    <string name="explore_title">Esplora l\'IPTV gratuita</string>
+    <string name="explore_subtitle">Playlist in chiaro, elencate pubblicamente e curate dalla community. ARE iptv non ospita né controlla questi flussi e la disponibilità cambia da paese a paese.</string>
+    <string name="explore_used_count">%1$d playlist su %2$d utilizzate</string>
+    <string name="explore_channels_approx">~%1$d canali</string>
+    <string name="explore_hint">Il numero di canali è approssimativo e cambia spesso.</string>
+    <string name="explore_add_title">Aggiungi «%1$s»</string>
+    <string name="explore_add_body">Chiamala come preferisci — puoi rinominarla in seguito.</string>
+    <string name="explore_add_action">Aggiungi playlist</string>
+    <string name="explore_name_label">Nome della playlist</string>
+    <string name="explore_adding_title">Aggiunta della playlist…</string>
+    <string name="explore_adding_body">Recupero di «%1$s» in corso. Con un elenco grande può volerci un momento.</string>
+    <string name="explore_failed_title">Impossibile aggiungere quella playlist</string>
+    <string name="explore_failed_body">Non è stato possibile caricare «%1$s». L\'elenco potrebbe essere stato spostato o non essere temporaneamente disponibile — il problema è della playlist, non del tuo dispositivo. Provane un\'altra.</string>
+    <string name="explore_cap_title">Hai %1$d playlist</string>
+    <string name="explore_cap_body">È il massimo. Rimuovine una dal tuo elenco per aggiungerne un\'altra.</string>
+
+    <!-- Category browse search -->
+    <string name="browse_category_search_placeholder">Cerca categorie</string>
+    <string name="browse_category_search_empty">Nessuna categoria corrispondente</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Riprendi</string>
+    <string name="tile_action_play_from_start">Riproduci dall\'inizio</string>
+
 </resources>

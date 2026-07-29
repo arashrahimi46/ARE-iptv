@@ -322,16 +322,24 @@ settings=DataStore, model) · `ui/` (one package per screen + `ui/components` + 
 
 ## Internationalization — READ BEFORE ADDING ANY USER-FACING STRING
 
-Ships **English + 21 translated locales**. A missing translation silently falls back to English
+Ships **English + 23 translated locales**. A missing translation silently falls back to English
 (no build error), so keep them in sync by hand.
 
 - Every user-facing string goes through `stringResource(R.string.…)` — never a hardcoded literal
   in `Text(...)` / `contentDescription` (glyphs, counters, and the brand mark excepted).
-- When you add/rename a key, add it to **`values/strings.xml` AND all 21 `values-*/strings.xml`**:
-  `az, b+pt+BR, b+pt+PT, bg, cs, da, de, el, es, fi, fr, hu, it, nb, nl, pl, ro, ru, sv, tr, uk`.
+- When you add/rename a key, add it to **`values/strings.xml` AND all 23 `values-*/strings.xml`**:
+  `ar, az, b+pt+BR, b+pt+PT, bg, cs, da, de, el, es, fa, fi, fr, hu, it, nb, nl, pl, ro, ru, sv,
+  tr, uk`.
+- **`fa` and `ar` are RTL and are the two everyone forgets.** They ship like the rest —
+  `android:supportsRtl="true"`, no `locales_config.xml`, no `resourceConfigurations` filter. This
+  doc used to say "21 locales" and omit them; contributors followed that list literally and left
+  fa/ar **27 keys behind** the other 22 (the whole `hud_ctl_*` / `hud_editor_*` /
+  `settings_sidebar_style*` / `player_playback_speed` wave). Count 23 or don't count.
 - Preserve positional format args exactly (`%1$s`, `%1$d`, `%2$d`); a locale may reorder them but
   every index must still appear. Escape `'` as `\'`; XML-escape `&`/`<`/`>`.
 - Audit gaps: diff each `values-*/strings.xml`'s `name="…"` keys against `values/strings.xml`.
+- **Before touching any locale file, read `docs/translation-guide.md`** — the quality bar, the
+  per-language traps, and the validation script live there.
 
 ## Xtream providers — NEVER curl the stream/playlist for probing
 
@@ -349,6 +357,22 @@ Ships **English + 21 translated locales**. A missing translation silently falls 
   behind. Focus the default action on open.
 - **Text inputs in scrolling lists:** `AreTextField(activateOnClick = true)` so D-pad scrolling
   past a field doesn't pop the IME (OK enters edit, Back/Done exits). Leave off for Search.
+- **Tile size is a per-screen decision, NOT the `tilePosterWidth`/`tileLandWidth` tokens.** Those
+  tokens (208dp / 320dp) are Home-rail sizes. A 2:3 poster at 208dp is **312dp tall**, and with its
+  title+meta the item is ~356dp — on a 540dp-tall 1080p screen that is most of the viewport, so on
+  any screen with chrome above the grid the label gets cut off mid-glyph. Favorites and Search both
+  shipped that bug. Browse renders the *same* content through `GridCells.Adaptive(115.dp)`
+  (movies/series) and `(180.dp)` (live) — **Browse's density is the baseline; the tokens were the
+  outlier.** New grid screens pass an explicit `width` to `ArePosterTile`/`AreChannelTile` sized
+  against their own vertical budget: `540dp − (root insets + any header/tabs/section label) − 52dp
+  bottom contentPadding`. Current values: `FavoritePosterWidth = 150dp`,
+  `SearchPosterWidth = 120dp`, `SearchChannelWidth = 180dp` (Search has the tallest chrome stack —
+  query field *and* scope strip — so it gets the smallest tiles).
+- **Every tile grid needs `contentPadding`, not just `Modifier.padding`.** `ArePosterTile` draws its
+  title/meta *below* the focusable poster and the focusable scales 1.06x on focus, so a flush
+  viewport edge clips both. Use `PaddingValues(top = 10.dp, bottom = 52.dp)` as BrowseLayout does.
+  Don't compensate with a large root `bottom` inset instead — that shrinks the scrollable viewport
+  rather than extending it, which is the opposite of the fix.
 
 ## Theming
 

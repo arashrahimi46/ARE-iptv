@@ -85,6 +85,42 @@
     <string name="privacy_crash_label">Anonieme crashrapporten en gebruiksgegevens verzenden</string>
     <string name="privacy_updated_note">We hebben ons privacybeleid en onze voorwaarden bijgewerkt. Bekijk en accepteer ze om door te gaan.</string>
 
+    <!-- Privacy Policy & Terms of Service (full document) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Gratis IPTV-afspeellijsten ontdekken</string>
+    <string name="sources_from_explore">Uit Ontdekken</string>
+    <string name="explore_title">Gratis IPTV ontdekken</string>
+    <string name="explore_subtitle">Openbaar vermelde, vrij te ontvangen afspeellijsten die door de community worden onderhouden. ARE iptv host of beheert deze streams niet, en de beschikbaarheid verschilt per land.</string>
+    <string name="explore_used_count">%1$d van %2$d afspeellijsten gebruikt</string>
+    <string name="explore_channels_approx">~%1$d kanalen</string>
+    <string name="explore_hint">Kanaalaantallen zijn benaderingen en veranderen vaak.</string>
+    <string name="explore_add_title">“%1$s” toevoegen</string>
+    <string name="explore_add_body">Geef het een naam naar keuze — je kunt die later wijzigen.</string>
+    <string name="explore_add_action">Afspeellijst toevoegen</string>
+    <string name="explore_name_label">Naam van afspeellijst</string>
+    <string name="explore_adding_title">Afspeellijst toevoegen…</string>
+    <string name="explore_adding_body">“%1$s” ophalen. Bij een grote lijst kan dit even duren.</string>
+    <string name="explore_failed_title">Kan die afspeellijst niet toevoegen</string>
+    <string name="explore_failed_body">“%1$s” kon niet worden geladen. De lijst is mogelijk verplaatst of tijdelijk niet beschikbaar — dit ligt aan de afspeellijst, niet aan je apparaat. Probeer een andere.</string>
+    <string name="explore_cap_title">Je hebt %1$d afspeellijsten</string>
+    <string name="explore_cap_body">Dat is het maximum. Verwijder er een uit je lijst om een andere toe te voegen.</string>
+
     <!-- Select source -->
     <string name="sources_choose_title">Kies een afspeellijst</string>
     <string name="sources_choose_subtitle">Kies welke van je toegevoegde afspeellijsten je wilt openen.</string>
@@ -129,7 +165,7 @@
     <string name="settings_tab_general">Algemeen</string>
     <string name="settings_tab_display">Weergave</string>
     <string name="settings_tab_playback">Afspelen</string>
-    <string name="settings_tab_subtitles">Ondertitels</string>
+    <string name="settings_tab_subtitles">Ondertiteling</string>
     <string name="settings_tab_parental">Ouderlijk toezicht</string>
     <string name="settings_tab_about">Over</string>
     <string name="settings_theme_title">Thema</string>
@@ -383,9 +419,13 @@
     <string name="home_edit_hide_section">Sectie verbergen</string>
     <string name="home_edit_remove_section">Sectie verwijderen</string>
 
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Hervatten</string>
+    <string name="tile_action_play_from_start">Vanaf begin afspelen</string>
+
     <!-- Guide -->
     <string name="guide_no_source">Voeg een afspeellijst toe via de zijbalk om hier de tv-gids te zien.</string>
-    <string name="guide_title">TV-gids</string>
+    <string name="guide_title">Tv-gids</string>
     <string name="guide_epg_unavailable">EPG-bron niet beschikbaar -- kanalen worden zonder programmagegevens getoond.</string>
     <string name="guide_no_channel_placeholder">--</string>
     <string name="guide_focus_hint">Focus op een programma om details te zien</string>
@@ -524,7 +564,7 @@
     <string name="multiview_add_to">Toevoegen aan Multiweergave</string>
     <string name="multiview_add_channel">Kanaal toevoegen</string>
     <string name="multiview_pane_watch">Bekijk op volledig scherm</string>
-    <string name="multiview_pane_menu_body">Open dit kanaal op volledig scherm of verwijder het uit de multi-view.</string>
+    <string name="multiview_pane_menu_body">Open dit kanaal op volledig scherm of verwijder het uit de multiweergave.</string>
     <string name="multiview_added_toast">Toegevoegd aan Multiweergave</string>
 
     <!-- Shell / top bar / sidebar -->
@@ -533,7 +573,7 @@
     <string name="shell_add_playlist_desc">Afspeellijst toevoegen</string>
     <string name="nav_home">Start</string>
     <string name="nav_live_tv">Live-tv</string>
-    <string name="nav_tv_guide">TV-gids</string>
+    <string name="nav_tv_guide">Tv-gids</string>
     <string name="nav_movies">Films</string>
     <string name="nav_series">Series</string>
     <string name="nav_search">Zoeken</string>
@@ -542,6 +582,8 @@
 
     <!-- Browse layout (shared Live/Movies/Series) -->
     <string name="browse_categories_header">Categorieën</string>
+    <string name="browse_category_search_placeholder">Categorieën zoeken</string>
+    <string name="browse_category_search_empty">Geen overeenkomende categorieën</string>
     <string name="browse_empty_default">Nog geen items in deze categorie.</string>
     <string name="browse_load_error">Laden mislukt — probeer opnieuw</string>
     <string name="browse_pin_dialog_pinned_body">Verwijder deze categorie van de bovenkant van de lijst.</string>
@@ -687,7 +729,7 @@
     <string name="player_previous_program">Vorig programma</string>
     <string name="player_next_program">Volgend programma</string>
     <string name="support_dialog_title">Bevalt ARE iptv?</string>
-    <string name="support_dialog_body">Het wordt gemaakt en onderhouden door één persoon, \'s avonds en in het weekend. Geen abonnement, geen advertenties, geen bijhouden van wat je kijkt — gewoon een app die werkt. Als het z\'n plek op je tv verdient, houdt een kop koffie het draaiende.</string>
+    <string name="support_dialog_body">Deze app wordt gemaakt en onderhouden door één persoon, \'s avonds en in het weekend. Geen abonnement, geen advertenties, geen bijhouden van wat je kijkt — gewoon een app die werkt. Als hij zijn plek op je tv verdient, houdt een kop koffie hem draaiende.</string>
     <string name="support_dialog_scan">Scan om te openen op je telefoon</string>
-    <string name="support_dialog_visit">Of ga naar</string>
+    <string name="support_dialog_visit">Of ga naar:</string>
 </resources>

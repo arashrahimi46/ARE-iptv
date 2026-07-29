@@ -17,7 +17,7 @@
     <string name="action_sign_in">Увійти</string>
     <string name="action_sign_out">Вийти</string>
     <string name="action_search">Пошук</string>
-    <string name="action_buy_coffee">Купи мені каву</string>
+    <string name="action_buy_coffee">Пригостіть кавою</string>
     <string name="content_desc_account">Обліковий запис</string>
 
     <!-- Shell -->
@@ -63,7 +63,7 @@
     <string name="onboarding_confirm_error_title">Не вдалося додати плейлист</string>
     <string name="onboarding_confirm_added">Додано</string>
     <string name="onboarding_confirm_ready">Готово до додавання</string>
-    <string name="onboarding_confirm_channels_badge">%1$d каналів</string>
+    <string name="onboarding_confirm_channels_badge">Каналів: %1$d</string>
     <string name="onboarding_confirm_downloading">Завантаження та імпорт ваших каналів. Великі плейлисти можуть зайняти деякий час — будь ласка, не закривайте застосунок.</string>
     <string name="onboarding_confirm_row_portal">Портал</string>
     <string name="onboarding_confirm_default_portal_name">Мій плейлист</string>
@@ -74,7 +74,7 @@
     <string name="onboarding_confirm_auto_matched">Автопідбір</string>
     <string name="onboarding_confirm_custom_xmltv">Власний XMLTV</string>
     <string name="onboarding_confirm_row_catalog">Каталог</string>
-    <string name="onboarding_confirm_catalog_summary">%1$d каналів · %2$d фільмів · %3$d серіалів</string>
+    <string name="onboarding_confirm_catalog_summary">Каналів: %1$d · фільмів: %2$d · серіалів: %3$d</string>
 
     <!-- Privacy & Terms -->
     <string name="privacy_title">Конфіденційність та умови</string>
@@ -84,6 +84,42 @@
     <string name="privacy_read_full">Читати повну Політику конфіденційності та Умови</string>
     <string name="privacy_crash_label">Надсилати анонімні звіти про збої та дані про використання</string>
     <string name="privacy_updated_note">Ми оновили Політику конфіденційності та Умови. Перегляньте та прийміть їх, щоб продовжити.</string>
+
+    <!-- Privacy Policy & Terms of Service (full document) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Explore free IPTV -->
+    <string name="explore_link">Огляд безкоштовних плейлистів IPTV</string>
+    <string name="sources_from_explore">З огляду</string>
+    <string name="explore_title">Огляд безкоштовного IPTV</string>
+    <string name="explore_subtitle">Загальнодоступні плейлисти вільного ефіру, які підтримує спільнота. ARE iptv не розміщує ці потоки й не контролює їх, а доступність залежить від країни.</string>
+    <string name="explore_used_count">Використано плейлистів: %1$d з %2$d</string>
+    <string name="explore_channels_approx">Каналів: ~%1$d</string>
+    <string name="explore_hint">Кількість каналів наведено приблизно, і вона часто змінюється.</string>
+    <string name="explore_add_title">Додати «%1$s»</string>
+    <string name="explore_add_body">Назвіть його як завгодно — перейменувати можна пізніше.</string>
+    <string name="explore_add_action">Додати плейлист</string>
+    <string name="explore_name_label">Назва плейлиста</string>
+    <string name="explore_adding_title">Додавання плейлиста…</string>
+    <string name="explore_adding_body">Завантаження «%1$s». Для великого списку це може зайняти якийсь час.</string>
+    <string name="explore_failed_title">Не вдалося додати цей плейлист</string>
+    <string name="explore_failed_body">Не вдалося завантажити «%1$s». Можливо, список перемістили або він тимчасово недоступний — це проблема з плейлистом, а не з вашим пристроєм. Спробуйте інший.</string>
+    <string name="explore_cap_title">Плейлистів у вас: %1$d</string>
+    <string name="explore_cap_body">Це максимум. Вилучіть один зі свого списку плейлистів, щоб додати інший.</string>
 
     <!-- Select source -->
     <string name="sources_choose_title">Виберіть плейлист</string>
@@ -151,7 +187,7 @@
     <string name="settings_stale_14d">14 днів</string>
     <string name="settings_stale_30d">30 днів</string>
     <string name="settings_stale_off">Вимк.</string>
-    <string name="settings_section_preferences">Налаштування</string>
+    <string name="settings_section_preferences">Параметри</string>
     <string name="settings_start_screen_title">Початковий екран</string>
     <string name="settings_start_screen_desc">Який екран відкривається під час запуску застосунку.</string>
     <string name="settings_start_last_used">Останній використаний</string>
@@ -193,20 +229,20 @@
     <string name="settings_clear_history_confirm">Очистити весь прогрес «Продовжити перегляд»? Цю дію не можна скасувати.</string>
     <string name="settings_reset_title">Скинути до типових</string>
     <string name="settings_reset_desc">Відновити налаштування вигляду й відтворення</string>
-    <string name="settings_reset_confirm">Скинути налаштування вигляду й відтворення до типових? Ваші списки, входи, мова та батьківське блокування збережуться.</string>
+    <string name="settings_reset_confirm">Скинути налаштування вигляду й відтворення до типових? Ваші плейлисти, дані для входу, мова та батьківське блокування збережуться.</string>
     <string name="settings_reset_action">Скинути</string>
     <string name="settings_section_playlists">Плейлисти та синхронізація</string>
     <string name="settings_refresh_catalog">Оновити каталог</string>
     <string name="settings_refresh_now">Оновити зараз</string>
     <string name="settings_refreshing">Оновлення…</string>
     <string name="settings_refresh_syncing">Синхронізація з провайдером…</string>
-    <string name="settings_refresh_success">Оновлено: %1$d каналів, %2$d фільмів, %3$d серіалів</string>
+    <string name="settings_refresh_success">Оновлено — каналів: %1$d, фільмів: %2$d, серіалів: %3$d</string>
     <string name="settings_refresh_stale">Старше 2 тижнів — оновіть, щоб отримати нові канали та матеріали</string>
     <string name="settings_never_refreshed">Ніколи не оновлювалося</string>
-    <string name="settings_last_updated_days">Оновлено %1$d день тому</string>
-    <string name="settings_last_updated_days_plural">Оновлено %1$d днів тому</string>
-    <string name="settings_last_updated_hours">Оновлено %1$d годину тому</string>
-    <string name="settings_last_updated_hours_plural">Оновлено %1$d годин тому</string>
+    <string name="settings_last_updated_days">Оновлено %1$d дн. тому</string>
+    <string name="settings_last_updated_days_plural">Оновлено %1$d дн. тому</string>
+    <string name="settings_last_updated_hours">Оновлено %1$d год. тому</string>
+    <string name="settings_last_updated_hours_plural">Оновлено %1$d год. тому</string>
     <string name="settings_last_updated_mins">Оновлено %1$d хв тому</string>
     <string name="settings_last_updated_now">Оновлено щойно</string>
     <string name="settings_section_appearance">Оформлення</string>
@@ -282,14 +318,14 @@
     <string name="guide_opensubs_step4">Скопіюйте показаний API-ключ і введіть його в поле тут.</string>
     <string name="guide_opensubs_account_title">Вхід в OpenSubtitles</string>
     <string name="guide_opensubs_account_intro">API-ключ дає змогу шукати субтитри. Для завантаження потрібен ще й ваш акаунт.</string>
-    <string name="guide_opensubs_account_step1">Використовуйте ті самі ім\'я користувача та пароль, що на opensubtitles.com.</string>
+    <string name="guide_opensubs_account_step1">Використовуйте ті самі ім’я користувача та пароль, що на opensubtitles.com.</string>
     <string name="guide_opensubs_account_step2">Ще немає акаунта? Скануйте код і створіть його -- це безкоштовно.</string>
     <string name="guide_opensubs_account_step3">Поверніться сюди та увійдіть.</string>
     <string name="settings_section_about">Про застосунок</string>
     <string name="settings_version_title">Версія</string>
     <string name="settings_version_value">ARE iptv %1$s</string>
     <string name="settings_support_title">Підтримати цей застосунок</string>
-    <string name="settings_support_desc">Купіть мені каву, якщо ARE iptv вам корисний.</string>
+    <string name="settings_support_desc">Пригостіть мене кавою, якщо ARE iptv стає вам у пригоді.</string>
     <string name="settings_feedback_title">Надіслати відгук</string>
     <string name="settings_feedback_desc">Розкажіть, що покращити — це займе кілька секунд.</string>
     <string name="settings_feedback_action">Залишити відгук</string>
@@ -317,27 +353,27 @@
     <string name="hud_editor_hint_group">Ліворуч/праворуч — поміняти групи місцями · OK — відпустити</string>
     <string name="hud_editor_hint_grabbed_tray">Вниз — повернути на HUD · OK — відпустити</string>
     <string name="hud_editor_locked_note">Відтворення, перемотування назад і вперед показуються завжди.</string>
-    <string name="hud_editor_budget">Показано %1$d з %2$d додаткових кнопок</string>
+    <string name="hud_editor_budget">Додаткові кнопки: %1$d з %2$d</string>
     <string name="hud_editor_at_cap">Досягнуто ліміту — вимкніть одну, щоб додати іншу.</string>
     <string name="hud_editor_reset">Скинути до типових</string>
     <string name="hud_editor_done">Готово</string>
     <string name="hud_ctl_skip_previous">Попередній</string>
     <string name="hud_ctl_skip_next">Наступний</string>
-    <string name="hud_ctl_favorite">Улюблене</string>
+    <string name="hud_ctl_favorite">Обране</string>
     <string name="hud_ctl_record">Запис</string>
     <string name="player_recording_label">REC</string>
     <string name="player_recording_reconnecting">Повторне підключення…</string>
     <string name="feedback_title">Надіслати відгук</string>
     <string name="feedback_subtitle">Ваш відгук формує те, що ми створимо далі. Дякуємо за допомогу.</string>
     <string name="feedback_rating_label">Як би ви оцінили застосунок?</string>
-    <string name="feedback_star_cd">%1$d зірок</string>
+    <string name="feedback_star_cd">Зірок: %1$d</string>
     <string name="feedback_category_label">Про що йдеться?</string>
-    <string name="feedback_message_label">Хочете щось додати? (необов\'язково)</string>
+    <string name="feedback_message_label">Хочете щось додати? (необов’язково)</string>
     <string name="feedback_message_placeholder">Розкажіть докладніше…</string>
     <string name="feedback_send">Надіслати</string>
     <string name="feedback_sending">Надсилання…</string>
     <string name="feedback_thanks">Дякуємо! Ваш відгук надіслано.</string>
-    <string name="feedback_error">Зараз не вдалося надіслати. Перевірте з\'єднання та спробуйте ще раз.</string>
+    <string name="feedback_error">Зараз не вдалося надіслати. Перевірте з’єднання та спробуйте ще раз.</string>
     <string name="feedback_qr_title">Хочете написати більше?</string>
     <string name="feedback_qr_desc">Відскануйте це телефоном, щоб відкрити форму відгуку й друкувати на справжній клавіатурі.</string>
     <string name="feedback_cat_playback">Відтворення</string>
@@ -399,7 +435,7 @@
     <string name="live_no_source">Додайте плейлист з бічної панелі, щоб побачити тут прямі канали.</string>
     <string name="live_title">Прямий ефір</string>
     <string name="live_channel_groups">Групи каналів</string>
-    <string name="live_count_channels">%1$d каналів</string>
+    <string name="live_count_channels">Каналів: %1$d</string>
     <string name="live_empty_group">У цій групі поки немає каналів.</string>
     <string name="live_on_air_now">В ЕФІРІ ЗАРАЗ</string>
 
@@ -407,15 +443,15 @@
     <string name="movies_no_source">Додайте плейлист з бічної панелі, щоб побачити тут фільми.</string>
     <string name="movies_title">Фільми</string>
     <string name="movies_genres">Жанри</string>
-    <string name="movies_count_titles">%1$d найменувань</string>
-    <string name="category_count_items">%1$d елементів</string>
+    <string name="movies_count_titles">Фільмів: %1$d</string>
+    <string name="category_count_items">Елементів: %1$d</string>
     <string name="movies_empty_genre">У цьому жанрі поки немає фільмів.</string>
 
     <!-- Series -->
     <string name="series_no_source">Додайте плейлист з бічної панелі, щоб побачити тут серіали.</string>
     <string name="series_title">Серіали</string>
     <string name="series_empty_genre">У цьому жанрі поки немає серіалів.</string>
-    <string name="series_episode_count">%1$d серій</string>
+    <string name="series_episode_count">Серій: %1$d</string>
 
     <!-- Favorites -->
     <string name="favorites_no_source">Додайте плейлист з бічної панелі, потім додайте канали або матеріали в обране, щоб побачити їх тут.</string>
@@ -437,14 +473,22 @@
     <string name="search_scope_series">Серіали</string>
     <string name="search_category_label">Категорія: %1$s</string>
     <string name="search_type_to_search">Введіть текст для пошуку у вашому каталозі.</string>
-    <string name="search_min_chars">Введіть щонайменше %1$d символів для пошуку.</string>
-    <string name="search_no_results">Немає результатів за запитом \"%1$s\".</string>
+    <string name="search_min_chars">Мінімум символів для пошуку: %1$d.</string>
+    <string name="search_no_results">Немає результатів за запитом «%1$s».</string>
     <string name="search_section_live">Прямий ефір</string>
     <string name="search_section_titles">Фільми та серіали</string>
 
+    <!-- Category search in the browse sidebar -->
+    <string name="browse_category_search_placeholder">Пошук категорій</string>
+    <string name="browse_category_search_empty">Немає відповідних категорій</string>
+
+    <!-- Tile long-press action menu -->
+    <string name="tile_action_resume">Продовжити</string>
+    <string name="tile_action_play_from_start">Дивитися спочатку</string>
+
     <!-- Detail -->
     <string name="detail_loading">Завантаження…</string>
-    <string name="detail_not_found">Найменування не знайдено</string>
+    <string name="detail_not_found">Матеріал не знайдено</string>
     <string name="detail_play">Дивитися</string>
     <string name="detail_play_episode">Дивитися С%1$d · Е%2$d</string>
     <string name="detail_add_to_favorites">В обране</string>
@@ -453,10 +497,10 @@
     <string name="detail_cast_label">У ролях:</string>
     <string name="detail_director_label">Режисер:</string>
     <string name="detail_episodes_header">Серії</string>
-    <string name="detail_episodes_header_seasons">Серії · %1$d сезонів · %2$d всього</string>
-    <string name="detail_episodes_header_total">Серії · %1$d всього</string>
+    <string name="detail_episodes_header_seasons">Серії · сезонів: %1$d · усього: %2$d</string>
+    <string name="detail_episodes_header_total">Серії · усього: %1$d</string>
     <string name="detail_season_label">Сезон %1$d</string>
-    <string name="detail_season_episode_count">Сезон %1$s · %2$d серій</string>
+    <string name="detail_season_episode_count">Сезон %1$s · серій: %2$d</string>
     <string name="detail_m3u_no_episodes">Цей запис плейлиста не має даних про сезони/серії -- використайте «Дивитися» вище, щоб відтворити як єдиний елемент.</string>
     <string name="detail_episodes_load_error">Не вдалося завантажити серії: %1$s</string>
     <string name="detail_episodes_loading">Завантаження серій…</string>
@@ -474,10 +518,10 @@
     <string name="player_next_episode">Наступна серія</string>
     <string name="player_back_10_min">Назад на 10 хвилин</string>
     <string name="player_forward_10_min">Уперед на 10 хвилин</string>
-    <string name="player_rewind">Перемотка назад</string>
+    <string name="player_rewind">Перемотати назад</string>
     <string name="player_pause">Пауза</string>
-    <string name="player_play">Дивитися</string>
-    <string name="player_fast_forward">Перемотка вперед</string>
+    <string name="player_play">Відтворити</string>
+    <string name="player_fast_forward">Перемотати вперед</string>
     <string name="player_audio_track">Аудіодоріжка</string>
     <string name="player_subtitles">Субтитри</string>
     <string name="player_aspect_ratio">Співвідношення сторін</string>
@@ -579,17 +623,17 @@
     <string name="settings_provider_server_time">Час сервера</string>
     <string name="settings_provider_timezone">Часовий пояс</string>
     <string name="settings_provider_connections">Підключення</string>
-    <string name="settings_provider_connections_value">%1$d з %2$d використовується</string>
+    <string name="settings_provider_connections_value">Використано: %1$d з %2$d</string>
     <string name="settings_provider_connections_max">макс. %1$d</string>
     <string name="settings_provider_expires">Завершується</string>
-    <string name="settings_provider_expires_days">%1$s · залишилося %2$d дн.</string>
+    <string name="settings_provider_expires_days">%1$s · ще %2$d дн.</string>
     <string name="settings_provider_expires_today">%1$s · завершується сьогодні</string>
     <string name="settings_provider_expired">Завершено</string>
     <string name="settings_provider_trial">Тип облікового запису</string>
     <string name="settings_provider_trial_value">Пробний</string>
     <string name="settings_provider_unlimited">Без обмежень</string>
     <string name="sources_delete_title">Видалити плейлист?</string>
-    <string name="sources_delete_body">Це назавжди видалить «%1$s» і весь його вміст — канали, фільми, серіали, вибране та історію переглядів — із цього пристрою. Цю дію не можна скасувати.</string>
+    <string name="sources_delete_body">Це назавжди видалить «%1$s» і весь його вміст — канали, фільми, серіали, обране та історію переглядів — із цього пристрою. Цю дію не можна скасувати.</string>
     <string name="sources_delete_hint">Утримуйте OK на плейлисті, щоб побачити більше дій.</string>
     <string name="sources_options_body">Виберіть, що зробити з цим плейлистом.</string>
     <string name="sources_rename_title">Перейменувати плейлист</string>
@@ -615,7 +659,7 @@
     <string name="recording_error_low_space">Недостатньо місця на цьому накопичувачі</string>
     <string name="recording_error_hls">Цей потік ще не можна записати</string>
     <string name="recording_pick_volume_title">Запис на</string>
-    <string name="recording_volume_internal">Внутрішня пам\'ять</string>
+    <string name="recording_volume_internal">Внутрішня пам’ять</string>
     <string name="recording_volume_usb">USB-накопичувач</string>
     <string name="recording_volume_free">%1$s вільно</string>
     <string name="recording_reason_stream_lost">Потік втрачено</string>
@@ -639,7 +683,7 @@
     <string name="recordings_unavailable_generic">Підключіть накопичувач знову, щоб дивитися</string>
     <string name="recordings_missing">Файлу більше немає на накопичувачі</string>
     <string name="recordings_duration_approx">≈ %1$s</string>
-    <string name="recordings_parts">%1$d частин</string>
+    <string name="recordings_parts">Частин: %1$d</string>
     <string name="onboarding_stalker_title">Stalker Portal</string>
     <string name="onboarding_stalker_desc">URL порталу + MAC-адреса. Для порталів типу MAG, які ідентифікують вас за MAC.</string>
     <string name="onboarding_portal_url_label">URL порталу</string>
@@ -657,7 +701,7 @@
     <string name="settings_sub_size_desc">Розмір тексту субтитрів під час відтворення</string>
     <string name="settings_sub_style_title">Стиль</string>
     <string name="settings_sub_style_desc">Як субтитри малюються поверх відео</string>
-    <string name="settings_sub_style_box">Плашка</string>
+    <string name="settings_sub_style_box">Підкладка</string>
     <string name="settings_sub_style_outline">Контур</string>
     <string name="settings_sub_style_shadow">Тінь</string>
     <string name="settings_sub_color_title">Колір</string>
@@ -666,7 +710,7 @@
     <string name="settings_sub_font_desc">Шрифт субтитрів</string>
     <string name="settings_sub_font_default">Стандартний</string>
     <string name="player_autoplay_next_title">Далі</string>
-    <string name="player_autoplay_next_in">Наступний епізод за %1$d с…</string>
+    <string name="player_autoplay_next_in">Наступна серія за %1$d с…</string>
     <string name="player_autoplay_play_now">Відтворити зараз</string>
     <string name="settings_autoplay_5s">5s</string>
     <string name="settings_autoplay_10s">10s</string>
@@ -687,7 +731,7 @@
     <string name="player_previous_program">Попередня програма</string>
     <string name="player_next_program">Наступна програма</string>
     <string name="support_dialog_title">Подобається ARE iptv?</string>
-    <string name="support_dialog_body">Його створює й підтримує одна людина вечорами та у вихідні. Без підписки, без реклами, без стеження за тим, що ви дивитесь — просто застосунок, який працює. Якщо він заслужив місце на вашому телевізорі, кава допоможе йому жити далі.</string>
-    <string name="support_dialog_scan">Скануйте, щоб відкрити на телефоні</string>
-    <string name="support_dialog_visit">Або завітайте на</string>
+    <string name="support_dialog_body">Його створює й підтримує одна людина, вечорами та у вихідні. Без підписки, без реклами, без стеження за тим, що ви дивитеся — просто застосунок, який працює. Якщо він заслужив місце на вашому телевізорі, кава допоможе мені розвивати його далі.</string>
+    <string name="support_dialog_scan">Відскануйте, щоб відкрити на телефоні</string>
+    <string name="support_dialog_visit">Або відкрийте:</string>
 </resources>
