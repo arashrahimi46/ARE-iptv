@@ -2,10 +2,7 @@ package com.arashrahimi46.iptv.ui.theme
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -20,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.delay
 import androidx.compose.ui.focus.FocusRequester
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import androidx.compose.ui.Modifier
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
@@ -302,9 +300,15 @@ fun rememberPlaybackFocusRequester(savedId: Long?, itemId: Long, onConsumed: () 
 }
 
 /**
- * Convenience wrapper composing [tvFocusable] with a click target, for the
- * common "focusable tile/card/button" pattern used across the media,
- * category and guide components.
+ * Convenience wrapper composing [AreInteractive] with D-pad focus + a click target, for the
+ * common "focusable tile/card/button" pattern used across the media, category and guide
+ * components.
+ *
+ * A thin D-pad-aware layer, not a second copy of the glass rendering: the fill/border/shadow/
+ * scale-on-interaction logic all live in [AreInteractive] (`:core`), shared with `:mobile`. What
+ * stays here, TV-only, is registering the D-pad focus target ([Modifier.focusable]), the
+ * `DPAD_CENTER` key handling `combinedClickable` alone doesn't cover, and the accent focus ring --
+ * none of which apply to a touch surface.
  */
 @Composable
 fun TvFocusable(
@@ -335,58 +339,50 @@ fun TvFocusable(
     content: @Composable BoxScope.(focused: Boolean, pressed: Boolean) -> Unit,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
-    val pressed by interactionSource.collectIsPressedAsState()
     val motionT = AreIptvTheme.motion
     val ringAlphaOverlay = animateFloatAsState(
         targetValue = if (focused) 1f else 0f,
         animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeOut),
         label = "tvFocusRingOverlay",
     )
-    Box(
-        modifier = modifier
-            .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale, drawRing = false)
-            .then(if (shadowElevation > 0.dp) Modifier.softShadow(shape) else Modifier)
-            .then(
-                if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
-                else Modifier.background(backgroundColor, shape),
-            )
-            .then(
-                when {
-                    borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)
-                    borderColor != null -> Modifier.border(1.dp, borderColor, shape)
-                    else -> Modifier
+    Box(modifier = modifier) {
+        AreInteractive(
+            onClick = onClick,
+            modifier = Modifier
+                .matchParentSize()
+                .focusable(interactionSource = interactionSource)
+                // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
+                // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
+                // Fire TV remote's physical OK/Select button actually sends. Confirmed missing
+                // via a real device-emulator D-pad test (not an emulator artifact): DPAD_CENTER
+                // alone did nothing on a fully-focused, freshly-launched card across multiple
+                // isolated repro attempts, while KEYCODE_ENTER worked every time. Without this,
+                // nothing in the app would be selectable with a real remote's OK button -- fixed
+                // once, here, so every TvFocusable-based component in the library inherits it.
+                // We resolve short vs. long press from the native event's own down->up span so
+                // DPAD_CENTER gets long-press too.
+                .onKeyEvent { keyEvent ->
+                    if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
+                        val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
+                        if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
+                        true
+                    } else {
+                        // Swallow DirectionCenter KeyDown so the platform doesn't also fire a
+                        // synthetic click on release -- we own the up->down timing above.
+                        enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
+                    }
                 },
-            )
-            .combinedClickable(
-                interactionSource = interactionSource,
-                indication = null,
-                enabled = enabled,
-                onClick = onClick,
-                onLongClick = onLongClick,
-            )
-            // combinedClickable() above handles Enter/NumPadEnter (incl. long-press) but NOT
-            // Key.DirectionCenter -- the key every real Android TV / Fire TV remote's
-            // physical OK/Select button actually sends. Confirmed missing via a real
-            // device-emulator D-pad test (not an emulator artifact): DPAD_CENTER alone
-            // did nothing on a fully-focused, freshly-launched card across multiple
-            // isolated repro attempts, while KEYCODE_ENTER worked every time. Without
-            // this, nothing in the app would be selectable with a real remote's OK
-            // button -- fixed once, here, so every TvFocusable-based component in the
-            // library inherits it. We resolve short vs. long press from the native
-            // event's own down->up span so DPAD_CENTER gets long-press too.
-            .onKeyEvent { keyEvent ->
-                if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
-                    val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
-                    if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
-                    true
-                } else {
-                    // Swallow DirectionCenter KeyDown so the platform doesn't also fire a
-                    // synthetic click on release -- we own the up->down timing above.
-                    enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
-                }
-            },
-    ) {
-        content(focused, pressed)
+            interactionSource = interactionSource,
+            shape = shape,
+            backgroundColor = backgroundColor,
+            backgroundBrush = backgroundBrush,
+            shadowElevation = shadowElevation,
+            borderColor = borderColor,
+            borderBrush = borderBrush,
+            enabled = enabled,
+            onLongClick = onLongClick,
+            disableScale = disableScale,
+        ) { f, p -> content(f, p) }
         // The focus ring, as a SIBLING of the content with its own graphics layer -- see the
         // `drawRing` note on [tvFocusable] for why this is not a modifier on the Box above.
         Box(
