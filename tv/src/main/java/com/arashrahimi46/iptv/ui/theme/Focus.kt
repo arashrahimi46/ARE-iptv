@@ -283,13 +283,35 @@ fun TvFocusable(
     content: @Composable BoxScope.(focused: Boolean, pressed: Boolean) -> Unit,
 ) {
     val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
     val motionT = AreIptvTheme.motion
     val ringAlphaOverlay = animateFloatAsState(
         targetValue = if (focused) 1f else 0f,
         animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeOut),
         label = "tvFocusRingOverlay",
     )
-    Box(modifier = modifier) {
+    // The interaction scale lives HERE, on the outer Box, not inside AreInteractiveSurface -- the
+    // ring below is a matchParentSize() sibling of the surface, so a scale applied inside the
+    // surface grows the content while leaving the ring at 1.0x, and the ring reads as the wrong
+    // size around every focused control. Pre-:core-migration this was one Box carrying both.
+    val targetScale = when {
+        disableScale -> 1f
+        pressed -> motionT.pressScale
+        focused -> motionT.focusScale
+        else -> 1f
+    }
+    val scaleState = animateFloatAsState(
+        targetValue = targetScale,
+        animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeEmph),
+        label = "tvFocusableScale",
+    )
+    Box(
+        modifier = modifier.graphicsLayer {
+            val sc = scaleState.value
+            scaleX = sc
+            scaleY = sc
+        },
+    ) {
         // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
         // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
         // (the ring below is matchParentSize()) and collapses to zero width for any caller that
@@ -330,7 +352,8 @@ fun TvFocusable(
             borderBrush = borderBrush,
             enabled = enabled,
             onLongClick = onLongClick,
-            disableScale = disableScale,
+            // Always true: the scale is applied by the outer Box above so the ring scales with it.
+            disableScale = true,
         ) { f, p -> content(f, p) }
         // The focus ring, as a SIBLING of the content with its own graphics layer -- see the
         // `drawRing` note on [tvFocusable] for why this is not a modifier on the Box above.
@@ -377,13 +400,33 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
     content,
     ->
     val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
     val motion = AreIptvTheme.motion
     val ringAlpha = animateFloatAsState(
         targetValue = if (focused) 1f else 0f,
         animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeOut),
         label = "areInteractiveFocusRing",
     )
-    Box(modifier = modifier) {
+    // Scale on the outer Box, not inside the surface -- see the note in TvFocusable: the ring is a
+    // matchParentSize() sibling, so scaling only the surface leaves the ring at the wrong size.
+    val targetScale = when {
+        disableScale -> 1f
+        pressed -> motion.pressScale
+        focused -> motion.focusScale
+        else -> 1f
+    }
+    val scaleState = animateFloatAsState(
+        targetValue = targetScale,
+        animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeEmph),
+        label = "areInteractiveBindingScale",
+    )
+    Box(
+        modifier = modifier.graphicsLayer {
+            val sc = scaleState.value
+            scaleX = sc
+            scaleY = sc
+        },
+    ) {
         // See the identical note in TvFocusable: this must stay a normal (content-sizing) child,
         // not matchParentSize(), or the outer Box collapses to zero width whenever the caller
         // relies on wrap-content sizing (e.g. a non-`full` AreButton).
@@ -411,7 +454,8 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
             borderBrush = borderBrush,
             enabled = enabled,
             onLongClick = onLongClick,
-            disableScale = disableScale,
+            // Always true: the scale is applied by the outer Box above so the ring scales with it.
+            disableScale = true,
             content = content,
         )
         Box(
