@@ -55,7 +55,13 @@ ksp {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material.icons.extended)
+    // Are* components ported into :core in the Step 3 migration still render text/glyphs via
+    // androidx.tv.material3.Text/Icon (unchanged from :tv -- see the components' own files for
+    // why: only the focus/interaction layer was rebuilt on AreInteractive this step, not this).
+    implementation(libs.androidx.tv.material)
     implementation(libs.coil.compose)
     implementation(libs.backdrop)
     implementation(libs.androidx.core.ktx)

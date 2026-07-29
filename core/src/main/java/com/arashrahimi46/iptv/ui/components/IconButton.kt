@@ -20,9 +20,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.ControlTone
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvRadius
 import com.arashrahimi46.iptv.ui.theme.controlSkin
 
 /** IconButton variants, mirrors IconButton.jsx: solid | glass | ghost. */
@@ -68,9 +68,8 @@ fun AreIconButton(
     onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val colors = AreIptvTheme.colors
     val dims = dimsFor(size)
-    val shape = RoundedCornerShape(AreIptvTheme.radius.md)
+    val shape = RoundedCornerShape(LocalAreIptvRadius.current.md)
 
     // Same single funnel as AreButton (ControlSkin.kt). The Glass variant no longer decides its own
     // density: whether it is a full glass surface or a nested tint is answered by LocalOnGlass, i.e.
@@ -86,7 +85,7 @@ fun AreIconButton(
     )
     val resolvedContentColor = contentTint ?: skin.content
 
-    TvFocusable(
+    AreInteractive(
         onClick = onClick,
         modifier = modifier.size(dims),
         interactionSource = interactionSource,
@@ -113,13 +112,11 @@ fun AreIconButton(
 @Preview(widthDp = 500, heightDp = 160, showBackground = true)
 @Composable
 private fun AreIconButtonPreview() {
-    AreIptvTheme {
-        Box(Modifier.padding(24.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                AreIconButton(Icons.Filled.Search, "Search", onClick = {}, variant = AreIconButtonVariant.Solid)
-                AreIconButton(Icons.Filled.Settings, "Settings", onClick = {}, variant = AreIconButtonVariant.Glass, active = true)
-                AreIconButton(Icons.Filled.Search, "Search", onClick = {}, variant = AreIconButtonVariant.Ghost)
-            }
+    Box(Modifier.padding(24.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            AreIconButton(Icons.Filled.Search, "Search", onClick = {}, variant = AreIconButtonVariant.Solid)
+            AreIconButton(Icons.Filled.Settings, "Settings", onClick = {}, variant = AreIconButtonVariant.Glass, active = true)
+            AreIconButton(Icons.Filled.Search, "Search", onClick = {}, variant = AreIconButtonVariant.Ghost)
         }
     }
 }

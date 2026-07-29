@@ -246,6 +246,68 @@ fun Modifier.glassSurface(
 }
 
 /**
+ * Symmetric accent glow matching the design system's box-shadow glow tokens
+ * (`--focus-glow-tight`, `--glow-accent`, `--glow-live`, `--glow-smart` — all
+ * `0 0 <blur>`, i.e. zero offset). Draws the [shape]'s outline several times
+ * with growing stroke width and fading alpha so the halo hugs the edge and
+ * fades outward — no directional offset, no boxy backplate. Place this BEFORE
+ * any opaque `.background()` in the chain so the element's fill covers the
+ * glow's inner half and only the outer halo shows.
+ */
+fun Modifier.tvGlow(
+    color: Color,
+    shape: Shape,
+    spread: Dp = 7.dp,
+    alpha: Float = 1f,
+): Modifier = if (alpha <= 0f) this else this.drawWithCache {
+    val spreadPx = spread.toPx()
+    // A thin core stroke that the Gaussian blur softens -- NOT a fat stroke. A wide
+    // stroke (previously == spread) made the halo huge and bleed onto neighbouring
+    // text. Keep the core ~2dp; `spread` controls the blur radius (the softness).
+    val strokePx = 2.dp.toPx()
+    // Push the glow path OUTWARD so the blurred stroke sits just outside the shape
+    // edge instead of straddling it -- otherwise the inner half bleeds INTO the
+    // element ("shadow came into the button"). Any faint inner tail is covered by
+    // the element's own opaque background (drawn on top).
+    val out = spreadPx * 0.5f
+    val path = Path().apply {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
+            is Outline.Rounded -> {
+                val rr = o.roundRect
+                addRoundRect(
+                    RoundRect(
+                        left = rr.left - out,
+                        top = rr.top - out,
+                        right = rr.right + out,
+                        bottom = rr.bottom + out,
+                        cornerRadius = CornerRadius(rr.topLeftCornerRadius.x + out, rr.topLeftCornerRadius.y + out),
+                    ),
+                )
+            }
+            is Outline.Rectangle -> addRect(o.rect.inflate(out))
+            is Outline.Generic -> addPath(o.path)
+        }
+    }.asAndroidPath()
+    // One real Gaussian blur (BlurMaskFilter) = one smooth halo (no banded layered
+    // strokes). minSdk 36 -> fully hardware-accelerated.
+    val paint = NativePaint().apply {
+        isAntiAlias = true
+        style = NativePaint.Style.STROKE
+        strokeWidth = strokePx
+        this.color = color.copy(alpha = (0.38f * alpha).coerceIn(0f, 1f)).toArgb()
+        maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
+    }
+    // PERF: drawWithCache, not drawBehind -- same pixels, built once per size/shape instead of per
+    // draw pass. As drawBehind this allocated a Path, a NativePaint AND a BlurMaskFilter on every
+    // single draw, so each of these badges/dots/switches churned three objects per frame and missed
+    // HWUI's paint cache. [alpha] is a plain parameter, so a change to it recreates the modifier and
+    // invalidates this cache -- correctness is preserved without reading it at draw time.
+    onDrawBehind {
+        drawIntoCanvas { canvas -> canvas.nativeCanvas.drawPath(path, paint) }
+    }
+}
+
+/**
  * PERF NOTE for every modifier in this file: these are plain `@Composable` extensions, NOT
  * `Modifier.composed {}`. `composed` modifiers are materialized per layout node, cannot be
  * equality-compared, and re-execute whenever their element recomposes -- it is the documented way to

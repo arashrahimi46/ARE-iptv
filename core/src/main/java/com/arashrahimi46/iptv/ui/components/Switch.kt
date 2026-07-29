@@ -23,12 +23,12 @@ import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion
 import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
-import com.arashrahimi46.iptv.ui.theme.tvGlow
 
 /** Switch — on/off toggle (theme, parental lock, PiP, autoplay) (Switch.jsx). */
 @Composable
@@ -39,8 +39,8 @@ fun AreSwitch(
     disabled: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val colors = AreIptvTheme.colors
-    val motion = AreIptvTheme.motion
+    val colors = LocalAreIptvColors.current
+    val motion = LocalAreIptvMotion.current
     // ON = accent lens track; OFF = glass track (§6.1: was an opaque surface3 slug punched through
     // the glass Settings panel -- the canary defect of the spec). The ON state used to also carry a
     // `tvGlow` halo -- dropped: on a list of switches it read as a smudge around every enabled row,
@@ -53,7 +53,7 @@ fun AreSwitch(
         label = "switchThumb",
     )
 
-    TvFocusable(
+    AreInteractive(
         onClick = { if (!disabled) onCheckedChange(!checked) },
         // P0.3: Role.Switch + toggled state so TalkBack announces this as a switch and
         // reads its on/off state -- previously just a focusable/clickable Box with no
@@ -89,9 +89,7 @@ fun AreSwitch(
 @Preview(widthDp = 300, heightDp = 140, showBackground = true)
 @Composable
 private fun AreSwitchPreview() {
-    AreIptvTheme {
-        Box(Modifier.padding(24.dp)) {
-            AreSwitch(checked = true, onCheckedChange = {})
-        }
+    Box(Modifier.padding(24.dp)) {
+        AreSwitch(checked = true, onCheckedChange = {})
     }
 }

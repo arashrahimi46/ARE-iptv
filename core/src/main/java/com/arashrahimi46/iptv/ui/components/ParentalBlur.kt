@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import com.arashrahimi46.iptv.data.settings.AdultContentFilter
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors
 import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
 
 /**
@@ -66,7 +66,7 @@ fun ParentalLockOverlay(shape: Shape = RoundedCornerShape(0.dp)) {
         Icon(
             imageVector = Icons.Filled.Lock,
             contentDescription = null,
-            tint = AreIptvTheme.colors.textPrimary,
+            tint = LocalAreIptvColors.current.textPrimary,
             modifier = Modifier.size(28.dp),
         )
     }
