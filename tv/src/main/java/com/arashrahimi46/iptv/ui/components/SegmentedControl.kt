@@ -119,15 +119,13 @@ fun <T> AreSegmentedControl(
                     }
                     .fillMaxHeight()
                     .then(
-                        if (lensSkin.fillBrush != null) Modifier.background(lensSkin.fillBrush, pill)
-                        else Modifier.background(lensSkin.fillColor, pill),
+                        lensSkin.fillBrush?.let { Modifier.background(it, pill) }
+                            ?: Modifier.background(lensSkin.fillColor, pill),
                     )
                     .then(
-                        when {
-                            lensSkin.borderBrush != null -> Modifier.border(1.dp, lensSkin.borderBrush, pill)
-                            lensSkin.borderColor != null -> Modifier.border(1.dp, lensSkin.borderColor, pill)
-                            else -> Modifier
-                        },
+                        lensSkin.borderBrush?.let { Modifier.border(1.dp, it, pill) }
+                            ?: lensSkin.borderColor?.let { Modifier.border(1.dp, it, pill) }
+                            ?: Modifier,
                     ),
             )
         }

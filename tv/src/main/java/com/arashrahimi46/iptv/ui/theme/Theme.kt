@@ -10,14 +10,10 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
 
-val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
+// [AreIptvTypography] (Type.kt) stays in :tv -- it reads font resources (R.font.*) from :tv's
+// res/font, which :core has no equivalent of. Every other design token CompositionLocal
+// (LocalAreIptvColors/Spacing/Radius, LocalThemeIsDark) lives in :core's Theme.kt.
 val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
-val LocalAreIptvSpacing = staticCompositionLocalOf { AreIptvSpacingDefault }
-val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
-/** Effective dark/light state after resolving ThemeMode.SYSTEM against the device. Read this
- * (via [AreIptvTheme.isDark]) instead of the stored theme pref when a component needs to know which
- * mode is actually on screen (e.g. the per-mode accent picker). */
-val LocalThemeIsDark = staticCompositionLocalOf { true }
 
 /**
  * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /

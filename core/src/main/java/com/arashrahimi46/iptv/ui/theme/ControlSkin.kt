@@ -78,7 +78,7 @@ fun controlSkin(
      */
     selectable: Boolean = false,
 ): ControlSkin {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     val onGlass = LocalOnGlass.current
 
     // Disabled first: dimming fill and label by the same alpha collapses contrast in light mode (a

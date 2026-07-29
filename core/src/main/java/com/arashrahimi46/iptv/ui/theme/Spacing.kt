@@ -29,12 +29,12 @@ data class AreIptvSpacing(
 
     // Common sizing
     val sidebarWidth: Dp = 104.dp,
-    val sidebarWidthOpen: Dp = 183.dp,
+    val sidebarWidthOpen: Dp = 172.dp,
     // Floating-glass sidebar (SidebarStyle.FLOATING): a box inset off the screen edge, so it runs a
     // touch narrower than the flush rail and reserves box-width + 2×inset in the shell Row.
     val sidebarInset: Dp = 20.dp,
     val sidebarBoxWidth: Dp = 96.dp,
-    val sidebarBoxWidthOpen: Dp = 179.dp,
+    val sidebarBoxWidthOpen: Dp = 168.dp,
     val tilePosterWidth: Dp = 208.dp,
     val tilePosterHeight: Dp = 312.dp,
     val tileLandWidth: Dp = 320.dp,

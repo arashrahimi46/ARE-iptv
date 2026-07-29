@@ -68,7 +68,7 @@ val LocalAppBackdrop = staticCompositionLocalOf<Backdrop?> { null }
  */
 @Composable
 fun AmbientBackdrop(modifier: Modifier = Modifier) {
-    val colors = AreIptvTheme.colors
+    val colors = LocalAreIptvColors.current
     val tier = LocalGlassTier.current
     val artwork by LocalAmbientArtwork.current
     val context = LocalContext.current

@@ -38,7 +38,7 @@ import kotlin.math.abs
  */
 @Composable
 fun Modifier.tileWash(shape: Shape, hue: Color): Modifier {
-    val alpha = AreIptvTheme.colors.tileWashAlpha
+    val alpha = LocalAreIptvColors.current.tileWashAlpha
     // PERF: a plain @Composable extension, not `composed {}` (which is per-node and unskippable --
     // see the note in Glass.kt), and the Brush is remembered so 40 visible tiles don't each mint a
     // fresh gradient on every recomposition.

@@ -179,7 +179,7 @@ fun Modifier.glassSurface(
     shadow: Boolean = true,
     sheer: Boolean = false,
 ): Modifier {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     val tier = LocalGlassTier.current
     val backdrop = LocalAppBackdrop.current
     // A sheer surface uses the much lighter fill on every path so the content behind shows through.
@@ -274,7 +274,7 @@ fun Modifier.glassSurface(
 /** The vertical "lit edge" gradient used by every glass surface and its border brush. */
 @Composable
 fun glassBorderBrush(): Brush {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     return remember(c.glassHighlight, c.borderGlass) {
         Brush.verticalGradient(listOf(c.glassHighlight, c.borderGlass))
     }
@@ -291,7 +291,7 @@ fun glassBorderBrush(): Brush {
  */
 @Composable
 fun accentGradientBrush(): Brush {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     // remember-ed like glassBorderBrush: this is on every primary button, chip and the brand mark,
     // so an unremembered factory minted a gradient + its list per call per recomposition.
     return remember(c.accentHover, c.accent) { Brush.verticalGradient(listOf(c.accentHover, c.accent)) }
@@ -304,7 +304,7 @@ fun accentGradientBrush(): Brush {
  */
 @Composable
 fun Modifier.glassChild(shape: Shape): Modifier {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     return this.background(c.glassChildTint, shape).border(1.dp, c.borderGlass, shape).clip(shape)
 }
 
@@ -315,7 +315,7 @@ fun Modifier.glassChild(shape: Shape): Modifier {
  */
 @Composable
 fun Modifier.glassTrack(shape: Shape): Modifier {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     return this
         .background(c.glassTrackTint, shape)
         .border(1.dp, glassBorderBrush(), shape)
@@ -340,7 +340,7 @@ fun Modifier.glassTrack(shape: Shape): Modifier {
  */
 @Composable
 fun Modifier.glassWell(shape: Shape): Modifier {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     val shadow = if (c.isDark) Color.Black.copy(alpha = 0.30f) else Color.Black.copy(alpha = 0.10f)
     return this
         .background(c.glassWellTint, shape)
@@ -362,7 +362,7 @@ fun Modifier.glassWell(shape: Shape): Modifier {
 /** [glassBorderBrush] inverted -- faint top, lit bottom. The hairline that reads as "recessed". */
 @Composable
 fun wellBorderBrush(): Brush {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     return remember(c.borderGlass, c.glassHighlight) { Brush.verticalGradient(listOf(c.borderGlass, c.glassHighlight)) }
 }
 
@@ -387,7 +387,7 @@ fun Modifier.glassLens(shape: Shape): Modifier =
 /** [glassLens] as a plain [Brush], for the [TvFocusable] `backgroundBrush` funnel. */
 @Composable
 fun accentLensBrush(): Brush {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     // remember-ed: glassLens calls this AND lensBorderBrush, and the sidebar's sliding selection
     // pill is a glassLens -- so every recomposition of the nav body was 2 gradients + 4 Color.copy.
     return remember(c.isDark, c.accentHover, c.accent) {
@@ -407,7 +407,7 @@ fun accentLensBrush(): Brush {
 /** The lens's rim -- a brighter, more saturated hairline than [glassBorderBrush]'s neutral one. */
 @Composable
 fun lensBorderBrush(): Brush {
-    val c = AreIptvTheme.colors
+    val c = LocalAreIptvColors.current
     return remember(c.isDark, c.accentHover, c.accent) {
         if (c.isDark) {
             Brush.verticalGradient(
@@ -431,4 +431,4 @@ fun lensBorderBrush(): Brush {
  * The hue cue lives in the lens FILL; the label doesn't have to carry it too.
  */
 @Composable
-fun lensContentColor(): Color = AreIptvTheme.colors.textPrimary
+fun lensContentColor(): Color = LocalAreIptvColors.current.textPrimary
