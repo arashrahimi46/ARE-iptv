@@ -108,13 +108,14 @@ import kotlinx.coroutines.withContext
 private val SettingsBadge = setOf("settings")
 
 /**
- * Minimum time between two accepted directional presses -- ~8 steps/second held down.
+ * Minimum time between two accepted directional presses -- ~7 steps/second held down.
  *
  * Matched to how long a bring-into-view scroll takes to land, so every step is visibly its own step.
  * Raising it makes long lists tedious; lowering it starts clipping the scroll animation and the
- * "jump" comes back.
+ * "jump" comes back. Tuned by feel on the XL95: 120ms still read as jumping on Home and Settings,
+ * whose rows animate longer than a rail row does; 180ms overshot and made long lists a crawl.
  */
-private const val DPAD_STEP_MS = 120L
+private const val DPAD_STEP_MS = 140L
 
 /** The four D-pad directions the gate below paces. OK/Back/media keys are never gated. */
 private val DpadDirections = intArrayOf(
