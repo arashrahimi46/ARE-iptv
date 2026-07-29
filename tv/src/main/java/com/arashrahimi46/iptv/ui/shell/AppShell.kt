@@ -91,28 +91,26 @@ fun AreIptvAppShell(
         if (contentFocusRequests > 0) contentFocus.requestFocusWhenReady()
     }
 
-    // Nav is SEQUENCED, not simultaneous: pick an item -> the rail closes on its own -> only then does
-    // the new screen mount and take focus.
+    // Nav is CONCURRENT: picking an item swaps the screen on the very same frame as the key press,
+    // and the rail's collapse tween runs alongside the destination fading in.
     //
-    // Both halves used to fire in the same frame, and on a TV SoC they are wildly mismatched: the
-    // collapse is ~200ms of nearly free frames (one empty animating node -- see AreSidebarNav), while
-    // mounting a screen is 100-300ms of composition, measure and image work on that same main thread.
-    // The animation always lost. It froze part-closed, the expensive frame landed, and the rail
-    // snapped shut -- read by the user as "the sidebar animation is laggy" when it was really the page
-    // load stepping on it. Neither is slow; they were just running on top of each other.
+    // It used to be sequenced -- raise `collapseNow`, wait out the ~220ms tween, and only then call
+    // onNavSelect -- so that the collapse animation never had to share a frame with the cost of
+    // mounting a screen. That bought a smoother 220ms of sidebar at the price of the whole app being
+    // unresponsive for it: with the NavHost's own 150ms cross-fade on top, nothing was focusable for
+    // ~370ms after the press, which reads as a dead remote. Responsiveness wins over a clean tween:
+    // the destination now starts composing immediately and the rail closes over the top of it.
     //
-    // So the rail is told to close FIRST (`collapseNow`, which overrides its focus-driven expansion so
-    // it closes while the row is still focused), and the swap waits out the tween. The cost is that
-    // the page starts loading ~200ms later; the gain is that neither phase is ever starved, so both
-    // look deliberate. Re-selection is ignored while a nav is in flight so a double-press can't queue
-    // two swaps.
+    // `collapseNow` is still raised (and held for the length of the tween) so the rail *animates*
+    // closed rather than snapping shut the instant focus leaves it -- it overrides the rail's
+    // focus-driven expansion, which matters because the row the user just pressed still holds focus
+    // for the frame or two it takes the content focus request below to land. By the time the flag
+    // drops, focus is in the content, so `expandedByFocus` is already false and the rail stays closed.
     var navigatingTo by remember { mutableStateOf<String?>(null) }
-    val navDelayMs = AreIptvTheme.motion.durBaseMs.toLong()
+    val navCollapseMs = AreIptvTheme.motion.durBaseMs.toLong()
     LaunchedEffect(navigatingTo) {
-        val id = navigatingTo ?: return@LaunchedEffect
-        delay(navDelayMs)
-        onNavSelect(id)
-        contentFocusRequests++
+        if (navigatingTo == null) return@LaunchedEffect
+        delay(navCollapseMs)
         navigatingTo = null
     }
 
@@ -157,7 +155,14 @@ fun AreIptvAppShell(
             // branch handles the inset (FLOATING) or flush edge (EDGE).
             AreSidebarNav(
                 active = activeNav,
-                onSelect = { id -> if (navigatingTo == null) navigatingTo = id },
+                // Navigate on the SAME frame as the press -- see the note on `navigatingTo`. The
+                // collapse flag and the focus handoff are raised in the same batch, so the
+                // destination mounts, the rail starts closing and focus starts moving together.
+                onSelect = { id ->
+                    navigatingTo = id
+                    onNavSelect(id)
+                    contentFocusRequests++
+                },
                 collapseNow = navigatingTo != null,
                 badgedIds = badgedNavIds,
                 style = sidebarStyle,

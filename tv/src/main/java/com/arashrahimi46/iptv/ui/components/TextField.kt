@@ -47,6 +47,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassWell
+import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.arashrahimi46.iptv.ui.theme.tvFocusable
 
 /**
@@ -86,14 +87,31 @@ fun AreTextField(
     if (activateOnClick) {
         var wasEditing by remember { mutableStateOf(false) }
         LaunchedEffect(editing) {
+            val cameFromEditing = wasEditing
+            // Recorded BEFORE the suspending focus handoff below, so a fast OK/Back pair (which
+            // cancels this effect mid-flight) can't leave the flag describing the wrong state.
+            wasEditing = editing
             when {
-                editing -> runCatching { fieldFocus.requestFocus() } // focus -> IME opens
-                wasEditing -> {
+                // The BasicTextField is composed in the SAME recomposition that flips `editing`, so
+                // its focus node is not attached yet on this frame -- a single un-retried
+                // requestFocus() throws and the request is lost for good, which is how focus ended
+                // up nowhere (and then on the tab row above). requestFocusWhenReady retries across
+                // the swap; no re-assert, because by then the user may legitimately have moved on.
+                editing -> {
+                    // focus -> IME opens
+                    if (!fieldFocus.requestFocusWhenReady(attempts = 12, gapMs = 16L, reassertAfterMs = 0L)) {
+                        // Never leave the field claiming to be in edit mode with nothing focused:
+                        // fall back to the row, which re-enters this effect down the `wasEditing`
+                        // branch and hides any keyboard that did manage to open.
+                        editing = false
+                    }
+                }
+                cameFromEditing -> {
                     keyboard?.hide()
-                    runCatching { rowFocus.requestFocus() } // land back on the row, not the top of the list
+                    // land back on the row, not the top of the list
+                    rowFocus.requestFocusWhenReady(attempts = 12, gapMs = 16L, reassertAfterMs = 0L)
                 }
             }
-            wasEditing = editing
         }
     }
 
@@ -108,8 +126,8 @@ fun AreTextField(
             Text(text = label, style = AreIptvTheme.typography.label, color = colors.textSecondary)
             Box(Modifier.height(8.dp))
         }
-        // When [activateOnClick] and not editing, the ROW owns the focusable and OK enters edit
-        // mode; otherwise the BasicTextField owns focus (original always-editable behavior).
+        // When [activateOnClick] and not editing, the ROW shows the value read-only and OK enters
+        // edit mode; otherwise the BasicTextField renders (original always-editable behavior).
         val rowOwnsFocus = activateOnClick && !editing
         Row(
             modifier = Modifier
@@ -121,12 +139,25 @@ fun AreTextField(
                     shape = shape,
                     glowColor = if (error != null) colors.danger else colors.focusRing,
                     disableScale = true,
-                    ownsFocusable = rowOwnsFocus,
+                    // In tap-to-edit mode the row is focusable ALWAYS, editing or not. It used to be
+                    // `activateOnClick && !editing`, which removed the focus node that was holding
+                    // focus in the very recomposition that composed the BasicTextField: for a frame
+                    // nothing was focused, Compose cleared focus to the root, and the next resolution
+                    // grabbed the first focusable in the shell's content group -- on Search, the
+                    // segmented-control pills above the field. Keeping the row focusable means focus
+                    // never leaves this subtree; it just moves down into the field and back out.
+                    // (The always-editable variant still lets the BasicTextField own the only focus
+                    // node -- see the `ownsFocusable` docs on tvFocusable.)
+                    ownsFocusable = activateOnClick,
                 )
                 .then(
-                    if (rowOwnsFocus) Modifier.onKeyEvent { ev ->
+                    // Structurally unconditional for the lifetime of the field (`activateOnClick` is
+                    // fixed per call site) -- gating this on `editing` would change the modifier
+                    // chain across the very transition we are trying to keep stable.
+                    if (activateOnClick) Modifier.onKeyEvent { ev ->
                         val isSelect = ev.key == Key.DirectionCenter || ev.key == Key.Enter || ev.key == Key.NumPadEnter
                         when {
+                            editing -> false // the field itself owns keys while editing
                             isSelect && ev.type == KeyEventType.KeyUp -> { editing = true; true }
                             // Swallow the SELECT KeyDown so the platform doesn't also synthesize a click.
                             isSelect && ev.type == KeyEventType.KeyDown -> true

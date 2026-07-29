@@ -413,16 +413,30 @@ private const val LONG_PRESS_MS = 400L
  * attached, [FocusRequester.requestFocus] throws and the request is silently lost — leaving focus
  * parked on the sidebar, which is exactly the "screen looks dead until you press RIGHT" symptom.
  *
- * Gives up after [maxFrames] rather than looping forever, so a screen whose target never appears
- * (an empty catalogue, say) simply leaves focus where it was instead of spinning.
+ * Gives up after [attempts] rather than looping forever, so a screen whose target never appears
+ * (an empty catalogue, say) simply leaves focus where it was instead of spinning. Returns whether
+ * the request was ever granted, so a caller that put the UI into a state which REQUIRES this focus
+ * (e.g. [com.arashrahimi46.iptv.ui.components.AreTextField]'s edit mode) can undo it rather than
+ * leave the user stranded with nothing focused.
+ *
+ * @param reassertAfterMs re-claim focus once more this long after the first grant; 0 disables it.
  */
-suspend fun FocusRequester.requestFocusWhenReady(attempts: Int = 20, gapMs: Long = 40L) {
+suspend fun FocusRequester.requestFocusWhenReady(
+    attempts: Int = 20,
+    gapMs: Long = 40L,
+    reassertAfterMs: Long = SETTLE_MS,
+): Boolean {
     var granted = false
-    repeat(attempts) {
+    // NOTE: a `for`/`break`, not `repeat { return@repeat }` -- that label returns from the lambda,
+    // i.e. it CONTINUES the loop, so a granted request kept re-requesting for the full
+    // attempts*gapMs (800ms by default). On a nav that meant focus was yanked back to the
+    // destination's entry point for most of a second, undoing every D-pad step the user made in
+    // the meantime -- the opposite of the "screen looks dead" symptom this exists to fix.
+    for (attempt in 0 until attempts) {
         withFrameNanos { }
         if (runCatching { requestFocus() }.isSuccess) {
             granted = true
-            return@repeat
+            break
         }
         delay(gapMs)
     }
@@ -430,10 +444,11 @@ suspend fun FocusRequester.requestFocusWhenReady(attempts: Int = 20, gapMs: Long
     // sidebar row the user just clicked takes focus back afterwards as the tab transition completes
     // -- so a single successful request leaves focus parked on the sidebar anyway. Claiming it a
     // second time, late, is what actually makes the content focused.
-    if (granted) {
-        delay(SETTLE_MS)
+    if (granted && reassertAfterMs > 0) {
+        delay(reassertAfterMs)
         runCatching { requestFocus() }
     }
+    return granted
 }
 
 /** Long enough for the tab transition and the sidebar's collapse animation to finish. */

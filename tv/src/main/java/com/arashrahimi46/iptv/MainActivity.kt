@@ -108,14 +108,43 @@ import kotlinx.coroutines.withContext
 private val SettingsBadge = setOf("settings")
 
 /**
- * Minimum time between two accepted directional presses -- ~7 steps/second held down.
+ * Auto-repeat pacing for a HELD direction key, as an interval between accepted repeats.
  *
- * Matched to how long a bring-into-view scroll takes to land, so every step is visibly its own step.
- * Raising it makes long lists tedious; lowering it starts clipping the scroll animation and the
- * "jump" comes back. Tuned by feel on the XL95: 120ms still read as jumping on Home and Settings,
- * whose rows animate longer than a rail row does; 180ms overshot and made long lists a crawl.
+ * The interval ramps with how long the key has been down, interpolated continuously between these
+ * three anchors so the list visibly picks up speed instead of stepping between gears:
+ *
+ *   held 0.0s -> 125ms (~8 steps/s)   precise nudging, one item at a time
+ *   held 1.0s ->  50ms (~20 steps/s)  browsing
+ *   held 2.5s ->  25ms (~40 steps/s)  crossing a long catalogue
+ *
+ * The slow anchor is matched to how long a bring-into-view scroll takes to land, so the first
+ * several steps of a hold are each visibly their own step -- that was the whole point of the
+ * original flat 140ms gate, and it is preserved for exactly the case it was tuned for.
  */
-private const val DPAD_STEP_MS = 140L
+private const val DPAD_STEP_SLOW_MS = 125f
+private const val DPAD_STEP_MID_MS = 50f
+private const val DPAD_STEP_FAST_MS = 25f
+
+/** Hold durations (ms) at which the intervals above are reached. */
+private const val DPAD_RAMP_MID_MS = 1000f
+private const val DPAD_RAMP_FAST_MS = 2500f
+
+private fun dpadLerp(from: Float, to: Float, fraction: Float): Float = from + (to - from) * fraction
+
+/** The accepted-repeat interval for a key that has been held for [heldMs]. */
+private fun dpadRepeatIntervalMs(heldMs: Long): Long {
+    val t = heldMs.coerceAtLeast(0L).toFloat()
+    val ms = when {
+        t < DPAD_RAMP_MID_MS -> dpadLerp(DPAD_STEP_SLOW_MS, DPAD_STEP_MID_MS, t / DPAD_RAMP_MID_MS)
+        t < DPAD_RAMP_FAST_MS -> dpadLerp(
+            DPAD_STEP_MID_MS,
+            DPAD_STEP_FAST_MS,
+            (t - DPAD_RAMP_MID_MS) / (DPAD_RAMP_FAST_MS - DPAD_RAMP_MID_MS),
+        )
+        else -> DPAD_STEP_FAST_MS
+    }
+    return ms.toLong()
+}
 
 /** The four D-pad directions the gate below paces. OK/Back/media keys are never gated. */
 private val DpadDirections = intArrayOf(
@@ -129,39 +158,65 @@ class MainActivity : AppCompatActivity() {
     /** Uptime of the last accepted directional key; 0 until the first one. */
     private var lastDpadStepMs = 0L
 
+    /** The direction key currently being held, or [KeyEvent.KEYCODE_UNKNOWN] when none is. */
+    private var heldDpadKeyCode = KeyEvent.KEYCODE_UNKNOWN
+
     /**
-     * Paces D-pad navigation to ONE step per [DPAD_STEP_MS], dropping everything in between.
+     * Paces the AUTO-REPEAT of a HELD direction key, dropping the repeats in between. A fresh
+     * discrete press is never gated.
      *
      * A TV remote's auto-repeat (~20/s, and bursts much faster) moves focus far more often than a
      * step can be *seen*. Compose moves focus once per event regardless, and on a scrolling screen
-     * each move retargets the in-flight bring-into-view animation -- so six quick presses on Home
-     * collapse into one big scroll teleport instead of six visible steps. That is the reported
-     * "it jumps" and "it tries to handle them all at once".
+     * each move retargets the in-flight bring-into-view animation -- so a held key collapses into
+     * one big scroll teleport instead of a run of visible steps. That is the reported "it jumps"
+     * and "it tries to handle them all at once".
      *
-     * 120ms is the step, not a frame. An earlier version of this gated on the Choreographer frame
+     * The step is a duration, not a frame. An earlier version gated on the Choreographer frame
      * instead, which sounds equivalent and is not: once the sidebar frost was removed frames fell to
      * ~6.6ms, so the gate reopened every vsync and dropped nothing at all -- verified on the XL95,
      * where a true back-to-back burst of six presses still moved six rails. A frame gate only stops
      * input running ahead of a *janking* renderer; it cannot pace a step to the scroll animation,
      * because the animation is many frames long. This is what the pacing has to match.
      *
-     * The cadence is deliberately STEADY, with no acceleration on a long hold: a constant rhythm is
-     * what lets you stop exactly on the item you want, and overshoot was the original complaint.
-     * A single isolated press is never delayed -- the gate is open whenever 120ms have passed, so
-     * this adds no latency to ordinary navigation, only to bursts.
+     * Held down, the cadence ACCELERATES -- see [dpadRepeatIntervalMs]. A steady cadence keeps the
+     * first steps precise but makes a 400-channel list a crawl; ramping keeps the precision of the
+     * first second and then lets the list fly. Hold time is taken from the event's own
+     * `downTime` (the kernel's, not ours), so it is immune to dropped repeats and to our own
+     * dispatch latency.
      *
-     * Extra presses are DROPPED, not queued: queueing preserves every press but lets focus keep
-     * travelling after the user has stopped, which reads as lag rather than as precision.
+     * A NEW key-down -- `repeatCount == 0`, or simply a different direction from the one being held
+     * -- ALWAYS passes through immediately and resets the ramp. The gate used to be a flat
+     * activity-global interval applied to every press, so selecting a tab with LEFT/RIGHT and then
+     * pressing DOWN within 140ms silently swallowed the DOWN: the reported "I have to press it
+     * twice". Only repeats of an already-held key are ever dropped now.
      *
-     * ACTION_UP is never gated (focus travel is driven by ACTION_DOWN) and neither is DPAD_CENTER --
+     * Extra repeats are DROPPED, not queued: queueing preserves every one but lets focus keep
+     * travelling after the user has let go, which reads as lag rather than as precision.
+     *
+     * ACTION_UP is never gated (focus travel is driven by ACTION_DOWN, and there are KeyUp-driven
+     * handlers in TvFocusable and AreTextField) and neither is DPAD_CENTER, Back or any media key --
      * [com.arashrahimi46.iptv.ui.theme.TvFocusable] resolves short vs long press from its own
      * down->up span, so swallowing either half would break OK entirely.
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode in DpadDirections) {
-            val now = SystemClock.uptimeMillis()
-            if (now - lastDpadStepMs < DPAD_STEP_MS) return true
-            lastDpadStepMs = now
+        if (event.keyCode in DpadDirections) {
+            when (event.action) {
+                KeyEvent.ACTION_DOWN -> {
+                    val now = SystemClock.uptimeMillis()
+                    if (event.repeatCount == 0 || event.keyCode != heldDpadKeyCode) {
+                        // Fresh press (or a change of direction): always accepted, ramp restarts.
+                        heldDpadKeyCode = event.keyCode
+                    } else {
+                        val heldMs = event.eventTime - event.downTime
+                        if (now - lastDpadStepMs < dpadRepeatIntervalMs(heldMs)) return true
+                    }
+                    lastDpadStepMs = now
+                }
+                // Releasing the key drops the cadence back to the slow anchor for the next hold.
+                KeyEvent.ACTION_UP -> if (event.keyCode == heldDpadKeyCode) {
+                    heldDpadKeyCode = KeyEvent.KEYCODE_UNKNOWN
+                }
+            }
         }
         return super.dispatchKeyEvent(event)
     }
