@@ -9,6 +9,7 @@
          translation copied into every values-*/strings.xml below): :mobile can no longer
          reference :tv's R class directly since :mobile depends on :core, not :tv (see
          core/build.gradle.kts's top comment for why). -->
+    <string name="brand_name">ARE iptv</string>
     <string name="nav_home">Home</string>
     <string name="nav_live_tv">Live TV</string>
     <string name="nav_movies">Movies</string>

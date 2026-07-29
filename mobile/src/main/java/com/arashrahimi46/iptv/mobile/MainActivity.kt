@@ -30,6 +30,7 @@ import com.arashrahimi46.iptv.mobile.ui.nav.AppBottomBar
 import com.arashrahimi46.iptv.mobile.ui.nav.AppNavHost
 import com.arashrahimi46.iptv.mobile.ui.nav.isPlayerRoute
 import com.arashrahimi46.iptv.mobile.ui.onboarding.OnboardingScreen
+import com.arashrahimi46.iptv.mobile.ui.splash.MobileSplashScreen
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 
 class MainActivity : ComponentActivity() {
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
                         hasSource = repository.hasAnySource()
                     }
                     when (hasSource) {
-                        null -> Unit // splash-equivalent blank frame while the DB is checked
+                        null -> MobileSplashScreen()
                         false -> OnboardingScreen(onDone = { hasSource = true })
                         true -> {
                             val navController = rememberNavController()
