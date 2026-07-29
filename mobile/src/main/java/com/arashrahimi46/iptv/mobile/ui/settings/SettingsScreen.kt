@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
@@ -106,8 +108,13 @@ private fun <T> SettingsChoiceRow(title: String, desc: String?, options: List<T>
         supportingContent = {
             Column {
                 desc?.let { Text(it) }
+                // Horizontally scrollable so each chip keeps its natural (unconstrained) label width --
+                // a plain Row here squeezed chips to fit all options on one line, wrapping labels like
+                // "Spanish" letter-by-letter once there were more options than would fit.
                 Row(
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     options.forEach { option ->

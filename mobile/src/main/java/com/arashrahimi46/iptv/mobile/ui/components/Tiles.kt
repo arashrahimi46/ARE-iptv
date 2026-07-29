@@ -57,26 +57,33 @@ fun HomeRow(title: String, modifier: Modifier = Modifier, content: @Composable (
 val PosterTileWidth = 110.dp
 val ChannelTileWidth = 96.dp
 
-/** Heart toggle overlaid on a tile's poster/logo. The touch target is 48dp (padded around the
- * smaller glyph) even though the tile itself may be narrower, per the ≥48dp tap-target rule. */
+/** Heart toggle overlaid on a tile's poster/logo. The clickable bounds are 48dp per the ≥48dp
+ * tap-target rule; the visible circular badge stays smaller (32dp) so it doesn't dominate the
+ * tile artwork -- only the touch area, not the drawn glyph, needs to be 48dp. */
 @Composable
 fun FavoriteToggleButton(isFavorite: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.45f))
+            .size(48.dp)
             .clickable(onClick = onToggle),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-            contentDescription = stringResource(
-                if (isFavorite) R.string.detail_remove_from_favorites else R.string.detail_add_to_favorites,
-            ),
-            tint = androidx.compose.ui.graphics.Color.White,
-            modifier = Modifier.size(18.dp),
-        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.45f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = stringResource(
+                    if (isFavorite) R.string.detail_remove_from_favorites else R.string.detail_add_to_favorites,
+                ),
+                tint = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.size(18.dp),
+            )
+        }
     }
 }
 
