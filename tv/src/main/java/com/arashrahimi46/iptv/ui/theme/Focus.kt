@@ -290,10 +290,15 @@ fun TvFocusable(
         label = "tvFocusRingOverlay",
     )
     Box(modifier = modifier) {
+        // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
+        // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
+        // (the ring below is matchParentSize()) and collapses to zero width for any caller that
+        // doesn't pass an explicit width (e.g. a non-`full` AreButton), even though its own content
+        // (the label Row) has a perfectly good intrinsic size. Confirmed via an emulator screenshot
+        // regression: dialog action buttons rendered as an invisible sliver.
         AreInteractiveSurface(
             onClick = onClick,
             modifier = Modifier
-                .matchParentSize()
                 .focusable(interactionSource = interactionSource)
                 // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
                 // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
@@ -379,10 +384,12 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
         label = "areInteractiveFocusRing",
     )
     Box(modifier = modifier) {
+        // See the identical note in TvFocusable: this must stay a normal (content-sizing) child,
+        // not matchParentSize(), or the outer Box collapses to zero width whenever the caller
+        // relies on wrap-content sizing (e.g. a non-`full` AreButton).
         AreInteractiveSurface(
             onClick = onClick,
             modifier = Modifier
-                .matchParentSize()
                 .focusable(interactionSource = interactionSource)
                 // See the identical block in TvFocusable for why DPAD_CENTER needs its own
                 // handling on top of combinedClickable's Enter/NumPadEnter.
