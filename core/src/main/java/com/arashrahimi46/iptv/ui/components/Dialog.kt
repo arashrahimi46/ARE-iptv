@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -58,11 +62,21 @@ fun AreDialog(
             .background(Ink950.copy(alpha = if (blurred) 0.32f else 0.6f)),
         contentAlignment = Alignment.Center,
     ) {
+        // Bug fix: this Column had no scroll and no height cap, so a tall `content` (e.g. the
+        // 24-option AreLanguageSelector language picker) simply overflowed past the screen edge --
+        // the overflowing rows were never measured/placed at all, so they were not just invisible
+        // but permanently unreachable by D-pad focus search (confirmed on-device: Hungarian,
+        // Bulgarian, Persian and Arabic -- the last 4 of 24 -- could not be focused no matter how
+        // many DPAD_DOWN presses). Capping height to the screen and scrolling the overflow fixes
+        // both the visual clipping and the focus dead-end.
+        val maxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.8f
         Column(
             modifier = Modifier
                 .widthIn(max = width)
+                .heightIn(max = maxHeight)
                 .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
-                .padding(AreIptvTheme.spacing.sp8),
+                .padding(AreIptvTheme.spacing.sp8)
+                .verticalScroll(rememberScrollState()),
         ) {
             // The card is a glass surface, so everything inside it is a nested child (§6): controls
             // switch to tint + hairline instead of laying a second glass fill on the panel, and the
