@@ -1035,3 +1035,52 @@ So of the ~107 ms: **Coil's `AsyncImage` is ~29 ms (27 %)**, the rest of PosterT
 Tried and worth **nothing**: giving `AsyncImage` a remembered, explicitly-sized `ImageRequest` to skip
 Coil's `ConstraintsSizeResolver` (111 vs 112 ms). If the Coil cost is to be attacked, it is
 `rememberAsyncImagePainter` + `onRemembered` themselves, not request construction.
+
+---
+
+## Round 4: Coil's `AsyncImagePainter` was a third of the rail-composition cost (2026-07-29)
+
+Round 3's flattening ladder put ~29 ms of the ~107 ms first-DOWN frame inside `AsyncImage`. That is
+not the decode (which is off the main thread) — it is `AsyncImagePainter`, a `RememberObserver` that
+resolves its own size from the layout constraints, tracks load state and drives recomposition
+through it.
+
+**Shipped: `rememberTileArtwork` in `TileWash.kt`** — one suspend `imageLoader.execute` in a
+`LaunchedEffect` plus a plain `Image(bitmap)`, used by `ArePosterTile` and `AreChannelTile` (the only
+two composables that appear ~9-at-a-time in a scrolling rail). Everything Coil is actually needed for
+still runs — HTTP, disk and memory caches, RGB565, the video-frame decoder; only the Compose painter
+layer is bypassed.
+
+| | control | hand-rolled |
+|---|---|---|
+| worst frame (first DOWN) | 114 ms | **76 ms (−33 %)** |
+| `AndroidOwner:measureAndLayout` | 286 ms | 243 ms (−15 %) |
+| `Compose:recompose` | 183 ms | 169 ms (−8 %) |
+
+That is within noise of the "no artwork at all" rung of the round-3 ladder (78 ms) — i.e. the painter
+was essentially the *entire* cost of having images in a rail.
+
+Two details that are load-bearing, not incidental:
+
+- `execute` with **no size** decodes at full source resolution. `maxDimension` is mandatory; on a
+  20k-title catalogue an unbounded decode is how a rail scroll runs the heap out.
+- The result goes through `Drawable.toBitmap()`, **not** a `BitmapDrawable` cast. Providers do serve
+  animated GIF logos, and a cast would silently strand those tiles on their initials forever.
+
+`sampleTileWashHue` now takes the `Bitmap` directly (it was reaching into the drawable anyway), fed
+from `rememberTileArtwork`'s `onBitmap` — still exactly one request per logo, which is the constraint
+that matters (Xtream rate-limits by IP).
+
+**Not attempted: the Coil 3 migration.** The hand-rolled path already reaches the no-image floor, so
+there is nothing left for a faster painter to win. Coil 2.7.0 stays.
+
+### Cumulative, original HEAD → here
+
+| | HEAD | now |
+|---|---|---|
+| `AndroidOwner:draw` | 316 ms | **~58 ms (−82 %)** |
+| worst frame | ~110 ms | **83 ms** |
+| `AndroidOwner:measureAndLayout` | 577 ms | 238 ms |
+
+Draw-command recording is no longer a meaningful cost on this screen. What remains is composition of
+new rails, and the largest single item left in it is now Compose's own text layout.

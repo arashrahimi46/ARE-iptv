@@ -42,8 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
+import androidx.compose.foundation.Image
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
@@ -51,6 +50,7 @@ import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.glassTrack
+import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
 
 /**
  * PosterTile — portrait VOD tile for movies/series (PosterTile.jsx). Loads
@@ -143,23 +143,19 @@ fun ArePosterTile(
             Box(Modifier.fillMaxSize().then(if (obscured) Modifier.blur(16.dp) else Modifier)) {
                 // Initials show only until the poster resolves (posters can be letterboxed or
                 // have transparent edges, so a permanent initials layer would bleed through).
-                // onState is a lightweight callback, NOT subcomposition (SubcomposeAsyncImage) --
-                // so lazy-grid scroll/focus stays smooth.
-                val posterLoaded = remember(posterUrl) { mutableStateOf(false) }
-                if (posterUrl == null || !posterLoaded.value) {
+                val poster = rememberTileArtwork(posterUrl, maxDimension = width * 2)
+                if (poster == null) {
                     Text(
                         text = initials,
                         style = AreIptvTheme.typography.display,
                         color = colors.textTertiary,
                         modifier = Modifier.align(Alignment.Center),
                     )
-                }
-                if (posterUrl != null) {
-                    AsyncImage(
-                        model = posterUrl,
+                } else {
+                    Image(
+                        bitmap = poster,
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
-                        onState = { posterLoaded.value = it is AsyncImagePainter.State.Success },
                         modifier = Modifier.fillMaxSize().clip(shape),
                     )
                 }

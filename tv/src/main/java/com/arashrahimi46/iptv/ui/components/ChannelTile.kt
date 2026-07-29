@@ -42,14 +42,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
+import androidx.compose.foundation.Image
 import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
+import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
 import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
 import com.arashrahimi46.iptv.ui.theme.sampleTileWashHue
 import com.arashrahimi46.iptv.ui.theme.tileWash
@@ -202,25 +202,19 @@ fun AreChannelTile(
                 ) {
                     // Initials show only until the logo resolves -- logos often have transparent
                     // pixels, so keeping the initials permanently behind them let the text bleed
-                    // through a loaded logo. onState (a lightweight callback, NOT subcomposition
-                    // like SubcomposeAsyncImage) flips them off on success, keeping grid scroll smooth.
-                    val logoLoaded = remember(logoUrl) { mutableStateOf(false) }
-                    if (logoUrl == null || !logoLoaded.value) {
-                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.logoWellText)
+                    // through a loaded logo.
+                    val logo = rememberTileArtwork(logoUrl, maxDimension = width) { bitmap ->
+                        // Wash hue comes from the logo we just decoded -- never a second request;
+                        // the provider rate-limits by IP (see sampleTileWashHue).
+                        sampleTileWashHue(logoUrl, bitmap)
                     }
-                    if (logoUrl != null) {
-                        AsyncImage(
-                            model = logoUrl,
+                    if (logo == null) {
+                        Text(text = initials, style = AreIptvTheme.typography.h2, color = colors.logoWellText)
+                    } else {
+                        Image(
+                            bitmap = logo,
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
-                            onState = { state ->
-                                logoLoaded.value = state is AsyncImagePainter.State.Success
-                                // Wash hue comes from the logo we just decoded -- never a second
-                                // request; the provider rate-limits by IP (see sampleTileWashHue).
-                                if (state is AsyncImagePainter.State.Success) {
-                                    sampleTileWashHue(logoUrl, state.result.drawable)
-                                }
-                            },
                             modifier = Modifier.fillMaxSize().padding(6.dp),
                         )
                     }
