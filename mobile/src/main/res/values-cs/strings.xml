@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Načítání vašeho katalogu…</string>
+    <string name="home_section_continue_watching">Pokračovat ve sledování</string>
+    <string name="home_section_for_you">Pro vás</string>
+    <string name="home_section_live_now">Právě běží</string>
+    <string name="nav_favorites">Oblíbené</string>
+    <string name="nav_home">Domů</string>
+    <string name="nav_live_tv">Živá TV</string>
+    <string name="nav_movies">Filmy</string>
+    <string name="nav_series">Seriály</string>
+    <string name="nav_settings">Nastavení</string>
+    <string name="onboarding_add_playlist">Přidat playlist</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (volitelné)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Vložte jeden odkaz M3U nebo M3U-plus. Pokud máte XMLTV EPG URL, přidejte ji zvlášť.</string>
+    <string name="onboarding_m3u_title">M3U / URL playlist</string>
+    <string name="onboarding_m3u_url_label">URL M3U playlistu</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC adresa</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Heslo</string>
+    <string name="onboarding_portal_name_label">Název portálu</string>
+    <string name="onboarding_portal_name_placeholder">Obývák</string>
+    <string name="onboarding_portal_url_label">URL portálu</string>
+    <string name="onboarding_server_url_label">URL serveru</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Prozatím přeskočit</string>
+    <string name="onboarding_stalker_desc">URL portálu + MAC adresa. Pro portály typu MAG, které vás identifikují podle MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Použijte vlastní IPTV předplatné. ARE iptv nikdy neukládá vaše přihlašovací údaje mimo zařízení.</string>
+    <string name="onboarding_title">Přidat playlist</string>
+    <string name="onboarding_username_label">Uživatelské jméno</string>
+    <string name="onboarding_xtream_desc">Zadejte hostitele portálu, uživatelské jméno a heslo. Nejlepší pro živou TV + VOD s automatickým EPG.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Hledat kanály, filmy, seriály…</string>
+    <string name="search_scope_all">Vše</string>
+</resources>

@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Se încarcă catalogul tău…</string>
+    <string name="home_section_continue_watching">Continuă vizionarea</string>
+    <string name="home_section_for_you">Pentru tine</string>
+    <string name="home_section_live_now">Live acum</string>
+    <string name="nav_favorites">Favorite</string>
+    <string name="nav_home">Acasă</string>
+    <string name="nav_live_tv">TV live</string>
+    <string name="nav_movies">Filme</string>
+    <string name="nav_series">Seriale</string>
+    <string name="nav_settings">Setări</string>
+    <string name="onboarding_add_playlist">Adaugă lista de redare</string>
+    <string name="onboarding_epg_url_label">URL EPG XMLTV (opțional)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Lipește un singur link M3U sau M3U-plus. Adaugă separat un URL EPG XMLTV dacă ai unul.</string>
+    <string name="onboarding_m3u_title">Listă M3U / URL</string>
+    <string name="onboarding_m3u_url_label">URL listă de redare M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">Adresă MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Parolă</string>
+    <string name="onboarding_portal_name_label">Nume portal</string>
+    <string name="onboarding_portal_name_placeholder">Living</string>
+    <string name="onboarding_portal_url_label">URL portal</string>
+    <string name="onboarding_server_url_label">URL server</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Omite deocamdată</string>
+    <string name="onboarding_stalker_desc">URL portal + adresă MAC. Pentru portaluri de tip MAG care te identifică după MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Folosește propriul abonament IPTV. ARE iptv nu-ți stochează niciodată datele de acces în afara dispozitivului.</string>
+    <string name="onboarding_title">Adaugă o listă de redare</string>
+    <string name="onboarding_username_label">Nume de utilizator</string>
+    <string name="onboarding_xtream_desc">Introdu gazda portalului, numele de utilizator și parola. Ideal pentru TV live + VOD cu EPG automat.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Caută canale, filme, seriale…</string>
+    <string name="search_scope_all">Toate</string>
+</resources>

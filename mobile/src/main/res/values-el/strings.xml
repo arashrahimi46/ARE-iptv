@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Φόρτωση του καταλόγου σας…</string>
+    <string name="home_section_continue_watching">Συνέχιση προβολής</string>
+    <string name="home_section_for_you">Για εσάς</string>
+    <string name="home_section_live_now">Ζωντανά τώρα</string>
+    <string name="nav_favorites">Αγαπημένα</string>
+    <string name="nav_home">Αρχική</string>
+    <string name="nav_live_tv">Ζωντανή TV</string>
+    <string name="nav_movies">Ταινίες</string>
+    <string name="nav_series">Σειρές</string>
+    <string name="nav_settings">Ρυθμίσεις</string>
+    <string name="onboarding_add_playlist">Προσθήκη λίστας</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (προαιρετικό)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Επικολλήστε έναν σύνδεσμο M3U ή M3U-plus. Προσθέστε ξεχωριστά ένα XMLTV EPG URL, αν έχετε.</string>
+    <string name="onboarding_m3u_title">Λίστα M3U / URL</string>
+    <string name="onboarding_m3u_url_label">URL λίστας M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">Διεύθυνση MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Κωδικός πρόσβασης</string>
+    <string name="onboarding_portal_name_label">Όνομα πύλης</string>
+    <string name="onboarding_portal_name_placeholder">Σαλόνι</string>
+    <string name="onboarding_portal_url_label">URL πύλης</string>
+    <string name="onboarding_server_url_label">URL διακομιστή</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Παράλειψη προς το παρόν</string>
+    <string name="onboarding_stalker_desc">URL πύλης + διεύθυνση MAC. Για πύλες τύπου MAG που σας αναγνωρίζουν μέσω MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Χρησιμοποιήστε τη δική σας συνδρομή IPTV. Το ARE iptv δεν αποθηκεύει ποτέ τα διαπιστευτήριά σας εκτός συσκευής.</string>
+    <string name="onboarding_title">Προσθήκη λίστας αναπαραγωγής</string>
+    <string name="onboarding_username_label">Όνομα χρήστη</string>
+    <string name="onboarding_xtream_desc">Εισαγάγετε τον κεντρικό υπολογιστή (host) της πύλης σας, το όνομα χρήστη και τον κωδικό. Ιδανικό για ζωντανή TV + VOD με αυτόματο EPG.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Αναζήτηση καναλιών, ταινιών, σειρών…</string>
+    <string name="search_scope_all">Όλα</string>
+</resources>

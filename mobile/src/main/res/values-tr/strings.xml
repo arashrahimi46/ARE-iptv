@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Kataloğunuz yükleniyor…</string>
+    <string name="home_section_continue_watching">İzlemeye Devam Et</string>
+    <string name="home_section_for_you">Sizin İçin</string>
+    <string name="home_section_live_now">Şimdi canlı</string>
+    <string name="nav_favorites">Favoriler</string>
+    <string name="nav_home">Ana ekran</string>
+    <string name="nav_live_tv">Canlı TV</string>
+    <string name="nav_movies">Filmler</string>
+    <string name="nav_series">Diziler</string>
+    <string name="nav_settings">Ayarlar</string>
+    <string name="onboarding_add_playlist">Oynatma listesi ekle</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL\'si (isteğe bağlı)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Tek bir M3U veya M3U-plus bağlantısı yapıştırın. Varsa bir XMLTV EPG URL\'sini ayrıca ekleyin.</string>
+    <string name="onboarding_m3u_title">M3U / URL oynatma listesi</string>
+    <string name="onboarding_m3u_url_label">M3U oynatma listesi URL\'si</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC adresi</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Şifre</string>
+    <string name="onboarding_portal_name_label">Portal adı</string>
+    <string name="onboarding_portal_name_placeholder">Oturma odası</string>
+    <string name="onboarding_portal_url_label">Portal URL’si</string>
+    <string name="onboarding_server_url_label">Sunucu URL\'si</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Şimdilik atla</string>
+    <string name="onboarding_stalker_desc">Portal URL’si + MAC adresi. Sizi MAC ile tanıyan MAG tarzı portallar için.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Kendi IPTV aboneliğinizi kullanın. ARE iptv kimlik bilgilerinizi asla cihaz dışında saklamaz.</string>
+    <string name="onboarding_title">Oynatma listesi ekle</string>
+    <string name="onboarding_username_label">Kullanıcı adı</string>
+    <string name="onboarding_xtream_desc">Portal sunucunuzu, kullanıcı adınızı ve şifrenizi girin. Otomatik EPG ile canlı TV + VOD için en iyisi.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Kanal, film, dizi ara…</string>
+    <string name="search_scope_all">Tümü</string>
+</resources>

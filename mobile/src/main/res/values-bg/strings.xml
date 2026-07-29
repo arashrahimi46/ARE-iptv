@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Зареждане на вашия каталог…</string>
+    <string name="home_section_continue_watching">Продължете гледането</string>
+    <string name="home_section_for_you">За вас</string>
+    <string name="home_section_live_now">На живо сега</string>
+    <string name="nav_favorites">Любими</string>
+    <string name="nav_home">Начало</string>
+    <string name="nav_live_tv">На живо</string>
+    <string name="nav_movies">Филми</string>
+    <string name="nav_series">Сериали</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="onboarding_add_playlist">Добавяне на плейлист</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (по избор)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Поставете една M3U или M3U-plus връзка. Ако имате, добавете отделно XMLTV EPG URL.</string>
+    <string name="onboarding_m3u_title">M3U / URL плейлист</string>
+    <string name="onboarding_m3u_url_label">URL на M3U плейлист</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC адрес</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Парола</string>
+    <string name="onboarding_portal_name_label">Име на портала</string>
+    <string name="onboarding_portal_name_placeholder">Хол</string>
+    <string name="onboarding_portal_url_label">URL на портала</string>
+    <string name="onboarding_server_url_label">URL на сървъра</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Пропуснете засега</string>
+    <string name="onboarding_stalker_desc">URL на портала + MAC адрес. За портали от типа MAG, които ви идентифицират по MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Използвайте своя собствен IPTV абонамент. ARE iptv никога не съхранява данните ви за вход извън устройството.</string>
+    <string name="onboarding_title">Добавяне на плейлист</string>
+    <string name="onboarding_username_label">Потребителско име</string>
+    <string name="onboarding_xtream_desc">Въведете хоста на портала, потребителското име и паролата. Най-подходящо за телевизия на живо + VOD с автоматичен EPG.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Търсене на канали, филми, сериали…</string>
+    <string name="search_scope_all">Всички</string>
+</resources>

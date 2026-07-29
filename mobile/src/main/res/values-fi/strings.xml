@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Ladataan luetteloasi…</string>
+    <string name="home_section_continue_watching">Jatka katselua</string>
+    <string name="home_section_for_you">Sinulle</string>
+    <string name="home_section_live_now">Suorana nyt</string>
+    <string name="nav_favorites">Suosikit</string>
+    <string name="nav_home">Koti</string>
+    <string name="nav_live_tv">Live-TV</string>
+    <string name="nav_movies">Elokuvat</string>
+    <string name="nav_series">Sarjat</string>
+    <string name="nav_settings">Asetukset</string>
+    <string name="onboarding_add_playlist">Lisää soittolista</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG-URL (valinnainen)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Liitä yksittäinen M3U- tai M3U-plus-linkki. Lisää XMLTV EPG-URL erikseen, jos sinulla on sellainen.</string>
+    <string name="onboarding_m3u_title">M3U / URL-soittolista</string>
+    <string name="onboarding_m3u_url_label">M3U-soittolistan URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC-osoite</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Salasana</string>
+    <string name="onboarding_portal_name_label">Portaalin nimi</string>
+    <string name="onboarding_portal_name_placeholder">Olohuone</string>
+    <string name="onboarding_portal_url_label">Portaalin URL</string>
+    <string name="onboarding_server_url_label">Palvelimen URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Ohita toistaiseksi</string>
+    <string name="onboarding_stalker_desc">Portaalin URL + MAC-osoite. MAG-tyylisille portaaleille, jotka tunnistavat sinut MAC-osoitteella.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Käytä omaa IPTV-tilaustasi. ARE iptv ei koskaan tallenna kirjautumistietojasi laitteen ulkopuolelle.</string>
+    <string name="onboarding_title">Lisää soittolista</string>
+    <string name="onboarding_username_label">Käyttäjänimi</string>
+    <string name="onboarding_xtream_desc">Anna portaalin isäntä, käyttäjänimi ja salasana. Paras vaihtoehto suoralle TV:lle + VOD:lle automaattisella EPG:llä.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Hae kanavia, elokuvia, sarjoja…</string>
+    <string name="search_scope_all">Kaikki</string>
+</resources>

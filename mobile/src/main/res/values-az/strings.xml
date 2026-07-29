@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Kataloqunuz yüklənir…</string>
+    <string name="home_section_continue_watching">İzləməyə davam</string>
+    <string name="home_section_for_you">Sizin üçün</string>
+    <string name="home_section_live_now">İndi canlı</string>
+    <string name="nav_favorites">Sevimlilər</string>
+    <string name="nav_home">Ana səhifə</string>
+    <string name="nav_live_tv">Canlı TV</string>
+    <string name="nav_movies">Filmlər</string>
+    <string name="nav_series">Seriallar</string>
+    <string name="nav_settings">Ayarlar</string>
+    <string name="onboarding_add_playlist">Pleylist əlavə et</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (istəyə bağlı)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Tək bir M3U və ya M3U-plus linki yapışdırın. Varsa, XMLTV EPG URL-ni ayrıca əlavə edin.</string>
+    <string name="onboarding_m3u_title">M3U / URL pleylist</string>
+    <string name="onboarding_m3u_url_label">M3U pleylist URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC ünvanı</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Parol</string>
+    <string name="onboarding_portal_name_label">Portal adı</string>
+    <string name="onboarding_portal_name_placeholder">Qonaq otağı</string>
+    <string name="onboarding_portal_url_label">Portal URL</string>
+    <string name="onboarding_server_url_label">Server URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Hələlik ötür</string>
+    <string name="onboarding_stalker_desc">Portal URL + MAC ünvanı. Sizi MAC ilə tanıyan MAG tipli portallar üçün.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Öz IPTV abunəliyinizi gətirin. ARE iptv giriş məlumatlarınızı heç vaxt cihazdan kənarda saxlamır.</string>
+    <string name="onboarding_title">Pleylist əlavə et</string>
+    <string name="onboarding_username_label">İstifadəçi adı</string>
+    <string name="onboarding_xtream_desc">Portal hostunuzu, istifadəçi adınızı və parolunuzu daxil edin. Avtomatik EPG ilə canlı TV + VOD üçün ən yaxşısıdır.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Kanalları, filmləri, serialları axtar…</string>
+    <string name="search_scope_all">Hamısı</string>
+</resources>

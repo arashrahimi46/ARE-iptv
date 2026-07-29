@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">A katalógusa betöltése…</string>
+    <string name="home_section_continue_watching">Megtekintés folytatása</string>
+    <string name="home_section_for_you">Önnek</string>
+    <string name="home_section_live_now">Most élőben</string>
+    <string name="nav_favorites">Kedvencek</string>
+    <string name="nav_home">Kezdőlap</string>
+    <string name="nav_live_tv">Élő TV</string>
+    <string name="nav_movies">Filmek</string>
+    <string name="nav_series">Sorozatok</string>
+    <string name="nav_settings">Beállítások</string>
+    <string name="onboarding_add_playlist">Lejátszási lista hozzáadása</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (nem kötelező)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Illesszen be egy M3U vagy M3U-plus linket. Ha van, adjon hozzá külön egy XMLTV EPG URL-t.</string>
+    <string name="onboarding_m3u_title">M3U / URL lejátszási lista</string>
+    <string name="onboarding_m3u_url_label">M3U lejátszási lista URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC-cím</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Jelszó</string>
+    <string name="onboarding_portal_name_label">Portál neve</string>
+    <string name="onboarding_portal_name_placeholder">Nappali</string>
+    <string name="onboarding_portal_url_label">Portál URL</string>
+    <string name="onboarding_server_url_label">Szerver URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Kihagyás egyelőre</string>
+    <string name="onboarding_stalker_desc">Portál URL + MAC-cím. MAG típusú portálokhoz, amelyek MAC alapján azonosítanak.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Hozza a saját IPTV-előfizetését. Az ARE iptv sosem tárolja a hitelesítő adatait a készüléken kívül.</string>
+    <string name="onboarding_title">Lejátszási lista hozzáadása</string>
+    <string name="onboarding_username_label">Felhasználónév</string>
+    <string name="onboarding_xtream_desc">Adja meg a portál gazdagépét, felhasználónevét és jelszavát. Élő TV + VOD esetén a legjobb, automatikus EPG-vel.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Csatornák, filmek, sorozatok keresése…</string>
+    <string name="search_scope_all">Összes</string>
+</resources>

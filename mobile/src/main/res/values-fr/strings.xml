@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Chargement de votre catalogue…</string>
+    <string name="home_section_continue_watching">Continuer à regarder</string>
+    <string name="home_section_for_you">Pour vous</string>
+    <string name="home_section_live_now">En direct maintenant</string>
+    <string name="nav_favorites">Favoris</string>
+    <string name="nav_home">Accueil</string>
+    <string name="nav_live_tv">TV en direct</string>
+    <string name="nav_movies">Films</string>
+    <string name="nav_series">Séries</string>
+    <string name="nav_settings">Paramètres</string>
+    <string name="onboarding_add_playlist">Ajouter la playlist</string>
+    <string name="onboarding_epg_url_label">URL EPG XMLTV (facultatif)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Collez un lien M3U ou M3U-plus. Ajoutez séparément une URL EPG XMLTV si vous en avez une.</string>
+    <string name="onboarding_m3u_title">Playlist M3U / URL</string>
+    <string name="onboarding_m3u_url_label">URL de la playlist M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">Adresse MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Mot de passe</string>
+    <string name="onboarding_portal_name_label">Nom du portail</string>
+    <string name="onboarding_portal_name_placeholder">Salon</string>
+    <string name="onboarding_portal_url_label">URL du portail</string>
+    <string name="onboarding_server_url_label">URL du serveur</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Ignorer pour l\'instant</string>
+    <string name="onboarding_stalker_desc">URL du portail + adresse MAC. Pour les portails de type MAG qui vous identifient par MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Utilisez votre propre abonnement IPTV. ARE iptv ne stocke jamais vos identifiants hors de l\'appareil.</string>
+    <string name="onboarding_title">Ajouter une playlist</string>
+    <string name="onboarding_username_label">Nom d\'utilisateur</string>
+    <string name="onboarding_xtream_desc">Saisissez l\'hôte du portail, le nom d\'utilisateur et le mot de passe. Idéal pour la TV en direct + VOD avec EPG automatique.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Rechercher chaînes, films, séries…</string>
+    <string name="search_scope_all">Tout</string>
+</resources>

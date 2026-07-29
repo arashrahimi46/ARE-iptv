@@ -1,3 +1,50 @@
 <resources>
     <string name="app_name">iptv</string>
+    <!-- Placeholder-only copy for the not-yet-built Phase 3 Settings screen; not synced to the
+         other 22 locales yet since it'll be replaced once real settings ship (falls back to
+         English elsewhere in the meantime, same as any other untranslated key). -->
+    <string name="mobile_settings_more_coming_soon">More settings (subtitles, EPG, quality, parental) are coming in a later phase.</string>
+
+    <!-- Duplicated from :tv's strings.xml (same key names, same English copy, and the matching
+         translation copied into every values-*/strings.xml below): :mobile can no longer
+         reference :tv's R class directly since :mobile depends on :core, not :tv (see
+         core/build.gradle.kts's top comment for why). -->
+    <string name="nav_home">Home</string>
+    <string name="nav_live_tv">Live TV</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_series">Series</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_favorites">Favorites</string>
+
+    <string name="home_loading_catalog">Loading your catalog…</string>
+    <string name="home_section_continue_watching">Continue Watching</string>
+    <string name="home_section_live_now">Live now</string>
+    <string name="home_section_for_you">For You</string>
+
+    <string name="search_placeholder">Search channels, movies, series…</string>
+    <string name="search_scope_all">All</string>
+
+    <string name="onboarding_title">Add a playlist</string>
+    <string name="onboarding_subtitle">Bring your own IPTV subscription. ARE iptv never stores your credentials off-device.</string>
+    <string name="onboarding_skip_for_now">Skip for now</string>
+    <string name="onboarding_add_playlist">Add playlist</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="onboarding_xtream_desc">Enter your portal host, username and password. Best for live TV + VOD with automatic EPG.</string>
+    <string name="onboarding_m3u_title">M3U / URL playlist</string>
+    <string name="onboarding_m3u_desc">Paste a single M3U or M3U-plus link. Add an XMLTV EPG URL separately if you have one.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_stalker_desc">Portal URL + MAC address. For MAG-style portals that identify you by MAC.</string>
+    <string name="onboarding_portal_url_label">Portal URL</string>
+    <string name="onboarding_mac_label">MAC address</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_portal_name_label">Portal name</string>
+    <string name="onboarding_portal_name_placeholder">Living room</string>
+    <string name="onboarding_server_url_label">Server URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_username_label">Username</string>
+    <string name="onboarding_password_label">Password</string>
+    <string name="onboarding_m3u_url_label">M3U playlist URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG URL (optional)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
 </resources>

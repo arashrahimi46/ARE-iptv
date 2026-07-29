@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">جارٍ تحميل فهرسك…</string>
+    <string name="home_section_continue_watching">متابعة المشاهدة</string>
+    <string name="home_section_for_you">لك</string>
+    <string name="home_section_live_now">مباشر الآن</string>
+    <string name="nav_favorites">المفضّلة</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_live_tv">البث المباشر</string>
+    <string name="nav_movies">الأفلام</string>
+    <string name="nav_series">المسلسلات</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="onboarding_add_playlist">إضافة قائمة تشغيل</string>
+    <string name="onboarding_epg_url_label">عنوان XMLTV EPG (اختياري)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">الصق رابط M3U أو M3U-plus واحدًا. أضف عنوان XMLTV EPG بشكل منفصل إن كان لديك.</string>
+    <string name="onboarding_m3u_title">قائمة تشغيل M3U / URL</string>
+    <string name="onboarding_m3u_url_label">عنوان قائمة تشغيل M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">عنوان MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">كلمة المرور</string>
+    <string name="onboarding_portal_name_label">اسم البوابة</string>
+    <string name="onboarding_portal_name_placeholder">غرفة المعيشة</string>
+    <string name="onboarding_portal_url_label">رابط البوابة</string>
+    <string name="onboarding_server_url_label">عنوان الخادم</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">تخطٍ الآن</string>
+    <string name="onboarding_stalker_desc">رابط البوابة + عنوان MAC. للبوابات من نوع MAG التي تتعرّف عليك عبر MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">أدخل اشتراك IPTV الخاص بك. لا يخزّن ARE iptv بيانات دخولك خارج الجهاز أبدًا.</string>
+    <string name="onboarding_title">إضافة قائمة تشغيل</string>
+    <string name="onboarding_username_label">اسم المستخدم</string>
+    <string name="onboarding_xtream_desc">أدخل عنوان البوابة واسم المستخدم وكلمة المرور. الأفضل للبث المباشر وVOD مع دليل برامج تلقائي.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">ابحث في القنوات والأفلام والمسلسلات…</string>
+    <string name="search_scope_all">الكل</string>
+</resources>

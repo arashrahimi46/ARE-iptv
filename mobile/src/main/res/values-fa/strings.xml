@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">در حال آوردن فهرست شما…</string>
+    <string name="home_section_continue_watching">ادامهٔ تماشا</string>
+    <string name="home_section_for_you">برای شما</string>
+    <string name="home_section_live_now">الان روی آنتن</string>
+    <string name="nav_favorites">برگزیده‌ها</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_live_tv">پخش زنده</string>
+    <string name="nav_movies">فیلم‌ها</string>
+    <string name="nav_series">سریال‌ها</string>
+    <string name="nav_settings">تنظیمات</string>
+    <string name="onboarding_add_playlist">افزودن پلی‌لیست</string>
+    <string name="onboarding_epg_url_label">نشانی XMLTV (اختیاری)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">یک لینک M3U یا M3U-plus بچسبانید. اگر نشانی XMLTV هم دارید، جداگانه اضافه‌اش کنید.</string>
+    <string name="onboarding_m3u_title">پلی‌لیست M3U / لینک</string>
+    <string name="onboarding_m3u_url_label">نشانی پلی‌لیست M3U</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">آدرس MAC</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">رمز عبور</string>
+    <string name="onboarding_portal_name_label">نام پورتال</string>
+    <string name="onboarding_portal_name_placeholder">اتاق نشیمن</string>
+    <string name="onboarding_portal_url_label">نشانی پورتال</string>
+    <string name="onboarding_server_url_label">نشانی سرور</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">فعلاً نه</string>
+    <string name="onboarding_stalker_desc">نشانی پورتال + آدرس MAC. برای پورتال‌های نوع MAG که شما را با MAC می‌شناسند.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">اشتراک IPTV خودتان را بیاورید. ARE iptv اطلاعات ورود شما را هیچ‌وقت جایی بیرون از این دستگاه نگه نمی‌دارد.</string>
+    <string name="onboarding_title">یک پلی‌لیست اضافه کنید</string>
+    <string name="onboarding_username_label">نام کاربری</string>
+    <string name="onboarding_xtream_desc">نشانی پورتال، نام کاربری و رمز خود را وارد کنید. بهترین گزینه برای پخش زنده و فیلم، با راهنمای برنامهٔ خودکار.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">جستجوی کانال، فیلم، سریال…</string>
+    <string name="search_scope_all">همه</string>
+</resources>

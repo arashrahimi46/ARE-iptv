@@ -1,0 +1,37 @@
+<resources>
+    <string name="home_loading_catalog">Laster katalogen din…</string>
+    <string name="home_section_continue_watching">Fortsett å se</string>
+    <string name="home_section_for_you">For deg</string>
+    <string name="home_section_live_now">Direkte nå</string>
+    <string name="nav_favorites">Favoritter</string>
+    <string name="nav_home">Hjem</string>
+    <string name="nav_live_tv">Direkte-TV</string>
+    <string name="nav_movies">Filmer</string>
+    <string name="nav_series">Serier</string>
+    <string name="nav_settings">Innstillinger</string>
+    <string name="onboarding_add_playlist">Legg til spilleliste</string>
+    <string name="onboarding_epg_url_label">XMLTV EPG-URL (valgfritt)</string>
+    <string name="onboarding_epg_url_placeholder">portal.example.tv/xmltv.php?username=…</string>
+    <string name="onboarding_m3u_desc">Lim inn en enkelt M3U- eller M3U-plus-lenke. Legg til en XMLTV EPG-URL separat hvis du har en.</string>
+    <string name="onboarding_m3u_title">M3U / URL-spilleliste</string>
+    <string name="onboarding_m3u_url_label">M3U-spilleliste-URL</string>
+    <string name="onboarding_m3u_url_placeholder">host:8080/get.php?type=m3u_plus&amp;output=ts</string>
+    <string name="onboarding_mac_label">MAC-adresse</string>
+    <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
+    <string name="onboarding_password_label">Passord</string>
+    <string name="onboarding_portal_name_label">Portalnavn</string>
+    <string name="onboarding_portal_name_placeholder">Stue</string>
+    <string name="onboarding_portal_url_label">Portal-URL</string>
+    <string name="onboarding_server_url_label">Server-URL</string>
+    <string name="onboarding_server_url_placeholder">portal.example.tv:8080</string>
+    <string name="onboarding_skip_for_now">Hopp over for nå</string>
+    <string name="onboarding_stalker_desc">Portal-URL + MAC-adresse. For MAG-lignende portaler som identifiserer deg via MAC.</string>
+    <string name="onboarding_stalker_title">Stalker Portal</string>
+    <string name="onboarding_subtitle">Bruk ditt eget IPTV-abonnement. ARE iptv lagrer aldri legitimasjonen din utenfor enheten.</string>
+    <string name="onboarding_title">Legg til en spilleliste</string>
+    <string name="onboarding_username_label">Brukernavn</string>
+    <string name="onboarding_xtream_desc">Skriv inn portalverten, brukernavnet og passordet ditt. Best for direkte-TV + VOD med automatisk EPG.</string>
+    <string name="onboarding_xtream_title">Xtream Codes</string>
+    <string name="search_placeholder">Søk i kanaler, filmer, serier…</string>
+    <string name="search_scope_all">Alle</string>
+</resources>
