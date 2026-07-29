@@ -14,7 +14,18 @@ import com.arashrahimi46.iptv.ui.interaction.AreInteractiveSurface
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvDarkColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvLightColors
+import com.arashrahimi46.iptv.ui.theme.AreIptvMotionDefault
+import com.arashrahimi46.iptv.ui.theme.AreIptvRadiusDefault
+import com.arashrahimi46.iptv.ui.theme.AreIptvSpacingDefault
 import com.arashrahimi46.iptv.ui.theme.LocalAreInteractiveBinding
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors as CoreLocalAreIptvColors
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion as CoreLocalAreIptvMotion
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvRadius as CoreLocalAreIptvRadius
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvSpacing as CoreLocalAreIptvSpacing
+import com.arashrahimi46.iptv.ui.theme.LocalAreIptvTypography as CoreLocalAreIptvTypography
+import com.arashrahimi46.iptv.ui.theme.LocalThemeIsDark as CoreLocalThemeIsDark
+import com.arashrahimi46.iptv.ui.theme.AreIptvTypographyDefault as CoreAreIptvTypographyDefault
+import com.arashrahimi46.iptv.ui.theme.AreIptvTypographyVazir as CoreAreIptvTypographyVazir
 
 /**
  * Phone theming, wired to the SAME design-system tokens as :tv
@@ -86,6 +97,24 @@ fun AreIptvMobileTheme(
         LocalAreIptvColors provides colors,
         LocalAreIptvTypography provides typography,
         LocalAreInteractiveBinding provides mobileAreInteractiveBinding,
+        // Bridges :core's OWN CompositionLocals (a distinct set from the two above, despite the
+        // matching names) so components imported straight from :core -- AreButton, AreTabs,
+        // controlSkin, glassSurface -- resolve the real per-session theme instead of silently
+        // falling back to core Theme.kt's defaults (AreIptvDarkColors, always, regardless of
+        // [isDark]). Typography can't reuse the `typography` val above -- :mobile's AreIptvTypography
+        // (Type.kt in this package) is a deliberately separate data class from :core's identically
+        // named one (own duplicated font families), so :core components need :core's own instance,
+        // picked by the same RTL rule. :mobile has no per-platform spacing/radius/motion of its own,
+        // so those three just get :core's shared default token sets -- the same objects :tv uses at rest.
+        CoreLocalAreIptvColors provides colors,
+        CoreLocalAreIptvTypography provides (
+            if (LocalLayoutDirection.current == LayoutDirection.Rtl) CoreAreIptvTypographyVazir
+            else CoreAreIptvTypographyDefault
+        ),
+        CoreLocalAreIptvSpacing provides AreIptvSpacingDefault,
+        CoreLocalAreIptvRadius provides AreIptvRadiusDefault,
+        CoreLocalAreIptvMotion provides AreIptvMotionDefault,
+        CoreLocalThemeIsDark provides isDark,
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
