@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,12 +28,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
+import com.arashrahimi46.iptv.ui.components.AreChip
 
 /**
  * Single-screen "add a source" form -- a phone-appropriate collapse of :tv's multi-step wizard
  * (Source -> Credentials -> EPG -> Confirm) into one scrollable form, reusing the same
  * [com.arashrahimi46.iptv.data.repository.PlaylistRepository] calls and the same strings.xml
  * copy so the concepts read identically between the two apps.
+ *
+ * Step 5 (glass migration): the source-type picker and the submit/skip actions are rebuilt on
+ * :core's [AreChip]/[AreButton] (glass fill + accent-lens selection, matching :tv's Tabs.kt/
+ * Chip.jsx funnel). The text inputs stay stock M3 [OutlinedTextField] -- :core has no text-field
+ * component yet (its one text field, `AreTextField`, lives in :tv and is D-pad-specific; see
+ * TextField.kt), so replacing these would mean inventing a new :core component rather than reusing
+ * one, out of scope for a nav/splash-chrome milestone.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,21 +161,23 @@ fun OnboardingScreen(onDone: () -> Unit, viewModel: OnboardingViewModel = viewMo
             Text(it, color = colors.danger, style = MaterialTheme.typography.bodySmall)
         }
 
-        Button(
+        AreButton(
+            text = stringResource(R.string.onboarding_add_playlist),
             onClick = viewModel::submit,
-            enabled = !state.isSubmitting,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            if (state.isSubmitting) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), color = colors.accentFg)
-            } else {
-                Text(stringResource(R.string.onboarding_add_playlist))
-            }
+            variant = AreButtonVariant.Primary,
+            full = true,
+            disabled = state.isSubmitting,
+        )
+        if (state.isSubmitting) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp), color = colors.accentFg)
         }
 
-        TextButton(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.onboarding_skip_for_now))
-        }
+        AreButton(
+            text = stringResource(R.string.onboarding_skip_for_now),
+            onClick = onDone,
+            variant = AreButtonVariant.Ghost,
+            full = true,
+        )
     }
 }
 
@@ -179,10 +188,10 @@ private fun SourceTypeChip(
     selected: SourceType,
     onSelect: (SourceType) -> Unit,
 ) {
-    FilterChip(
-        selected = selected == type,
+    AreChip(
+        text = label,
         onClick = { onSelect(type) },
-        label = { Text(label) },
+        selected = selected == type,
         modifier = Modifier.fillMaxWidth(),
     )
 }
