@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv
 
 import android.app.Application
+import com.arashrahimi46.iptv.core.R
 import io.sentry.android.core.SentryAndroid
 import com.arashrahimi46.iptv.analytics.Analytics
 import com.arashrahimi46.iptv.analytics.CrashReporting

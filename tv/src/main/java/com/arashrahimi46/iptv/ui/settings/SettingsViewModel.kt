@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.parser.OmdbClient

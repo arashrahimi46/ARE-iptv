@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalReducedMotion
 import com.arashrahimi46.iptv.ui.theme.Violet400
@@ -194,7 +195,7 @@ fun AreSplashScreen() {
                 // The mark, floating free -- scales in with a soft settle, then breathes with the bloom.
                 Image(
                     painter = painterResource(R.drawable.ic_logo_mark),
-                    contentDescription = stringResource(R.string.splash_logo_content_description),
+                    contentDescription = stringResource(CoreR.string.splash_logo_content_description),
                     modifier = Modifier
                         .size(120.dp)
                         .graphicsLayer {
@@ -208,7 +209,7 @@ fun AreSplashScreen() {
 
             Spacer(Modifier.height(30.dp))
             Text(
-                text = stringResource(R.string.brand_name),
+                text = stringResource(CoreR.string.brand_name),
                 style = AreIptvTheme.typography.h2,
                 color = White,
                 modifier = Modifier.graphicsLayer {

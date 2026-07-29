@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 
 /** One of the six languages Round 1 supports, keyed by its BCP-47 tag (matches
  * [com.arashrahimi46.iptv.data.settings.UserSettings.languageTag]). */

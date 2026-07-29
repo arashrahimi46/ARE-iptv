@@ -69,7 +69,7 @@ import androidx.compose.ui.window.Popup
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.ui.player.DEFAULT_HUD_LAYOUT
 import com.arashrahimi46.iptv.ui.player.HudControl
 import com.arashrahimi46.iptv.ui.player.HudGroup

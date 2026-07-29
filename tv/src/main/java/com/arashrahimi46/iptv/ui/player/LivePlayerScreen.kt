@@ -84,6 +84,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.repository.SubtitleRepository
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -150,11 +151,11 @@ fun LivePlayerScreen(
         val teeFactory = DataSource.Factory { TeeDataSource(upstream.createDataSource(), recordingSink) }
         DefaultMediaSourceFactory(teeFactory)
     }
-    val recordingFailedGeneric = stringResource(R.string.recording_error_generic)
-    val recordingErrorNotWritable = stringResource(R.string.recording_error_not_writable)
-    val recordingErrorLowSpace = stringResource(R.string.recording_error_low_space)
-    val recordingErrorHls = stringResource(R.string.recording_error_hls)
-    val recordingStartedToast = stringResource(R.string.recording_started_toast)
+    val recordingFailedGeneric = stringResource(CoreR.string.recording_error_generic)
+    val recordingErrorNotWritable = stringResource(CoreR.string.recording_error_not_writable)
+    val recordingErrorLowSpace = stringResource(CoreR.string.recording_error_low_space)
+    val recordingErrorHls = stringResource(CoreR.string.recording_error_hls)
+    val recordingStartedToast = stringResource(CoreR.string.recording_started_toast)
     // Drive selection for recording. Android TV ships no SAF file picker (OPEN_DOCUMENT_TREE only
     // resolves to a stub), so instead of the OS picker the user chooses among the app's own volumes
     // (internal + any mounted USB/SD). Pre-flight failures surface as a toast (no ghost REC).
@@ -187,7 +188,7 @@ fun LivePlayerScreen(
     // learns why capture ended -- the "red dot never lies" also means telling them when it stops.
     LaunchedEffect(recordingState.stoppedReason) {
         recordingState.stoppedReason?.let { reason ->
-            Toast.makeText(context, context.getString(R.string.recording_stopped_reason, reason), Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(CoreR.string.recording_stopped_reason, reason), Toast.LENGTH_LONG).show()
         }
     }
     val settings = remember { UserSettings(context) }
@@ -347,19 +348,19 @@ fun LivePlayerScreen(
         }
     }
 
-    val previousChannelLabel = stringResource(R.string.player_previous_channel)
-    val nextChannelLabel = stringResource(R.string.player_next_channel)
-    val previousEpisodeLabel = stringResource(R.string.player_previous_episode)
-    val nextEpisodeLabel = stringResource(R.string.player_next_episode)
-    val back10MinLabel = stringResource(R.string.player_back_10_min)
-    val forward10MinLabel = stringResource(R.string.player_forward_10_min)
-    val previousProgramLabel = stringResource(R.string.player_previous_program)
-    val nextProgramLabel = stringResource(R.string.player_next_program)
+    val previousChannelLabel = stringResource(CoreR.string.player_previous_channel)
+    val nextChannelLabel = stringResource(CoreR.string.player_next_channel)
+    val previousEpisodeLabel = stringResource(CoreR.string.player_previous_episode)
+    val nextEpisodeLabel = stringResource(CoreR.string.player_next_episode)
+    val back10MinLabel = stringResource(CoreR.string.player_back_10_min)
+    val forward10MinLabel = stringResource(CoreR.string.player_forward_10_min)
+    val previousProgramLabel = stringResource(CoreR.string.player_previous_program)
+    val nextProgramLabel = stringResource(CoreR.string.player_next_program)
     // Synthetic error surfaced (P0.1) when auto-retry/fallback gives up on a pure-buffering
     // degradation (no real playerError) with nothing left to fall back to; also doubles as the
     // "already gave up" sentinel compared against below, same role as the old English-only literal.
-    val playbackFailedText = stringResource(R.string.player_playback_failed)
-    val contentNotFoundText = stringResource(R.string.player_content_not_found)
+    val playbackFailedText = stringResource(CoreR.string.player_playback_failed)
+    val contentNotFoundText = stringResource(CoreR.string.player_content_not_found)
 
     Box(
         modifier = modifier
@@ -1028,7 +1029,7 @@ fun LivePlayerScreen(
                 Box(Modifier.fillMaxWidth().padding(28.dp, 24.dp)) {
                     AreIconButton(
                         icon = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.action_back),
+                        contentDescription = stringResource(CoreR.string.action_back),
                         onClick = handleBack,
                         variant = AreIconButtonVariant.Glass,
                     )
@@ -1093,7 +1094,7 @@ fun LivePlayerScreen(
                         }
                     }
                     val catchupAired = catchupWindow?.let { (s, e) ->
-                        stringResource(R.string.guide_catchup_aired, s, e)
+                        stringResource(CoreR.string.guide_catchup_aired, s, e)
                     }
                     val hudArrangement = if (media.isLive) hudLayoutLive else hudLayoutVod
                     ArePlayerControls(
@@ -1142,7 +1143,7 @@ fun LivePlayerScreen(
                         onAddToMultiView = if (media.isLive && state.currentChannelId != null) {
                             {
                                 viewModel.addCurrentChannelToMultiView()
-                                Toast.makeText(context, context.getString(R.string.multiview_added_toast), Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(CoreR.string.multiview_added_toast), Toast.LENGTH_SHORT).show()
                             }
                         } else {
                             null
@@ -1202,7 +1203,7 @@ fun LivePlayerScreen(
                             aspectOverride = next
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.player_aspect_toast, context.getString(next.labelRes)),
+                                context.getString(CoreR.string.player_aspect_toast, context.getString(next.labelRes)),
                                 Toast.LENGTH_SHORT,
                             ).show()
                         },
@@ -1329,22 +1330,22 @@ fun LivePlayerScreen(
                 ) {
                     AreDialog(
                         onDismiss = { playbackEnded = false; autoAdvanceRemaining = null },
-                        title = stringResource(R.string.player_autoplay_next_title),
+                        title = stringResource(CoreR.string.player_autoplay_next_title),
                         actions = {
                             AreButton(
-                                stringResource(R.string.action_cancel),
+                                stringResource(CoreR.string.action_cancel),
                                 onClick = { playbackEnded = false; autoAdvanceRemaining = null },
                                 variant = AreButtonVariant.Ghost,
                             )
                             AreButton(
-                                stringResource(R.string.player_autoplay_play_now),
+                                stringResource(CoreR.string.player_autoplay_play_now),
                                 onClick = { autoAdvanceRemaining = null; viewModel.switchEpisode(1) },
                                 variant = AreButtonVariant.Primary,
                             )
                         },
                     ) {
                         Text(
-                            text = stringResource(R.string.player_autoplay_next_in, remaining),
+                            text = stringResource(CoreR.string.player_autoplay_next_in, remaining),
                             style = AreIptvTheme.typography.body,
                             color = AreIptvTheme.colors.textSecondary,
                         )
@@ -1378,10 +1379,10 @@ private fun UpNextDialog(channelTitle: String?, programs: List<UpNextProgram>, o
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        val title = channelTitle?.let { stringResource(R.string.player_up_next_channel, it) } ?: stringResource(R.string.player_up_next)
+        val title = channelTitle?.let { stringResource(CoreR.string.player_up_next_channel, it) } ?: stringResource(CoreR.string.player_up_next)
         AreDialog(onDismiss = onDismiss, title = title) {
             if (programs.isEmpty()) {
-                Text(text = stringResource(R.string.player_no_programme_data), style = AreIptvTheme.typography.body, color = colors.textSecondary)
+                Text(text = stringResource(CoreR.string.player_no_programme_data), style = AreIptvTheme.typography.body, color = colors.textSecondary)
             } else {
                 Column {
                     programs.forEach { program ->
@@ -1487,7 +1488,7 @@ private fun BufferingIndicator() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Filled.Autorenew, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.rotate(angle))
         Box(Modifier.padding(top = 8.dp))
-        Text(text = stringResource(R.string.player_buffering), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
+        Text(text = stringResource(CoreR.string.player_buffering), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
     }
 }
 
@@ -1510,14 +1511,14 @@ private fun PlayerErrorState(
             tint = colors.danger,
             modifier = Modifier.padding(bottom = 12.dp),
         )
-        Text(text = stringResource(R.string.player_playback_failed), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+        Text(text = stringResource(CoreR.string.player_playback_failed), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
         Box(Modifier.padding(top = 6.dp))
         Text(text = message, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         Box(Modifier.padding(top = 20.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AreIconButton(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.action_back),
+                contentDescription = stringResource(CoreR.string.action_back),
                 onClick = onBack,
                 variant = AreIconButtonVariant.Solid,
                 modifier = if (onRetry == null && focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
@@ -1528,7 +1529,7 @@ private fun PlayerErrorState(
             if (onRetry != null) {
                 AreIconButton(
                     icon = Icons.Filled.Autorenew,
-                    contentDescription = stringResource(R.string.action_retry),
+                    contentDescription = stringResource(CoreR.string.action_retry),
                     onClick = onRetry,
                     variant = AreIconButtonVariant.Solid,
                     modifier = if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier,
@@ -1561,7 +1562,7 @@ private fun buildCaptionStyle(
         com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.SERIF -> android.graphics.Typeface.SERIF
         com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.MONO -> android.graphics.Typeface.MONOSPACE
         com.arashrahimi46.iptv.data.settings.SubtitleFontChoice.VAZIRMATN ->
-            androidx.core.content.res.ResourcesCompat.getFont(context, R.font.vazirmatn_regular)
+            androidx.core.content.res.ResourcesCompat.getFont(context, CoreR.font.vazirmatn_regular)
     }
     return CaptionStyleCompat(color.argb, bg, transparent, edgeType, black, typeface)
 }
@@ -1574,9 +1575,9 @@ private fun buildCaptionStyle(
  * with no distortion, [STRETCH] fills by distorting.
  */
 enum class AspectMode(val resizeMode: Int, val labelRes: Int) {
-    FIT(AspectRatioFrameLayout.RESIZE_MODE_FIT, R.string.player_aspect_fit),
-    FILL(AspectRatioFrameLayout.RESIZE_MODE_ZOOM, R.string.player_aspect_fill),
-    STRETCH(AspectRatioFrameLayout.RESIZE_MODE_FILL, R.string.player_aspect_stretch);
+    FIT(AspectRatioFrameLayout.RESIZE_MODE_FIT, CoreR.string.player_aspect_fit),
+    FILL(AspectRatioFrameLayout.RESIZE_MODE_ZOOM, CoreR.string.player_aspect_fill),
+    STRETCH(AspectRatioFrameLayout.RESIZE_MODE_FILL, CoreR.string.player_aspect_stretch);
 
     fun next(): AspectMode = entries[(ordinal + 1) % entries.size]
 

@@ -11,6 +11,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.ui.player.LiveMiniPlayerOverlay
 import com.arashrahimi46.iptv.ui.player.LivePlaybackController
 import com.arashrahimi46.iptv.ui.player.LocalLivePlaybackController

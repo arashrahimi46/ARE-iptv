@@ -32,7 +32,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.parser.ExploreEntry
 import com.arashrahimi46.iptv.data.parser.MAX_PLAYLISTS
 import com.arashrahimi46.iptv.ui.components.AreButton

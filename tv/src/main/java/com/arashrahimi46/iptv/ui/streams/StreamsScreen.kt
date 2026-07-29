@@ -41,7 +41,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.model.DirectStream
 import com.arashrahimi46.iptv.data.model.directStreamLabel
 import com.arashrahimi46.iptv.ui.components.AreButton

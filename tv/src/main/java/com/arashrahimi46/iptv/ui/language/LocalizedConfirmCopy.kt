@@ -2,7 +2,7 @@ package com.arashrahimi46.iptv.ui.language
 
 import android.content.Context
 import android.content.res.Configuration
-import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R
 import java.util.Locale
 
 /** Title + Confirm/Cancel labels for the Settings language-switch confirmation modal, phrased in
