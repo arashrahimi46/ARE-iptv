@@ -5,6 +5,7 @@ import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
@@ -15,6 +16,7 @@ import kotlinx.coroutines.withContext
  */
 class ContinueWatchingRepository(context: Context) {
     private val dao = AppDatabase.get(context).continueWatchingDao()
+    private val seriesEpisodeDao = AppDatabase.get(context).seriesEpisodeDao()
 
     /** Persists (or replaces) the bookmark for exactly one of [vodTitleId]/[seriesEpisodeId]/[recordingId]. */
     suspend fun updateProgress(vodTitleId: Long?, seriesEpisodeId: Long?, positionMs: Long, durationMs: Long, recordingId: Long? = null): Unit =
@@ -52,8 +54,31 @@ class ContinueWatchingRepository(context: Context) {
         entry?.positionMs ?: 0L
     }
 
-    /** Most-recently-updated in-progress entries, bounded for the Home rail. */
-    fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>> = dao.observeRecent(limit)
+    /** Most-recently-updated in-progress entries, bounded for the Home rail -- at most one entry
+     * per series (see [dedupeBySeries]); movie/recording entries pass through untouched. */
+    fun observeRecent(limit: Int): Flow<List<ContinueWatchingEntry>> = dao.observeRecent(limit).map { dedupeBySeries(it) }
+
+    /** Collapses multiple in-progress-episode rows of the same series down to the single
+     * most-recently-updated one -- Product decision: Continue Watching shows one tile per series,
+     * not one per in-progress episode. [dao.observeRecent] is already `ORDER BY updatedAtMs DESC`,
+     * so keeping the first row seen per series id keeps the newest.
+     *
+     * This is also the fix for a P0 crash-loop: two in-progress episodes of the same series both
+     * resolve to the same parent series/title id downstream (Home's rail joins each entry to its
+     * VodTitle/series), and both UI layers keyed their LazyRow items by that resolved id --
+     * producing a duplicate Compose key and an IllegalArgumentException crash on every launch.
+     * Because this runs on every emission of the underlying query, it self-heals installs that
+     * already have duplicate rows persisted -- no migration/wipe needed. */
+    private suspend fun dedupeBySeries(entries: List<ContinueWatchingEntry>): List<ContinueWatchingEntry> {
+        val episodeIds = entries.mapNotNull { it.seriesEpisodeId }
+        if (episodeIds.isEmpty()) return entries
+        val seriesIdByEpisodeId = episodeIds.distinct().associateWith { seriesEpisodeDao.getById(it)?.seriesTitleId }
+        val seenSeriesIds = mutableSetOf<Long>()
+        return entries.filter { entry ->
+            val seriesId = entry.seriesEpisodeId?.let { seriesIdByEpisodeId[it] } ?: return@filter true
+            seenSeriesIds.add(seriesId)
+        }
+    }
 
     /** Clears every resume bookmark (Settings "Clear continue-watching / history"). */
     suspend fun clearAll(): Unit = withContext(Dispatchers.IO) { dao.deleteAll() }
