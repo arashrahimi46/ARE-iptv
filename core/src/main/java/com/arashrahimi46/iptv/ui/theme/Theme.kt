@@ -9,6 +9,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
+import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
 
 val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
 val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
@@ -18,6 +19,17 @@ val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
  * (via [AreIptvTheme.isDark]) instead of the stored theme pref when a component needs to know which
  * mode is actually on screen (e.g. the per-mode accent picker). */
 val LocalThemeIsDark = staticCompositionLocalOf { true }
+
+/**
+ * Platform rendering binding for [com.arashrahimi46.iptv.ui.interaction.AreInteractive] -- `:tv`
+ * provides one that layers D-pad focus registration + the accent focus ring on top of the shared
+ * glass rendering; `:mobile` provides the plain touch rendering. No default: a theme root that
+ * forgets to provide this must fail composition loudly (every focusable in the app would otherwise
+ * silently lose its focus indicator) rather than degrade quietly.
+ */
+val LocalAreInteractiveBinding = staticCompositionLocalOf<AreInteractiveBinding> {
+    error("LocalAreInteractiveBinding has no value -- provide it at the theme composition root (AreIptvTheme for :tv, AreIptvMobileTheme for :mobile) before rendering any AreInteractive-based component.")
+}
 
 /**
  * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /

@@ -11,13 +11,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.delay
 import androidx.compose.ui.focus.FocusRequester
-import com.arashrahimi46.iptv.ui.interaction.AreInteractive
+import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
+import com.arashrahimi46.iptv.ui.interaction.AreInteractiveSurface
 import androidx.compose.ui.Modifier
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
@@ -288,7 +290,7 @@ fun TvFocusable(
         label = "tvFocusRingOverlay",
     )
     Box(modifier = modifier) {
-        AreInteractive(
+        AreInteractiveSurface(
             onClick = onClick,
             modifier = Modifier
                 .matchParentSize()
@@ -341,6 +343,98 @@ private val FocusRingWidth = 3.dp
 
 /** Hold threshold (ms) separating a tap from a long-press on the OK/select button. */
 private const val LONG_PRESS_MS = 400L
+
+/**
+ * [LocalAreInteractiveBinding] implementation for `:tv`, provided by [TvAppTheme]. Every `:core`
+ * component that calls `AreInteractive` directly (Button, Chip, Tabs, SegmentedControl,
+ * CategoryCard, CategoryRow, ChannelTile, ContinueCard, GuideCell, PosterTile, Rail,
+ * PlayerControls, ...) resolves here, restoring the D-pad focus target and accent focus ring that
+ * `AreInteractiveSurface` alone deliberately omits.
+ *
+ * This is the same wrapping [TvFocusable] applies (focusable registration, `DPAD_CENTER` handling,
+ * a sibling focus-ring box), minus [TvFocusable]'s customizable `glowColor` -- callers that need a
+ * non-default ring color (e.g. multi-view's selected-pane accent ring) keep using [TvFocusable]
+ * directly, which calls [AreInteractiveSurface] itself rather than going through this binding, so
+ * there is no double focus-registration or double ring.
+ */
+private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
+    modifier,
+    interactionSource,
+    shape,
+    backgroundColor,
+    backgroundBrush,
+    shadowElevation,
+    borderColor,
+    borderBrush,
+    enabled,
+    onLongClick,
+    disableScale,
+    content,
+    ->
+    val focused by interactionSource.collectIsFocusedAsState()
+    val motion = AreIptvTheme.motion
+    val ringAlpha = animateFloatAsState(
+        targetValue = if (focused) 1f else 0f,
+        animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeOut),
+        label = "areInteractiveFocusRing",
+    )
+    Box(modifier = modifier) {
+        AreInteractiveSurface(
+            onClick = onClick,
+            modifier = Modifier
+                .matchParentSize()
+                .focusable(interactionSource = interactionSource)
+                // See the identical block in TvFocusable for why DPAD_CENTER needs its own
+                // handling on top of combinedClickable's Enter/NumPadEnter.
+                .onKeyEvent { keyEvent ->
+                    if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
+                        val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
+                        if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
+                        true
+                    } else {
+                        enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
+                    }
+                },
+            interactionSource = interactionSource,
+            shape = shape,
+            backgroundColor = backgroundColor,
+            backgroundBrush = backgroundBrush,
+            shadowElevation = shadowElevation,
+            borderColor = borderColor,
+            borderBrush = borderBrush,
+            enabled = enabled,
+            onLongClick = onLongClick,
+            disableScale = disableScale,
+            content = content,
+        )
+        Box(
+            Modifier
+                .matchParentSize()
+                .graphicsLayer { alpha = ringAlpha.value }
+                .focusRingCached(AreIptvTheme.colors.focusRing, shape, FocusRingWidth) { 1f },
+        )
+    }
+}
+
+/**
+ * `:tv`'s composition root theme wrap: [AreIptvTheme] (`:core`, platform-agnostic tokens) plus
+ * binding [LocalAreInteractiveBinding] to [tvAreInteractiveBinding] -- the one piece of TV-only
+ * (D-pad focus/key-event) wiring `:core` cannot provide itself. Every `:tv` composition root
+ * (MainActivity's splash and main NavHost) uses this instead of calling [AreIptvTheme] directly.
+ */
+@Composable
+fun TvAppTheme(
+    isDark: Boolean = true,
+    accent: AccentPreset = AccentPreset.BLUE,
+    reducedMotion: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    AreIptvTheme(isDark = isDark, accent = accent, reducedMotion = reducedMotion) {
+        CompositionLocalProvider(LocalAreInteractiveBinding provides tvAreInteractiveBinding) {
+            content()
+        }
+    }
+}
 
 /**
  * Requests focus once the target actually exists, retrying for a few frames.

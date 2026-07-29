@@ -99,6 +99,7 @@ import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.TvAppTheme
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -342,7 +343,7 @@ fun AreIptvApp() {
     val startStateReady = activeSourceId != UNKNOWN && hasAcceptedTerms != null &&
         hasSelectedLanguage != null && sources != null
     if (!splashFloorElapsed || !startStateReady) {
-        AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
+        TvAppTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
             AreSplashScreen()
         }
         return
@@ -389,7 +390,7 @@ fun AreIptvApp() {
         }
     }
 
-    AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
+    TvAppTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("language") {
             LanguageSelectScreen(onDone = {

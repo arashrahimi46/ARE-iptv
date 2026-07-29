@@ -9,9 +9,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
+import com.arashrahimi46.iptv.ui.interaction.AreInteractiveSurface
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvDarkColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvLightColors
+import com.arashrahimi46.iptv.ui.theme.LocalAreInteractiveBinding
 
 /**
  * Phone theming, wired to the SAME design-system tokens as :tv
@@ -82,7 +85,45 @@ fun AreIptvMobileTheme(
     CompositionLocalProvider(
         LocalAreIptvColors provides colors,
         LocalAreIptvTypography provides typography,
+        LocalAreInteractiveBinding provides mobileAreInteractiveBinding,
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
+}
+
+/**
+ * [LocalAreInteractiveBinding] implementation for `:mobile`: a plain passthrough to
+ * [AreInteractiveSurface] -- a touch surface never registers `.focusable()`, so `focused` reads
+ * false naturally off [interactionSource] with no extra wiring needed, matching what
+ * `AreTouchable` already assumed before this binding existed.
+ */
+private val mobileAreInteractiveBinding: AreInteractiveBinding = { onClick,
+    modifier,
+    interactionSource,
+    shape,
+    backgroundColor,
+    backgroundBrush,
+    shadowElevation,
+    borderColor,
+    borderBrush,
+    enabled,
+    onLongClick,
+    disableScale,
+    content,
+    ->
+    AreInteractiveSurface(
+        onClick = onClick,
+        modifier = modifier,
+        interactionSource = interactionSource,
+        shape = shape,
+        backgroundColor = backgroundColor,
+        backgroundBrush = backgroundBrush,
+        shadowElevation = shadowElevation,
+        borderColor = borderColor,
+        borderBrush = borderBrush,
+        enabled = enabled,
+        onLongClick = onLongClick,
+        disableScale = disableScale,
+        content = content,
+    )
 }
