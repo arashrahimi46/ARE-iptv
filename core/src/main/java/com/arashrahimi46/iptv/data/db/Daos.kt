@@ -32,7 +32,10 @@ data class CategoryCount(val name: String, val count: Int)
 
 /**
  * A catalog row's stable identity for id-preserving refresh sync: its Room row [id] plus the
- * [matchKey] = `COALESCE(externalId, name, streamUrl)` (the same expression favorites key on). The
+ * [matchKey] = `COALESCE(externalId, name, streamUrl)`. NOTE: this is deliberately a *different*
+ * expression than the favorites key (`COALESCE(externalId || '|' || name, name, streamUrl)`, see
+ * `FavoriteDao`) -- refresh-sync only needs row-id stability across a re-import, not collision
+ * resistance between distinct rows, so the plain (non-disambiguated) form is fine here. The
  * refresh diff matches incoming provider items to existing rows by [matchKey] so an unchanged item
  * keeps its row [id] -- continue-watching and lazily-loaded metadata reference that id and must
  * survive a refresh. See [com.arashrahimi46.iptv.data.repository.PlaylistRepository.refreshSource].
@@ -126,16 +129,16 @@ interface ChannelDao {
 
     /** Favorited channels of the active source, most-recently-favorited first -- backs the
      *  "Favorites" pseudo-category at the top of the browse column. Keyed the same way as the
-     *  favorite-icon queries (COALESCE(externalId, name, streamUrl)). */
+     *  favorite-icon queries (COALESCE(externalId || '|' || name, name, streamUrl)). */
     @Query(
-        "SELECT c.* FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+        "SELECT c.* FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId || '|' || c.name, c.name, c.streamUrl) " +
             "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE' ORDER BY f.addedAtMs DESC, c.id",
     )
     fun pagingFavorites(sourceId: Long): PagingSource<Int, Channel>
 
     /** Live count of favorited channels in the source -- the "Favorites" browse-row total. */
     @Query(
-        "SELECT COUNT(*) FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+        "SELECT COUNT(*) FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId || '|' || c.name, c.name, c.streamUrl) " +
             "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE'",
     )
     fun observeFavoriteCount(sourceId: Long): Flow<Int>
@@ -165,7 +168,7 @@ interface ChannelDao {
     /** Category weights from the user's favorite channels -- Live-now personalization signal. */
     @Query(
         "SELECT c.categoryName AS name, COUNT(*) AS count FROM channels c " +
-            "JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+            "JOIN favorites f ON f.streamKey = COALESCE(c.externalId || '|' || c.name, c.name, c.streamUrl) " +
             "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE' AND c.categoryName IS NOT NULL " +
             "GROUP BY c.categoryName",
     )
@@ -183,7 +186,7 @@ interface ChannelDao {
     suspend fun getByIds(ids: List<Long>): List<Channel>
 
     /** Resolve favorited channel keys to the active source's current rows (see [Favorite.streamKey]). */
-    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND COALESCE(externalId, name, streamUrl) IN (:keys)")
+    @Query("SELECT * FROM channels WHERE sourceId = :sourceId AND COALESCE(externalId || '|' || name, name, streamUrl) IN (:keys)")
     suspend fun channelsByFavoriteKeys(sourceId: Long, keys: List<String>): List<Channel>
 
     /** Ordered channel ids only (player prev/next nav) -- ids, not full rows, for large catalogs. */
@@ -264,14 +267,14 @@ interface VodTitleDao {
      *  "Favorites" pseudo-category at the top of the browse column. [contentType] (MOVIE/SERIES)
      *  is correlated with [isSeries] so a favorited movie never surfaces on the series page. */
     @Query(
-        "SELECT v.* FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+        "SELECT v.* FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId || '|' || v.name, v.name, v.streamUrl) " +
             "WHERE v.sourceId = :sourceId AND v.isSeries = :isSeries AND f.contentType = :contentType ORDER BY f.addedAtMs DESC, v.id",
     )
     fun pagingFavorites(sourceId: Long, isSeries: Boolean, contentType: ContentType): PagingSource<Int, VodTitle>
 
     /** Live count of favorited movies/series in the source -- the "Favorites" browse-row total (per type). */
     @Query(
-        "SELECT COUNT(*) FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+        "SELECT COUNT(*) FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId || '|' || v.name, v.name, v.streamUrl) " +
             "WHERE v.sourceId = :sourceId AND v.isSeries = :isSeries AND f.contentType = :contentType",
     )
     fun observeFavoriteCount(sourceId: Long, isSeries: Boolean, contentType: ContentType): Flow<Int>
@@ -295,7 +298,7 @@ interface VodTitleDao {
     /** Category weights from favorited movies+series -- VOD personalization signal. */
     @Query(
         "SELECT v.categoryName AS name, COUNT(*) AS count FROM vod_titles v " +
-            "JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+            "JOIN favorites f ON f.streamKey = COALESCE(v.externalId || '|' || v.name, v.name, v.streamUrl) " +
             "WHERE v.sourceId = :sourceId AND v.categoryName IS NOT NULL AND " +
             "((f.contentType = 'MOVIE' AND v.isSeries = 0) OR (f.contentType = 'SERIES' AND v.isSeries = 1)) " +
             "GROUP BY v.categoryName",
@@ -327,7 +330,7 @@ interface VodTitleDao {
     suspend fun getByIds(ids: List<Long>): List<VodTitle>
 
     /** Resolve favorited VOD keys to the active source's current rows (see [Favorite.streamKey]). */
-    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND COALESCE(externalId, name, streamUrl) IN (:keys)")
+    @Query("SELECT * FROM vod_titles WHERE sourceId = :sourceId AND COALESCE(externalId || '|' || name, name, streamUrl) IN (:keys)")
     suspend fun titlesByFavoriteKeys(sourceId: Long, keys: List<String>): List<VodTitle>
 
     /** Content-id-driven lookup for Detail/Search -- mirrors [ChannelDao.getById]. */
@@ -412,8 +415,8 @@ interface FavoriteDao {
      */
     @Query(
         "DELETE FROM favorites WHERE " +
-            "(contentType = 'LIVE' AND streamKey IN (SELECT COALESCE(externalId, name, streamUrl) FROM channels WHERE sourceId = :sourceId)) OR " +
-            "(contentType IN ('MOVIE', 'SERIES') AND streamKey IN (SELECT COALESCE(externalId, name, streamUrl) FROM vod_titles WHERE sourceId = :sourceId))",
+            "(contentType = 'LIVE' AND streamKey IN (SELECT COALESCE(externalId || '|' || name, name, streamUrl) FROM channels WHERE sourceId = :sourceId)) OR " +
+            "(contentType IN ('MOVIE', 'SERIES') AND streamKey IN (SELECT COALESCE(externalId || '|' || name, name, streamUrl) FROM vod_titles WHERE sourceId = :sourceId))",
     )
     suspend fun deleteForSource(sourceId: Long)
 
@@ -424,13 +427,22 @@ interface FavoriteDao {
     fun observeAll(): Flow<List<Favorite>>
 
     // The stable-key expressions below MUST stay in sync with FavoritesRepository.channelKey/vodKey
-    // (Kotlin) -- both compute the same COALESCE(externalId, name, streamUrl) identity. name is
-    // preferred over streamUrl so M3U favorites (externalId null, tokenized/rotating streamUrl)
-    // survive re-imports (see FavoritesRepository.vodKey/channelKey for the tradeoff).
+    // (Kotlin) -- both compute the same COALESCE(externalId || '|' || name, name, streamUrl) identity.
+    // externalId alone used to be tried first (plain COALESCE(externalId, name, streamUrl)), but some
+    // providers reuse one externalId/tvg-id across several distinctly-named rows (e.g. regional
+    // affiliates sharing an EPG id: "10 Comedy -- Sydney/Melbourne/Brisbane/..."), which collapsed
+    // every one of those rows onto a single favorites key -- toggling the heart on one favorited (and
+    // showed as favorited) all of them. Concatenating externalId with name disambiguates those rows
+    // while keeping the "survives a playlist re-import" property (both fields are stable per-row).
+    // name is preferred over streamUrl (when externalId is absent) so M3U favorites (externalId null,
+    // tokenized/rotating streamUrl) still survive re-imports (see FavoritesRepository.vodKey/channelKey
+    // for the tradeoff). NOTE: this key is intentionally NOT the same expression as [RowKey.matchKey]
+    // (`ChannelDao.matchKeys`/`VodTitleDao.matchKeys`, used for refresh-sync row-id preservation) --
+    // that one stays plain COALESCE(externalId, name, streamUrl) and is a separate concern.
 
     /** Row ids of the active source's channels that are favorited, for tile favorite-icon state. */
     @Query(
-        "SELECT c.id FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId, c.name, c.streamUrl) " +
+        "SELECT c.id FROM channels c JOIN favorites f ON f.streamKey = COALESCE(c.externalId || '|' || c.name, c.name, c.streamUrl) " +
             "WHERE c.sourceId = :sourceId AND f.contentType = 'LIVE'",
     )
     fun observeFavoriteChannelIdsInSource(sourceId: Long): Flow<List<Long>>
@@ -442,7 +454,7 @@ interface FavoriteDao {
      * the heart on series "100" (their externalId spaces overlap).
      */
     @Query(
-        "SELECT v.id FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId, v.name, v.streamUrl) " +
+        "SELECT v.id FROM vod_titles v JOIN favorites f ON f.streamKey = COALESCE(v.externalId || '|' || v.name, v.name, v.streamUrl) " +
             "WHERE v.sourceId = :sourceId AND " +
             "((f.contentType = 'MOVIE' AND v.isSeries = 0) OR (f.contentType = 'SERIES' AND v.isSeries = 1))",
     )

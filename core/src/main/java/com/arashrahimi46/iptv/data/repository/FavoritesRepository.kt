@@ -78,18 +78,22 @@ class FavoritesRepository(context: Context) {
     }
 
     companion object {
-        // Stable-key priority: externalId (Xtream, truly stable) -> name -> streamUrl.
-        // name is preferred over streamUrl because many providers hand out a rotating
-        // session token/port/host in the URL, so streamUrl differs on every re-import and
-        // the favorite would silently drop; name is far more stable. Tradeoff: name can be
-        // slightly less unique than a stable id, but for favorites surviving re-import is the
-        // correct priority. name is non-null on both entities, so streamUrl is a formal tail
-        // only reached if name were ever blank. MUST match FavoriteDao's COALESCE(externalId, name, streamUrl).
+        // Stable-key priority: "externalId|name" (Xtream/tvg-id, truly stable, combined with name to
+        // disambiguate) -> name -> streamUrl. name is preferred over streamUrl because many providers
+        // hand out a rotating session token/port/host in the URL, so streamUrl differs on every
+        // re-import and the favorite would silently drop; name is far more stable. name is non-null on
+        // both entities, so streamUrl is a formal tail only reached if name were ever blank.
+        //
+        // externalId is concatenated with name rather than used alone: some providers reuse one
+        // externalId/tvg-id across several distinctly-named rows (e.g. regional affiliates sharing an
+        // EPG id -- "10 Comedy -- Sydney/Melbourne/Brisbane/..."), which used to collapse every one of
+        // those rows onto the same favorites key -- toggling the heart on one favorited (and displayed
+        // as favorited) all of them. MUST match FavoriteDao's COALESCE(externalId || '|' || name, name, streamUrl).
 
-        /** MUST match FavoriteDao's `COALESCE(externalId, name, streamUrl)` channel-key expression. */
-        fun channelKey(channel: Channel): String = channel.externalId ?: channel.name
+        /** MUST match FavoriteDao's `COALESCE(externalId || '|' || name, name, streamUrl)` channel-key expression. */
+        fun channelKey(channel: Channel): String = channel.externalId?.let { "$it|${channel.name}" } ?: channel.name
 
-        /** MUST match FavoriteDao's `COALESCE(externalId, name, streamUrl)` VOD-key expression. */
-        fun vodKey(title: VodTitle): String = title.externalId ?: title.name
+        /** MUST match FavoriteDao's `COALESCE(externalId || '|' || name, name, streamUrl)` VOD-key expression. */
+        fun vodKey(title: VodTitle): String = title.externalId?.let { "$it|${title.name}" } ?: title.name
     }
 }
