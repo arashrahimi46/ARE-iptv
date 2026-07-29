@@ -532,7 +532,7 @@
     <string name="shell_multi_view_desc">Мулти изглед</string>
     <string name="shell_add_playlist_desc">Добави плейлист</string>
     <string name="nav_home">Начало</string>
-    <string name="nav_live_tv">Телевизия на живо</string>
+    <string name="nav_live_tv">На живо</string>
     <string name="nav_tv_guide">ТВ програма</string>
     <string name="nav_movies">Филми</string>
     <string name="nav_series">Сериали</string>

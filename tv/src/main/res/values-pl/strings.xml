@@ -531,8 +531,8 @@
     <string name="shell_customize">Dostosuj</string>
     <string name="shell_multi_view_desc">Multiwidok</string>
     <string name="shell_add_playlist_desc">Dodaj playlistę</string>
-    <string name="nav_home">Ekran główny</string>
-    <string name="nav_live_tv">Telewizja na żywo</string>
+    <string name="nav_home">Główna</string>
+    <string name="nav_live_tv">Na żywo</string>
     <string name="nav_tv_guide">Program TV</string>
     <string name="nav_movies">Filmy</string>
     <string name="nav_series">Seriale</string>

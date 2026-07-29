@@ -500,7 +500,7 @@
     <string name="shell_add_playlist_desc">إضافة قائمة تشغيل</string>
     <string name="nav_home">الرئيسية</string>
     <string name="nav_live_tv">البث المباشر</string>
-    <string name="nav_tv_guide">دليل التلفزيون</string>
+    <string name="nav_tv_guide">الدليل</string>
     <string name="nav_movies">الأفلام</string>
     <string name="nav_series">المسلسلات</string>
     <string name="nav_search">بحث</string>

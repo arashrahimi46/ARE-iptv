@@ -533,7 +533,7 @@
     <string name="shell_add_playlist_desc">Lejátszási lista hozzáadása</string>
     <string name="nav_home">Kezdőlap</string>
     <string name="nav_live_tv">Élő TV</string>
-    <string name="nav_tv_guide">TV-műsorújság</string>
+    <string name="nav_tv_guide">TV-műsor</string>
     <string name="nav_movies">Filmek</string>
     <string name="nav_series">Sorozatok</string>
     <string name="nav_search">Keresés</string>

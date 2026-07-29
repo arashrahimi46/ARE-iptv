@@ -595,7 +595,7 @@
     <string name="sources_rename_title">Cambiar el nombre de la lista</string>
     <string name="sources_rename_body">Esto solo cambia cómo aparece la lista en tu listado. Sus canales, favoritos e historial de reproducción se mantienen igual.</string>
     <string name="sources_rename_label">Nombre de la lista</string>
-    <string name="nav_streams">Transmisiones</string>
+    <string name="nav_streams">Emisiones</string>
     <string name="streams_open">Abrir transmisión de red</string>
     <string name="streams_empty">Aún no hay transmisiones. Abre una transmisión de red para empezar.</string>
     <string name="streams_url_placeholder">http://server/stream.m3u8</string>

@@ -538,7 +538,7 @@
     <string name="nav_series">Séries</string>
     <string name="nav_search">Pesquisar</string>
     <string name="nav_favorites">Favoritos</string>
-    <string name="nav_settings">Configurações</string>
+    <string name="nav_settings">Ajustes</string>
 
     <!-- Browse layout (shared Live/Movies/Series) -->
     <string name="browse_categories_header">Categorias</string>
