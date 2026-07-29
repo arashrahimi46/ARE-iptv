@@ -75,9 +75,9 @@ import com.arashrahimi46.iptv.ui.player.HudControl
 import com.arashrahimi46.iptv.ui.player.HudGroup
 import com.arashrahimi46.iptv.ui.player.HudSlot
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.Ink950
 import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassSurface
 import com.arashrahimi46.iptv.ui.theme.glassTrack
 import coil.compose.AsyncImage
@@ -534,7 +534,7 @@ private fun DisabledHintGlyph(icon: androidx.compose.ui.graphics.vector.ImageVec
     val interaction = remember { MutableInteractionSource() }
     val focused by interaction.collectIsFocusedAsState()
     Box(contentAlignment = Alignment.Center) {
-        TvFocusable(
+        AreInteractive(
             onClick = {},
             interactionSource = interaction,
             modifier = Modifier.size(52.dp),

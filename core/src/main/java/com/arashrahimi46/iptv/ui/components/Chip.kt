@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.controlSkin
 
 enum class AreChipSize { Small, Medium }
@@ -55,7 +55,7 @@ fun AreChip(
     val skin = controlSkin(ControlTone.Neutral, selected = selected)
     val contentColor = skin.content
 
-    TvFocusable(
+    AreInteractive(
         onClick = onClick,
         modifier = modifier.height(height),
         interactionSource = interactionSource,

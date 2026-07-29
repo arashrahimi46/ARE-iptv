@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 
 /**
@@ -66,7 +66,7 @@ fun AreGuideCell(
     val liveDesc = stringResource(R.string.badge_live)
     val catchupDesc = stringResource(R.string.guide_catchup_available_desc)
 
-    TvFocusable(
+    AreInteractive(
         onClick = onClick,
         modifier = modifier.width(width).height(AreIptvTheme.spacing.guideRowHeight),
         interactionSource = interactionSource,

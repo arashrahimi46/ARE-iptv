@@ -26,8 +26,8 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassLens
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
@@ -54,7 +54,7 @@ fun AreCategoryRow(
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
     val background = if (active) colors.accentWash else colors.surfaceGlass
 
-    TvFocusable(
+    AreInteractive(
         onClick = onClick,
         modifier = modifier.fillMaxWidth().height(56.dp),
         interactionSource = interactionSource,

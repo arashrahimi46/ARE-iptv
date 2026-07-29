@@ -24,9 +24,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassChild
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 
 /**
  * Rail — a titled horizontal row of tiles (Rail.jsx), the core Home building
@@ -78,7 +78,7 @@ fun AreRail(
                 // once focused -- at two metres an unfocused "See all ›" reads as a caption, so the
                 // one D-pad target in the header was invisible until you happened to land on it.
                 val seeAllShape = RoundedCornerShape(AreIptvTheme.radius.pill)
-                TvFocusable(
+                AreInteractive(
                     onClick = onSeeAll,
                     modifier = Modifier.focusRequester(seeAllFocus),
                     shape = seeAllShape,

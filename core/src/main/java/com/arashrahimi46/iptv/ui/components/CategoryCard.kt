@@ -35,8 +35,8 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.core.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
@@ -69,6 +69,11 @@ fun AreCategoryCard(
     compact: Boolean = false,
     width: Dp = AreIptvTheme.spacing.tileLandWidth,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    // Denser fill for a card sitting inside a modal over media (e.g. HomeAddSectionDialog) --
+    // same purpose as glassSurface's own `elevated` (see Glass.kt): plain `surfaceGlass` is tuned
+    // for sitting directly on the ambient backdrop (Home's own Categories rail) and reads as
+    // near-transparent over the busy poster art already showing through the dialog's own panel.
+    elevated: Boolean = false,
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.md)
@@ -81,14 +86,14 @@ fun AreCategoryCard(
     // the channel tile uses -- so the surface looks alive without a per-tile backdrop blur.
     val washHue = rememberTileWashHue(logoUrl = null, seed = name)
 
-    TvFocusable(
+    AreInteractive(
         onClick = if (obscured) blur.onReveal else onClick,
         modifier = modifier.width(width).aspectRatio(if (compact) 16f / 7f else 16f / 10f),
         interactionSource = interactionSource,
         shape = shape,
         // Glass fill + lit-edge gradient reads as a distinct card in both themes (the gradient's
         // dark bottom stop supplies the light-theme edge the fill can't).
-        backgroundColor = colors.surfaceGlass,
+        backgroundColor = if (elevated) colors.surfaceGlassElevated else colors.surfaceGlass,
         borderBrush = glassBorderBrush(),
     ) { _, _ ->
       Box(Modifier.fillMaxSize().clip(shape).tileWash(RectangleShape, washHue)) {

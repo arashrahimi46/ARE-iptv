@@ -31,9 +31,9 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.controlSkin
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import kotlin.math.roundToInt
@@ -136,7 +136,7 @@ fun <T> AreSegmentedControl(
         ) {
             options.forEachIndexed { index, option ->
                 val isSelected = option == selected
-                TvFocusable(
+                AreInteractive(
                     onClick = { onSelect(option) },
                     shape = pill,
                     backgroundColor = Color.Transparent,

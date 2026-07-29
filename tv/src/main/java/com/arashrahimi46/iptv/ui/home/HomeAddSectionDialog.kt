@@ -75,6 +75,11 @@ fun HomeAddSectionDialog(
                             count = category.count,
                             kind = category.kind.toAreCategoryKind(),
                             modifier = Modifier.padding(vertical = 6.dp),
+                            // This list sits inside a modal over Home's busy poster art -- plain
+                            // surfaceGlass (tuned for the rail, directly on the ambient backdrop)
+                            // read as near-transparent here, letting the art bleed through in
+                            // light theme. See CategoryCard.kt's `elevated` doc.
+                            elevated = true,
                         )
                     }
                 }

@@ -45,8 +45,8 @@ import androidx.tv.material3.Text
 import androidx.compose.foundation.Image
 import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
-import com.arashrahimi46.iptv.ui.theme.TvFocusable
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
 import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
@@ -111,7 +111,7 @@ fun AreChannelTile(
         AreStreamHealthLevel.Poor -> colors.healthPoor
     }
 
-    TvFocusable(
+    AreInteractive(
         onClick = if (obscured) blur.onReveal else onClick,
         modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(width)),
         interactionSource = interactionSource,
