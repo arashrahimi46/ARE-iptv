@@ -1,5 +1,15 @@
 package com.arashrahimi46.iptv.mobile.ui.nav
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
@@ -7,11 +17,13 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -34,6 +46,12 @@ import com.arashrahimi46.iptv.mobile.ui.settings.SettingsScreen
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.ui.interaction.AreInteractive
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.ControlTone
+import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
+import com.arashrahimi46.iptv.ui.theme.controlSkin
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Bottom-nav destinations, per product-lead's Phase 1 spec: Home / Live / Movies / Series / Settings. */
 sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -53,25 +71,75 @@ fun playerRoute(kind: String, id: Long) = "player/$kind/$id"
  * bar and to know whether entering PiP on "leave app" makes sense. */
 fun isPlayerRoute(route: String?): Boolean = route?.startsWith("player/") == true
 
+/**
+ * Bottom tab bar, rebuilt on :core's glass primitives (Step 5 milestone A) in place of the stock
+ * Material3 [androidx.compose.material3.NavigationBar]. The bar itself is a page-level glass
+ * surface -- it sits directly on the screen, not nested inside another glass panel -- so it takes
+ * [glassSurface] (the same "translucent fill + lit hairline edge" every full glass surface uses).
+ * Each tab is then a control ONE LEVEL IN, so it takes the nested-child treatment via
+ * [ProvideOnGlass] rather than a second glass fill (see ControlSkin.kt: "glass never stacks" --
+ * two glassSurface fills would compound to ~87% opacity and read as an opaque bar). The selected
+ * tab uses the same accent-lens `controlSkin(selectable = true, selected = ...)` funnel TV's
+ * `AreTab` (Tabs.kt) uses, for visual parity between the two apps.
+ */
 @Composable
 fun AppBottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    NavigationBar {
-        tabs.forEach { tab ->
-            val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    navController.navigate(tab.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = { Icon(tab.icon, contentDescription = null) },
-                label = { Text(stringResource(tab.labelRes)) },
-            )
+    val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.xl)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .glassSurface(shape, elevated = true),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        ProvideOnGlass {
+            tabs.forEach { tab ->
+                val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                AppBottomBarItem(
+                    tab = tab,
+                    selected = selected,
+                    onClick = {
+                        navController.navigate(tab.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppBottomBarItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val skin = controlSkin(ControlTone.Neutral, selected = selected, selectable = true)
+    val label = stringResource(tab.labelRes)
+    AreInteractive(
+        onClick = onClick,
+        interactionSource = interactionSource,
+        shape = RoundedCornerShape(AreIptvTheme.radius.md),
+        backgroundColor = skin.fillColor,
+        backgroundBrush = skin.fillBrush,
+        shadowElevation = skin.elevation,
+        borderColor = skin.borderColor,
+        borderBrush = skin.borderBrush,
+    ) { _, _ ->
+        Column(
+            modifier = Modifier
+                .wrapContentWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Icon(tab.icon, contentDescription = null, tint = skin.content, modifier = Modifier.size(22.dp))
+            Text(text = label, style = AreIptvTheme.typography.caption, color = skin.content, maxLines = 1)
         }
     }
 }
