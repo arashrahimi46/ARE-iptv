@@ -85,6 +85,8 @@ fun AreChannelTile(
     /** Null hides the favorite affordance entirely -- only screens wired to real favorites persistence pass this. */
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
+    /** Hold-OK handler -- opens the tile's action menu (see [AreTileActionDialog]). */
+    onLongClick: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     /** Category name used to decide whether this tile is blurred under the parental "blur" mode
      * (see [LocalParentalBlur]); null opts out. */
@@ -118,6 +120,9 @@ fun AreChannelTile(
         // The lit-edge gradient gives the unfocused tile a distinct edge on the off-white
         // light-theme page (replacing the old solid border).
         borderBrush = glassBorderBrush(),
+        // Mirrors ArePosterTile: while the tile is parental-obscured the only affordance is the
+        // reveal prompt, so the action menu is withheld.
+        onLongClick = if (obscured) null else onLongClick,
     ) { focused, _ ->
       // Publish this tile's logo as the page's ambient artwork on focus gain. Fires only on the
       // transition, never per recomposition, and never clears on focus loss -- the next focused

@@ -23,6 +23,7 @@ import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
+import com.arashrahimi46.iptv.ui.browse.BrowseTileActions
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
@@ -87,6 +88,16 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
     // (LiveScreen already does this; Movies/Series were still capturing the Set directly.)
     val isFavorite = remember(favoriteVodIds) { { id: Long -> id in favoriteVodIds } }
 
+    // Hold-OK menu for a movie tile. No Play row: a movie tile's click opens Detail (which owns the
+    // stream/resume plumbing), so there is no direct-play entry point to reuse from here.
+    val tileActions = remember(isFavorite) {
+        BrowseTileActions<VodTitle>(
+            title = { it.name },
+            isFavorite = { isFavorite(it.id) },
+            onToggleFavorite = { viewModel.toggleFavorite(it.id) },
+        )
+    }
+
     BrowseLayout(
         categories = categoryOptions,
         selectedIndex = state.selectedCategoryIndex,
@@ -107,8 +118,9 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
         // fall off the bottom edge. Smaller covers keep a whole tile shorter than the viewport.
         minItemWidth = 115.dp,
         contentFocusRequester = contentFocusRequester,
+        tileActions = tileActions,
         modifier = modifier,
-    ) { movie ->
+    ) { movie, onLongClick ->
         val focusRequester = rememberPlaybackFocusRequester(lastSelectedId, movie.id) { lastSelectedId = null }
         ArePosterTile(
             title = movie.name,
@@ -119,6 +131,7 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             fillWidth = true,
             isFavorite = isFavorite(movie.id),
             onToggleFavorite = { viewModel.toggleFavorite(movie.id) },
+            onLongClick = onLongClick,
             focusRequester = focusRequester,
         )
     }

@@ -17,7 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +44,10 @@ import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreCategoryRow
 import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.components.AreTextField
+import com.arashrahimi46.iptv.ui.components.AreTileActionDialog
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import java.text.Normalizer
 
 /** A single entry in [BrowseLayout]'s left-hand filter column. */
 data class BrowseCategoryOption(
@@ -52,6 +58,20 @@ data class BrowseCategoryOption(
     val pinned: Boolean = false,
     /** Whether long-press pin/unpin is offered. False for the "Favorites" and "All" pseudo-rows. */
     val pinnable: Boolean = true,
+)
+
+/**
+ * What long-pressing a CONTENT tile offers (see [com.arashrahimi46.iptv.ui.components.AreTileActionDialog]).
+ * Null on [BrowseLayout] means content tiles have no long-press menu at all -- category-row
+ * long-press (pin/unpin) is a separate, independent thing.
+ */
+data class BrowseTileActions<T>(
+    val title: (T) -> String,
+    val isFavorite: (T) -> Boolean,
+    val onToggleFavorite: (T) -> Unit,
+    /** Null when the tile's normal click opens a detail screen rather than starting playback --
+     * the dialog then offers favourite + cancel only. */
+    val onPlay: ((T) -> Unit)? = null,
 )
 
 /**
@@ -108,13 +128,24 @@ fun <T : Any> BrowseLayout(
      * instead of leaving it stranded on the persistent shell's sidebar. Null = no auto-focus
      * target (the sidebar keeps focus, as before). */
     contentFocusRequester: FocusRequester? = null,
-    itemContent: @Composable (T) -> Unit,
+    /** Long-press menu for a content tile. Null = no menu (tiles get a null onLongClick). */
+    tileActions: BrowseTileActions<T>? = null,
+    /** Second param is the tile's long-press handler (null when [tileActions] is null) --
+     * pass it straight to the tile's `onLongClick`. */
+    itemContent: @Composable (T, (() -> Unit)?) -> Unit,
 ) {
     val colors = AreIptvTheme.colors
     val spacing = AreIptvTheme.spacing
 
     // Which category row's pin/unpin dialog is open (index into [categories]); null = closed.
     var pinDialogIndex by remember { mutableStateOf<Int?>(null) }
+
+    // Which content tile's action dialog is open; null = closed. Deliberately a raw MutableState
+    // that this function NEVER reads: the read happens inside [BrowseTileActionHost] below, so
+    // opening/closing the menu invalidates only that dialog's restart scope, not this one --
+    // reading it here would drag the paged grid (and every visible tile) into the recomposition,
+    // the same trap BrowseCategoryColumn's doc comment describes for the search query.
+    val tileActionItem = remember { mutableStateOf<T?>(null) }
 
     // Follow-up on the QA MEDIUM text-wrap defect: fillMaxWidth on the inner
     // categories+content Row alone did not fix the on-device repro -- this outer
@@ -174,55 +205,22 @@ fun <T : Any> BrowseLayout(
             modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = spacing.safeX),
             horizontalArrangement = Arrangement.spacedBy(spacing.sp8),
         ) {
-            // Category filter column -- a LazyColumn (not a verticalScroll Column) so only the
-            // on-screen rows are composed. With a large catalog this column holds hundreds of
-            // country/genre entries; eagerly composing every one (each a focusable + glow) was
-            // what made a fast flick through the list stutter. 280dp: wide enough to show full
-            // genre names without truncating, while leaving room for the poster/channel grid.
-            LazyColumn(
-                modifier = Modifier.width(280.dp).fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                // Bottom room so the last row's focus ring/glow isn't clipped at the column edge.
-                contentPadding = PaddingValues(bottom = 24.dp),
-            ) {
-                item {
-                    Text(
-                        text = categoryColumnHeader.uppercase(),
-                        style = AreIptvTheme.typography.caption,
-                        color = colors.textTertiary,
-                        modifier = Modifier.padding(bottom = 8.dp, start = 16.dp),
-                    )
-                }
-                // Keyed by name, not by position. Index-keyed, any change to the list -- pinning
-                // floats a row to the top, a count changes -- made Compose reuse slots BY POSITION:
-                // every visible row recomposed instead of moving, and each row's remembered
-                // MutableInteractionSource stayed with the slot rather than the category, so the
-                // pressed/focus visual briefly attached to the wrong name.
-                itemsIndexed(categories, key = { _, category -> category.name }) { index, category ->
-                    AreCategoryRow(
-                        name = category.name,
-                        onClick = { onCategorySelected(index) },
-                        // Index 0 is always composed (top of the column) so it's a reliable
-                        // initial-focus target for the caller's contentFocusRequester.
-                        modifier = if (index == 0 && contentFocusRequester != null) {
-                            Modifier.focusRequester(contentFocusRequester)
-                        } else {
-                            Modifier
-                        },
-                        count = category.count,
-                        kind = category.kind,
-                        smart = category.smart,
-                        active = index == selectedIndex,
-                        pinned = category.pinned,
-                        // Only real categories are pinnable -- the leading "Favorites"/"All" pseudo-rows aren't.
-                        onLongClick = if (onCategoryPinToggle != null && category.pinnable) {
-                            { pinDialogIndex = index }
-                        } else {
-                            null
-                        },
-                    )
-                }
-            }
+            // Category filter column (header + search field + list). Extracted into its own
+            // composable so the search query state lives THERE: typing recomposes only the
+            // sidebar, never this Row's other child (the paged content grid).
+            BrowseCategoryColumn(
+                categories = categories,
+                selectedIndex = selectedIndex,
+                onCategorySelected = onCategorySelected,
+                header = categoryColumnHeader,
+                contentFocusRequester = contentFocusRequester,
+                // Stable across recompositions (captures nothing unstable), so the column can skip.
+                onCategoryLongPress = if (onCategoryPinToggle != null) {
+                    { index -> pinDialogIndex = index }
+                } else {
+                    null
+                },
+            )
 
             // Content grid for the selected category. The section title/count now lives in the
             // shared header band above (aligned with the page title), not here.
@@ -248,7 +246,9 @@ fun <T : Any> BrowseLayout(
                         contentPadding = PaddingValues(vertical = 10.dp),
                     ) {
                         items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
-                            items[index]?.let { itemContent(it) }
+                            items[index]?.let { item ->
+                                itemContent(item, if (tileActions == null) null else ({ tileActionItem.value = item }))
+                            }
                         }
                     }
                 } else {
@@ -263,7 +263,9 @@ fun <T : Any> BrowseLayout(
                         contentPadding = PaddingValues(top = 10.dp, bottom = 52.dp),
                     ) {
                         items(count = items.itemCount, key = items.itemKey(itemKey)) { index ->
-                            items[index]?.let { itemContent(it) }
+                            items[index]?.let { item ->
+                                itemContent(item, if (tileActions == null) null else ({ tileActionItem.value = item }))
+                            }
                         }
                     }
                 }
@@ -303,6 +305,149 @@ fun <T : Any> BrowseLayout(
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
+            }
+        }
+    }
+
+    if (tileActions != null) {
+        BrowseTileActionHost(tileActionItem, tileActions)
+    }
+}
+
+/**
+ * Renders the long-pressed tile's action menu. Split out purely so the "which tile" state read
+ * lives in ITS restart scope, not [BrowseLayout]'s -- see the state's declaration.
+ */
+@Composable
+private fun <T : Any> BrowseTileActionHost(state: MutableState<T?>, actions: BrowseTileActions<T>) {
+    val item = state.value ?: return
+    val onPlay = actions.onPlay
+    AreTileActionDialog(
+        title = actions.title(item),
+        isFavorite = actions.isFavorite(item),
+        onToggleFavorite = { actions.onToggleFavorite(item) },
+        onPlay = if (onPlay == null) null else ({ onPlay(item) }),
+        onDismiss = { state.value = null },
+    )
+}
+
+/** Combining marks left behind by an NFD decomposition -- stripping them is what makes the
+ *  category filter diacritic-insensitive ("Deportes" matches "Déportes", "Turkiye" matches "Türkiye"). */
+private val CombiningMarks = Regex("\\p{Mn}+")
+
+private fun String.foldForSearch(): String =
+    Normalizer.normalize(this, Normalizer.Form.NFD).replace(CombiningMarks, "").lowercase()
+
+/**
+ * The 280dp left column: pinned header + pinned search field + the scrolling category list.
+ *
+ * Owns the search query itself. That is deliberate and load-bearing for performance: a
+ * `query` state read in [BrowseLayout]'s own scope would invalidate the whole layout on every
+ * keystroke, dragging the paged content grid (and every visible tile's content lambda) into the
+ * recomposition -- exactly the measure/layout cost `docs/glass-render-perf-findings.md` traces
+ * to Home's rail. Here the keystroke invalidates this function only.
+ *
+ * Filtering is a pure in-memory pass over the already-loaded [categories] list -- it never
+ * round-trips through the ViewModel, so the Paging flow is untouched and the grid keeps both
+ * its scroll position and its loaded pages while the user types.
+ */
+@Composable
+private fun BrowseCategoryColumn(
+    categories: List<BrowseCategoryOption>,
+    selectedIndex: Int,
+    onCategorySelected: (Int) -> Unit,
+    header: String,
+    contentFocusRequester: FocusRequester?,
+    onCategoryLongPress: ((Int) -> Unit)?,
+) {
+    val colors = AreIptvTheme.colors
+    var query by remember { mutableStateOf("") }
+
+    // Folded once per catalog, not once per keystroke -- Normalizer over a few hundred names on
+    // every character typed is the kind of per-frame work that shows up as jank on a TV.
+    val foldedNames = remember(categories) { categories.map { it.name.foldForSearch() } }
+    // Indices INTO [categories], so [selectedIndex] and the pin/select callbacks keep speaking the
+    // caller's original index space -- filtering never renumbers a category out from under the
+    // ViewModel, and clearing the query restores the full list with the selection intact.
+    val visibleIndices = remember(foldedNames, query) {
+        val folded = query.foldForSearch().trim()
+        if (folded.isEmpty()) {
+            foldedNames.indices.toList()
+        } else {
+            foldedNames.indices.filter { foldedNames[it].contains(folded) }
+        }
+    }
+
+    Column(modifier = Modifier.width(280.dp).fillMaxHeight()) {
+        Text(
+            text = header.uppercase(),
+            style = AreIptvTheme.typography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(bottom = 8.dp, start = 16.dp),
+        )
+        // activateOnClick: D-pad'ing DOWN past this field to reach the list must NOT pop the IME
+        // (CLAUDE.md's TV text-input rule). OK enters edit mode, Back/Done leaves it.
+        AreTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = stringResource(R.string.browse_category_search_placeholder),
+            icon = Icons.Filled.Search,
+            activateOnClick = true,
+        )
+        Box(Modifier.height(10.dp))
+        if (visibleIndices.isEmpty()) {
+            Text(
+                text = stringResource(R.string.browse_category_search_empty),
+                style = AreIptvTheme.typography.body,
+                color = colors.textSecondary,
+                modifier = Modifier.padding(start = 16.dp),
+            )
+        } else {
+            // A LazyColumn (not a verticalScroll Column) so only the on-screen rows are composed.
+            // With a large catalog this column holds hundreds of country/genre entries; eagerly
+            // composing every one (each a focusable + glow) was what made a fast flick stutter.
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                // Bottom room so the last row's focus ring/glow isn't clipped at the column edge.
+                contentPadding = PaddingValues(bottom = 24.dp),
+            ) {
+                // Keyed by name, not by position. Index-keyed, any change to the list -- pinning
+                // floats a row to the top, a count changes, the filter narrows -- made Compose reuse
+                // slots BY POSITION: every visible row recomposed instead of moving, and each row's
+                // remembered MutableInteractionSource stayed with the slot rather than the category,
+                // so the pressed/focus visual briefly attached to the wrong name.
+                // contentType is uniform because this list is homogeneous now (the header and the
+                // search field are pinned OUTSIDE it) -- stated explicitly so it stays that way.
+                itemsIndexed(
+                    visibleIndices,
+                    key = { _, index -> categories[index].name },
+                    contentType = { _, _ -> "category" },
+                ) { position, index ->
+                    val category = categories[index]
+                    AreCategoryRow(
+                        name = category.name,
+                        onClick = { onCategorySelected(index) },
+                        // The first row is always composed (top of the column) so it's a reliable
+                        // initial-focus target for the caller's contentFocusRequester.
+                        modifier = if (position == 0 && contentFocusRequester != null) {
+                            Modifier.focusRequester(contentFocusRequester)
+                        } else {
+                            Modifier
+                        },
+                        count = category.count,
+                        kind = category.kind,
+                        smart = category.smart,
+                        active = index == selectedIndex,
+                        pinned = category.pinned,
+                        // Only real categories are pinnable -- the leading "Favorites"/"All" pseudo-rows aren't.
+                        onLongClick = if (onCategoryLongPress != null && category.pinnable) {
+                            { onCategoryLongPress(index) }
+                        } else {
+                            null
+                        },
+                    )
+                }
             }
         }
     }

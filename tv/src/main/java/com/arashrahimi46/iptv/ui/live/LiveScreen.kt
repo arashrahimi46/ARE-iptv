@@ -25,9 +25,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.browse.BrowseCategoryOption
 import com.arashrahimi46.iptv.ui.browse.BrowseLayout
+import com.arashrahimi46.iptv.ui.browse.BrowseTileActions
 import com.arashrahimi46.iptv.ui.components.AreCategoryKind
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -99,6 +101,17 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
     // defeats strong skipping's lambda memoization for the same reason as above.
     val isFavorite = remember(favoriteChannelIds) { { id: Long -> id in favoriteChannelIds } }
 
+    // Hold-OK menu for a channel tile. A Live tile's click plays directly, so Play is wired to the
+    // same path. No Resume/Play-from-start: live channels have no continue-watching progress.
+    val tileActions = remember(isFavorite) {
+        BrowseTileActions<Channel>(
+            title = { it.name },
+            isFavorite = { isFavorite(it.id) },
+            onToggleFavorite = { viewModel.toggleFavorite(it.id) },
+            onPlay = { lastPlayedChannelId = it.id; onChannelSelected(it.id) },
+        )
+    }
+
     BrowseLayout(
         titleAccessory = { OnAirNowBadge() },
         categories = categoryOptions,
@@ -117,8 +130,9 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
         // fill, so the content pane packs 2-3 readable channel cards per row instead of one big tile.
         minItemWidth = 180.dp,
         contentFocusRequester = contentFocusRequester,
+        tileActions = tileActions,
         modifier = modifier,
-    ) { channel ->
+    ) { channel, onLongClick ->
         val focusRequester = rememberPlaybackFocusRequester(lastPlayedChannelId, channel.id) { lastPlayedChannelId = null }
         AreChannelTile(
             channel = channel.name,
@@ -129,6 +143,7 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             logoUrl = channel.logoUrl,
             isFavorite = isFavorite(channel.id),
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
+            onLongClick = onLongClick,
             fillWidth = true,
             modifier = Modifier.focusRequester(focusRequester),
         )
