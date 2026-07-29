@@ -46,9 +46,28 @@ private val VazirFontFamily: FontFamily = FontFamily(
     Font(R.font.vazirmatn_extrabold, FontWeight.ExtraBold),
 )
 
-private const val LineHeightTight = 1.05f
-private const val LineHeightSnug = 1.2f
-private const val LineHeightNormal = 1.45f
+internal const val LineHeightTight = 1.05f
+internal const val LineHeightSnug = 1.2f
+internal const val LineHeightNormal = 1.45f
+
+/**
+ * Step 6: phone-appropriate type scale -- same role names/weights/families as :tv's (now :core's)
+ * [com.arashrahimi46.iptv.ui.theme.AreIptvTypography], but :tv's sizes (hero 64sp/display 44sp/
+ * h1 34sp/...) assume a ~10ft arm's-length TV viewport and are oversized on a handset held at
+ * reading distance. Roughly a 60% scale-down, rounded to sizes that still read cleanly at phone
+ * DPI; body/label/caption land close to Android's own Material defaults (16/14/12sp) since those
+ * roles are read at normal phone distance either way.
+ */
+internal const val PhoneHeroSp = 40
+internal const val PhoneDisplaySp = 32
+internal const val PhoneH1Sp = 26
+internal const val PhoneH2Sp = 21
+internal const val PhoneH3Sp = 18
+internal const val PhoneTileSp = 16
+internal const val PhoneBodySp = 15
+internal const val PhoneLabelSp = 14
+internal const val PhoneCaptionSp = 12
+internal const val PhoneMonoSp = 12
 
 /** Same composite text roles as :tv's [com.arashrahimi46.iptv.ui.theme.AreIptvTypography]. */
 data class AreIptvTypography(
@@ -65,30 +84,31 @@ data class AreIptvTypography(
 )
 
 val AreIptvTypographyDefault = AreIptvTypography(
-    hero = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = (64 * LineHeightTight).sp, letterSpacing = (-0.02).em),
-    display = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = (44 * LineHeightTight).sp, letterSpacing = (-0.02).em),
-    h1 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = (34 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    h2 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 26.sp, lineHeight = (26 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    h3 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp, lineHeight = (21 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    tile = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = (18 * LineHeightSnug).sp),
-    body = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = (16 * LineHeightNormal).sp),
-    label = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = (16 * LineHeightSnug).sp),
-    caption = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
-    mono = TextStyle(fontFamily = MonoFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
+    hero = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneHeroSp.sp, lineHeight = (PhoneHeroSp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    display = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneDisplaySp.sp, lineHeight = (PhoneDisplaySp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    h1 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneH1Sp.sp, lineHeight = (PhoneH1Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h2 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH2Sp.sp, lineHeight = (PhoneH2Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h3 = TextStyle(fontFamily = DisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH3Sp.sp, lineHeight = (PhoneH3Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    tile = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneTileSp.sp, lineHeight = (PhoneTileSp * LineHeightSnug).sp),
+    body = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.Normal, fontSize = PhoneBodySp.sp, lineHeight = (PhoneBodySp * LineHeightNormal).sp),
+    label = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneLabelSp.sp, lineHeight = (PhoneLabelSp * LineHeightSnug).sp),
+    caption = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneCaptionSp.sp, lineHeight = (PhoneCaptionSp * LineHeightNormal).sp),
+    mono = TextStyle(fontFamily = MonoFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneMonoSp.sp, lineHeight = (PhoneMonoSp * LineHeightNormal).sp),
 )
 
 /** Same type scale as [AreIptvTypographyDefault], entirely on [VazirFontFamily] -- swapped in for
  * fa/ar locales (see [com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme]'s
- * `LocalLayoutDirection` check), matching :tv's `AreIptvTypographyVazir`. */
+ * `LocalLayoutDirection` check), matching :tv's `AreIptvTypographyVazir` role-for-role but at the
+ * same phone-scale sizes as [AreIptvTypographyDefault] above. */
 val AreIptvTypographyVazir = AreIptvTypography(
-    hero = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = (64 * LineHeightTight).sp, letterSpacing = (-0.02).em),
-    display = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = (44 * LineHeightTight).sp, letterSpacing = (-0.02).em),
-    h1 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = (34 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    h2 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 26.sp, lineHeight = (26 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    h3 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp, lineHeight = (21 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
-    tile = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = (18 * LineHeightSnug).sp),
-    body = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = (16 * LineHeightNormal).sp),
-    label = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = (16 * LineHeightSnug).sp),
-    caption = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
-    mono = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
+    hero = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneHeroSp.sp, lineHeight = (PhoneHeroSp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    display = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneDisplaySp.sp, lineHeight = (PhoneDisplaySp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    h1 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneH1Sp.sp, lineHeight = (PhoneH1Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h2 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH2Sp.sp, lineHeight = (PhoneH2Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h3 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH3Sp.sp, lineHeight = (PhoneH3Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    tile = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneTileSp.sp, lineHeight = (PhoneTileSp * LineHeightSnug).sp),
+    body = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Normal, fontSize = PhoneBodySp.sp, lineHeight = (PhoneBodySp * LineHeightNormal).sp),
+    label = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneLabelSp.sp, lineHeight = (PhoneLabelSp * LineHeightSnug).sp),
+    caption = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneCaptionSp.sp, lineHeight = (PhoneCaptionSp * LineHeightNormal).sp),
+    mono = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneMonoSp.sp, lineHeight = (PhoneMonoSp * LineHeightNormal).sp),
 )

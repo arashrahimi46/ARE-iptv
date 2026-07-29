@@ -23,9 +23,18 @@ import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion as CoreLocalAreIptvMot
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvRadius as CoreLocalAreIptvRadius
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvSpacing as CoreLocalAreIptvSpacing
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvTypography as CoreLocalAreIptvTypography
+import androidx.compose.ui.unit.dp
+import com.arashrahimi46.iptv.ui.theme.LocalMinTouchTarget as CoreLocalMinTouchTarget
 import com.arashrahimi46.iptv.ui.theme.LocalThemeIsDark as CoreLocalThemeIsDark
-import com.arashrahimi46.iptv.ui.theme.AreIptvTypographyDefault as CoreAreIptvTypographyDefault
-import com.arashrahimi46.iptv.ui.theme.AreIptvTypographyVazir as CoreAreIptvTypographyVazir
+import com.arashrahimi46.iptv.ui.theme.AreIptvTypography as CoreAreIptvTypography
+import com.arashrahimi46.iptv.ui.theme.DisplayFontFamily as CoreDisplayFontFamily
+import com.arashrahimi46.iptv.ui.theme.BodyFontFamily as CoreBodyFontFamily
+import com.arashrahimi46.iptv.ui.theme.MonoFontFamily as CoreMonoFontFamily
+import com.arashrahimi46.iptv.ui.theme.VazirFontFamily as CoreVazirFontFamily
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 
 /**
  * Phone theming, wired to the SAME design-system tokens as :tv
@@ -107,14 +116,24 @@ fun AreIptvMobileTheme(
         // picked by the same RTL rule. :mobile has no per-platform spacing/radius/motion of its own,
         // so those three just get :core's shared default token sets -- the same objects :tv uses at rest.
         CoreLocalAreIptvColors provides colors,
+        // Step 6: :core's own AreIptvTypographyDefault/Vazir are :tv-scale (hero 64sp/display 44sp/
+        // h1 34sp/...) -- feeding those to :core components (ArePosterTile, AreButton, AreChip, the
+        // whole Milestone A/B surface) would render TV-sized headings on a handset. Build a
+        // phone-scale instance of :core's OWN AreIptvTypography type instead (same role names/
+        // weights, :core's font families since these ARE :core components), using the same sp
+        // values as :mobile's own Type.kt phone scale so the two stay in lockstep.
         CoreLocalAreIptvTypography provides (
-            if (LocalLayoutDirection.current == LayoutDirection.Rtl) CoreAreIptvTypographyVazir
-            else CoreAreIptvTypographyDefault
+            if (LocalLayoutDirection.current == LayoutDirection.Rtl) corePhoneTypographyVazir
+            else corePhoneTypographyDefault
         ),
         CoreLocalAreIptvSpacing provides AreIptvSpacingDefault,
         CoreLocalAreIptvRadius provides AreIptvRadiusDefault,
         CoreLocalAreIptvMotion provides AreIptvMotionDefault,
         CoreLocalThemeIsDark provides isDark,
+        // Touch accessibility minimum. :tv leaves this 0 -- see LocalMinTouchTarget: on TV the focus
+        // ring is drawn at the focusable's bounds, so inflating them would ring a larger box than
+        // the control. A finger needs the 48dp; a D-pad does not.
+        CoreLocalMinTouchTarget provides 48.dp,
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
@@ -156,3 +175,36 @@ private val mobileAreInteractiveBinding: AreInteractiveBinding = { onClick,
         content = content,
     )
 }
+
+/**
+ * Phone-scale instances of :core's OWN [CoreAreIptvTypography] type -- same sp values as
+ * [AreIptvTypographyDefault]/[AreIptvTypographyVazir] above (this package's Type.kt), just built
+ * against :core's font families since these feed :core components directly via
+ * [CoreLocalAreIptvTypography]. Kept in lockstep by construction: both read the same
+ * Phone*Sp/LineHeight* constants from Type.kt.
+ */
+private val corePhoneTypographyDefault = CoreAreIptvTypography(
+    hero = TextStyle(fontFamily = CoreDisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneHeroSp.sp, lineHeight = (PhoneHeroSp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    display = TextStyle(fontFamily = CoreDisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneDisplaySp.sp, lineHeight = (PhoneDisplaySp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    h1 = TextStyle(fontFamily = CoreDisplayFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneH1Sp.sp, lineHeight = (PhoneH1Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h2 = TextStyle(fontFamily = CoreDisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH2Sp.sp, lineHeight = (PhoneH2Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h3 = TextStyle(fontFamily = CoreDisplayFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH3Sp.sp, lineHeight = (PhoneH3Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    tile = TextStyle(fontFamily = CoreBodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneTileSp.sp, lineHeight = (PhoneTileSp * LineHeightSnug).sp),
+    body = TextStyle(fontFamily = CoreBodyFontFamily, fontWeight = FontWeight.Normal, fontSize = PhoneBodySp.sp, lineHeight = (PhoneBodySp * LineHeightNormal).sp),
+    label = TextStyle(fontFamily = CoreBodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneLabelSp.sp, lineHeight = (PhoneLabelSp * LineHeightSnug).sp),
+    caption = TextStyle(fontFamily = CoreBodyFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneCaptionSp.sp, lineHeight = (PhoneCaptionSp * LineHeightNormal).sp),
+    mono = TextStyle(fontFamily = CoreMonoFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneMonoSp.sp, lineHeight = (PhoneMonoSp * LineHeightNormal).sp),
+)
+
+private val corePhoneTypographyVazir = CoreAreIptvTypography(
+    hero = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneHeroSp.sp, lineHeight = (PhoneHeroSp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    display = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneDisplaySp.sp, lineHeight = (PhoneDisplaySp * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    h1 = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Bold, fontSize = PhoneH1Sp.sp, lineHeight = (PhoneH1Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h2 = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH2Sp.sp, lineHeight = (PhoneH2Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h3 = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneH3Sp.sp, lineHeight = (PhoneH3Sp * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    tile = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneTileSp.sp, lineHeight = (PhoneTileSp * LineHeightSnug).sp),
+    body = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Normal, fontSize = PhoneBodySp.sp, lineHeight = (PhoneBodySp * LineHeightNormal).sp),
+    label = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = PhoneLabelSp.sp, lineHeight = (PhoneLabelSp * LineHeightSnug).sp),
+    caption = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneCaptionSp.sp, lineHeight = (PhoneCaptionSp * LineHeightNormal).sp),
+    mono = TextStyle(fontFamily = CoreVazirFontFamily, fontWeight = FontWeight.Medium, fontSize = PhoneMonoSp.sp, lineHeight = (PhoneMonoSp * LineHeightNormal).sp),
+)
