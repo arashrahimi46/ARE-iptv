@@ -25,4 +25,5 @@ dependencyResolutionManagement {
 rootProject.name = "iptv"
 include(":mobile")
 include(":tv")
+include(":core")
 include(":baselineprofile")

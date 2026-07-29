@@ -90,6 +90,11 @@ ksp {
 }
 
 dependencies {
+    // Shared data layer + a handful of pure token/logic files UserSettings depends on -- moved
+    // out to :core so :mobile can reuse them too (an app-on-app project dependency broke AAPT2
+    // resource linking; see core/build.gradle.kts's top comment for the full story).
+    implementation(project(":core"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)

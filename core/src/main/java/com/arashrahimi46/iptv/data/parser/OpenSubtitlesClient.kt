@@ -1,6 +1,6 @@
 package com.arashrahimi46.iptv.data.parser
 
-import com.arashrahimi46.iptv.BuildConfig
+import com.arashrahimi46.iptv.core.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType

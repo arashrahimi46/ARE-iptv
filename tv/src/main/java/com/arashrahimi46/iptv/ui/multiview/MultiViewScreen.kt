@@ -372,8 +372,9 @@ private fun ChannelPickerDialog(
                     ) { _, _ ->
                         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
                             Text(channel.name, style = AreIptvTheme.typography.body, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            if (channel.categoryName != null) {
-                                Text(channel.categoryName, style = AreIptvTheme.typography.caption, color = colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            val categoryName = channel.categoryName
+                            if (categoryName != null) {
+                                Text(categoryName, style = AreIptvTheme.typography.caption, color = colors.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }
@@ -610,9 +611,10 @@ private fun MultiViewPane(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (channel.categoryName != null) {
+                val categoryName = channel.categoryName
+                if (categoryName != null) {
                     Text(
-                        text = channel.categoryName,
+                        text = categoryName,
                         style = AreIptvTheme.typography.caption,
                         color = colors.textSecondary,
                         maxLines = 1,
