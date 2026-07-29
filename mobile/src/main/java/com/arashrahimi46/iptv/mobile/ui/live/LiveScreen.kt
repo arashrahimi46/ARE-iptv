@@ -17,9 +17,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -38,6 +41,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.mobile.ui.components.FavoriteToggleButton
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 
 @Composable
@@ -47,6 +51,7 @@ fun LiveScreen(onOpenChannel: (Channel) -> Unit, viewModel: LiveViewModel = view
     val query by viewModel.query.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
     val pagingItems = viewModel.channels.collectAsLazyPagingItems()
+    val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
     val colors = AreIptvMobileTheme.colors
 
     Column(Modifier.fillMaxSize()) {
@@ -64,7 +69,12 @@ fun LiveScreen(onOpenChannel: (Channel) -> Unit, viewModel: LiveViewModel = view
         if (query.length >= 2) {
             LazyColumn(Modifier.fillMaxSize()) {
                 items(searchResults, key = { it.id }) { channel ->
-                    ChannelRowItem(channel, onClick = { onOpenChannel(channel) })
+                    ChannelRowItem(
+                        channel,
+                        onClick = { onOpenChannel(channel) },
+                        isFavorite = channel.id in favoriteChannelIds,
+                        onToggleFavorite = { viewModel.toggleFavorite(channel) },
+                    )
                 }
             }
             return
@@ -101,14 +111,19 @@ fun LiveScreen(onOpenChannel: (Channel) -> Unit, viewModel: LiveViewModel = view
                 key = { index -> pagingItems.peek(index)?.id ?: index },
             ) { index ->
                 val channel = pagingItems[index] ?: return@items
-                ChannelRowItem(channel, onClick = { onOpenChannel(channel) })
+                ChannelRowItem(
+                    channel,
+                    onClick = { onOpenChannel(channel) },
+                    isFavorite = channel.id in favoriteChannelIds,
+                    onToggleFavorite = { viewModel.toggleFavorite(channel) },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ChannelRowItem(channel: Channel, onClick: () -> Unit) {
+private fun ChannelRowItem(channel: Channel, onClick: () -> Unit, isFavorite: Boolean, onToggleFavorite: () -> Unit) {
     val colors = AreIptvMobileTheme.colors
     Row(
         modifier = Modifier
@@ -134,11 +149,20 @@ private fun ChannelRowItem(channel: Channel, onClick: () -> Unit) {
                     .padding(6.dp),
             )
         }
-        Column {
+        Column(Modifier.weight(1f)) {
             Text(channel.name, style = MaterialTheme.typography.bodyLarge, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
             channel.categoryName?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = colors.textTertiary, maxLines = 1)
             }
+        }
+        IconButton(onClick = onToggleFavorite, modifier = Modifier.size(48.dp)) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                contentDescription = stringResource(
+                    if (isFavorite) R.string.detail_remove_from_favorites else R.string.detail_add_to_favorites,
+                ),
+                tint = if (isFavorite) colors.accent else colors.textTertiary,
+            )
         }
     }
 }

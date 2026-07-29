@@ -32,6 +32,7 @@ fun VodGridScreen(viewModel: VodGridViewModel, onOpenTitle: (VodTitle) -> Unit) 
     val categories by viewModel.categories.collectAsState()
     val selected by viewModel.selectedCategory.collectAsState()
     val pagingItems = viewModel.items.collectAsLazyPagingItems()
+    val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
 
     Column(Modifier.fillMaxSize()) {
         if (categories.isNotEmpty()) {
@@ -68,7 +69,12 @@ fun VodGridScreen(viewModel: VodGridViewModel, onOpenTitle: (VodTitle) -> Unit) 
                 key = { index -> pagingItems.peek(index)?.id ?: index },
             ) { index ->
                 val title = pagingItems[index] ?: return@gridItems
-                PosterTile(title, onClick = { onOpenTitle(title) })
+                PosterTile(
+                    title,
+                    onClick = { onOpenTitle(title) },
+                    isFavorite = title.id in favoriteVodIds,
+                    onToggleFavorite = { viewModel.toggleFavorite(title) },
+                )
             }
         }
     }

@@ -7,7 +7,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /** Backs both Movies and Series tabs (same catalog shape, filtered by [isSeries]) -- avoids
  * duplicating the paging/category-filter wiring for what is otherwise identical logic. */
@@ -28,6 +31,17 @@ import kotlinx.coroutines.flow.stateIn
 abstract class VodGridViewModel(application: Application, private val isSeries: Boolean) : AndroidViewModel(application) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(application)
     private val settings = UserSettings(application)
+    private val favoritesRepo = FavoritesRepository(application)
+
+    /** Live favorite membership for the grid's heart toggles. */
+    val favoriteVodIds: StateFlow<Set<Long>> =
+        favoritesRepo.favoriteVodIds.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    fun toggleFavorite(title: VodTitle) {
+        viewModelScope.launch {
+            favoritesRepo.toggleVod(title.id, if (isSeries) ContentType.SERIES else ContentType.MOVIE)
+        }
+    }
 
     private val category = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = category

@@ -32,6 +32,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
+    val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
     val colors = AreIptvMobileTheme.colors
 
     if (state.isLoading) {
@@ -49,35 +51,35 @@ fun HomeScreen(
         if (state.continueWatching.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.home_section_continue_watching)) {
-                    PosterRow(state.continueWatching, onOpenTitle)
+                    PosterRow(state.continueWatching, onOpenTitle, favoriteVodIds, viewModel::toggleTitleFavorite)
                 }
             }
         }
         if (state.liveNow.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.home_section_live_now)) {
-                    ChannelRow(state.liveNow, onOpenChannel)
+                    ChannelRow(state.liveNow, onOpenChannel, favoriteChannelIds, viewModel::toggleChannelFavorite)
                 }
             }
         }
         if (state.recommended.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.home_section_for_you)) {
-                    PosterRow(state.recommended, onOpenTitle)
+                    PosterRow(state.recommended, onOpenTitle, favoriteVodIds, viewModel::toggleTitleFavorite)
                 }
             }
         }
         if (state.favoriteChannels.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.nav_favorites)) {
-                    ChannelRow(state.favoriteChannels, onOpenChannel)
+                    ChannelRow(state.favoriteChannels, onOpenChannel, favoriteChannelIds, viewModel::toggleChannelFavorite)
                 }
             }
         }
         if (state.favoriteTitles.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.nav_favorites)) {
-                    PosterRow(state.favoriteTitles, onOpenTitle)
+                    PosterRow(state.favoriteTitles, onOpenTitle, favoriteVodIds, viewModel::toggleTitleFavorite)
                 }
             }
         }

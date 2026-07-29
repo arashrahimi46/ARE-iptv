@@ -21,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.arashrahimi46.iptv.mobile.R
+import com.arashrahimi46.iptv.mobile.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.mobile.ui.home.HomeScreen
 import com.arashrahimi46.iptv.mobile.ui.live.LiveScreen
 import com.arashrahimi46.iptv.mobile.ui.movies.MoviesViewModel
@@ -93,7 +94,13 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
             val vm: SeriesViewModel = viewModel()
             VodGridScreen(vm) { navController.navigate(playerRoute("movie", it.id)) }
         }
-        composable(Tab.Settings.route) { SettingsScreen() }
+        composable(Tab.Settings.route) { SettingsScreen(onOpenFavorites = { navController.navigate("favorites") }) }
+        composable("favorites") {
+            FavoritesScreen(
+                onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
+                onOpenTitle = { navController.navigate(playerRoute("movie", it.id)) },
+            )
+        }
         composable(
             route = PLAYER_ROUTE,
             arguments = listOf(

@@ -8,6 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.UserSettings
@@ -27,6 +28,15 @@ import kotlinx.coroutines.launch
 class LiveViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(application)
     private val settings = UserSettings(application)
+    private val favoritesRepo = FavoritesRepository(application)
+
+    /** Live favorite membership for the channel row's heart toggle. */
+    val favoriteChannelIds: StateFlow<Set<Long>> =
+        favoritesRepo.favoriteChannelIds.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    fun toggleFavorite(channel: Channel) {
+        viewModelScope.launch { favoritesRepo.toggleChannel(channel.id) }
+    }
 
     private val category = MutableStateFlow<String?>(null)
     val selectedCategory: StateFlow<String?> = category
