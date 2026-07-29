@@ -38,11 +38,38 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Release signing is intentionally NOT committed, mirroring :tv's convention. Populate via
+    // env vars or gradle.properties (local, git-ignored) when a real release build is needed:
+    //   MOBILE_RELEASE_KEYSTORE_PATH, MOBILE_RELEASE_KEYSTORE_PASSWORD,
+    //   MOBILE_RELEASE_KEY_ALIAS, MOBILE_RELEASE_KEY_PASSWORD
+    // Separate var names from :tv's TV_RELEASE_* because :mobile ships as its own Play Store
+    // listing (applicationId com.arashrahimi46.iptv.mobile) with its own upload key -- reusing
+    // :tv's keystore/alias here would be silently wrong if the two apps end up on different keys.
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("MOBILE_RELEASE_KEYSTORE_PATH")
+                ?: findProperty("MOBILE_RELEASE_KEYSTORE_PATH") as String?
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("MOBILE_RELEASE_KEYSTORE_PASSWORD")
+                    ?: findProperty("MOBILE_RELEASE_KEYSTORE_PASSWORD") as String?
+                keyAlias = System.getenv("MOBILE_RELEASE_KEY_ALIAS")
+                    ?: findProperty("MOBILE_RELEASE_KEY_ALIAS") as String?
+                keyPassword = System.getenv("MOBILE_RELEASE_KEY_PASSWORD")
+                    ?: findProperty("MOBILE_RELEASE_KEY_PASSWORD") as String?
+            }
+        }
+    }
+
     buildTypes {
         release {
             optimization {
                 enable = false
             }
+            // Sign with the real release key when configured, otherwise fall back to the debug
+            // key so a release build is still installable locally without release credentials.
+            val releaseSigning = signingConfigs.getByName("release")
+            signingConfig = if (releaseSigning.storeFile != null) releaseSigning else signingConfigs.getByName("debug")
         }
     }
     compileOptions {
