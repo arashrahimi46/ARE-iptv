@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.mobile.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -106,7 +107,11 @@ fun PosterTile(
                 .fillMaxWidth()
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(colors.surface2),
+                .background(colors.surface2)
+                // surface2 is near-white in light theme, barely distinguishable from the page
+                // background without this edge -- same "near-white surface needs a border" rule
+                // CLAUDE.md documents for :tv, applied here too (QA-flagged gap).
+                .border(1.dp, colors.borderDefault, RoundedCornerShape(10.dp)),
         ) {
             AsyncImage(
                 model = title.posterUrl,
