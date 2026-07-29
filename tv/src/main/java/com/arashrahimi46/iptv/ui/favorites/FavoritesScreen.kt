@@ -1,15 +1,22 @@
 package com.arashrahimi46.iptv.ui.favorites
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.runtime.withFrameNanos
@@ -90,9 +97,18 @@ fun FavoritesScreen(
     val tabFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { tabFocus.requestFocusWhenReady() }
 
+    // Scroll position of the grid for the CURRENT tab. Hoisted here (rather than remembered inside
+    // TileRows) so the collapsing gap below can read it -- keyed on `tab` so switching tabs hands the
+    // new grid a fresh state at offset 0, which also resets the header back to expanded.
+    val listState = remember(tab) { LazyListState() }
+
     // fillMaxSize so the tab-content Box below has a real bounded height to hand to its
     // LazyColumns (this screen scrolls its own content now -- see MainActivity's FullSizeTab).
-    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
+    // Vertical insets match BrowseLayout's (sp1/sp3, not sp2/sp10): on a 1080p TV the tab strip plus
+    // the old 8/40dp insets left under one poster row of viewport, so the row's title/meta -- which
+    // sit BELOW the focusable poster -- were clipped at the bottom edge. The grid's own bottom
+    // contentPadding (see TileRows) is what keeps the last row clear of the overscan edge now.
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp1, bottom = spacing.sp3)) {
         Column(Modifier.padding(horizontal = spacing.safeX)) {
             AreSegmentedControl(
                 options = listOf("channels", "movies", "series"),
@@ -109,25 +125,28 @@ fun FavoritesScreen(
             )
         }
 
-        Box(Modifier.padding(top = spacing.sp8))
+        HeaderGap(listState)
 
         Box(Modifier.weight(1f).padding(horizontal = spacing.safeX)) {
             when (tab) {
                 "channels" -> ChannelGrid(
                     channels = state.channels,
                     emptyLabel = stringResource(R.string.favorites_empty_channels),
+                    listState = listState,
                     onChannelSelected = onChannelSelected,
                     onToggleFavorite = viewModel::toggleChannelFavorite,
                 )
                 "movies" -> MovieGrid(
                     movies = state.movies,
                     emptyLabel = stringResource(R.string.favorites_empty_movies),
+                    listState = listState,
                     onTitleSelected = onTitleSelected,
                     onToggleFavorite = viewModel::toggleVodFavorite,
                 )
                 "series" -> MovieGrid(
                     movies = state.series,
                     emptyLabel = stringResource(R.string.favorites_empty_series),
+                    listState = listState,
                     onTitleSelected = onTitleSelected,
                     onToggleFavorite = viewModel::toggleVodFavorite,
                 )
@@ -136,10 +155,38 @@ fun FavoritesScreen(
     }
 }
 
+/**
+ * The collapsing part of the header: the breathing room between the pinned tab strip and the grid.
+ * Expanded at rest, tightened once the grid has scrolled off its first row, restored on the way back
+ * up. The [AreSegmentedControl] itself never moves or fades -- it must stay reachable by D-pad at
+ * every scroll position, so it is the gap, not the tabs, that gives ground.
+ *
+ * PERF (CLAUDE.md "Rendering performance": Favorites scroll is recomposition-bound): the scroll-state
+ * read lives HERE, behind [derivedStateOf], so a scroll frame invalidates this Spacer and nothing
+ * else. Reading [listState] up in [FavoritesScreen] would recompose the whole grid subtree per frame.
+ */
+@Composable
+private fun HeaderGap(listState: LazyListState) {
+    val spacing = AreIptvTheme.spacing
+    val motion = AreIptvTheme.motion
+    val collapsed by remember(listState) {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 24
+        }
+    }
+    val gap by animateDpAsState(
+        targetValue = if (collapsed) spacing.sp1 else spacing.sp6,
+        animationSpec = tween(motion.durBaseMs, easing = motion.easeOut),
+        label = "favoritesHeaderGap",
+    )
+    Spacer(Modifier.height(gap))
+}
+
 @Composable
 private fun ChannelGrid(
     channels: List<Channel>,
     emptyLabel: String,
+    listState: LazyListState,
     onChannelSelected: (Long) -> Unit,
     onToggleFavorite: (Long) -> Unit,
 ) {
@@ -150,7 +197,7 @@ private fun ChannelGrid(
     }
     // Restore D-pad focus onto the channel that opened the player when Back re-enters this tab.
     var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    TileRows(channels, AreIptvTheme.spacing.tileLandWidth) { channel ->
+    TileRows(channels, AreIptvTheme.spacing.tileLandWidth, listState) { channel ->
         val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, channel.id) { lastPlayedId = null }
         AreChannelTile(
             channel = channel.name,
@@ -175,13 +222,31 @@ private fun ChannelGrid(
  * FlowRow's exact packing -- left-aligned, 18dp gaps, ragged last row -- while a LazyVerticalGrid would
  * have distributed the leftover width across the columns and widened the gaps.
  */
+/**
+ * Poster width for the Movies/Series tabs, deliberately NOT [AreIptvTheme.spacing.tilePosterWidth]
+ * (208dp). A 2:3 poster at 208dp is 312dp tall, and with its title+meta the item stood ~356dp high
+ * against a ~370dp viewport -- one favorite filled the screen and its meta line was still cut off at
+ * the bottom edge. Browse renders the SAME posters through `GridCells.Adaptive(115.dp)`, so 208dp
+ * here was the outlier, not the baseline. 150dp lands between the two: comfortably inside the
+ * viewport with its label, and several per row instead of one.
+ */
+private val FavoritePosterWidth = 150.dp
+
 @Composable
-private fun <T> TileRows(items: List<T>, tileWidth: Dp, tile: @Composable (T) -> Unit) {
+private fun <T> TileRows(items: List<T>, tileWidth: Dp, listState: LazyListState, tile: @Composable (T) -> Unit) {
     val gap = 18.dp
     BoxWithConstraints {
         val perRow = ((maxWidth + gap) / (tileWidth + gap)).toInt().coerceAtLeast(1)
         val rows = remember(items, perRow) { items.chunked(perRow) }
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(gap)) {
+        LazyColumn(
+            state = listState,
+            verticalArrangement = Arrangement.spacedBy(gap),
+            // Same reasoning as BrowseLayout's grid. Top: headroom for the 1.06x focus scale so a
+            // focused first row isn't clipped against the tab strip. Bottom: room for a focused row's
+            // title/meta -- which [ArePosterTile] draws BELOW the focusable poster -- to scroll fully
+            // into view. With no bottom padding at all they were cut mid-glyph at the viewport edge.
+            contentPadding = PaddingValues(top = 10.dp, bottom = 52.dp),
+        ) {
             items(rows.size) { index ->
                 Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                     rows[index].forEach { tile(it) }
@@ -195,6 +260,7 @@ private fun <T> TileRows(items: List<T>, tileWidth: Dp, tile: @Composable (T) ->
 private fun MovieGrid(
     movies: List<VodTitle>,
     emptyLabel: String,
+    listState: LazyListState,
     onTitleSelected: (VodTitle) -> Unit,
     onToggleFavorite: (VodTitle) -> Unit,
 ) {
@@ -205,11 +271,12 @@ private fun MovieGrid(
     }
     // Restore D-pad focus onto the title that opened Detail when Back re-enters this tab.
     var lastPlayedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    TileRows(movies, AreIptvTheme.spacing.tilePosterWidth) { movie ->
+    TileRows(movies, FavoritePosterWidth, listState) { movie ->
         val focusRequester = rememberPlaybackFocusRequester(lastPlayedId, movie.id) { lastPlayedId = null }
         ArePosterTile(
             title = movie.name,
             onClick = { lastPlayedId = movie.id; onTitleSelected(movie) },
+            width = FavoritePosterWidth,
             posterUrl = movie.posterUrl,
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,

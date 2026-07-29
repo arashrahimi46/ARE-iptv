@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -93,7 +94,10 @@ fun SearchScreen(
     // fillMaxSize (not just fillMaxWidth) so the results list below inherits a real bounded
     // height for its LazyColumn -- this screen scrolls its own results now, see MainActivity's
     // FullSizeTab.
-    Column(modifier = modifier.fillMaxSize().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp2, bottom = spacing.sp6)) {
+    // Insets match BrowseLayout/Favorites (sp1/sp3), not the old sp2/sp6: the results LazyColumn
+    // now carries its own 52dp bottom contentPadding, which already exceeds safeY, so the larger
+    // root inset was pure lost viewport on a screen that only fits one tile row to begin with.
+    Column(modifier = modifier.fillMaxSize().padding(start = spacing.safeX, end = spacing.safeX, top = spacing.sp1, bottom = spacing.sp3)) {
 
         // Same class as the QA MEDIUM text-wrap defect elsewhere in this screen: neither
         // column can safely shrink (the field column's fixed width and the categories
@@ -250,6 +254,7 @@ private fun SearchResultsColumn(
                     AreChannelTile(
                         channel = channel.name,
                         onClick = { lastChannelId = channel.id; onChannelSelected(channel) },
+                        width = SearchChannelWidth,
                         number = channel.number,
                         category = channel.categoryName,
                         isRadio = channel.isRadio,
@@ -265,6 +270,7 @@ private fun SearchResultsColumn(
                     ArePosterTile(
                         title = title.name,
                         onClick = { lastTitleId = title.id; onTitleSelected(title) },
+                        width = SearchPosterWidth,
                         meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifEmpty { null },
                         rating = title.rating,
                         posterUrl = title.posterUrl,
@@ -297,6 +303,18 @@ private fun SearchResultsColumn(
  * is not enough (see CLAUDE.md) -- without it the slot-reuse pool hands a poster row's slot to a
  * channel row and the whole row re-measures from scratch.
  */
+/**
+ * Result tile widths, deliberately smaller than the `tileLandWidth` (320dp) / `tilePosterWidth`
+ * (208dp) tokens the tiles default to. Search stacks a query field AND a scope strip above the
+ * results, so its viewport is the shortest in the app -- at the token sizes a 2:3 poster is 312dp
+ * tall and the first row alone overflowed the screen, cutting the titles off. Browse renders the
+ * same content through `GridCells.Adaptive(115.dp)` (movies/series) and `(180.dp)` (live), so the
+ * tokens were the outlier here, not the baseline. These match Browse's density, which is what makes
+ * a full row -- poster AND its title/meta -- fit under this screen's taller header stack.
+ */
+private val SearchChannelWidth = 180.dp
+private val SearchPosterWidth = 120.dp
+
 @Composable
 private fun SearchResults(
     modifier: Modifier = Modifier,
@@ -307,16 +325,18 @@ private fun SearchResults(
     titleTile: @Composable (VodTitle) -> Unit,
 ) {
     val gap = 18.dp
-    val spacing = AreIptvTheme.spacing
     BoxWithConstraints(modifier = modifier) {
-        val channelsPerRow = ((maxWidth + gap) / (spacing.tileLandWidth + gap)).toInt().coerceAtLeast(1)
-        val titlesPerRow = ((maxWidth + gap) / (spacing.tilePosterWidth + gap)).toInt().coerceAtLeast(1)
+        val channelsPerRow = ((maxWidth + gap) / (SearchChannelWidth + gap)).toInt().coerceAtLeast(1)
+        val titlesPerRow = ((maxWidth + gap) / (SearchPosterWidth + gap)).toInt().coerceAtLeast(1)
         val channelRows = remember(channels, channelsPerRow) { channels.chunked(channelsPerRow) }
         val titleRows = remember(titles, titlesPerRow) { titles.chunked(titlesPerRow) }
         // No verticalArrangement: FlowRow put its 18dp gap BETWEEN tile rows only, and the section
         // headers carry their own (12dp under, 22dp above the second section) -- a list-wide
         // arrangement would have applied the same gap around the headers too and shifted everything.
-        LazyColumn {
+        // contentPadding, not a Modifier.padding: ArePosterTile draws its title/meta BELOW the
+        // focusable poster and the focusable scales 1.06x, so with a flush viewport edge the last
+        // visible row lost its label mid-glyph and its focus ring. Same values BrowseLayout uses.
+        LazyColumn(contentPadding = PaddingValues(top = 10.dp, bottom = 52.dp)) {
             if (channelRows.isNotEmpty()) {
                 item(key = "header-live", contentType = "header") {
                     Text(
