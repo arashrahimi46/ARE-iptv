@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Σύστημα</string>
 
     <string name="settings_section_appearance">Εμφάνιση</string>
+
+    <string name="action_back">Πίσω</string>
+    <string name="detail_loading">Φόρτωση…</string>
+    <string name="detail_not_found">Ο τίτλος δεν βρέθηκε</string>
+    <string name="detail_play">Αναπαραγωγή</string>
+    <string name="detail_play_episode">Αναπαραγωγή S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Επεισόδια</string>
+    <string name="detail_episodes_header_seasons">Επεισόδια · %1$d σεζόν · %2$d συνολικά</string>
+    <string name="detail_episodes_header_total">Επεισόδια · %1$d συνολικά</string>
+    <string name="detail_season_label">Σεζόν %1$d</string>
+    <string name="detail_season_episode_count">Σεζόν %1$s · %2$d επεισόδια</string>
+    <string name="detail_m3u_no_episodes">Αυτή η καταχώριση λίστας δεν έχει δεδομένα σεζόν/επεισοδίου -- χρησιμοποιήστε την Αναπαραγωγή παραπάνω για να την παρακολουθήσετε ως μεμονωμένο στοιχείο.</string>
+    <string name="detail_episodes_load_error">Δεν ήταν δυνατή η φόρτωση επεισοδίων: %1$s</string>
+    <string name="detail_episodes_loading">Φόρτωση επεισοδίων…</string>
 </resources>

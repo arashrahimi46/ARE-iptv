@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Systém</string>
 
     <string name="settings_section_appearance">Vzhled</string>
+
+    <string name="action_back">Zpět</string>
+    <string name="detail_loading">Načítání…</string>
+    <string name="detail_not_found">Titul nenalezen</string>
+    <string name="detail_play">Přehrát</string>
+    <string name="detail_play_episode">Přehrát S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Díly</string>
+    <string name="detail_episodes_header_seasons">Díly · série: %1$d · celkem: %2$d</string>
+    <string name="detail_episodes_header_total">Díly · celkem: %1$d</string>
+    <string name="detail_season_label">Série %1$d</string>
+    <string name="detail_season_episode_count">Série %1$s · díly: %2$d</string>
+    <string name="detail_m3u_no_episodes">Tato položka playlistu nemá data o sériích/dílech -- použijte Přehrát výše a sledujte ji jako jednu položku.</string>
+    <string name="detail_episodes_load_error">Nepodařilo se načíst díly: %1$s</string>
+    <string name="detail_episodes_loading">Načítání dílů…</string>
 </resources>

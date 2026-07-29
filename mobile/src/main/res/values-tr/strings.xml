@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Sistem</string>
 
     <string name="settings_section_appearance">Görünüm</string>
+
+    <string name="action_back">Geri</string>
+    <string name="detail_loading">Yükleniyor…</string>
+    <string name="detail_not_found">Başlık bulunamadı</string>
+    <string name="detail_play">Oynat</string>
+    <string name="detail_play_episode">S%1$d · B%2$d oynat</string>
+    <string name="detail_episodes_header">Bölümler</string>
+    <string name="detail_episodes_header_seasons">Bölümler · %1$d sezon · toplam %2$d</string>
+    <string name="detail_episodes_header_total">Bölümler · toplam %1$d</string>
+    <string name="detail_season_label">%1$d. Sezon</string>
+    <string name="detail_season_episode_count">%1$s. Sezon · %2$d bölüm</string>
+    <string name="detail_m3u_no_episodes">Bu oynatma listesi öğesinin sezon/bölüm verisi yok -- tek bir öğe olarak izlemek için yukarıdaki Oynat\'ı kullanın.</string>
+    <string name="detail_episodes_load_error">Bölümler yüklenemedi: %1$s</string>
+    <string name="detail_episodes_loading">Bölümler yükleniyor…</string>
 </resources>

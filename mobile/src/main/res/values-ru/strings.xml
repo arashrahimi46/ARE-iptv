@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Системная</string>
 
     <string name="settings_section_appearance">Оформление</string>
+
+    <string name="action_back">Назад</string>
+    <string name="detail_loading">Загрузка…</string>
+    <string name="detail_not_found">Материал не найден</string>
+    <string name="detail_play">Смотреть</string>
+    <string name="detail_play_episode">Смотреть С%1$d · Э%2$d</string>
+    <string name="detail_episodes_header">Серии</string>
+    <string name="detail_episodes_header_seasons">Серии · сезонов: %1$d · всего: %2$d</string>
+    <string name="detail_episodes_header_total">Серии · всего: %1$d</string>
+    <string name="detail_season_label">Сезон %1$d</string>
+    <string name="detail_season_episode_count">Сезон %1$s · серий: %2$d</string>
+    <string name="detail_m3u_no_episodes">У этой записи плейлиста нет данных о сезонах/сериях -- используйте «Смотреть» выше, чтобы воспроизвести как один элемент.</string>
+    <string name="detail_episodes_load_error">Не удалось загрузить серии: %1$s</string>
+    <string name="detail_episodes_loading">Загрузка серий…</string>
 </resources>

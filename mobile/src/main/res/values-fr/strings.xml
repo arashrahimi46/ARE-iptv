@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Système</string>
 
     <string name="settings_section_appearance">Apparence</string>
+
+    <string name="action_back">Retour</string>
+    <string name="detail_loading">Chargement…</string>
+    <string name="detail_not_found">Titre introuvable</string>
+    <string name="detail_play">Lecture</string>
+    <string name="detail_play_episode">Lire S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Épisodes</string>
+    <string name="detail_episodes_header_seasons">Épisodes · %1$d saisons · %2$d au total</string>
+    <string name="detail_episodes_header_total">Épisodes · %1$d au total</string>
+    <string name="detail_season_label">Saison %1$d</string>
+    <string name="detail_season_episode_count">Saison %1$s · %2$d épisodes</string>
+    <string name="detail_m3u_no_episodes">Cet élément de playlist n\'a pas de données de saison/épisode — utilisez Lecture ci-dessus pour le regarder comme un seul élément.</string>
+    <string name="detail_episodes_load_error">Impossible de charger les épisodes : %1$s</string>
+    <string name="detail_episodes_loading">Chargement des épisodes…</string>
 </resources>

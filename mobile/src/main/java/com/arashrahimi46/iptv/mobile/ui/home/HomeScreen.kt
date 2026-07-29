@@ -29,6 +29,7 @@ import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 fun HomeScreen(
     onOpenChannel: (Channel) -> Unit,
     onOpenTitle: (VodTitle) -> Unit,
+    onOpenEpisode: (Long) -> Unit,
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -51,7 +52,18 @@ fun HomeScreen(
         if (state.continueWatching.isNotEmpty()) {
             item {
                 HomeRow(stringResource(R.string.home_section_continue_watching)) {
-                    PosterRow(state.continueWatching, onOpenTitle, favoriteVodIds, viewModel::toggleTitleFavorite)
+                    PosterRow(
+                        state.continueWatching,
+                        onClick = { title ->
+                            // A series entry resumes straight into its saved episode (the user
+                            // already picked one) instead of reopening the episode picker; a
+                            // movie behaves like every other rail.
+                            val episodeId = state.continueWatchingEpisodeIds[title.id]
+                            if (title.isSeries && episodeId != null) onOpenEpisode(episodeId) else onOpenTitle(title)
+                        },
+                        favoriteIds = favoriteVodIds,
+                        onToggleFavorite = viewModel::toggleTitleFavorite,
+                    )
                 }
             }
         }

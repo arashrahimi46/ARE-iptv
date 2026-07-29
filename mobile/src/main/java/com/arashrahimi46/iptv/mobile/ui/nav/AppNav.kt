@@ -29,9 +29,11 @@ import com.arashrahimi46.iptv.mobile.ui.movies.SeriesViewModel
 import com.arashrahimi46.iptv.mobile.ui.movies.VodGridScreen
 import com.arashrahimi46.iptv.mobile.ui.player.PlayerScreen
 import com.arashrahimi46.iptv.mobile.ui.player.PlayerTarget
+import com.arashrahimi46.iptv.mobile.ui.series.SeriesDetailScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SettingsScreen
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.arashrahimi46.iptv.data.model.VodTitle
 
 /** Bottom-nav destinations, per product-lead's Phase 1 spec: Home / Live / Movies / Series / Settings. */
 sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -74,13 +76,26 @@ fun AppBottomBar(navController: NavHostController) {
     }
 }
 
+private const val SERIES_DETAIL_ROUTE = "seriesDetail/{id}"
+private fun seriesDetailRoute(id: Long) = "seriesDetail/$id"
+
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier) {
+    // Shared by every rail/grid that shows both movies and series (Home, Movies/Series tabs,
+    // Favorites): a series has no stream URL of its own (only its episodes do), so it opens the
+    // episode picker instead of jumping straight into the player like a movie does.
+    val openTitle: (VodTitle) -> Unit = { title ->
+        if (title.isSeries) navController.navigate(seriesDetailRoute(title.id))
+        else navController.navigate(playerRoute("movie", title.id))
+    }
+    val openEpisode: (Long) -> Unit = { episodeId -> navController.navigate(playerRoute("episode", episodeId)) }
+
     NavHost(navController = navController, startDestination = Tab.Home.route, modifier = modifier) {
         composable(Tab.Home.route) {
             HomeScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
-                onOpenTitle = { navController.navigate(playerRoute("movie", it.id)) },
+                onOpenTitle = openTitle,
+                onOpenEpisode = openEpisode,
             )
         }
         composable(Tab.Live.route) {
@@ -88,18 +103,25 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
         }
         composable(Tab.Movies.route) {
             val vm: MoviesViewModel = viewModel()
-            VodGridScreen(vm) { navController.navigate(playerRoute("movie", it.id)) }
+            VodGridScreen(vm, openTitle)
         }
         composable(Tab.Series.route) {
             val vm: SeriesViewModel = viewModel()
-            VodGridScreen(vm) { navController.navigate(playerRoute("movie", it.id)) }
+            VodGridScreen(vm, openTitle)
         }
         composable(Tab.Settings.route) { SettingsScreen(onOpenFavorites = { navController.navigate("favorites") }) }
         composable("favorites") {
             FavoritesScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
-                onOpenTitle = { navController.navigate(playerRoute("movie", it.id)) },
+                onOpenTitle = openTitle,
             )
+        }
+        composable(
+            route = SERIES_DETAIL_ROUTE,
+            arguments = listOf(navArgument("id") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getLong("id") ?: 0L
+            SeriesDetailScreen(vodTitleId = id, onOpenEpisode = openEpisode, onBack = { navController.popBackStack() })
         }
         composable(
             route = PLAYER_ROUTE,
@@ -110,7 +132,11 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
         ) { backStackEntry ->
             val kind = backStackEntry.arguments?.getString("kind") ?: "channel"
             val id = backStackEntry.arguments?.getLong("id") ?: 0L
-            val target = if (kind == "movie") PlayerTarget.Movie(id) else PlayerTarget.LiveChannel(id)
+            val target = when (kind) {
+                "movie" -> PlayerTarget.Movie(id)
+                "episode" -> PlayerTarget.Episode(id)
+                else -> PlayerTarget.LiveChannel(id)
+            }
             PlayerScreen(target)
         }
     }

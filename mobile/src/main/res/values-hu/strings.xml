@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Rendszer</string>
 
     <string name="settings_section_appearance">Megjelenés</string>
+
+    <string name="action_back">Vissza</string>
+    <string name="detail_loading">Betöltés…</string>
+    <string name="detail_not_found">A cím nem található</string>
+    <string name="detail_play">Lejátszás</string>
+    <string name="detail_play_episode">%1$d. évad · %2$d. rész lejátszása</string>
+    <string name="detail_episodes_header">Epizódok</string>
+    <string name="detail_episodes_header_seasons">Epizódok · %1$d évad · összesen %2$d</string>
+    <string name="detail_episodes_header_total">Epizódok · összesen %1$d</string>
+    <string name="detail_season_label">%1$d. évad</string>
+    <string name="detail_season_episode_count">%1$s. évad · %2$d epizód</string>
+    <string name="detail_m3u_no_episodes">Ennek a lejátszásilista-bejegyzésnek nincsenek évad-/epizódadatai -- a fenti Lejátszás gombbal nézheti meg önálló elemként.</string>
+    <string name="detail_episodes_load_error">Nem sikerült betölteni az epizódokat: %1$s</string>
+    <string name="detail_episodes_loading">Epizódok betöltése…</string>
 </resources>

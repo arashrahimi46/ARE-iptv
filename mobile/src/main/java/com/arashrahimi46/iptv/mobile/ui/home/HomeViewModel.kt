@@ -31,6 +31,10 @@ import kotlinx.coroutines.launch
 data class HomeUiState(
     val hasSource: Boolean = true,
     val continueWatching: List<VodTitle> = emptyList(),
+    /** For a series entry in [continueWatching] (keyed by its resolved parent series-title id),
+     * the specific episode to resume -- so tapping it jumps straight back into that episode
+     * instead of re-opening the season/episode picker the user already got past. */
+    val continueWatchingEpisodeIds: Map<Long, Long> = emptyMap(),
     val favoriteChannels: List<Channel> = emptyList(),
     val favoriteTitles: List<VodTitle> = emptyList(),
     val recommended: List<VodTitle> = emptyList(),
@@ -102,9 +106,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                             .mapValues { it.value.size.toDouble() }
                         val liveNow = HomeRailCurator.curateChannels(channelPool, watchedWeights, daySeed, limit = 20)
                         val recommended = HomeRailCurator.recommend(moviePool, seriesPool, emptyMap(), daySeed, limit = 20)
+                        val continueWatching = resolveContinueWatching(cwEntries, sourceId)
                         HomeUiState(
                             hasSource = true,
-                            continueWatching = resolveContinueWatching(cwEntries, sourceId),
+                            continueWatching = continueWatching.titles,
+                            continueWatchingEpisodeIds = continueWatching.episodeIdsByTitleId,
                             favoriteChannels = channelPool.filter { it.id in favChannelIds }.take(20),
                             favoriteTitles = vodPool.filter { it.id in favVodIds }.take(20),
                             recommended = recommended,
@@ -118,13 +124,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             .launchIn(viewModelScope)
     }
 
+    private data class ResolvedContinueWatching(val titles: List<VodTitle>, val episodeIdsByTitleId: Map<Long, Long>)
+
     /** Resolves raw [ContinueWatchingEntry] rows to [VodTitle]s for the rail -- a movie resolves
      * directly by [ContinueWatchingEntry.vodTitleId]; a series episode resolves via its
      * [com.arashrahimi46.iptv.data.model.SeriesEpisode.seriesTitleId] to the parent series title
-     * (mirrors :tv's HomeViewModel). Only titles in [activeSourceId] resolve; unresolvable entries
+     * (mirrors :tv's HomeViewModel), and its episode id is kept alongside so the rail can resume
+     * that exact episode (see [HomeUiState.continueWatchingEpisodeIds]) instead of only reopening
+     * the series' episode picker. Only titles in [activeSourceId] resolve; unresolvable entries
      * (deleted title, other source, or a [ContinueWatchingEntry.recordingId] bookmark -- out of
      * mobile v1 scope) are dropped rather than shown blank. */
-    private suspend fun resolveContinueWatching(entries: List<ContinueWatchingEntry>, activeSourceId: Long?): List<VodTitle> {
+    private suspend fun resolveContinueWatching(entries: List<ContinueWatchingEntry>, activeSourceId: Long?): ResolvedContinueWatching {
         val vodIds = entries.mapNotNull { it.vodTitleId }
         val episodeIds = entries.mapNotNull { it.seriesEpisodeId }
         val episodesById = episodeIds.mapNotNull { db.seriesEpisodeDao().getById(it) }.associateBy { it.id }
@@ -133,12 +143,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             .filter { it.sourceId == activeSourceId }
             .associateBy { it.id }
 
-        return entries.mapNotNull { entry ->
+        val titles = mutableListOf<VodTitle>()
+        val episodeIdsByTitleId = mutableMapOf<Long, Long>()
+        entries.forEach { entry ->
             when {
-                entry.vodTitleId != null -> titlesById[entry.vodTitleId]
-                entry.seriesEpisodeId != null -> episodesById[entry.seriesEpisodeId]?.let { titlesById[it.seriesTitleId] }
-                else -> null
+                entry.vodTitleId != null -> titlesById[entry.vodTitleId]?.let { titles += it }
+                entry.seriesEpisodeId != null -> {
+                    val episode = episodesById[entry.seriesEpisodeId] ?: return@forEach
+                    val title = titlesById[episode.seriesTitleId] ?: return@forEach
+                    titles += title
+                    episodeIdsByTitleId[title.id] = episode.id
+                }
             }
         }
+        return ResolvedContinueWatching(titles, episodeIdsByTitleId)
     }
 }

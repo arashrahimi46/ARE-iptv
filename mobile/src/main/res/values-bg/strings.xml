@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Система</string>
 
     <string name="settings_section_appearance">Външен вид</string>
+
+    <string name="action_back">Назад</string>
+    <string name="detail_loading">Зареждане…</string>
+    <string name="detail_not_found">Заглавието не е намерено</string>
+    <string name="detail_play">Пускане</string>
+    <string name="detail_play_episode">Пускане на С%1$d · Е%2$d</string>
+    <string name="detail_episodes_header">Епизоди</string>
+    <string name="detail_episodes_header_seasons">Епизоди · сезони: %1$d · общо %2$d</string>
+    <string name="detail_episodes_header_total">Епизоди · общо %1$d</string>
+    <string name="detail_season_label">Сезон %1$d</string>
+    <string name="detail_season_episode_count">Сезон %1$s · епизоди: %2$d</string>
+    <string name="detail_m3u_no_episodes">Този запис в плейлиста няма данни за сезон/епизод -- използвайте бутона „Пускане“ горе, за да го гледате като едно заглавие.</string>
+    <string name="detail_episodes_load_error">Епизодите не можаха да се заредят: %1$s</string>
+    <string name="detail_episodes_loading">Зареждане на епизоди…</string>
 </resources>

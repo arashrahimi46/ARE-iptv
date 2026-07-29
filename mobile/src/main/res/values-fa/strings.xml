@@ -148,4 +148,18 @@
     <string name="settings_theme_system">سیستم</string>
 
     <string name="settings_section_appearance">ظاهر</string>
+
+    <string name="action_back">بازگشت</string>
+    <string name="detail_loading">در حال بارگذاری…</string>
+    <string name="detail_not_found">این عنوان پیدا نشد</string>
+    <string name="detail_play">پخش</string>
+    <string name="detail_play_episode">پخش فصل %1$d · قسمت %2$d</string>
+    <string name="detail_episodes_header">قسمت‌ها</string>
+    <string name="detail_episodes_header_seasons">قسمت‌ها · %1$d فصل · %2$d قسمت</string>
+    <string name="detail_episodes_header_total">قسمت‌ها · %1$d قسمت</string>
+    <string name="detail_season_label">فصل %1$d</string>
+    <string name="detail_season_episode_count">فصل %1$s · %2$d قسمت</string>
+    <string name="detail_m3u_no_episodes">این مورد در پلی‌لیست اطلاعات فصل و قسمت ندارد — با دکمهٔ پخش بالا آن را به‌صورت یک فایل ببینید.</string>
+    <string name="detail_episodes_load_error">قسمت‌ها نیامدند: %1$s</string>
+    <string name="detail_episodes_loading">در حال آوردن قسمت‌ها…</string>
 </resources>

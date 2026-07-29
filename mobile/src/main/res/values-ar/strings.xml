@@ -148,4 +148,18 @@
     <string name="settings_theme_system">النظام</string>
 
     <string name="settings_section_appearance">المظهر</string>
+
+    <string name="action_back">رجوع</string>
+    <string name="detail_loading">جارٍ التحميل…</string>
+    <string name="detail_not_found">العنوان غير موجود</string>
+    <string name="detail_play">تشغيل</string>
+    <string name="detail_play_episode">تشغيل الموسم %1$d · الحلقة %2$d</string>
+    <string name="detail_episodes_header">الحلقات</string>
+    <string name="detail_episodes_header_seasons">الحلقات · %1$d موسم · %2$d إجمالًا</string>
+    <string name="detail_episodes_header_total">الحلقات · %1$d إجمالًا</string>
+    <string name="detail_season_label">الموسم %1$d</string>
+    <string name="detail_season_episode_count">الموسم %1$s · %2$d حلقة</string>
+    <string name="detail_m3u_no_episodes">لا تحتوي مدخلة قائمة التشغيل هذه على بيانات مواسم/حلقات -- استخدم زر التشغيل بالأعلى لمشاهدتها كعنصر واحد.</string>
+    <string name="detail_episodes_load_error">تعذّر تحميل الحلقات: %1$s</string>
+    <string name="detail_episodes_loading">جارٍ تحميل الحلقات…</string>
 </resources>

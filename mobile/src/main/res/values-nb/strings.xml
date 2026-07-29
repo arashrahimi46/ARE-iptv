@@ -148,4 +148,18 @@
     <string name="settings_theme_system">System</string>
 
     <string name="settings_section_appearance">Utseende</string>
+
+    <string name="action_back">Tilbake</string>
+    <string name="detail_loading">Laster…</string>
+    <string name="detail_not_found">Tittel ikke funnet</string>
+    <string name="detail_play">Spill av</string>
+    <string name="detail_play_episode">Spill av S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Episoder</string>
+    <string name="detail_episodes_header_seasons">Episoder · %1$d sesonger · %2$d totalt</string>
+    <string name="detail_episodes_header_total">Episoder · %1$d totalt</string>
+    <string name="detail_season_label">Sesong %1$d</string>
+    <string name="detail_season_episode_count">Sesong %1$s · %2$d episoder</string>
+    <string name="detail_m3u_no_episodes">Denne spillelisteoppføringen har ingen sesong-/episodedata -- bruk Spill av ovenfor for å se den som et enkelt element.</string>
+    <string name="detail_episodes_load_error">Kunne ikke laste episoder: %1$s</string>
+    <string name="detail_episodes_loading">Laster episoder…</string>
 </resources>

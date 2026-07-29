@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Sistema</string>
 
     <string name="settings_section_appearance">Apariencia</string>
+
+    <string name="action_back">Atrás</string>
+    <string name="detail_loading">Cargando…</string>
+    <string name="detail_not_found">Título no encontrado</string>
+    <string name="detail_play">Reproducir</string>
+    <string name="detail_play_episode">Reproducir T%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Episodios</string>
+    <string name="detail_episodes_header_seasons">Episodios · %1$d temporadas · %2$d en total</string>
+    <string name="detail_episodes_header_total">Episodios · %1$d en total</string>
+    <string name="detail_season_label">Temporada %1$d</string>
+    <string name="detail_season_episode_count">Temporada %1$s · %2$d episodios</string>
+    <string name="detail_m3u_no_episodes">Este elemento de la lista no tiene datos de temporada/episodio; usa Reproducir arriba para verlo como un solo elemento.</string>
+    <string name="detail_episodes_load_error">No se pudieron cargar los episodios: %1$s</string>
+    <string name="detail_episodes_loading">Cargando episodios…</string>
 </resources>

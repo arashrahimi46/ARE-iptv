@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Sistem</string>
 
     <string name="settings_section_appearance">Aspect</string>
+
+    <string name="action_back">Înapoi</string>
+    <string name="detail_loading">Se încarcă…</string>
+    <string name="detail_not_found">Titlu negăsit</string>
+    <string name="detail_play">Redă</string>
+    <string name="detail_play_episode">Redă S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Episoade</string>
+    <string name="detail_episodes_header_seasons">Episoade · %1$d sezoane · %2$d în total</string>
+    <string name="detail_episodes_header_total">Episoade · %1$d în total</string>
+    <string name="detail_season_label">Sezonul %1$d</string>
+    <string name="detail_season_episode_count">Sezonul %1$s · %2$d episoade</string>
+    <string name="detail_m3u_no_episodes">Această intrare din lista de redare nu are date despre sezon/episod -- folosește Redă mai sus pentru a o viziona ca element unic.</string>
+    <string name="detail_episodes_load_error">Nu s-au putut încărca episoadele: %1$s</string>
+    <string name="detail_episodes_loading">Se încarcă episoadele…</string>
 </resources>

@@ -148,4 +148,18 @@
     <string name="settings_theme_system">System</string>
 
     <string name="settings_section_appearance">Utseende</string>
+
+    <string name="action_back">Tillbaka</string>
+    <string name="detail_loading">Laddar…</string>
+    <string name="detail_not_found">Titeln hittades inte</string>
+    <string name="detail_play">Spela</string>
+    <string name="detail_play_episode">Spela S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Avsnitt</string>
+    <string name="detail_episodes_header_seasons">Avsnitt · %1$d säsonger · %2$d totalt</string>
+    <string name="detail_episodes_header_total">Avsnitt · %1$d totalt</string>
+    <string name="detail_season_label">Säsong %1$d</string>
+    <string name="detail_season_episode_count">Säsong %1$s · %2$d avsnitt</string>
+    <string name="detail_m3u_no_episodes">Den här spellisteposten har inga säsongs-/avsnittsdata -- använd Spela ovan för att titta på den som ett enda objekt.</string>
+    <string name="detail_episodes_load_error">Det gick inte att ladda avsnitt: %1$s</string>
+    <string name="detail_episodes_loading">Laddar avsnitt…</string>
 </resources>

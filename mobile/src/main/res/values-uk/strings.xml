@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Системна</string>
 
     <string name="settings_section_appearance">Оформлення</string>
+
+    <string name="action_back">Назад</string>
+    <string name="detail_loading">Завантаження…</string>
+    <string name="detail_not_found">Матеріал не знайдено</string>
+    <string name="detail_play">Дивитися</string>
+    <string name="detail_play_episode">Дивитися С%1$d · Е%2$d</string>
+    <string name="detail_episodes_header">Серії</string>
+    <string name="detail_episodes_header_seasons">Серії · сезонів: %1$d · усього: %2$d</string>
+    <string name="detail_episodes_header_total">Серії · усього: %1$d</string>
+    <string name="detail_season_label">Сезон %1$d</string>
+    <string name="detail_season_episode_count">Сезон %1$s · серій: %2$d</string>
+    <string name="detail_m3u_no_episodes">Цей запис плейлиста не має даних про сезони/серії -- використайте «Дивитися» вище, щоб відтворити як єдиний елемент.</string>
+    <string name="detail_episodes_load_error">Не вдалося завантажити серії: %1$s</string>
+    <string name="detail_episodes_loading">Завантаження серій…</string>
 </resources>

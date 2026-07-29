@@ -148,4 +148,18 @@
     <string name="settings_theme_system">System</string>
 
     <string name="settings_section_appearance">Udseende</string>
+
+    <string name="action_back">Tilbage</string>
+    <string name="detail_loading">Indlæser…</string>
+    <string name="detail_not_found">Titlen blev ikke fundet</string>
+    <string name="detail_play">Afspil</string>
+    <string name="detail_play_episode">Afspil S%1$d · E%2$d</string>
+    <string name="detail_episodes_header">Afsnit</string>
+    <string name="detail_episodes_header_seasons">Afsnit · %1$d sæsoner · %2$d i alt</string>
+    <string name="detail_episodes_header_total">Afsnit · %1$d i alt</string>
+    <string name="detail_season_label">Sæson %1$d</string>
+    <string name="detail_season_episode_count">Sæson %1$s · %2$d afsnit</string>
+    <string name="detail_m3u_no_episodes">Denne playlistepost har ingen sæson-/afsnitsdata -- brug Afspil ovenfor for at se den som et enkelt element.</string>
+    <string name="detail_episodes_load_error">Kunne ikke indlæse afsnit: %1$s</string>
+    <string name="detail_episodes_loading">Indlæser afsnit…</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
+import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.player.DefaultStreamUrlResolver
 import com.arashrahimi46.iptv.data.player.StreamKind
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 sealed interface PlayerTarget {
     data class LiveChannel(val channelId: Long) : PlayerTarget
     data class Movie(val vodTitleId: Long) : PlayerTarget
+    data class Episode(val episodeId: Long) : PlayerTarget
 }
 
 data class PlayerUiState(
@@ -35,6 +37,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(application)
     private val continueWatchingRepo = ContinueWatchingRepository(application)
     private val resolver = DefaultStreamUrlResolver(CredentialsStore(application))
+    private val db = AppDatabase.get(application)
 
     val player: ExoPlayer = ExoPlayer.Builder(application).build()
 
@@ -50,33 +53,44 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _state.value = PlayerUiState(isLoading = true)
         viewModelScope.launch {
             try {
-                val (name, sourceId, kind, externalId, storedUrl, resumeMs) = when (target) {
+                val (name, sourceId, kind, externalId, storedUrl, resumeMs, seriesNum) = when (target) {
                     is PlayerTarget.LiveChannel -> {
                         val channel = repository.channelsByIds(listOf(target.channelId)).firstOrNull()
                             ?: error("Channel not found")
-                        Play6(channel.name, channel.sourceId, StreamKind.LIVE, channel.externalId, channel.streamUrl, 0L)
+                        PlayTarget(channel.name, channel.sourceId, StreamKind.LIVE, channel.externalId, channel.streamUrl, 0L, null)
                     }
                     is PlayerTarget.Movie -> {
                         val title = repository.titlesByIds(listOf(target.vodTitleId)).firstOrNull()
                             ?: error("Title not found")
                         val resume = continueWatchingRepo.resumePositionFor(vodTitleId = title.id, seriesEpisodeId = null)
-                        Play6(title.name, title.sourceId, StreamKind.VOD, title.externalId, title.streamUrl, resume)
+                        PlayTarget(title.name, title.sourceId, StreamKind.VOD, title.externalId, title.streamUrl, resume, null)
+                    }
+                    is PlayerTarget.Episode -> {
+                        val episode = db.seriesEpisodeDao().getById(target.episodeId) ?: error("Episode not found")
+                        val series = repository.titlesByIds(listOf(episode.seriesTitleId)).firstOrNull()
+                            ?: error("Series not found")
+                        val resume = continueWatchingRepo.resumePositionFor(vodTitleId = null, seriesEpisodeId = episode.id)
+                        PlayTarget(episode.name, series.sourceId, StreamKind.SERIES, episode.externalId, episode.streamUrl, resume, episode.episode)
                     }
                 }
                 val source = repository.observeSource(sourceId).first() ?: error("Source not found")
-                val url = resolver.resolve(source, kind, externalId, storedUrl)
+                val url = resolver.resolve(source, kind, externalId, storedUrl, series = seriesNum)
                 player.setMediaItem(MediaItem.fromUri(url), resumeMs)
                 player.prepare()
                 player.playWhenReady = true
                 _state.value = PlayerUiState(title = name, isLoading = false)
-                if (target is PlayerTarget.Movie) startProgressTracking(target.vodTitleId)
+                when (target) {
+                    is PlayerTarget.Movie -> startProgressTracking(vodTitleId = target.vodTitleId, seriesEpisodeId = null)
+                    is PlayerTarget.Episode -> startProgressTracking(vodTitleId = null, seriesEpisodeId = target.episodeId)
+                    is PlayerTarget.LiveChannel -> Unit
+                }
             } catch (t: Throwable) {
                 _state.value = PlayerUiState(isLoading = false, error = t.message ?: "Playback failed")
             }
         }
     }
 
-    private fun startProgressTracking(vodTitleId: Long) {
+    private fun startProgressTracking(vodTitleId: Long?, seriesEpisodeId: Long?) {
         progressJob?.cancel()
         progressJob = viewModelScope.launch {
             while (true) {
@@ -84,7 +98,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 val duration = player.duration
                 val position = player.currentPosition
                 if (duration > 0) {
-                    continueWatchingRepo.updateProgress(vodTitleId, null, position, duration)
+                    continueWatchingRepo.updateProgress(vodTitleId, seriesEpisodeId, position, duration)
                 }
             }
         }
@@ -97,11 +111,13 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     }
 }
 
-private data class Play6(
+private data class PlayTarget(
     val name: String,
     val sourceId: Long,
     val kind: StreamKind,
     val externalId: String?,
     val storedUrl: String?,
     val resumeMs: Long,
+    /** Episode number for a Stalker series episode (sent as `&series=` at resolve time); null otherwise. */
+    val seriesNum: Int?,
 )

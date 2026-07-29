@@ -148,4 +148,18 @@
     <string name="settings_theme_system">Systeem</string>
 
     <string name="settings_section_appearance">Weergave</string>
+
+    <string name="action_back">Terug</string>
+    <string name="detail_loading">Laden…</string>
+    <string name="detail_not_found">Titel niet gevonden</string>
+    <string name="detail_play">Afspelen</string>
+    <string name="detail_play_episode">S%1$d · A%2$d afspelen</string>
+    <string name="detail_episodes_header">Afleveringen</string>
+    <string name="detail_episodes_header_seasons">Afleveringen · %1$d seizoenen · %2$d totaal</string>
+    <string name="detail_episodes_header_total">Afleveringen · %1$d totaal</string>
+    <string name="detail_season_label">Seizoen %1$d</string>
+    <string name="detail_season_episode_count">Seizoen %1$s · %2$d afleveringen</string>
+    <string name="detail_m3u_no_episodes">Dit afspeellijstitem heeft geen seizoen-/afleveringgegevens -- gebruik Afspelen hierboven om het als één item te bekijken.</string>
+    <string name="detail_episodes_load_error">Afleveringen laden mislukt: %1$s</string>
+    <string name="detail_episodes_loading">Afleveringen laden…</string>
 </resources>

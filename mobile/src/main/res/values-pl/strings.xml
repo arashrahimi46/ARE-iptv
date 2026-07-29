@@ -148,4 +148,18 @@
     <string name="settings_theme_system">System</string>
 
     <string name="settings_section_appearance">Wygląd</string>
+
+    <string name="action_back">Wstecz</string>
+    <string name="detail_loading">Ładowanie…</string>
+    <string name="detail_not_found">Nie znaleziono tytułu</string>
+    <string name="detail_play">Odtwórz</string>
+    <string name="detail_play_episode">Odtwórz S%1$d · O%2$d</string>
+    <string name="detail_episodes_header">Odcinki</string>
+    <string name="detail_episodes_header_seasons">Odcinki · sezony: %1$d · łącznie: %2$d</string>
+    <string name="detail_episodes_header_total">Odcinki · łącznie: %1$d</string>
+    <string name="detail_season_label">Sezon %1$d</string>
+    <string name="detail_season_episode_count">Sezon %1$s · odcinki: %2$d</string>
+    <string name="detail_m3u_no_episodes">Ten wpis playlisty nie ma danych o sezonach/odcinkach -- użyj Odtwórz powyżej, aby obejrzeć go jako pojedynczą pozycję.</string>
+    <string name="detail_episodes_load_error">Nie udało się załadować odcinków: %1$s</string>
+    <string name="detail_episodes_loading">Ładowanie odcinków…</string>
 </resources>
