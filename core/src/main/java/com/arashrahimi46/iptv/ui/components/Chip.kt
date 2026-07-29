@@ -1,10 +1,12 @@
 package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,7 @@ import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.ControlTone
 import com.arashrahimi46.iptv.ui.theme.controlSkin
+import com.arashrahimi46.iptv.ui.theme.softShadow
 
 enum class AreChipSize { Small, Medium }
 
@@ -55,29 +58,51 @@ fun AreChip(
     val skin = controlSkin(ControlTone.Neutral, selected = selected)
     val contentColor = skin.content
 
+    // Touch-target fix: 34dp/42dp is below the 48dp minimum (same bug class as the earlier
+    // favorite-toggle finding). Fixed the same way -- grow the CLICKABLE region via invisible
+    // `defaultMinSize`, not the visible chip -- so TV's D-pad layout density (which depends on the
+    // chip's actual visual height) is untouched, but a phone finger gets a real 48dp hit area. The
+    // outer AreInteractive is transparent/borderless/shadowless and only owns the touch target +
+    // focus/press state; the actual glass fill/border/shadow draw on the smaller inner Box, which is
+    // what stays visually 34dp/42dp tall.
     AreInteractive(
         onClick = onClick,
-        modifier = modifier.height(height),
+        modifier = modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = skin.fillColor,
-        backgroundBrush = skin.fillBrush,
-        shadowElevation = skin.elevation,
-        borderColor = skin.borderColor,
-        borderBrush = skin.borderBrush,
+        backgroundColor = Color.Transparent,
+        shadowElevation = 0.dp,
     ) { _, _ ->
-        Row(
-            modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        Box(
+            modifier = Modifier
+                .height(height)
+                .then(if (skin.elevation > 0.dp) Modifier.softShadow(shape) else Modifier)
+                .then(
+                    if (skin.fillBrush != null) Modifier.background(skin.fillBrush, shape)
+                    else Modifier.background(skin.fillColor, shape),
+                )
+                .then(
+                    when {
+                        skin.borderBrush != null -> Modifier.border(1.dp, skin.borderBrush, shape)
+                        skin.borderColor != null -> Modifier.border(1.dp, skin.borderColor, shape)
+                        else -> Modifier
+                    },
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            if (dotColor != null) {
-                Box(Modifier.size(8.dp).background(dotColor, CircleShape))
+            Row(
+                modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            ) {
+                if (dotColor != null) {
+                    Box(Modifier.size(8.dp).background(dotColor, CircleShape))
+                }
+                if (icon != null) {
+                    Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
+                }
+                Text(text = text, style = AreIptvTheme.typography.label, color = contentColor)
             }
-            if (icon != null) {
-                Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
-            }
-            Text(text = text, style = AreIptvTheme.typography.label, color = contentColor)
         }
     }
 }
