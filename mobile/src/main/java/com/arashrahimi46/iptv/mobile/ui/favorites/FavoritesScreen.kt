@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,14 +25,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.mobile.R
-import com.arashrahimi46.iptv.mobile.ui.components.ChannelTile
-import com.arashrahimi46.iptv.mobile.ui.components.PosterTile
-import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.ui.components.AreChannelTile
+import com.arashrahimi46.iptv.ui.components.ArePosterTile
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
 /** Dedicated Favorites destination -- not on the bottom bar (5 items there already: Home/Live/
  * Movies/Series/Settings; a 6th would crowd it), reached from a Settings row instead. Channels /
- * Movies / Series tabs, mirroring :tv's FavoritesScreen shape with touch tabs instead of a D-pad
- * segmented control. */
+ * Movies / Series segments, mirroring :tv's FavoritesScreen shape with the same [AreSegmentedControl]
+ * (D-pad Left/Right there, a tap here -- the control itself is touch-usable as-is). */
 @Composable
 fun FavoritesScreen(
     onOpenChannel: (Channel) -> Unit,
@@ -43,8 +41,8 @@ fun FavoritesScreen(
     viewModel: FavoritesViewModel = viewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
-    val colors = AreIptvMobileTheme.colors
-    var tab by remember { mutableIntStateOf(0) }
+    val colors = AreIptvTheme.colors
+    var tab by remember { mutableStateOf(0) }
     val titles = listOf(
         stringResource(R.string.favorites_tab_channels),
         stringResource(R.string.favorites_tab_movies),
@@ -53,17 +51,19 @@ fun FavoritesScreen(
 
     if (!state.hasSource) {
         Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.favorites_no_source), style = MaterialTheme.typography.bodyMedium, color = colors.textSecondary)
+            Text(stringResource(R.string.favorites_no_source), style = AreIptvTheme.typography.body, color = colors.textSecondary)
         }
         return
     }
 
     Column(Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = tab) {
-            titles.forEachIndexed { index, title ->
-                Tab(selected = tab == index, onClick = { tab = index }, text = { Text(title) })
-            }
-        }
+        AreSegmentedControl(
+            options = titles.indices.toList(),
+            selected = tab,
+            label = { titles[it] },
+            onSelect = { tab = it },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        )
         when (tab) {
             0 -> ChannelGrid(state.channels, stringResource(R.string.favorites_empty_channels), onOpenChannel, viewModel::toggleChannelFavorite)
             1 -> TitleGrid(state.movies, stringResource(R.string.favorites_empty_movies), onOpenTitle, viewModel::toggleVodFavorite)
@@ -74,22 +74,27 @@ fun FavoritesScreen(
 
 @Composable
 private fun ChannelGrid(channels: List<Channel>, emptyLabel: String, onClick: (Channel) -> Unit, onToggle: (Long) -> Unit) {
-    val colors = AreIptvMobileTheme.colors
+    val colors = AreIptvTheme.colors
     if (channels.isEmpty()) {
         EmptyState(emptyLabel, colors.textSecondary)
         return
     }
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 96.dp),
+        columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxWidth().fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         gridItems(channels, key = { it.id }) { channel ->
-            ChannelTile(
-                channel,
+            AreChannelTile(
+                channel = channel.name,
                 onClick = { onClick(channel) },
+                logoUrl = channel.logoUrl,
+                number = channel.number,
+                category = channel.categoryName,
+                isRadio = channel.isRadio,
+                fillWidth = true,
                 isFavorite = true,
                 onToggleFavorite = { onToggle(channel.id) },
             )
@@ -99,7 +104,7 @@ private fun ChannelGrid(channels: List<Channel>, emptyLabel: String, onClick: (C
 
 @Composable
 private fun TitleGrid(items: List<VodTitle>, emptyLabel: String, onClick: (VodTitle) -> Unit, onToggle: (VodTitle) -> Unit) {
-    val colors = AreIptvMobileTheme.colors
+    val colors = AreIptvTheme.colors
     if (items.isEmpty()) {
         EmptyState(emptyLabel, colors.textSecondary)
         return
@@ -112,9 +117,13 @@ private fun TitleGrid(items: List<VodTitle>, emptyLabel: String, onClick: (VodTi
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         gridItems(items, key = { it.id }) { title ->
-            PosterTile(
-                title,
+            ArePosterTile(
+                title = title.name,
                 onClick = { onClick(title) },
+                posterUrl = title.posterUrl,
+                meta = listOfNotNull(title.year, title.categoryName).joinToString(" · ").ifBlank { null },
+                rating = title.rating,
+                fillWidth = true,
                 isFavorite = true,
                 onToggleFavorite = { onToggle(title) },
             )
@@ -125,6 +134,6 @@ private fun TitleGrid(items: List<VodTitle>, emptyLabel: String, onClick: (VodTi
 @Composable
 private fun EmptyState(text: String, color: androidx.compose.ui.graphics.Color) {
     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = color)
+        Text(text, style = AreIptvTheme.typography.body, color = color)
     }
 }
