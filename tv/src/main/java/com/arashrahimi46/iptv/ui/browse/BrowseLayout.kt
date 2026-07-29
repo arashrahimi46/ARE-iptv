@@ -394,7 +394,10 @@ private fun BrowseCategoryColumn(
             icon = Icons.Filled.Search,
             activateOnClick = true,
         )
-        Box(Modifier.height(10.dp))
+        // Only 2dp here: the list's own top contentPadding supplies the rest of the gap. Putting
+        // the space in a sibling Spacer instead left it OUTSIDE the list's viewport, so the first
+        // row's focus ring had no headroom inside it and got shaved off at the top edge.
+        Box(Modifier.height(2.dp))
         if (visibleIndices.isEmpty()) {
             Text(
                 text = stringResource(R.string.browse_category_search_empty),
@@ -409,8 +412,12 @@ private fun BrowseCategoryColumn(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                // Bottom room so the last row's focus ring/glow isn't clipped at the column edge.
-                contentPadding = PaddingValues(bottom = 24.dp),
+                // Room INSIDE the viewport at both ends so a focused row's ring/glow is never
+                // shaved off against the column edge. Bottom was already here; top was not, so the
+                // very first row -- "Favorites", the one focus lands on -- had its ring clipped
+                // flat along its top edge at rest. AreCategoryRow's ring/glow is drawn outside the
+                // row's own bounds, so the headroom has to come from the list, not from the row.
+                contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp),
             ) {
                 // Keyed by name, not by position. Index-keyed, any change to the list -- pinning
                 // floats a row to the top, a count changes, the filter narrows -- made Compose reuse
