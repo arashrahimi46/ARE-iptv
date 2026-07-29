@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import kotlinx.coroutines.delay
 import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
@@ -90,6 +91,31 @@ fun AreIptvAppShell(
         if (contentFocusRequests > 0) contentFocus.requestFocusWhenReady()
     }
 
+    // Nav is SEQUENCED, not simultaneous: pick an item -> the rail closes on its own -> only then does
+    // the new screen mount and take focus.
+    //
+    // Both halves used to fire in the same frame, and on a TV SoC they are wildly mismatched: the
+    // collapse is ~200ms of nearly free frames (one empty animating node -- see AreSidebarNav), while
+    // mounting a screen is 100-300ms of composition, measure and image work on that same main thread.
+    // The animation always lost. It froze part-closed, the expensive frame landed, and the rail
+    // snapped shut -- read by the user as "the sidebar animation is laggy" when it was really the page
+    // load stepping on it. Neither is slow; they were just running on top of each other.
+    //
+    // So the rail is told to close FIRST (`collapseNow`, which overrides its focus-driven expansion so
+    // it closes while the row is still focused), and the swap waits out the tween. The cost is that
+    // the page starts loading ~200ms later; the gain is that neither phase is ever starved, so both
+    // look deliberate. Re-selection is ignored while a nav is in flight so a double-press can't queue
+    // two swaps.
+    var navigatingTo by remember { mutableStateOf<String?>(null) }
+    val navDelayMs = AreIptvTheme.motion.durBaseMs.toLong()
+    LaunchedEffect(navigatingTo) {
+        val id = navigatingTo ?: return@LaunchedEffect
+        delay(navDelayMs)
+        onNavSelect(id)
+        contentFocusRequests++
+        navigatingTo = null
+    }
+
     val spacing = AreIptvTheme.spacing
     val reservedWidth = when (sidebarStyle) {
         SidebarStyle.FLOATING -> spacing.sidebarBoxWidth + spacing.sidebarInset * 2
@@ -131,10 +157,8 @@ fun AreIptvAppShell(
             // branch handles the inset (FLOATING) or flush edge (EDGE).
             AreSidebarNav(
                 active = activeNav,
-                onSelect = { id ->
-                    onNavSelect(id)
-                    contentFocusRequests++
-                },
+                onSelect = { id -> if (navigatingTo == null) navigatingTo = id },
+                collapseNow = navigatingTo != null,
                 badgedIds = badgedNavIds,
                 style = sidebarStyle,
                 modifier = Modifier.align(Alignment.TopStart),
