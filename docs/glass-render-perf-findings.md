@@ -1084,3 +1084,40 @@ there is nothing left for a faster painter to win. Coil 2.7.0 stays.
 
 Draw-command recording is no longer a meaningful cost on this screen. What remains is composition of
 new rails, and the largest single item left in it is now Compose's own text layout.
+
+---
+
+## Round 5: text layout is settled — nothing meaningful left (2026-07-29)
+
+Traces name `TextAnnotatedStringNode:measure`, which is Compose's *expensive* text path — plain-String
+text should land on the cheaper `TextStringSimpleNode`. `androidx.tv.material3.Text` routes through the
+annotated node regardless. That is real, and it is not worth acting on.
+
+Routing the rail tiles' text through `BasicText(String)` does move them to the cheap node
+(`TextStringSimpleNode::measure`, 24 calls, ~1.06 ms each vs ~1.28 ms), but the totals barely shift.
+So the ceiling was measured directly: **every** text lever pulled at once — cheap node, no
+letter-spacing, system font instead of Manrope/Space Grotesk, `Clip` instead of `Ellipsis` — 3 reps
+each, interleaved:
+
+| | control | every lever pulled |
+|---|---|---|
+| total text measure | 47 / 47 / 46 ms | 43 / 42 / 42 ms |
+| `AndroidOwner:measureAndLayout` | 246 / 255 / 242 ms | 251 / 239 / 243 ms |
+| main-thread Running | 1015 / 1018 / 1030 ms | 1016 / 1006 / 1016 ms |
+| worst frame | 82 / 82 / 71 ms | 76 / 77 / 79 ms |
+
+**−11 % of a cost that is itself 4.6 % of main-thread Running**, i.e. ~0.5 % overall — and it is the
+only lever left that would cost real design (the brand fonts, the tracking, ellipsis on a TV where
+titles genuinely overflow). Everything was reverted. Do not revisit text layout without a new profile
+showing it has grown.
+
+Individually measured on the way, all in the same noise band: dropping `letterSpacing` (em-based),
+forcing `FontFamily.SansSerif`, `Clip` instead of `Ellipsis`, and `softWrap = false`.
+
+### Where things actually stand
+
+Draw-command recording went 316 → ~58 ms over rounds 1-4 and is no longer a meaningful cost. What is
+left on a Home sweep is **composition and measure of new rails**, and after the Coil painter went it
+has no single dominant item — text is ~19 % of `measureAndLayout`, the rest is spread across the
+layout tree. The next real win would have to be structural (fewer rails composed per scroll, or a
+tile with materially fewer layout nodes), not another modifier-level fix.
