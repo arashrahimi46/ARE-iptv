@@ -13,9 +13,9 @@ import com.arashrahimi46.iptv.mobile.R
  * shared via :core -- :core is a resource-bearing library already (for the moved data/model
  * files), but keeping brand font *files* out of it avoids widening :core's manifest/AAR surface
  * for a design-token concern the two apps could plausibly diverge on later. The font .ttf files
- * are copied 1:1 into mobile/res/font. monolean: v1 skips the Vazirmatn RTL font swap :tv does
- * for fa/ar locales -- fa/ar users get the Latin brand fonts for now; upgrade path is copying
- * vazirmatn_*.ttf here and mirroring AreIptvTheme's LocalLayoutDirection check.
+ * are copied 1:1 into mobile/res/font, including the Vazirmatn RTL swap (see
+ * [AreIptvTypographyVazir]) mirroring :tv's [com.arashrahimi46.iptv.ui.theme.AreIptvTheme]
+ * `LocalLayoutDirection` check.
  */
 private val DisplayFontFamily: FontFamily = FontFamily(
     Font(R.font.space_grotesk_regular, FontWeight.Normal),
@@ -34,6 +34,16 @@ private val MonoFontFamily: FontFamily = FontFamily(
     Font(R.font.jetbrains_mono_regular, FontWeight.Normal),
     Font(R.font.jetbrains_mono_medium, FontWeight.Medium),
     Font(R.font.jetbrains_mono_bold, FontWeight.Bold),
+)
+
+/** Vazirmatn (OFL) -- the Persian/Arabic-capable family used for every text role when the active
+ * locale is RTL (see [AreIptvTypographyVazir]); mirrors :tv's ui/theme/Type.kt. */
+private val VazirFontFamily: FontFamily = FontFamily(
+    Font(R.font.vazirmatn_regular, FontWeight.Normal),
+    Font(R.font.vazirmatn_medium, FontWeight.Medium),
+    Font(R.font.vazirmatn_semibold, FontWeight.SemiBold),
+    Font(R.font.vazirmatn_bold, FontWeight.Bold),
+    Font(R.font.vazirmatn_extrabold, FontWeight.ExtraBold),
 )
 
 private const val LineHeightTight = 1.05f
@@ -65,4 +75,20 @@ val AreIptvTypographyDefault = AreIptvTypography(
     label = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = (16 * LineHeightSnug).sp),
     caption = TextStyle(fontFamily = BodyFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
     mono = TextStyle(fontFamily = MonoFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
+)
+
+/** Same type scale as [AreIptvTypographyDefault], entirely on [VazirFontFamily] -- swapped in for
+ * fa/ar locales (see [com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme]'s
+ * `LocalLayoutDirection` check), matching :tv's `AreIptvTypographyVazir`. */
+val AreIptvTypographyVazir = AreIptvTypography(
+    hero = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 64.sp, lineHeight = (64 * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    display = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = (44 * LineHeightTight).sp, letterSpacing = (-0.02).em),
+    h1 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = (34 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h2 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 26.sp, lineHeight = (26 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    h3 = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp, lineHeight = (21 * LineHeightSnug).sp, letterSpacing = (-0.02).em),
+    tile = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = (18 * LineHeightSnug).sp),
+    body = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = (16 * LineHeightNormal).sp),
+    label = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = (16 * LineHeightSnug).sp),
+    caption = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
+    mono = TextStyle(fontFamily = VazirFontFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = (14 * LineHeightNormal).sp),
 )
