@@ -306,18 +306,21 @@ fun TvFocusable(
         label = "tvFocusableScale",
     )
     Box(
-        modifier = Modifier.graphicsLayer {
+        // `modifier` stays on the OUTER box -- it is the node the caller's layout modifiers describe,
+        // and moving it inward silently changes their meaning (a caller's onGloballyPositioned then
+        // reports positionInParent() inside this wrapper, i.e. always 0: that is what stranded
+        // AreSegmentedControl's sliding lens on the first segment).
+        //
+        // propagateMinConstraints so the surface below still FILLS this box: the caller's sizing
+        // (e.g. AreSwitch's .size(58,34)) has to reach the element that draws the background, or the
+        // fill shrink-wraps its content while the focus ring traces the larger caller-sized box.
+        propagateMinConstraints = true,
+        modifier = modifier.graphicsLayer {
             val sc = scaleState.value
             scaleX = sc
             scaleY = sc
         },
     ) {
-        // `modifier` goes HERE, on the surface that actually draws the fill/border/shape -- not on
-        // the outer Box. The caller's sizing (e.g. AreSwitch's .size(58,34)) has to land on the same
-        // element as the background, exactly as it did pre-:core-migration when this was one Box.
-        // Put it on the outer Box instead and the fill sizes to its own content while the caller's
-        // size applies to an empty wrapper: the switch track shrink-wraps its thumb, chips and
-        // buttons render at the wrong width.
         // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
         // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
         // (the ring below is matchParentSize()) and collapses to zero width for any caller that
@@ -326,7 +329,7 @@ fun TvFocusable(
         // regression: dialog action buttons rendered as an invisible sliver.
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = modifier
+            modifier = Modifier
                 .focusable(interactionSource = interactionSource)
                 // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
                 // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
@@ -427,19 +430,20 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
         label = "areInteractiveBindingScale",
     )
     Box(
-        modifier = Modifier.graphicsLayer {
+        // See the identical notes in TvFocusable: `modifier` belongs on the outer box (caller layout
+        // semantics), propagateMinConstraints makes the caller's size reach the fill, and the child
+        // must stay a normal (content-sizing) child, not matchParentSize(), or the outer Box
+        // collapses to zero width whenever the caller relies on wrap-content sizing.
+        propagateMinConstraints = true,
+        modifier = modifier.graphicsLayer {
             val sc = scaleState.value
             scaleX = sc
             scaleY = sc
         },
     ) {
-        // See the identical notes in TvFocusable: `modifier` belongs on the surface that draws the
-        // fill (so the caller's size and the background land on the same element), and this must
-        // stay a normal (content-sizing) child, not matchParentSize(), or the outer Box collapses
-        // to zero width whenever the caller relies on wrap-content sizing.
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = modifier
+            modifier = Modifier
                 .focusable(interactionSource = interactionSource)
                 // See the identical block in TvFocusable for why DPAD_CENTER needs its own
                 // handling on top of combinedClickable's Enter/NumPadEnter.
