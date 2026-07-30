@@ -13,9 +13,6 @@ import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.AreChip
 
@@ -44,12 +42,11 @@ fun LiveScreen(onOpenChannel: (Channel) -> Unit, viewModel: LiveViewModel = view
     val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
 
     Column(Modifier.fillMaxSize()) {
-        OutlinedTextField(
+        AreTextField(
             value = query,
             onValueChange = viewModel::setQuery,
-            placeholder = { Text(stringResource(R.string.search_placeholder)) },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-            singleLine = true,
+            placeholder = stringResource(R.string.search_placeholder),
+            icon = Icons.Filled.Search,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),

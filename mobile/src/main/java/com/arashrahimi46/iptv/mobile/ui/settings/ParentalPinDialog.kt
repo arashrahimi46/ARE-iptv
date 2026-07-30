@@ -1,8 +1,6 @@
 package com.arashrahimi46.iptv.mobile.ui.settings
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,13 +9,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.text.KeyboardOptions
 import com.arashrahimi46.iptv.mobile.R
-import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreDialog
@@ -27,11 +24,9 @@ import kotlinx.coroutines.launch
 enum class ParentalPinDialogMode { Set, Verify }
 
 /**
- * Touch-first PIN entry: an [AreDialog] with a masked, numeric [OutlinedTextField] (no :core text
- * field exists yet -- known gap, see :tv's equivalent [com.arashrahimi46.iptv.ui.settings.ParentalPinDialog]
- * for the D-pad keypad this intentionally does NOT copy) instead of :tv's on-screen
- * [com.arashrahimi46.iptv.ui.components.AreNumericKeypad] -- a phone already has a numeric software
- * keyboard, so a custom D-pad-oriented keypad isn't needed here.
+ * Touch-first PIN entry: an [AreDialog] with a masked, numeric [AreTextField] instead of :tv's
+ * on-screen [com.arashrahimi46.iptv.ui.components.AreNumericKeypad] -- a phone already has a
+ * numeric software keyboard, so a custom D-pad-oriented keypad isn't needed here.
  * [Set] mode walks enter -> confirm -> [onPinConfirmed] (a mismatch restarts the flow with an
  * inline error). [Verify] mode calls the suspend [onVerify] and reports success via [onVerified].
  */
@@ -43,7 +38,6 @@ fun ParentalPinDialog(
     onVerify: suspend (pin: String) -> Boolean = { false },
     onVerified: () -> Unit = {},
 ) {
-    val colors = AreIptvMobileTheme.colors
     val scope = rememberCoroutineScope()
     var pin by remember { mutableStateOf("") }
     var firstEntry by remember { mutableStateOf<String?>(null) }
@@ -99,25 +93,19 @@ fun ParentalPinDialog(
             },
         ) {
             Column {
-                OutlinedTextField(
+                AreTextField(
                     value = pin,
                     onValueChange = { value ->
                         error = null
                         pin = value.filter(Char::isDigit).take(4)
                         submit()
                     },
-                    label = { Text(stringResource(R.string.settings_change_pin)) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
+                    label = stringResource(R.string.settings_change_pin),
+                    masked = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                    isError = error != null,
+                    error = error,
+                    helper = if (verifying) stringResource(R.string.pin_checking) else null,
                 )
-                val currentError = error
-                if (currentError != null) {
-                    Text(text = currentError, style = AreIptvMobileTheme.typography.caption, color = colors.danger)
-                } else if (verifying) {
-                    Text(text = stringResource(R.string.pin_checking), style = AreIptvMobileTheme.typography.caption, color = colors.textTertiary)
-                }
             }
         }
     }
