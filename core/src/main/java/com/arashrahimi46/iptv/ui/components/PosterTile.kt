@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.delay
@@ -219,14 +220,21 @@ fun ArePosterTile(
           }
         }
         Box(Modifier.height(10.dp))
-        Text(
-            text = title,
-            style = AreIptvTheme.typography.tile,
-            color = colors.textPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = if (focused) Modifier.basicMarquee() else Modifier,
-        )
+        // monolean: keyed on `title` -- basicMarquee()'s default params make every instance
+        // `equal()`, so when a LazyRow recycles this slot for a different (still-focused) tile,
+        // Compose reuses the existing MarqueeModifierNode instead of recreating it and its
+        // animation offset never resets, leaving the new title rendered mid-scroll from the old
+        // one's position (the "clips at the start" bug). Keying forces a fresh node per title.
+        key(title) {
+            Text(
+                text = title,
+                style = AreIptvTheme.typography.tile,
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = if (focused) Modifier.basicMarquee() else Modifier,
+            )
+        }
         if (meta != null) {
             Text(
                 text = meta,

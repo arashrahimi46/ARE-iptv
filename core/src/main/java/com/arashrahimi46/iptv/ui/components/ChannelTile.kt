@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.delay
@@ -246,14 +247,21 @@ fun AreChannelTile(
                     if (number != null) {
                         Text(text = number, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
                     }
-                    Text(
-                        text = channel,
-                        style = AreIptvTheme.typography.tile,
-                        color = colors.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
-                    )
+                    // monolean: keyed on `channel` -- basicMarquee()'s default params make every
+                    // instance `equal()`, so a LazyRow slot recycled for a different (still
+                    // focused) tile reuses the old MarqueeModifierNode and its animation offset
+                    // never resets, showing the new title mid-scroll from the old one's position
+                    // ("clips at the start" bug). Keying forces a fresh node per string.
+                    key(channel) {
+                        Text(
+                            text = channel,
+                            style = AreIptvTheme.typography.tile,
+                            color = colors.textPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                        )
+                    }
                 }
                 // Category + radio chips. Fixed height (badge 22dp + 5dp lead) whether or not there
                 // are chips, for the same reason the now/next lines below always reserve theirs:
@@ -293,14 +301,16 @@ fun AreChannelTile(
                     val lineHeight = with(LocalDensity.current) { AreIptvTheme.typography.caption.lineHeight.toDp() }
                     Box(Modifier.height(lineHeight)) {
                         if (now != null) {
-                            Text(
-                                text = stringResource(R.string.channel_tile_now, now),
-                                style = AreIptvTheme.typography.caption,
-                                color = colors.textSecondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = if (focused) Modifier.basicMarquee() else Modifier,
-                            )
+                            key(now) {
+                                Text(
+                                    text = stringResource(R.string.channel_tile_now, now),
+                                    style = AreIptvTheme.typography.caption,
+                                    color = colors.textSecondary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = if (focused) Modifier.basicMarquee() else Modifier,
+                                )
+                            }
                         }
                     }
                     Row(
@@ -309,14 +319,16 @@ fun AreChannelTile(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         if (next != null) {
-                            Text(
-                                text = stringResource(R.string.channel_tile_next, next),
-                                style = AreIptvTheme.typography.caption,
-                                color = colors.textTertiary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
-                            )
+                            key(next) {
+                                Text(
+                                    text = stringResource(R.string.channel_tile_next, next),
+                                    style = AreIptvTheme.typography.caption,
+                                    color = colors.textTertiary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                                )
+                            }
                         }
                         if (codec != null) {
                             Text(text = codec, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
