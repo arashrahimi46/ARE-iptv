@@ -434,7 +434,12 @@ fun AreIptvApp() {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 },
-                onExplore = { navController.navigate("explore") },
+                // Explore entry point withheld for the Play Store build: pointing users at a
+                // catalogue of third-party free-IPTV playlists is the kind of thing store review
+                // reacts to. `onExplore = null` hides the link (SourceStep only renders it when
+                // non-null); the "explore" destination itself stays wired up below, so restoring
+                // the entry point is this one line.
+                onExplore = null,
             )
         }
         // Curated free-playlist catalogue. An add here is an ordinary M3U import, so it lands in the

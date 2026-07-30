@@ -69,24 +69,39 @@ fun AreDialog(
         // Bulgarian, Persian and Arabic -- the last 4 of 24 -- could not be focused no matter how
         // many DPAD_DOWN presses). Capping height to the screen and scrolling the overflow fixes
         // both the visual clipping and the focus dead-end.
+        //
+        // Only the CONTENT scrolls -- the title and the action row stay put. Scrolling the whole
+        // card instead meant a dialog that overflows opened already scrolled to the BOTTOM: every
+        // one of these modals focuses its default action on open (IntegrationGuideDialog's Close,
+        // for one), and the bring-into-view for that focus dragged the card up until the action row
+        // was visible, slicing the first line of the body off the top edge mid-glyph. With the
+        // actions outside the scroll they are always on screen, so nothing has to scroll to reach
+        // them and the body starts where it should.
         val maxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.8f
-        Column(
-            modifier = Modifier
-                .widthIn(max = width)
-                .heightIn(max = maxHeight)
-                .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
-                .padding(AreIptvTheme.spacing.sp8)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            // The card is a glass surface, so everything inside it is a nested child (§6): controls
-            // switch to tint + hairline instead of laying a second glass fill on the panel, and the
-            // action-row's neutral buttons read as glass chips rather than as a full opaque square.
-            ProvideOnGlass {
+        // The card is a glass surface, so everything inside it is a nested child (§6): controls
+        // switch to tint + hairline instead of laying a second glass fill on the panel, and the
+        // action-row's neutral buttons read as glass chips rather than as a full opaque square.
+        ProvideOnGlass {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = width)
+                    .heightIn(max = maxHeight)
+                    .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
+                    .padding(AreIptvTheme.spacing.sp8),
+            ) {
                 if (title != null) {
                     Text(text = title, style = AreIptvTheme.typography.h2, color = colors.textPrimary)
                     Box(Modifier.height(AreIptvTheme.spacing.sp4))
                 }
-                content()
+                Column(
+                    // fill = false so a short dialog still wraps its content instead of stretching
+                    // to the full 80%-of-screen cap.
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    content()
+                }
                 if (actions != null) {
                     Box(Modifier.height(AreIptvTheme.spacing.sp8))
                     Row(
