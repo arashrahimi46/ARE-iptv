@@ -1486,7 +1486,9 @@ private fun BufferingIndicator() {
         label = "bufferingAngle",
     )
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Filled.Autorenew, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.rotate(angle))
+        // Same fixed light-on-dark reasoning as PlayerErrorState's title -- this sits on the
+        // player's hardcoded black canvas, not a themed surface.
+        Icon(Icons.Filled.Autorenew, contentDescription = null, tint = Color.White, modifier = Modifier.rotate(angle))
         Box(Modifier.padding(top = 8.dp))
         Text(text = stringResource(CoreR.string.player_buffering), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
     }
@@ -1511,7 +1513,10 @@ private fun PlayerErrorState(
             tint = colors.danger,
             modifier = Modifier.padding(bottom = 12.dp),
         )
-        Text(text = stringResource(CoreR.string.player_playback_failed), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+        // Fixed light-on-dark, not colors.textPrimary: this overlay always sits on the player's
+        // hardcoded Color.Black canvas (see .background(Color.Black) above), which never follows
+        // the app theme -- in light theme textPrimary is near-black, rendering invisibly on black.
+        Text(text = stringResource(CoreR.string.player_playback_failed), style = AreIptvTheme.typography.h2, color = Color.White)
         Box(Modifier.padding(top = 6.dp))
         Text(text = message, style = AreIptvTheme.typography.body, color = colors.textSecondary)
         Box(Modifier.padding(top = 20.dp))

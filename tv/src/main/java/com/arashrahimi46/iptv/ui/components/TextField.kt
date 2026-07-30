@@ -113,6 +113,17 @@ fun AreTextField(
                 }
             }
         }
+        // A hardware/software Back while editing is often consumed by the IME first (closing the
+        // keyboard) without ever reaching Compose's key-input pipeline, so the onKeyEvent Back
+        // handler on the BasicTextField below can miss the first press entirely -- the field is
+        // still "editing" when the SECOND Back arrives, and that one lands on the host Dialog's
+        // own OnBackPressedCallback (onDismissRequest), silently discarding whatever was typed.
+        // BackHandler registers directly on the activity's OnBackPressedDispatcher, which is what
+        // the IME's own back-consumption competes with -- registering here (nested inside the
+        // Dialog's content) makes this callback the most-recently-added enabled one, so it wins
+        // over the Dialog's callback on the very first Back that reaches the dispatcher at all,
+        // regardless of whether the IME ate the immediately preceding one.
+        androidx.activity.compose.BackHandler(enabled = editing) { editing = false }
     }
 
     // The resting glass edge is always visible (even unfocused); the focus ring/glow/scale on
