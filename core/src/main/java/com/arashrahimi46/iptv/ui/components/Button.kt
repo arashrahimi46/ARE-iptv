@@ -126,6 +126,8 @@ fun AreButton(
                 text = text,
                 style = AreIptvTheme.typography.label,
                 color = contentColor,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
             if (trailingIcon != null) {
                 Icon(trailingIcon, contentDescription = null, tint = contentColor, modifier = Modifier.size(spec.iconSize))

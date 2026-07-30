@@ -12,8 +12,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +51,9 @@ fun HomeScreen(
     onOpenEpisode: (Long) -> Unit,
     onOpenSearch: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
+    onOpenStreams: () -> Unit = {},
+    onOpenRecordings: () -> Unit = {},
+    onOpenFavorites: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -62,6 +68,38 @@ fun HomeScreen(
     }
 
     Column(Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            AreButton(
+                text = stringResource(R.string.nav_streams),
+                onClick = onOpenStreams,
+                icon = Icons.Filled.Link,
+                variant = AreButtonVariant.Secondary,
+                size = AreButtonSize.Small,
+                full = true,
+                modifier = Modifier.weight(1f),
+            )
+            AreButton(
+                text = stringResource(R.string.nav_recordings),
+                onClick = onOpenRecordings,
+                icon = Icons.Filled.Videocam,
+                variant = AreButtonVariant.Secondary,
+                size = AreButtonSize.Small,
+                full = true,
+                modifier = Modifier.weight(1f),
+            )
+            AreButton(
+                text = stringResource(R.string.nav_favorites),
+                onClick = onOpenFavorites,
+                icon = Icons.Filled.Favorite,
+                variant = AreButtonVariant.Secondary,
+                size = AreButtonSize.Small,
+                full = true,
+                modifier = Modifier.weight(1f),
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

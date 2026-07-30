@@ -175,6 +175,9 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
                 onOpenEpisode = openEpisode,
                 onOpenSearch = { navController.navigate("search") },
                 onOpenGuide = { navController.navigate("guide") },
+                onOpenStreams = { navController.navigate("streams") },
+                onOpenRecordings = { navController.navigate("recordings") },
+                onOpenFavorites = { navController.navigate("favorites") },
             )
         }
         composable(Tab.Live.route) {
