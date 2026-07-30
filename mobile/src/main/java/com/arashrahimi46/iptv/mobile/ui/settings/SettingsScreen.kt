@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.mobile.ui.settings
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,16 +8,24 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -29,8 +38,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
 import com.arashrahimi46.iptv.data.settings.AutoRelock
@@ -40,14 +53,17 @@ import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
 import com.arashrahimi46.iptv.data.settings.ThemeMode
+import com.arashrahimi46.iptv.mobile.BuildConfig
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreDialog
 import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreSwitch
+import com.arashrahimi46.iptv.core.R as CoreR
 
 /** Real phone Settings: simple scrollable panes behind a touch [TabRow] -- no TV sidebar layout,
  * no D-pad focus. Scope mirrors :tv's `SettingsPanes.kt` General/Playback/Subtitles/Parental tabs
@@ -66,6 +82,7 @@ fun SettingsScreen(
         stringResource(R.string.settings_tab_playback),
         stringResource(R.string.settings_tab_subtitles),
         stringResource(R.string.settings_tab_parental),
+        stringResource(CoreR.string.settings_tab_about),
     )
 
     Column(Modifier.fillMaxSize()) {
@@ -99,6 +116,7 @@ fun SettingsScreen(
             1 -> PlaybackPane(viewModel)
             2 -> SubtitlesPane(viewModel)
             3 -> ParentalPane(viewModel)
+            4 -> AboutPane(viewModel)
         }
     }
 }
@@ -512,4 +530,143 @@ private fun AutoRelock.labelRes(): Int = when (this) {
 private fun LockedContentDisplay.labelRes(): Int = when (this) {
     LockedContentDisplay.HIDE -> R.string.settings_locked_hide
     LockedContentDisplay.BLUR -> R.string.settings_locked_blur
+}
+
+// =============================================================================================
+// ABOUT -- version, support, feedback, analytics/crash opt-out, legal. :tv's About pane
+// (SettingsPanes.kt) additionally has a "What's new" changelog dialog and a QR-code feedback
+// flow -- both exist there specifically because a TV has no browser/keyboard; a phone does, so
+// Support/Feedback here just hand off to the same URLs via a normal browser Intent instead of
+// reimplementing a star-rating form or a QR panel. Version/Analytics/Crash-reporting/Legal are
+// full parity with :tv, reading and writing the same shared UserSettings keys.
+// =============================================================================================
+
+private const val SUPPORT_URL = "https://buymeacoffee.com/arashrahimi46"
+private const val FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdxmmP_5GBRVY3gVWMQh4a_W4DrVfLy-vaxfBkPM29N94Cr-A/viewform"
+
+@Composable
+private fun AboutPane(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    val isAnalyticsEnabled by viewModel.isAnalyticsEnabled.collectAsState()
+    val isCrashReportingEnabled by viewModel.isCrashReportingEnabled.collectAsState()
+    var showLegal by remember { mutableStateOf(false) }
+
+    fun openUrl(url: String) {
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri())) }
+    }
+
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+        item {
+            SettingsSectionTitle(stringResource(CoreR.string.settings_section_about))
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_version_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_version_value, BuildConfig.VERSION_NAME)) },
+                leadingContent = { Icon(Icons.Filled.Info, contentDescription = null) },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_support_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_support_desc)) },
+                leadingContent = { Icon(Icons.Filled.VolunteerActivism, contentDescription = null) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.action_buy_coffee),
+                        onClick = { openUrl(SUPPORT_URL) },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_feedback_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_feedback_desc)) },
+                leadingContent = { Icon(Icons.Filled.Feedback, contentDescription = null) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.settings_feedback_action),
+                        onClick = { openUrl(FEEDBACK_FORM_URL) },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+            SettingsSwitchRow(
+                title = stringResource(CoreR.string.settings_analytics_title),
+                desc = stringResource(CoreR.string.settings_analytics_desc),
+                checked = isAnalyticsEnabled,
+                onCheckedChange = viewModel::setAnalyticsEnabled,
+            )
+            SettingsSwitchRow(
+                title = stringResource(CoreR.string.settings_crash_title),
+                desc = stringResource(CoreR.string.settings_crash_desc),
+                checked = isCrashReportingEnabled,
+                onCheckedChange = viewModel::setCrashReportingEnabled,
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_legal_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_legal_desc)) },
+                leadingContent = { Icon(Icons.Filled.Policy, contentDescription = null) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.settings_legal_action),
+                        onClick = { showLegal = true },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+        }
+    }
+
+    if (showLegal) LegalDocumentDialog(onDismiss = { showLegal = false })
+}
+
+/** Same 15-clause document as :tv's `PrivacyTermsScreen.kt` `LegalDocumentDialog` (same
+ * [CoreR] string keys, English-only by design -- see that file's comment on `legal_doc_title`),
+ * rebuilt on plain touch scroll instead of D-pad focus-driven scroll since :mobile can't depend
+ * on :tv's package to reuse the composable directly. */
+@Composable
+private fun LegalDocumentDialog(onDismiss: () -> Unit) {
+    val sections = listOf(
+        CoreR.string.legal_s1_title to CoreR.string.legal_s1_body,
+        CoreR.string.legal_s2_title to CoreR.string.legal_s2_body,
+        CoreR.string.legal_s3_title to CoreR.string.legal_s3_body,
+        CoreR.string.legal_s4_title to CoreR.string.legal_s4_body,
+        CoreR.string.legal_s5_title to CoreR.string.legal_s5_body,
+        CoreR.string.legal_s6_title to CoreR.string.legal_s6_body,
+        CoreR.string.legal_s7_title to CoreR.string.legal_s7_body,
+        CoreR.string.legal_s8_title to CoreR.string.legal_s8_body,
+        CoreR.string.legal_s9_title to CoreR.string.legal_s9_body,
+        CoreR.string.legal_s10_title to CoreR.string.legal_s10_body,
+        CoreR.string.legal_s11_title to CoreR.string.legal_s11_body,
+        CoreR.string.legal_s12_title to CoreR.string.legal_s12_body,
+        CoreR.string.legal_s13_title to CoreR.string.legal_s13_body,
+        CoreR.string.legal_s14_title to CoreR.string.legal_s14_body,
+        CoreR.string.legal_s15_title to CoreR.string.legal_s15_body,
+    )
+    val colors = AreIptvMobileTheme.colors
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = stringResource(CoreR.string.legal_doc_title),
+            actions = { AreButton(stringResource(CoreR.string.action_close), onClick = onDismiss) },
+        ) {
+            Column(
+                modifier = Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
+            ) {
+                sections.forEach { (titleRes, bodyRes) ->
+                    Text(
+                        text = stringResource(titleRes),
+                        style = AreIptvMobileTheme.typography.label,
+                        color = colors.textPrimary,
+                        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+                    )
+                    Text(
+                        text = stringResource(bodyRes),
+                        style = AreIptvMobileTheme.typography.body,
+                        color = colors.textSecondary,
+                    )
+                }
+            }
+        }
+    }
 }

@@ -142,4 +142,12 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         val salt = settings.parentalPinSalt.first() ?: return false
         return PinHasher.verify(pin, salt, hash)
     }
+
+    // --- About ---
+    // Same shared UserSettings keys :tv's About pane reads/writes -- a toggle made here is
+    // visible there too, no extra plumbing (same pattern as themeMode above).
+    val isAnalyticsEnabled: StateFlow<Boolean> = flowState(settings.isAnalyticsEnabled, true)
+    val isCrashReportingEnabled: StateFlow<Boolean> = flowState(settings.isCrashReportingEnabled, true)
+    fun setAnalyticsEnabled(enabled: Boolean) = viewModelScope.launch { settings.setAnalyticsEnabled(enabled) }
+    fun setCrashReportingEnabled(enabled: Boolean) = viewModelScope.launch { settings.setCrashReportingEnabled(enabled) }
 }
