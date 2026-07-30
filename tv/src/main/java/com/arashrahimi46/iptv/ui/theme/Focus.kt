@@ -315,11 +315,37 @@ fun TvFocusable(
         // (e.g. AreSwitch's .size(58,34)) has to reach the element that draws the background, or the
         // fill shrink-wraps its content while the focus ring traces the larger caller-sized box.
         propagateMinConstraints = true,
-        modifier = modifier.graphicsLayer {
-            val sc = scaleState.value
-            scaleX = sc
-            scaleY = sc
-        },
+        // `.focusable()` BEFORE `.graphicsLayer{scale}` -- see the identical note in
+        // tvAreInteractiveBinding: a scale layer above the focus target inflates the bounds it
+        // reports, so every bring-into-view nudges the page while an element is focused.
+        modifier = modifier
+            .focusable(interactionSource = interactionSource)
+            // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
+            // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
+            // Fire TV remote's physical OK/Select button actually sends. Confirmed missing
+            // via a real device-emulator D-pad test (not an emulator artifact): DPAD_CENTER
+            // alone did nothing on a fully-focused, freshly-launched card across multiple
+            // isolated repro attempts, while KEYCODE_ENTER worked every time. Without this,
+            // nothing in the app would be selectable with a real remote's OK button -- fixed
+            // once, here, so every TvFocusable-based component in the library inherits it.
+            // We resolve short vs. long press from the native event's own down->up span so
+            // DPAD_CENTER gets long-press too.
+            .onKeyEvent { keyEvent ->
+                if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
+                    val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
+                    if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
+                    true
+                } else {
+                    // Swallow DirectionCenter KeyDown so the platform doesn't also fire a
+                    // synthetic click on release -- we own the up->down timing above.
+                    enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
+                }
+            }
+            .graphicsLayer {
+                val sc = scaleState.value
+                scaleX = sc
+                scaleY = sc
+            },
     ) {
         // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
         // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
@@ -329,29 +355,6 @@ fun TvFocusable(
         // regression: dialog action buttons rendered as an invisible sliver.
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = Modifier
-                .focusable(interactionSource = interactionSource)
-                // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
-                // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
-                // Fire TV remote's physical OK/Select button actually sends. Confirmed missing
-                // via a real device-emulator D-pad test (not an emulator artifact): DPAD_CENTER
-                // alone did nothing on a fully-focused, freshly-launched card across multiple
-                // isolated repro attempts, while KEYCODE_ENTER worked every time. Without this,
-                // nothing in the app would be selectable with a real remote's OK button -- fixed
-                // once, here, so every TvFocusable-based component in the library inherits it.
-                // We resolve short vs. long press from the native event's own down->up span so
-                // DPAD_CENTER gets long-press too.
-                .onKeyEvent { keyEvent ->
-                    if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
-                        val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
-                        if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
-                        true
-                    } else {
-                        // Swallow DirectionCenter KeyDown so the platform doesn't also fire a
-                        // synthetic click on release -- we own the up->down timing above.
-                        enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
-                    }
-                },
             interactionSource = interactionSource,
             shape = shape,
             backgroundColor = backgroundColor,
@@ -435,27 +438,34 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
         // must stay a normal (content-sizing) child, not matchParentSize(), or the outer Box
         // collapses to zero width whenever the caller relies on wrap-content sizing.
         propagateMinConstraints = true,
-        modifier = modifier.graphicsLayer {
-            val sc = scaleState.value
-            scaleX = sc
-            scaleY = sc
-        },
+        // `.focusable()` sits BEFORE `.graphicsLayer{scale}` in this chain, exactly as pre-migration
+        // `tvFocusable` had it, and that ordering is load-bearing: a focus target reports its bounds
+        // from its own coordinator, so any scale layer ABOVE it inflates them by 6% while focused.
+        // Every bring-into-view then asks the enclosing scrollable for a rect 6% too tall, and the
+        // page nudges a couple of pixels on every single focus move -- the "screen shakes when I
+        // move between swatches / on Home" report. With the layer below the focus target the
+        // reported bounds are the layout bounds, and the scale stays purely a draw-time effect.
+        modifier = modifier
+            .focusable(interactionSource = interactionSource)
+            // See the identical block in TvFocusable for why DPAD_CENTER needs its own handling on
+            // top of combinedClickable's Enter/NumPadEnter.
+            .onKeyEvent { keyEvent ->
+                if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
+                    val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
+                    if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
+                    true
+                } else {
+                    enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
+                }
+            }
+            .graphicsLayer {
+                val sc = scaleState.value
+                scaleX = sc
+                scaleY = sc
+            },
     ) {
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = Modifier
-                .focusable(interactionSource = interactionSource)
-                // See the identical block in TvFocusable for why DPAD_CENTER needs its own
-                // handling on top of combinedClickable's Enter/NumPadEnter.
-                .onKeyEvent { keyEvent ->
-                    if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
-                        val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
-                        if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
-                        true
-                    } else {
-                        enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
-                    }
-                },
             interactionSource = interactionSource,
             shape = shape,
             backgroundColor = backgroundColor,
