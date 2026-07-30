@@ -6,6 +6,8 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
@@ -17,6 +19,7 @@ import com.arashrahimi46.iptv.ui.theme.AreIptvLightColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvMotionDefault
 import com.arashrahimi46.iptv.ui.theme.AreIptvRadiusDefault
 import com.arashrahimi46.iptv.ui.theme.AreIptvSpacingDefault
+import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork as CoreLocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.LocalAreInteractiveBinding
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors as CoreLocalAreIptvColors
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion as CoreLocalAreIptvMotion
@@ -134,6 +137,14 @@ fun AreIptvMobileTheme(
         // ring is drawn at the focusable's bounds, so inflating them would ring a larger box than
         // the control. A finger needs the 48dp; a D-pad does not.
         CoreLocalMinTouchTarget provides 48.dp,
+        // :mobile has no ambient-backdrop concept (that's :tv's AreIptvAppShell) -- ArePosterTile/
+        // AreChannelTile still read LocalAmbientArtwork.current unconditionally (no guard at the
+        // call site), and it has no default, so any screen rendering those tiles without this
+        // crashed with "LocalAmbientArtwork not provided". A static, never-updated null state is
+        // the correct fix here: it satisfies the read, and since nothing on :mobile ever writes to
+        // it, the tiles' ambient-wash branch simply never activates -- the same visual result as if
+        // the CompositionLocal didn't exist, at the cost of one throwaway MutableState.
+        CoreLocalAmbientArtwork provides remember { mutableStateOf<String?>(null) },
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
