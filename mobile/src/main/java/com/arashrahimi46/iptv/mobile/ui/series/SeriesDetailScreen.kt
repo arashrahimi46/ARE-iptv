@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.mobile.ui.series
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,17 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,6 +31,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.model.SeriesEpisode
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.glassWell
 
 /**
  * Touch-first episode picker for a series -- the piece :mobile was missing entirely (Series tiles
@@ -41,8 +40,11 @@ import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
  * grouped series [com.arashrahimi46.iptv.data.model.VodTitle] has no stream URL of its own, only
  * its episodes do). Mirrors :tv's `DetailScreen` episode-list scope, without the TV-only metadata/
  * cast/plot panel or D-pad season rail -- a flat, season-grouped scrollable list instead.
+ *
+ * Step 2e: rebuilt off stock Material3 (Scaffold/TopAppBar/IconButton) onto a plain header row +
+ * [glassWell] episode rows, semantic tokens throughout -- same scoped swap
+ * [com.arashrahimi46.iptv.mobile.ui.detail.MovieDetailScreen] got. Episode-picker logic unchanged.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeriesDetailScreen(
     vodTitleId: Long,
@@ -58,37 +60,42 @@ fun SeriesDetailScreen(
     val state by viewModel.uiState.collectAsState()
     val colors = AreIptvMobileTheme.colors
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(state.title?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
-                    }
-                },
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.size(48.dp).clickable(onClick = onBack), contentAlignment = Alignment.Center) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back), tint = colors.textPrimary)
+            }
+            Text(
+                text = state.title?.name ?: "",
+                style = AreIptvMobileTheme.typography.h3,
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 4.dp),
             )
-        },
-    ) { padding ->
+        }
         when {
-            state.loading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-            state.title == null -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.detail_not_found), color = colors.textSecondary)
+            state.title == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.detail_not_found), style = AreIptvMobileTheme.typography.body, color = colors.textSecondary)
             }
-            else -> SeriesEpisodeList(state, onOpenEpisode, Modifier.padding(padding))
+            else -> SeriesEpisodeList(state, onOpenEpisode)
         }
     }
 }
 
 @Composable
-private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) -> Unit, modifier: Modifier = Modifier) {
+private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) -> Unit) {
     val colors = AreIptvMobileTheme.colors
     val seasons = state.episodesBySeason.keys.sorted()
     val totalEpisodes = state.episodesBySeason.values.sumOf { it.size }
 
-    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
             Text(
                 text = if (seasons.size > 1) {
@@ -98,7 +105,7 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
                 } else {
                     stringResource(R.string.detail_episodes_header)
                 },
-                style = MaterialTheme.typography.titleMedium,
+                style = AreIptvMobileTheme.typography.label,
                 color = colors.textPrimary,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
@@ -107,6 +114,7 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
             state.episodesLoadError != null -> item {
                 Text(
                     stringResource(R.string.detail_episodes_load_error, state.episodesLoadError),
+                    style = AreIptvMobileTheme.typography.body,
                     color = colors.danger,
                     modifier = Modifier.padding(16.dp),
                 )
@@ -114,16 +122,18 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
             state.isM3uSeriesWithoutEpisodes -> item {
                 Text(
                     stringResource(R.string.detail_m3u_no_episodes),
+                    style = AreIptvMobileTheme.typography.body,
                     color = colors.textSecondary,
                     modifier = Modifier.padding(16.dp),
                 )
             }
             seasons.isEmpty() -> item {
-                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center) {
+                Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.Center) {
                     CircularProgressIndicator()
                 }
                 Text(
                     stringResource(R.string.detail_episodes_loading),
+                    style = AreIptvMobileTheme.typography.body,
                     color = colors.textSecondary,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 )
@@ -133,7 +143,7 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
                 item {
                     Text(
                         text = stringResource(R.string.detail_season_label, season),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = AreIptvMobileTheme.typography.label,
                         color = colors.textSecondary,
                         modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
                     )
@@ -147,15 +157,18 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
 @Composable
 private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit) {
     val colors = AreIptvMobileTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.md)
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .glassWell(shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(40.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = colors.textSecondary)
@@ -163,12 +176,12 @@ private fun EpisodeRow(episode: SeriesEpisode, onClick: () -> Unit) {
         Column(Modifier.padding(start = 4.dp)) {
             Text(
                 text = stringResource(R.string.detail_play_episode, episode.season, episode.episode),
-                style = MaterialTheme.typography.labelMedium,
+                style = AreIptvMobileTheme.typography.caption,
                 color = colors.textSecondary,
             )
             Text(
                 text = episode.name,
-                style = MaterialTheme.typography.bodyMedium,
+                style = AreIptvMobileTheme.typography.body,
                 color = colors.textPrimary,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
