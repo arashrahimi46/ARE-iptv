@@ -44,7 +44,9 @@ import com.arashrahimi46.iptv.mobile.ui.movies.SeriesViewModel
 import com.arashrahimi46.iptv.mobile.ui.movies.VodGridScreen
 import com.arashrahimi46.iptv.mobile.ui.player.PlayerScreen
 import com.arashrahimi46.iptv.mobile.ui.player.PlayerTarget
+import com.arashrahimi46.iptv.mobile.ui.recordings.RecordingsScreen
 import com.arashrahimi46.iptv.mobile.ui.series.SeriesDetailScreen
+import com.arashrahimi46.iptv.mobile.ui.streams.StreamsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SettingsScreen
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -195,12 +197,24 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
             val vm: SeriesViewModel = viewModel()
             VodGridScreen(vm, openTitle)
         }
-        composable(Tab.Settings.route) { SettingsScreen(onOpenFavorites = { navController.navigate("favorites") }) }
+        composable(Tab.Settings.route) {
+            SettingsScreen(
+                onOpenFavorites = { navController.navigate("favorites") },
+                onOpenRecordings = { navController.navigate("recordings") },
+                onOpenStreams = { navController.navigate("streams") },
+            )
+        }
         composable("favorites") {
             FavoritesScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
                 onOpenTitle = openTitle,
             )
+        }
+        composable("recordings") {
+            RecordingsScreen(onPlay = { navController.navigate(playerRoute("recording", it)) })
+        }
+        composable("streams") {
+            StreamsScreen(onPlay = { navController.navigate(playerRoute("direct", it)) })
         }
         composable(
             route = SERIES_DETAIL_ROUTE,
@@ -232,6 +246,8 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
             val target = when (kind) {
                 "movie" -> PlayerTarget.Movie(id)
                 "episode" -> PlayerTarget.Episode(id)
+                "recording" -> PlayerTarget.Recording(id)
+                "direct" -> PlayerTarget.DirectStream(id)
                 else -> PlayerTarget.LiveChannel(id)
             }
             PlayerScreen(target)

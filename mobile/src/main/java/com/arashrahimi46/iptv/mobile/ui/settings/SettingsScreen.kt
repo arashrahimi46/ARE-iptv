@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -51,7 +53,12 @@ import com.arashrahimi46.iptv.ui.components.AreSwitch
  * no D-pad focus. Scope mirrors :tv's `SettingsPanes.kt` General/Playback/Subtitles/Parental tabs
  * (see [SettingsViewModel]'s doc for what was deliberately left out). */
 @Composable
-fun SettingsScreen(onOpenFavorites: () -> Unit = {}, viewModel: SettingsViewModel = viewModel()) {
+fun SettingsScreen(
+    onOpenFavorites: () -> Unit = {},
+    onOpenRecordings: () -> Unit = {},
+    onOpenStreams: () -> Unit = {},
+    viewModel: SettingsViewModel = viewModel(),
+) {
     val colors = AreIptvMobileTheme.colors
     var tab by remember { mutableIntStateOf(0) }
     val titles = listOf(
@@ -67,6 +74,18 @@ fun SettingsScreen(onOpenFavorites: () -> Unit = {}, viewModel: SettingsViewMode
             leadingContent = { Icon(Icons.Filled.Favorite, contentDescription = null, tint = colors.accent) },
             trailingContent = { Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = colors.textTertiary) },
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFavorites),
+        )
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.nav_recordings)) },
+            leadingContent = { Icon(Icons.Filled.Videocam, contentDescription = null, tint = colors.accent) },
+            trailingContent = { Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = colors.textTertiary) },
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenRecordings),
+        )
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.nav_streams)) },
+            leadingContent = { Icon(Icons.Filled.Wifi, contentDescription = null, tint = colors.accent) },
+            trailingContent = { Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = colors.textTertiary) },
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenStreams),
         )
         AreSegmentedControl(
             options = titles.indices.toList(),

@@ -1,16 +1,20 @@
 package com.arashrahimi46.iptv.mobile.ui.player
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.model.directStreamLabel
 import com.arashrahimi46.iptv.data.player.DefaultStreamUrlResolver
 import com.arashrahimi46.iptv.data.player.StreamKind
+import com.arashrahimi46.iptv.data.recording.RecordingStorage
 import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.repository.RecordingRepository
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +29,11 @@ sealed interface PlayerTarget {
     data class LiveChannel(val channelId: Long) : PlayerTarget
     data class Movie(val vodTitleId: Long) : PlayerTarget
     data class Episode(val episodeId: Long) : PlayerTarget
+    /** A saved "Open network stream" URL, resolved from [com.arashrahimi46.iptv.data.model.DirectStream]. */
+    data class DirectStream(val streamId: Long) : PlayerTarget
+    /** A completed/interrupted local [com.arashrahimi46.iptv.data.model.Recording], played straight
+     * from its SAF document URI -- no source/credentials lookup needed. */
+    data class Recording(val recordingId: Long) : PlayerTarget
 }
 
 data class PlayerUiState(
@@ -38,6 +47,8 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val continueWatchingRepo = ContinueWatchingRepository(application)
     private val resolver = DefaultStreamUrlResolver(CredentialsStore(application))
     private val db = AppDatabase.get(application)
+    private val recordingRepository = RecordingRepository(application)
+    private val recordingStorage = RecordingStorage(application)
 
     val player: ExoPlayer = ExoPlayer.Builder(application).build()
 
@@ -53,6 +64,24 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         _state.value = PlayerUiState(isLoading = true)
         viewModelScope.launch {
             try {
+                // A direct stream or local recording plays straight from its own URI -- no
+                // source/credentials lookup, no resolver, no continue-watching tracking (matches
+                // :tv's LivePlayerViewModel, which doesn't track progress for either either).
+                when (target) {
+                    is PlayerTarget.DirectStream -> {
+                        val stream = db.directStreamDao().getById(target.streamId) ?: error("Stream not found")
+                        playUri(Uri.parse(stream.url), directStreamLabel(stream.url, stream.name))
+                        return@launch
+                    }
+                    is PlayerTarget.Recording -> {
+                        val recording = recordingRepository.getById(target.recordingId) ?: error("Recording not found")
+                        val treeUri = Uri.parse(recording.storageTreeUri)
+                        val videoUri = recordingStorage.documentUri(treeUri, recording.documentId)
+                        playUri(videoUri, recording.programTitle ?: recording.channelName)
+                        return@launch
+                    }
+                    else -> Unit
+                }
                 val (name, sourceId, kind, externalId, storedUrl, resumeMs, seriesNum) = when (target) {
                     is PlayerTarget.LiveChannel -> {
                         val channel = repository.channelsByIds(listOf(target.channelId)).firstOrNull()
@@ -72,6 +101,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                         val resume = continueWatchingRepo.resumePositionFor(vodTitleId = null, seriesEpisodeId = episode.id)
                         PlayTarget(episode.name, series.sourceId, StreamKind.SERIES, episode.externalId, episode.streamUrl, resume, episode.episode)
                     }
+                    is PlayerTarget.DirectStream, is PlayerTarget.Recording -> error("handled above")
                 }
                 val source = repository.observeSource(sourceId).first() ?: error("Source not found")
                 val url = resolver.resolve(source, kind, externalId, storedUrl, series = seriesNum)
@@ -82,12 +112,19 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 when (target) {
                     is PlayerTarget.Movie -> startProgressTracking(vodTitleId = target.vodTitleId, seriesEpisodeId = null)
                     is PlayerTarget.Episode -> startProgressTracking(vodTitleId = null, seriesEpisodeId = target.episodeId)
-                    is PlayerTarget.LiveChannel -> Unit
+                    else -> Unit
                 }
             } catch (t: Throwable) {
                 _state.value = PlayerUiState(isLoading = false, error = t.message ?: "Playback failed")
             }
         }
+    }
+
+    private fun playUri(uri: Uri, title: String) {
+        player.setMediaItem(MediaItem.fromUri(uri))
+        player.prepare()
+        player.playWhenReady = true
+        _state.value = PlayerUiState(title = title, isLoading = false)
     }
 
     private fun startProgressTracking(vodTitleId: Long?, seriesEpisodeId: Long?) {
