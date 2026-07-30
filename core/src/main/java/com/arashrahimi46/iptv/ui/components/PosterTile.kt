@@ -106,8 +106,14 @@ fun ArePosterTile(
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     LaunchedEffect(focused) {
         if (focused) {
-            // Scroll FIRST and unconditionally -- this is the focus response the user feels, so it
-            // must not sit behind the artwork debounce below.
+            // Wait for the focus system's OWN bring-into-view (and the 1.06x focus scale it chases)
+            // to settle before asking for the tile's full bounds. Both requests target the same
+            // scrollable, and they disagree by design: the focusable is the poster INSIDE the scale
+            // layer, so its rect grows while ours doesn't. Issued together they ping-pong ~1px
+            // forever -- a focused tile visibly shakes, confirmed by diffing successive screencaps
+            // (static once this call is delayed; static everywhere when nothing is focused).
+            // Late and once means the title/meta still get scrolled in, without the fight.
+            delay(FocusScrollSettleMs)
             bringIntoViewRequester.bringIntoView()
             // Publish the poster as the page's ambient artwork; never cleared on focus loss, so the
             // next focused tile overwrites it rather than flickering to empty.

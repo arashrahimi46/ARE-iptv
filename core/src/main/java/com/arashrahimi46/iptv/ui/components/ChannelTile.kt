@@ -378,5 +378,13 @@ private fun AreChannelTilePreview() {
  */
 internal const val AmbientArtworkSettleMs = 280L
 
+/**
+ * How long a tile waits after gaining focus before asking for its FULL bounds (poster + title +
+ * meta) to be scrolled into view -- long enough for the focus system's own bring-into-view and the
+ * 1.06x focus scale to finish. See the call site in [com.arashrahimi46.iptv.ui.components.ArePosterTile]
+ * for why issuing both at once makes a focused tile shake.
+ */
+internal const val FocusScrollSettleMs = 200L
+
 /** Trailing "HD"/" HD" that provider channel names carry; stripped before deriving initials. */
 private val HdSuffix = Regex(" ?HD$", RegexOption.IGNORE_CASE)

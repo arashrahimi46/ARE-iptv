@@ -98,7 +98,6 @@ fun <T> AreSegmentedControl(
             // lens pill room to sit inside the glass track (the "glassy vibe").
             .background(colors.surfaceGlass, pill)
             .border(1.dp, glassBorderBrush(), pill)
-            .padding(8.dp)
             // A locale whose labels are longer than the ones the track was originally sized for
             // (e.g. English "Parental" vs. a shorter translation) can make the segments' combined
             // natural width exceed the track -- without this, Row's default measurement squeezes
@@ -109,6 +108,12 @@ fun <T> AreSegmentedControl(
             // already fits -- most existing :tv usages, wide viewport, shorter label sets.
             .horizontalScroll(rememberScrollState()),
     ) {
+      // The 8dp inset is INSIDE the scrolled content, not on the track. `horizontalScroll` clips to
+      // its viewport, so with the padding outside it the clip edge sat 8dp in from the border and
+      // sliced the end pill's rounded cap (and a focused segment's ring) off flat -- the very thing
+      // the "does NOT clip its children" note above is about. As scroll content the inset still
+      // holds the pills off the glass edge, but nothing is cut until the track genuinely overflows.
+      Box(Modifier.padding(8.dp)) {
         // The sliding glass-lens indicator, behind the labels. No shadow: it lives INSIDE the glass
         // track, so a drop shadow reads as a hard smudge -- the lens (more glass + a brighter rim,
         // not opaque paint) is the marker.
@@ -180,5 +185,6 @@ fun <T> AreSegmentedControl(
                 }
             }
         }
+      }
     }
 }
