@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -28,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
@@ -95,7 +98,16 @@ fun <T> AreSegmentedControl(
             // lens pill room to sit inside the glass track (the "glassy vibe").
             .background(colors.surfaceGlass, pill)
             .border(1.dp, glassBorderBrush(), pill)
-            .padding(8.dp),
+            .padding(8.dp)
+            // A locale whose labels are longer than the ones the track was originally sized for
+            // (e.g. English "Parental" vs. a shorter translation) can make the segments' combined
+            // natural width exceed the track -- without this, Row's default measurement squeezes
+            // the last segment(s) down to near-zero width, and even single-line + ellipsis Text
+            // (below) has nothing left to show. Scrolling the whole track (indicator included, so
+            // it stays visually locked to its segment) lets every segment keep its natural width
+            // and simply scrolls into view instead of being crushed. A no-op when everything
+            // already fits -- most existing :tv usages, wide viewport, shorter label sets.
+            .horizontalScroll(rememberScrollState()),
     ) {
         // The sliding glass-lens indicator, behind the labels. No shadow: it lives INSIDE the glass
         // track, so a drop shadow reads as a hard smudge -- the lens (more glass + a brighter rim,
@@ -155,6 +167,14 @@ fun <T> AreSegmentedControl(
                             text = label(option),
                             style = AreIptvTheme.typography.label,
                             color = if (isSelected) lensSkin.content else restSkin.content,
+                            // A locale with longer labels than the one the track was last measured
+                            // for (e.g. English "Parental" vs. Persian "والدین") can outgrow the
+                            // available track width -- Row then squeezes the segment box down,
+                            // and unbounded Text wraps mid-word onto two lines. Single-line +
+                            // ellipsis keeps every segment one line regardless of label length.
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
