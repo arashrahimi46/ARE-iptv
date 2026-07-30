@@ -217,4 +217,7 @@
     <string name="streams_rename">Átnevezés</string>
     <string name="streams_save">Mentés</string>
     <string name="streams_rename_placeholder">Adjon meg egy nevet</string>
+    <string name="action_continue">Folytatás</string>
+    <string name="language_select_title">Válassza ki a nyelvét</string>
+    <string name="language_select_subtitle">Válassza ki az alkalmazásban használni kívánt nyelvet.</string>
 </resources>

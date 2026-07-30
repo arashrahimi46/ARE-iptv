@@ -217,4 +217,7 @@
     <string name="streams_rename">Μετονομασία</string>
     <string name="streams_save">Αποθήκευση</string>
     <string name="streams_rename_placeholder">Εισαγάγετε ένα όνομα</string>
+    <string name="action_continue">Συνέχεια</string>
+    <string name="language_select_title">Επιλέξτε τη γλώσσα σας</string>
+    <string name="language_select_subtitle">Επιλέξτε τη γλώσσα που θέλετε να χρησιμοποιείτε σε όλη την εφαρμογή.</string>
 </resources>

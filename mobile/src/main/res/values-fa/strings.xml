@@ -217,4 +217,7 @@
     <string name="streams_rename">تغییر نام</string>
     <string name="streams_save">ذخیره</string>
     <string name="streams_rename_placeholder">یک نام بنویسید</string>
+    <string name="action_continue">ادامه</string>
+    <string name="language_select_title">زبان خود را انتخاب کنید</string>
+    <string name="language_select_subtitle">زبانی را انتخاب کنید که دوست دارید در کل برنامه ببینید.</string>
 </resources>

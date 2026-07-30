@@ -217,4 +217,7 @@
     <string name="streams_rename">Omdøb</string>
     <string name="streams_save">Gem</string>
     <string name="streams_rename_placeholder">Indtast et navn</string>
+    <string name="action_continue">Fortsæt</string>
+    <string name="language_select_title">Vælg dit sprog</string>
+    <string name="language_select_subtitle">Vælg det sprog, du vil bruge i hele appen.</string>
 </resources>

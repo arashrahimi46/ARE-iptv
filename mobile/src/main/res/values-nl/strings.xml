@@ -217,4 +217,7 @@
     <string name="streams_rename">Naam wijzigen</string>
     <string name="streams_save">Opslaan</string>
     <string name="streams_rename_placeholder">Voer een naam in</string>
+    <string name="action_continue">Doorgaan</string>
+    <string name="language_select_title">Kies je taal</string>
+    <string name="language_select_subtitle">Kies de taal die je in de hele app wilt gebruiken.</string>
 </resources>

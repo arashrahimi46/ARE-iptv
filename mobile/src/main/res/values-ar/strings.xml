@@ -217,4 +217,7 @@
     <string name="streams_rename">إعادة تسمية</string>
     <string name="streams_save">حفظ</string>
     <string name="streams_rename_placeholder">أدخل اسمًا</string>
+    <string name="action_continue">متابعة</string>
+    <string name="language_select_title">اختر لغتك</string>
+    <string name="language_select_subtitle">اختر اللغة التي تريد استخدامها في التطبيق بأكمله.</string>
 </resources>

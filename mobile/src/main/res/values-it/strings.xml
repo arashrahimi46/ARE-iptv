@@ -217,4 +217,7 @@
     <string name="streams_rename">Rinomina</string>
     <string name="streams_save">Salva</string>
     <string name="streams_rename_placeholder">Inserisci un nome</string>
+    <string name="action_continue">Continua</string>
+    <string name="language_select_title">Scegli la tua lingua</string>
+    <string name="language_select_subtitle">Scegli la lingua da usare in tutta l\'app.</string>
 </resources>

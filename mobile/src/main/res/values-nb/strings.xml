@@ -217,4 +217,7 @@
     <string name="streams_rename">Gi nytt navn</string>
     <string name="streams_save">Lagre</string>
     <string name="streams_rename_placeholder">Skriv inn et navn</string>
+    <string name="action_continue">Fortsett</string>
+    <string name="language_select_title">Velg språk</string>
+    <string name="language_select_subtitle">Velg språket du vil bruke i hele appen.</string>
 </resources>

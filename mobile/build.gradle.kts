@@ -94,6 +94,9 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    // AppCompatDelegate.setApplicationLocales -- per-app language override, used by
+    // LanguageSelectScreen the same way :tv's does.
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui)

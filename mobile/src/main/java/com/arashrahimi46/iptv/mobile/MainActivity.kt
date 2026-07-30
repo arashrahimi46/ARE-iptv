@@ -26,6 +26,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.ui.language.LanguageSelectScreen
 import com.arashrahimi46.iptv.mobile.ui.nav.AppBottomBar
 import com.arashrahimi46.iptv.mobile.ui.nav.AppNavHost
 import com.arashrahimi46.iptv.mobile.ui.nav.isPlayerRoute
@@ -61,13 +62,17 @@ class MainActivity : ComponentActivity() {
                 // title unreadable in dark mode (near-white text on the un-themed white window).
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     var hasSource by remember { mutableStateOf<Boolean?>(null) }
+                    val hasSelectedLanguage by settings.hasSelectedLanguage.collectAsStateWithLifecycle(initialValue = null)
                     LaunchedEffect(Unit) {
                         hasSource = repository.hasAnySource()
                     }
-                    when (hasSource) {
-                        null -> MobileSplashScreen()
-                        false -> OnboardingScreen(onDone = { hasSource = true })
-                        true -> {
+                    // Same gate order as :tv: Splash (both loads still pending) -> Language (once,
+                    // per UserSettings.hasSelectedLanguage) -> Onboarding (no source yet) -> app.
+                    when {
+                        hasSource == null || hasSelectedLanguage == null -> MobileSplashScreen()
+                        hasSelectedLanguage == false -> LanguageSelectScreen(onDone = { /* hasSelectedLanguage flips via DataStore */ })
+                        hasSource == false -> OnboardingScreen(onDone = { hasSource = true })
+                        else -> {
                             val navController = rememberNavController()
                             val backStackEntry by navController.currentBackStackEntryAsState()
                             val currentRoute = backStackEntry?.destination?.route

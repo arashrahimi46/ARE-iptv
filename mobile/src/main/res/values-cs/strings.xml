@@ -217,4 +217,7 @@
     <string name="streams_rename">Přejmenovat</string>
     <string name="streams_save">Uložit</string>
     <string name="streams_rename_placeholder">Zadejte název</string>
+    <string name="action_continue">Pokračovat</string>
+    <string name="language_select_title">Zvolte svůj jazyk</string>
+    <string name="language_select_subtitle">Vyberte jazyk, který chcete v aplikaci používat.</string>
 </resources>

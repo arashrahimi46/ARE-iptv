@@ -230,4 +230,7 @@
     <string name="streams_rename">Rename</string>
     <string name="streams_save">Save</string>
     <string name="streams_rename_placeholder">Enter a name</string>
+    <string name="action_continue">Continue</string>
+    <string name="language_select_title">Choose your language</string>
+    <string name="language_select_subtitle">Pick the language you\'d like to use throughout the app.</string>
 </resources>

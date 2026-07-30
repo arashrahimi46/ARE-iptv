@@ -217,4 +217,7 @@
     <string name="streams_rename">Nimeä uudelleen</string>
     <string name="streams_save">Tallenna</string>
     <string name="streams_rename_placeholder">Anna nimi</string>
+    <string name="action_continue">Jatka</string>
+    <string name="language_select_title">Valitse kielesi</string>
+    <string name="language_select_subtitle">Valitse kieli, jota haluat käyttää koko sovelluksessa.</string>
 </resources>

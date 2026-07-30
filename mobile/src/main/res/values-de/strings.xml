@@ -217,4 +217,7 @@
     <string name="streams_rename">Umbenennen</string>
     <string name="streams_save">Speichern</string>
     <string name="streams_rename_placeholder">Namen eingeben</string>
+    <string name="action_continue">Weiter</string>
+    <string name="language_select_title">Wählen Sie Ihre Sprache</string>
+    <string name="language_select_subtitle">Wählen Sie die Sprache, die in der gesamten App verwendet werden soll.</string>
 </resources>

@@ -217,4 +217,7 @@
     <string name="streams_rename">Преименуване</string>
     <string name="streams_save">Запазване</string>
     <string name="streams_rename_placeholder">Въведете име</string>
+    <string name="action_continue">Продължаване</string>
+    <string name="language_select_title">Изберете своя език</string>
+    <string name="language_select_subtitle">Изберете езика, който искате да използвате в цялото приложение.</string>
 </resources>

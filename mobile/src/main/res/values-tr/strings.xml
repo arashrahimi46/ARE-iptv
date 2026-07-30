@@ -217,4 +217,7 @@
     <string name="streams_rename">Yeniden adlandır</string>
     <string name="streams_save">Kaydet</string>
     <string name="streams_rename_placeholder">Bir ad girin</string>
+    <string name="action_continue">Devam et</string>
+    <string name="language_select_title">Dilinizi seçin</string>
+    <string name="language_select_subtitle">Uygulama genelinde kullanmak istediğiniz dili seçin.</string>
 </resources>

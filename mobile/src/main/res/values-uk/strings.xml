@@ -217,4 +217,7 @@
     <string name="streams_rename">Перейменувати</string>
     <string name="streams_save">Зберегти</string>
     <string name="streams_rename_placeholder">Введіть назву</string>
+    <string name="action_continue">Продовжити</string>
+    <string name="language_select_title">Виберіть мову</string>
+    <string name="language_select_subtitle">Виберіть мову, яку ви хочете використовувати в застосунку.</string>
 </resources>

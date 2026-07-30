@@ -217,4 +217,7 @@
     <string name="streams_rename">Redenumește</string>
     <string name="streams_save">Salvează</string>
     <string name="streams_rename_placeholder">Introdu un nume</string>
+    <string name="action_continue">Continuă</string>
+    <string name="language_select_title">Alege-ți limba</string>
+    <string name="language_select_subtitle">Alege limba pe care vrei să o folosești în întreaga aplicație.</string>
 </resources>

@@ -217,4 +217,7 @@
     <string name="streams_rename">Adını dəyiş</string>
     <string name="streams_save">Yadda saxla</string>
     <string name="streams_rename_placeholder">Ad daxil edin</string>
+    <string name="action_continue">Davam et</string>
+    <string name="language_select_title">Dilinizi seçin</string>
+    <string name="language_select_subtitle">Tətbiq boyu istifadə etmək istədiyiniz dili seçin.</string>
 </resources>
