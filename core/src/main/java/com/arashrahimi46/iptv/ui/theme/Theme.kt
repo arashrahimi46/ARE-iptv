@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
@@ -19,6 +20,16 @@ val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
  * (via [AreIptvTheme.isDark]) instead of the stored theme pref when a component needs to know which
  * mode is actually on screen (e.g. the per-mode accent picker). */
 val LocalThemeIsDark = staticCompositionLocalOf { true }
+
+/**
+ * Minimum hit-target a control must expand to, or [androidx.compose.ui.unit.Dp.Unspecified]-like
+ * 0.dp for "don't expand". `:mobile` provides 48.dp (the touch accessibility minimum); `:tv` leaves
+ * it at 0.dp because a D-pad has no fat finger AND -- the reason this is a token rather than an
+ * unconditional `defaultMinSize` -- the focus ring is drawn at the focusable's bounds, so inflating
+ * those bounds on TV draws the ring 6dp larger than the control it is supposed to trace. That is a
+ * visible halo-with-a-gap around every focused chip, which is how this regressed.
+ */
+val LocalMinTouchTarget = staticCompositionLocalOf { 0.dp }
 
 /**
  * Platform rendering binding for [com.arashrahimi46.iptv.ui.interaction.AreInteractive] -- `:tv`

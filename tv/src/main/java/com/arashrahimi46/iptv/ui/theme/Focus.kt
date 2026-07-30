@@ -306,12 +306,18 @@ fun TvFocusable(
         label = "tvFocusableScale",
     )
     Box(
-        modifier = modifier.graphicsLayer {
+        modifier = Modifier.graphicsLayer {
             val sc = scaleState.value
             scaleX = sc
             scaleY = sc
         },
     ) {
+        // `modifier` goes HERE, on the surface that actually draws the fill/border/shape -- not on
+        // the outer Box. The caller's sizing (e.g. AreSwitch's .size(58,34)) has to land on the same
+        // element as the background, exactly as it did pre-:core-migration when this was one Box.
+        // Put it on the outer Box instead and the fill sizes to its own content while the caller's
+        // size applies to an empty wrapper: the switch track shrink-wraps its thumb, chips and
+        // buttons render at the wrong width.
         // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
         // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
         // (the ring below is matchParentSize()) and collapses to zero width for any caller that
@@ -320,7 +326,7 @@ fun TvFocusable(
         // regression: dialog action buttons rendered as an invisible sliver.
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = Modifier
+            modifier = modifier
                 .focusable(interactionSource = interactionSource)
                 // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
                 // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
@@ -421,18 +427,19 @@ private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
         label = "areInteractiveBindingScale",
     )
     Box(
-        modifier = modifier.graphicsLayer {
+        modifier = Modifier.graphicsLayer {
             val sc = scaleState.value
             scaleX = sc
             scaleY = sc
         },
     ) {
-        // See the identical note in TvFocusable: this must stay a normal (content-sizing) child,
-        // not matchParentSize(), or the outer Box collapses to zero width whenever the caller
-        // relies on wrap-content sizing (e.g. a non-`full` AreButton).
+        // See the identical notes in TvFocusable: `modifier` belongs on the surface that draws the
+        // fill (so the caller's size and the background land on the same element), and this must
+        // stay a normal (content-sizing) child, not matchParentSize(), or the outer Box collapses
+        // to zero width whenever the caller relies on wrap-content sizing.
         AreInteractiveSurface(
             onClick = onClick,
-            modifier = Modifier
+            modifier = modifier
                 .focusable(interactionSource = interactionSource)
                 // See the identical block in TvFocusable for why DPAD_CENTER needs its own
                 // handling on top of combinedClickable's Enter/NumPadEnter.

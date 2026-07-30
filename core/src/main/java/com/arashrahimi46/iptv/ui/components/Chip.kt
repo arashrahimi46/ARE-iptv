@@ -1,7 +1,6 @@
 package com.arashrahimi46.iptv.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,8 +26,8 @@ import androidx.tv.material3.Text
 import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.ControlTone
+import com.arashrahimi46.iptv.ui.theme.LocalMinTouchTarget
 import com.arashrahimi46.iptv.ui.theme.controlSkin
-import com.arashrahimi46.iptv.ui.theme.softShadow
 
 enum class AreChipSize { Small, Medium }
 
@@ -58,51 +57,42 @@ fun AreChip(
     val skin = controlSkin(ControlTone.Neutral, selected = selected)
     val contentColor = skin.content
 
-    // Touch-target fix: 34dp/42dp is below the 48dp minimum (same bug class as the earlier
-    // favorite-toggle finding). Fixed the same way -- grow the CLICKABLE region via invisible
-    // `defaultMinSize`, not the visible chip -- so TV's D-pad layout density (which depends on the
-    // chip's actual visual height) is untouched, but a phone finger gets a real 48dp hit area. The
-    // outer AreInteractive is transparent/borderless/shadowless and only owns the touch target +
-    // focus/press state; the actual glass fill/border/shadow draw on the smaller inner Box, which is
-    // what stays visually 34dp/42dp tall.
+    // Fill, border, shadow AND focus ring all belong to the same element -- the ring is drawn at the
+    // focusable's bounds, so anything that inflates those bounds without inflating the fill draws a
+    // ring that does not trace the chip. An earlier touch-target fix wrapped this in a 48dp
+    // `defaultMinSize` with the glass on a smaller inner Box; on TV that put a 48dp ring around a
+    // 42dp chip (visible gap on every focused chip). The 48dp minimum is now a platform token --
+    // `:mobile` provides it, `:tv` leaves it 0 -- so a finger still gets its hit area without the
+    // D-pad focus ring inheriting it.
+    val minTouch = LocalMinTouchTarget.current
     AreInteractive(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp),
+        modifier = modifier
+            .height(height)
+            .then(
+                if (minTouch > 0.dp) Modifier.defaultMinSize(minWidth = minTouch, minHeight = minTouch)
+                else Modifier,
+            ),
         interactionSource = interactionSource,
         shape = shape,
-        backgroundColor = Color.Transparent,
-        shadowElevation = 0.dp,
+        backgroundColor = skin.fillColor,
+        backgroundBrush = skin.fillBrush,
+        shadowElevation = skin.elevation,
+        borderColor = skin.borderColor,
+        borderBrush = skin.borderBrush,
     ) { _, _ ->
-        Box(
-            modifier = Modifier
-                .height(height)
-                .then(if (skin.elevation > 0.dp) Modifier.softShadow(shape) else Modifier)
-                .then(
-                    if (skin.fillBrush != null) Modifier.background(skin.fillBrush, shape)
-                    else Modifier.background(skin.fillColor, shape),
-                )
-                .then(
-                    when {
-                        skin.borderBrush != null -> Modifier.border(1.dp, skin.borderBrush, shape)
-                        skin.borderColor != null -> Modifier.border(1.dp, skin.borderColor, shape)
-                        else -> Modifier
-                    },
-                ),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         ) {
-            Row(
-                modifier = Modifier.fillMaxHeight().padding(horizontal = paddingH),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-            ) {
-                if (dotColor != null) {
-                    Box(Modifier.size(8.dp).background(dotColor, CircleShape))
-                }
-                if (icon != null) {
-                    Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
-                }
-                Text(text = text, style = AreIptvTheme.typography.label, color = contentColor)
+            if (dotColor != null) {
+                Box(Modifier.size(8.dp).background(dotColor, CircleShape))
             }
+            if (icon != null) {
+                Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
+            }
+            Text(text = text, style = AreIptvTheme.typography.label, color = contentColor)
         }
     }
 }
