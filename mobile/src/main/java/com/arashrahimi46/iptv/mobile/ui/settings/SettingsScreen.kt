@@ -1,6 +1,8 @@
 package com.arashrahimi46.iptv.mobile.ui.settings
 
 import android.content.Intent
+import android.content.res.Configuration
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VolunteerActivism
@@ -31,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -44,10 +48,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
 import com.arashrahimi46.iptv.data.settings.AutoRelock
 import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
+import com.arashrahimi46.iptv.data.settings.StartScreen
 import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
@@ -61,9 +68,12 @@ import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChip
 import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.components.AreLanguageSelector
+import com.arashrahimi46.iptv.ui.components.AreLanguageOptions
 import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
 import com.arashrahimi46.iptv.ui.components.AreSwitch
 import com.arashrahimi46.iptv.core.R as CoreR
+import java.util.Locale
 
 /** Real phone Settings: simple scrollable panes behind a touch [TabRow] -- no TV sidebar layout,
  * no D-pad focus. Scope mirrors :tv's `SettingsPanes.kt` General/Playback/Subtitles/Parental tabs
@@ -176,9 +186,30 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
     val refreshState by viewModel.refreshState.collectAsState()
     val staleWindowDays by viewModel.staleWindowDays.collectAsState()
     val autoRefreshInterval by viewModel.autoRefreshInterval.collectAsState()
+    val startScreen by viewModel.startScreen.collectAsState()
+    val confirmBeforeExit by viewModel.confirmBeforeExit.collectAsState()
+    val providerInfo by viewModel.providerInfo.collectAsState()
+    val stalkerInfo by viewModel.stalkerInfo.collectAsState()
+    val languageTag by viewModel.languageTag.collectAsState()
 
     val refreshingText = stringResource(R.string.settings_refreshing)
     val neverRefreshedText = stringResource(R.string.settings_never_refreshed)
+
+    var showLanguagePicker by remember { mutableStateOf(false) }
+    var pendingLanguage by remember { mutableStateOf<String?>(null) }
+    var applyLanguage by remember { mutableStateOf<String?>(null) }
+    var generalConfirm by remember { mutableStateOf<GeneralConfirm?>(null) }
+
+    // Same two-frame delay :tv's General pane uses before calling setApplicationLocales -- doing it
+    // while the confirm dialog's own window is still tearing down can strand the recreated Activity
+    // with no focused window (reproduced on-device; see tv's SettingsPanes.kt for the full story).
+    LaunchedEffect(applyLanguage) {
+        val tag = applyLanguage ?: return@LaunchedEffect
+        viewModel.setLanguageTag(tag)
+        androidx.compose.runtime.withFrameNanos { }
+        androidx.compose.runtime.withFrameNanos { }
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+    }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
         item {
@@ -220,6 +251,16 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
                 label = { stringResource(it.second) },
                 onSelect = { viewModel.setStaleWindowDays(it.first) },
             )
+
+            SettingsSectionTitle(stringResource(CoreR.string.settings_section_preferences))
+            SettingsChoiceRow(
+                title = stringResource(CoreR.string.settings_start_screen_title),
+                desc = stringResource(CoreR.string.settings_start_screen_desc),
+                options = StartScreen.entries,
+                selected = startScreen,
+                label = { stringResource(it.labelRes()) },
+                onSelect = { viewModel.setStartScreen(it) },
+            )
             SettingsChoiceRow(
                 title = stringResource(R.string.settings_auto_refresh_title),
                 desc = stringResource(R.string.settings_auto_refresh_desc),
@@ -228,8 +269,240 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
                 label = { stringResource(it.labelRes()) },
                 onSelect = { viewModel.setAutoRefreshInterval(it) },
             )
+            SettingsSwitchRow(
+                title = stringResource(CoreR.string.settings_confirm_exit_title),
+                desc = stringResource(CoreR.string.settings_confirm_exit_desc),
+                checked = confirmBeforeExit,
+                onCheckedChange = { viewModel.setConfirmBeforeExit(it) },
+            )
+
+            // Provider account panel -- Xtream/Stalker carry account metadata; M3U playlists don't.
+            if (activeSource?.type == SourceType.XTREAM) {
+                SettingsSectionTitle(stringResource(CoreR.string.settings_section_provider))
+                ProviderInfoPanel(
+                    status = providerInfo?.status,
+                    expiresText = providerInfo?.let { expiryText(it.expiresAtMs) },
+                    server = providerInfo?.let { serverText(it.host, it.port) },
+                )
+            }
+            if (activeSource?.type == SourceType.STALKER) {
+                SettingsSectionTitle(stringResource(CoreR.string.settings_section_provider))
+                ProviderInfoPanel(
+                    status = stalkerInfo?.status,
+                    expiresText = stalkerInfo?.expiresRaw,
+                    server = stalkerInfo?.host?.takeIf { it.isNotBlank() },
+                )
+            }
+
+            SettingsSectionTitle(stringResource(CoreR.string.settings_section_language))
+            val effectiveTag = AppCompatDelegate.getApplicationLocales().takeUnless { it.isEmpty }?.get(0)?.toLanguageTag() ?: languageTag
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_language_row_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_language_row_desc)) },
+                leadingContent = { Icon(Icons.Filled.Language, contentDescription = null) },
+                trailingContent = {
+                    AreButton(
+                        text = AreLanguageOptions.firstOrNull { it.tag.equals(effectiveTag, ignoreCase = true) }
+                            ?.let { stringResource(it.nativeNameRes) }
+                            ?: AreLanguageOptions.firstOrNull { it.tag.substringBefore('-').equals(effectiveTag.substringBefore('-'), ignoreCase = true) }
+                                ?.let { stringResource(it.nativeNameRes) }
+                            ?: effectiveTag,
+                        onClick = { showLanguagePicker = true },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+
+            SettingsSectionTitle(stringResource(CoreR.string.settings_section_storage))
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_clear_cache_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_clear_cache_desc)) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.action_clear),
+                        onClick = { generalConfirm = GeneralConfirm.ClearCache },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_clear_history_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_clear_history_desc)) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.action_clear),
+                        onClick = { generalConfirm = GeneralConfirm.ClearHistory },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(CoreR.string.settings_reset_title)) },
+                supportingContent = { Text(stringResource(CoreR.string.settings_reset_desc)) },
+                trailingContent = {
+                    AreButton(
+                        text = stringResource(CoreR.string.settings_reset_action),
+                        onClick = { generalConfirm = GeneralConfirm.Reset },
+                        variant = AreButtonVariant.Secondary,
+                        size = AreButtonSize.Small,
+                    )
+                },
+            )
         }
     }
+
+    if (showLanguagePicker) {
+        Dialog(onDismissRequest = { showLanguagePicker = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            AreDialog(onDismiss = { showLanguagePicker = false }, title = stringResource(CoreR.string.settings_language_row_title)) {
+                AreLanguageSelector(
+                    selectedTag = languageTag,
+                    onSelect = { picked ->
+                        showLanguagePicker = false
+                        if (!picked.equals(languageTag, ignoreCase = true)) pendingLanguage = picked
+                    },
+                )
+            }
+        }
+    }
+
+    val targetLanguage = pendingLanguage
+    if (targetLanguage != null) {
+        val context = LocalContext.current
+        val copy = remember(targetLanguage) { localizedConfirmCopy(context, targetLanguage) }
+        Dialog(onDismissRequest = { pendingLanguage = null }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            AreDialog(
+                onDismiss = { pendingLanguage = null },
+                title = copy.title,
+                actions = {
+                    AreButton(copy.cancel, onClick = { pendingLanguage = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(
+                        copy.confirm,
+                        onClick = {
+                            pendingLanguage = null
+                            applyLanguage = targetLanguage
+                        },
+                        variant = AreButtonVariant.Primary,
+                    )
+                },
+            ) {}
+        }
+    }
+
+    when (generalConfirm) {
+        GeneralConfirm.ClearCache -> ConfirmActionDialog(
+            title = stringResource(CoreR.string.settings_clear_cache_title),
+            message = stringResource(CoreR.string.settings_clear_cache_confirm),
+            confirmText = stringResource(CoreR.string.action_clear),
+            onConfirm = { viewModel.clearImageCache() },
+            onDismiss = { generalConfirm = null },
+        )
+        GeneralConfirm.ClearHistory -> ConfirmActionDialog(
+            title = stringResource(CoreR.string.settings_clear_history_title),
+            message = stringResource(CoreR.string.settings_clear_history_confirm),
+            confirmText = stringResource(CoreR.string.action_clear),
+            onConfirm = { viewModel.clearHistory() },
+            onDismiss = { generalConfirm = null },
+        )
+        GeneralConfirm.Reset -> ConfirmActionDialog(
+            title = stringResource(CoreR.string.settings_reset_title),
+            message = stringResource(CoreR.string.settings_reset_confirm),
+            confirmText = stringResource(CoreR.string.settings_reset_action),
+            onConfirm = { viewModel.resetToDefaults() },
+            onDismiss = { generalConfirm = null },
+        )
+        null -> Unit
+    }
+}
+
+private enum class GeneralConfirm { ClearCache, ClearHistory, Reset }
+
+/** Touch confirm dialog for a destructive/one-shot action -- tap-outside-to-dismiss via [AreDialog]'s
+ * real [Dialog] window, same pattern as every other mobile dialog. */
+@Composable
+private fun ConfirmActionDialog(title: String, message: String, confirmText: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = title,
+            actions = {
+                AreButton(stringResource(CoreR.string.action_cancel), onClick = onDismiss, variant = AreButtonVariant.Ghost)
+                AreButton(confirmText, onClick = { onConfirm(); onDismiss() }, variant = AreButtonVariant.Primary)
+            },
+        ) {
+            Text(text = message, style = AreIptvMobileTheme.typography.body, color = AreIptvMobileTheme.colors.textSecondary)
+        }
+    }
+}
+
+/** Read-only provider account rows (status/expiry/server) shared by the Xtream and Stalker branches. */
+@Composable
+private fun ProviderInfoPanel(status: String?, expiresText: String?, server: String?) {
+    val colors = AreIptvMobileTheme.colors
+    if (status == null && expiresText == null && server == null) {
+        Text(
+            text = stringResource(CoreR.string.settings_provider_loading),
+            style = AreIptvMobileTheme.typography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        return
+    }
+    val dash = stringResource(CoreR.string.settings_provider_unknown)
+    status?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_status), it.replaceFirstChar { c -> c.uppercase() }) }
+    ProviderInfoRow(stringResource(CoreR.string.settings_provider_expires), expiresText ?: dash)
+    server?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_server), it) }
+}
+
+@Composable
+private fun ProviderInfoRow(label: String, value: String) {
+    val colors = AreIptvMobileTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(text = label, style = AreIptvMobileTheme.typography.label, color = colors.textSecondary, modifier = Modifier.weight(1f))
+        Text(text = value, style = AreIptvMobileTheme.typography.label, color = colors.textPrimary, modifier = Modifier.weight(1f))
+    }
+}
+
+private fun expiryText(expiresAtMs: Long?): String? {
+    if (expiresAtMs == null) return null
+    val date = java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(java.util.Date(expiresAtMs))
+    val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
+    return "$date · ${daysLeft}d"
+}
+
+private fun serverText(host: String?, port: String?): String? {
+    val h = host?.takeIf { it.isNotBlank() } ?: return null
+    return if (!port.isNullOrBlank()) "$h:$port" else h
+}
+
+private fun StartScreen.labelRes(): Int = when (this) {
+    StartScreen.HOME -> CoreR.string.nav_home
+    StartScreen.LIVE -> CoreR.string.nav_live_tv
+    StartScreen.MOVIES -> CoreR.string.nav_movies
+    StartScreen.SERIES -> CoreR.string.nav_series
+    StartScreen.LAST_USED -> CoreR.string.settings_start_last_used
+}
+
+/** Title + Confirm/Cancel labels for the language-switch confirmation modal, phrased in the TARGET
+ * language being switched to -- mirrors :tv's `localizedConfirmCopy` (tv-module-only, so duplicated
+ * here rather than shared) via the same [CoreR] string keys. */
+private data class LanguageConfirmCopy(val title: String, val confirm: String, val cancel: String)
+
+private fun localizedConfirmCopy(context: android.content.Context, languageTag: String): LanguageConfirmCopy {
+    val locale = Locale.forLanguageTag(languageTag)
+    val config = Configuration(context.resources.configuration)
+    config.setLocale(locale)
+    val localizedContext = context.createConfigurationContext(config)
+    return LanguageConfirmCopy(
+        title = localizedContext.getString(CoreR.string.language_confirm_title),
+        confirm = localizedContext.getString(CoreR.string.language_confirm_action),
+        cancel = localizedContext.getString(CoreR.string.language_confirm_cancel),
+    )
 }
 
 /** "N days/hours/mins ago" label for the last catalog refresh; [neverRefreshedText] when unset.

@@ -4,6 +4,7 @@ import android.app.PictureInPictureParams
 import android.os.Build
 import android.os.Bundle
 import android.util.Rational
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -14,12 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,15 +32,21 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.StartScreen
 import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.mobile.ui.language.LanguageSelectScreen
 import com.arashrahimi46.iptv.mobile.ui.nav.AppBottomBar
 import com.arashrahimi46.iptv.mobile.ui.nav.AppNavHost
 import com.arashrahimi46.iptv.mobile.ui.nav.isPlayerRoute
+import com.arashrahimi46.iptv.mobile.ui.nav.tabRoutes
 import com.arashrahimi46.iptv.mobile.ui.onboarding.OnboardingScreen
 import com.arashrahimi46.iptv.mobile.ui.splash.MobileSplashScreen
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
+import com.arashrahimi46.iptv.ui.components.AreDialog
+import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -104,16 +115,77 @@ class MainActivity : AppCompatActivity() {
                         hasSelectedLanguage == false -> LanguageSelectScreen(onDone = { /* hasSelectedLanguage flips via DataStore */ })
                         hasSource == false -> OnboardingScreen(onDone = { hasSource = true })
                         else -> {
+                            // Phase: General "Start screen" + "Confirm before exit" -- startScreen
+                            // starts null (DataStore not read yet); gate so AppNavHost is built with
+                            // the RIGHT start destination rather than flashing Home first, same as
+                            // :tv's MainActivity does for its own startScreen/lastUsedTab.
+                            val startScreen by settings.startScreen.collectAsStateWithLifecycle(initialValue = null)
+                            val lastUsedTab by settings.lastUsedTab.collectAsStateWithLifecycle(initialValue = "home")
+                            val confirmExit by settings.confirmBeforeExit.collectAsStateWithLifecycle(initialValue = true)
+                            val resolvedStartScreen = startScreen
+                            if (resolvedStartScreen == null) {
+                                MobileSplashScreen()
+                                return@Surface
+                            }
+                            val startRoute = resolvedStartScreen.route
+                                ?: lastUsedTab.takeIf { it in tabRoutes }
+                                ?: "home"
+
                             val navController = rememberNavController()
                             val backStackEntry by navController.currentBackStackEntryAsState()
                             val currentRoute = backStackEntry?.destination?.route
                             playerActive = isPlayerRoute(currentRoute)
 
+                            // Remember the current tab so StartScreen.LAST_USED can restore it next launch.
+                            LaunchedEffect(currentRoute) {
+                                if (currentRoute != null && currentRoute in tabRoutes) settings.setLastUsedTab(currentRoute)
+                            }
+
+                            var showExitDialog by remember { mutableStateOf(false) }
+                            // Back at the nav graph's start destination pops out of the app -- intercept
+                            // to confirm first, mirroring :tv's MainActivity. Disabled while the dialog
+                            // itself is open so its own back-to-dismiss isn't double-handled.
+                            BackHandler(enabled = !showExitDialog) {
+                                if (!navController.popBackStack()) {
+                                    if (confirmExit) showExitDialog = true else finish()
+                                }
+                            }
+
                             Scaffold(
                                 modifier = Modifier.fillMaxSize(),
                                 bottomBar = { if (!playerActive) AppBottomBar(navController) },
                             ) { padding ->
-                                AppNavHost(navController, modifier = Modifier.padding(padding))
+                                AppNavHost(navController, modifier = Modifier.padding(padding), startDestination = startRoute)
+                            }
+
+                            if (showExitDialog) {
+                                Dialog(
+                                    onDismissRequest = { showExitDialog = false },
+                                    properties = DialogProperties(usePlatformDefaultWidth = false),
+                                ) {
+                                    AreDialog(
+                                        onDismiss = { showExitDialog = false },
+                                        title = stringResource(com.arashrahimi46.iptv.core.R.string.shell_leave_app_title),
+                                        actions = {
+                                            AreButton(
+                                                stringResource(com.arashrahimi46.iptv.core.R.string.shell_stay),
+                                                onClick = { showExitDialog = false },
+                                                variant = AreButtonVariant.Ghost,
+                                            )
+                                            AreButton(
+                                                stringResource(com.arashrahimi46.iptv.core.R.string.shell_leave),
+                                                onClick = { showExitDialog = false; finish() },
+                                                variant = AreButtonVariant.Primary,
+                                            )
+                                        },
+                                    ) {
+                                        Text(
+                                            text = stringResource(com.arashrahimi46.iptv.core.R.string.shell_leave_app_body),
+                                            style = AreIptvTheme.typography.body,
+                                            color = AreIptvTheme.colors.textSecondary,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

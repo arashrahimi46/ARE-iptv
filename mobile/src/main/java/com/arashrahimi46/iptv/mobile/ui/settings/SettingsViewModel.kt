@@ -4,11 +4,16 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.model.PlaylistSource
+import com.arashrahimi46.iptv.data.model.SourceType
+import com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
+import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
+import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
 import com.arashrahimi46.iptv.data.settings.AutoRelock
 import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
 import com.arashrahimi46.iptv.data.settings.PinHasher
+import com.arashrahimi46.iptv.data.settings.StartScreen
 import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
 import com.arashrahimi46.iptv.data.settings.SubtitleEdge
 import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
@@ -76,6 +81,57 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setStaleWindowDays(days: Long) = viewModelScope.launch { settings.setStaleWindowDays(days) }
     fun setAutoRefreshInterval(value: AutoRefreshInterval) = viewModelScope.launch { settings.setAutoRefreshInterval(value) }
+
+    // --- General: preferences, provider, language, storage (full :tv parity) ---
+    val startScreen: StateFlow<StartScreen> = flowState(settings.startScreen, StartScreen.HOME)
+    val confirmBeforeExit: StateFlow<Boolean> = flowState(settings.confirmBeforeExit, true)
+    fun setStartScreen(value: StartScreen) = viewModelScope.launch { settings.setStartScreen(value) }
+    fun setConfirmBeforeExit(enabled: Boolean) = viewModelScope.launch { settings.setConfirmBeforeExit(enabled) }
+
+    /** Parsed Xtream provider metadata for the active source (Provider panel); null for M3U/Stalker
+     * sources and Xtream rows not yet refreshed since this feature shipped. Same shape as :tv's. */
+    val providerInfo: StateFlow<XtreamAccountInfo?> =
+        flowState(
+            settings.activeSourceId.flatMapLatest { id ->
+                if (id == null) flowOf(null)
+                else playlists.observeSource(id).map { src -> if (src?.type == SourceType.XTREAM) XtreamAccountInfo.fromJson(src.accountInfoJson) else null }
+            },
+            null,
+        )
+
+    /** Parsed Stalker portal metadata for the active source (Provider panel); null for non-Stalker
+     * sources, mirroring [providerInfo] for Xtream. */
+    val stalkerInfo: StateFlow<StalkerAccountInfo?> =
+        flowState(
+            settings.activeSourceId.flatMapLatest { id ->
+                if (id == null) flowOf(null)
+                else playlists.observeSource(id).map { src -> if (src?.type == SourceType.STALKER) StalkerAccountInfo.fromJson(src.accountInfoJson) else null }
+            },
+            null,
+        )
+
+    /** Current app language tag (BCP-47); the caller (SettingsScreen) applies the locale via
+     * `AppCompatDelegate.setApplicationLocales` itself once its confirm dialog's window is gone --
+     * same two-frame-delay rule :tv's General pane documents (calling it while the dialog window is
+     * still up can strand the Activity with no focused window on the recreate that follows). */
+    val languageTag: StateFlow<String> = flowState(settings.languageTag, "en")
+    fun setLanguageTag(tag: String) = viewModelScope.launch { settings.setLanguageTag(tag) }
+
+    /** Wipe the Coil memory + disk image cache (posters/logos re-download on next view). */
+    fun clearImageCache() = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        val loader = coil.Coil.imageLoader(getApplication())
+        loader.memoryCache?.clear()
+        loader.diskCache?.clear()
+    }
+
+    /** Clear every Continue-Watching / resume bookmark. */
+    fun clearHistory() = viewModelScope.launch {
+        ContinueWatchingRepository(getApplication()).clearAll()
+    }
+
+    /** Reset user-facing prefs to defaults (scoped -- see [UserSettings.resetToDefaults]); playlists,
+     * sign-ins, language and parental lock are kept, same scope :tv's reset uses. */
+    fun resetToDefaults() = viewModelScope.launch { settings.resetToDefaults() }
 
     fun refresh() {
         if (_refreshState.value is MobileRefreshState.Refreshing) return

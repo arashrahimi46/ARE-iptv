@@ -74,6 +74,10 @@ sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compos
 
 private val tabs = listOf(Tab.Home, Tab.Live, Tab.Movies, Tab.Series, Tab.Settings)
 
+/** Routes eligible for [com.arashrahimi46.iptv.data.settings.StartScreen.LAST_USED] tracking and
+ * for [AppNavHost]'s startDestination -- the 5 bottom-nav tab routes only, not any child screen. */
+val tabRoutes: Set<String> = tabs.map { it.route }.toSet()
+
 private const val PLAYER_ROUTE = "player/{kind}/{id}"
 fun playerRoute(kind: String, id: Long) = "player/$kind/$id"
 
@@ -174,7 +178,11 @@ private const val MOVIE_DETAIL_ROUTE = "movieDetail/{id}"
 private fun movieDetailRoute(id: Long) = "movieDetail/$id"
 
 @Composable
-fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier) {
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
+    startDestination: String = Tab.Home.route,
+) {
     // Shared by every rail/grid that shows both movies and series (Home, Movies/Series tabs,
     // Favorites): a series has no stream URL of its own (only its episodes do), so it opens the
     // episode picker instead of jumping straight into the player; a movie now opens its own detail
@@ -191,7 +199,7 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
     val fade = AreIptvTheme.motion.durFastMs
     NavHost(
         navController = navController,
-        startDestination = Tab.Home.route,
+        startDestination = startDestination,
         modifier = modifier,
         enterTransition = { fadeIn(tween(fade)) },
         exitTransition = { fadeOut(tween(fade)) },
