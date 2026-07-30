@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -19,12 +22,14 @@ import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -90,9 +95,22 @@ fun isPlayerRoute(route: String?): Boolean = route?.startsWith("player/") == tru
 @Composable
 fun AppBottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = backStackEntry?.destination
+    val currentRoute = backStackEntry?.destination?.route
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.xl)
+
+    // Only Home/Live/Movies/Series/Settings are real tab destinations; every other route (search,
+    // guide, favorites, streams, recordings, the detail/player screens) is a child screen pushed
+    // FROM a tab, not nested under it in the nav graph -- so a plain `hierarchy` walk (the previous
+    // approach) never matched any of them and left the bar with nothing selected while browsing a
+    // child screen (this is also why the Home tab looked like it never "activated": returning to a
+    // child of Home showed no highlight at all, which read as the tap not registering). Track the
+    // last tab actually landed on instead, so the bar keeps highlighting the owning tab through any
+    // number of child-screen pushes.
+    var selectedTab by remember { mutableStateOf<Tab>(Tab.Home) }
+    LaunchedEffect(currentRoute) {
+        tabs.firstOrNull { it.route == currentRoute }?.let { selectedTab = it }
+    }
 
     Row(
         modifier = Modifier
@@ -104,7 +122,7 @@ fun AppBottomBar(navController: NavHostController) {
     ) {
         ProvideOnGlass {
             tabs.forEach { tab ->
-                val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                val selected = tab == selectedTab
                 AppBottomBarItem(
                     tab = tab,
                     selected = selected,
@@ -167,7 +185,17 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
     }
     val openEpisode: (Long) -> Unit = { episodeId -> navController.navigate(playerRoute("episode", episodeId)) }
 
-    NavHost(navController = navController, startDestination = Tab.Home.route, modifier = modifier) {
+    // Same fast cross-fade as :tv's tab switch (MainActivity.kt) instead of navigation-compose's
+    // 700ms default slide -- there is no D-pad/TV concept of "slide from the right" on a bottom-nav
+    // phone app, and a long default transition on every tab tap/back read as janky.
+    val fade = AreIptvTheme.motion.durFastMs
+    NavHost(
+        navController = navController,
+        startDestination = Tab.Home.route,
+        modifier = modifier,
+        enterTransition = { fadeIn(tween(fade)) },
+        exitTransition = { fadeOut(tween(fade)) },
+    ) {
         composable(Tab.Home.route) {
             HomeScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
