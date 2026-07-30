@@ -238,7 +238,7 @@ fun ArePosterTile(
                 color = colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = if (focused) Modifier.basicMarquee() else Modifier,
+                modifier = if (focused) Modifier.tileMarquee() else Modifier,
             )
         }
         if (meta != null) {

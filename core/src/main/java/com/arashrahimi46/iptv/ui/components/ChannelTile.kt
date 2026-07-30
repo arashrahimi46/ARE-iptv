@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -259,7 +260,7 @@ fun AreChannelTile(
                             color = colors.textPrimary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                            modifier = Modifier.weight(1f).then(if (focused) Modifier.tileMarquee() else Modifier),
                         )
                     }
                 }
@@ -308,7 +309,7 @@ fun AreChannelTile(
                                     color = colors.textSecondary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = if (focused) Modifier.basicMarquee() else Modifier,
+                                    modifier = if (focused) Modifier.tileMarquee() else Modifier,
                                 )
                             }
                         }
@@ -326,7 +327,7 @@ fun AreChannelTile(
                                     color = colors.textTertiary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f).then(if (focused) Modifier.basicMarquee() else Modifier),
+                                    modifier = Modifier.weight(1f).then(if (focused) Modifier.tileMarquee() else Modifier),
                                 )
                             }
                         }
@@ -377,6 +378,22 @@ private fun AreChannelTilePreview() {
  * what each publish actually costs.
  */
 internal const val AmbientArtworkSettleMs = 280L
+
+/**
+ * The tile-title marquee, tuned for TILE-width text rather than basicMarquee()'s defaults.
+ *
+ * A title that overflows by only a few characters (the common case -- "Pluto TV Kult Comedies" in a
+ * 208dp tile) travels almost no distance under the default 30.dp/s velocity and tight spacing: it
+ * nudges a few pixels, wraps, and nudges again, which reads as the tile SHAKING rather than as text
+ * scrolling. Wider spacing makes each pass a deliberate full traversal, and the slower velocity plus
+ * longer opening pause keeps a tile you just landed on still long enough to read.
+ */
+internal fun Modifier.tileMarquee(): Modifier = this.basicMarquee(
+    initialDelayMillis = 1600,
+    repeatDelayMillis = 1600,
+    spacing = MarqueeSpacing(56.dp),
+    velocity = 20.dp,
+)
 
 /**
  * How long a tile waits after gaining focus before asking for its FULL bounds (poster + title +
