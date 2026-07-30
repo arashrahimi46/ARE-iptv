@@ -16,15 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,6 +40,12 @@ import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
 import com.arashrahimi46.iptv.data.settings.ThemeMode
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
+import com.arashrahimi46.iptv.ui.components.AreChip
+import com.arashrahimi46.iptv.ui.components.AreSegmentedControl
+import com.arashrahimi46.iptv.ui.components.AreSwitch
 
 /** Real phone Settings: simple scrollable panes behind a touch [TabRow] -- no TV sidebar layout,
  * no D-pad focus. Scope mirrors :tv's `SettingsPanes.kt` General/Playback/Subtitles/Parental tabs
@@ -69,11 +68,13 @@ fun SettingsScreen(onOpenFavorites: () -> Unit = {}, viewModel: SettingsViewMode
             trailingContent = { Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = colors.textTertiary) },
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenFavorites),
         )
-        TabRow(selectedTabIndex = tab) {
-            titles.forEachIndexed { index, title ->
-                Tab(selected = tab == index, onClick = { tab = index }, text = { Text(title) })
-            }
-        }
+        AreSegmentedControl(
+            options = titles.indices.toList(),
+            selected = tab,
+            label = { titles[it] },
+            onSelect = { tab = it },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        )
         when (tab) {
             0 -> GeneralPane(viewModel)
             1 -> PlaybackPane(viewModel)
@@ -87,7 +88,7 @@ fun SettingsScreen(onOpenFavorites: () -> Unit = {}, viewModel: SettingsViewMode
 private fun SettingsSectionTitle(title: String) {
     Text(
         text = title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
+        style = AreIptvMobileTheme.typography.caption,
         color = AreIptvMobileTheme.colors.textTertiary,
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp),
     )
@@ -98,7 +99,7 @@ private fun SettingsSwitchRow(title: String, desc: String?, checked: Boolean, on
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = desc?.let { { Text(it) } },
-        trailingContent = { Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled) },
+        trailingContent = { AreSwitch(checked = checked, onCheckedChange = onCheckedChange, disabled = !enabled) },
     )
 }
 
@@ -119,7 +120,7 @@ private fun <T> SettingsChoiceRow(title: String, desc: String?, options: List<T>
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     options.forEach { option ->
-                        FilterChip(selected = option == selected, onClick = { onSelect(option) }, label = { Text(label(option)) })
+                        AreChip(text = label(option), selected = option == selected, onClick = { onSelect(option) })
                     }
                 }
             }
@@ -166,9 +167,12 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
                     )
                 },
                 trailingContent = {
-                    Button(onClick = viewModel::refresh, enabled = refreshState !is MobileRefreshState.Refreshing && activeSource != null) {
-                        Text(if (refreshState is MobileRefreshState.Refreshing) refreshingText else stringResource(R.string.settings_refresh_now))
-                    }
+                    AreButton(
+                        text = if (refreshState is MobileRefreshState.Refreshing) refreshingText else stringResource(R.string.settings_refresh_now),
+                        onClick = viewModel::refresh,
+                        size = AreButtonSize.Small,
+                        disabled = refreshState is MobileRefreshState.Refreshing || activeSource == null,
+                    )
                 },
             )
             SettingsChoiceRow(
@@ -327,14 +331,11 @@ private fun SubtitlesPane(viewModel: SettingsViewModel) {
                 supportingContent = {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                         SubtitleColorChoice.entries.forEach { choice ->
-                            AssistChip(
+                            AreChip(
+                                text = choice.name,
+                                selected = choice == subtitleColor,
+                                icon = if (choice == subtitleColor) Icons.Filled.Check else null,
                                 onClick = { viewModel.setSubtitleColor(choice) },
-                                label = { Text(choice.name) },
-                                leadingIcon = if (choice == subtitleColor) {
-                                    { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                                } else {
-                                    null
-                                },
                             )
                         }
                     }
@@ -416,9 +417,12 @@ private fun ParentalPane(viewModel: SettingsViewModel) {
                     )
                 },
                 trailingContent = {
-                    Button(onClick = { pinDialog = if (hasPin) PinFlow.VerifyThenChange else PinFlow.SetOnly }, enabled = pinLoaded) {
-                        Text(if (hasPin) stringResource(R.string.settings_change) else stringResource(R.string.settings_set_pin))
-                    }
+                    AreButton(
+                        text = if (hasPin) stringResource(R.string.settings_change) else stringResource(R.string.settings_set_pin),
+                        onClick = { pinDialog = if (hasPin) PinFlow.VerifyThenChange else PinFlow.SetOnly },
+                        size = AreButtonSize.Small,
+                        disabled = !pinLoaded,
+                    )
                 },
             )
             SettingsSectionTitle(stringResource(R.string.settings_section_content_locking))
