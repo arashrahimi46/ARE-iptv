@@ -4,12 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +27,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.ui.components.AreButton
+import com.arashrahimi46.iptv.ui.components.AreButtonSize
+import com.arashrahimi46.iptv.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.ui.components.ArePosterTile
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -39,12 +46,13 @@ fun HomeScreen(
     onOpenChannel: (Channel) -> Unit,
     onOpenTitle: (VodTitle) -> Unit,
     onOpenEpisode: (Long) -> Unit,
+    onOpenSearch: () -> Unit = {},
+    onOpenGuide: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     val favoriteChannelIds by viewModel.favoriteChannelIds.collectAsState()
     val favoriteVodIds by viewModel.favoriteVodIds.collectAsState()
-    val colors = AreIptvTheme.colors
 
     if (state.isLoading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -53,9 +61,44 @@ fun HomeScreen(
         return
     }
 
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            AreButton(
+                text = stringResource(R.string.nav_tv_guide),
+                onClick = onOpenGuide,
+                icon = Icons.Filled.Schedule,
+                variant = AreButtonVariant.Ghost,
+                size = AreButtonSize.Small,
+            )
+            AreButton(
+                text = stringResource(R.string.nav_search),
+                onClick = onOpenSearch,
+                icon = Icons.Filled.Search,
+                variant = AreButtonVariant.Ghost,
+                size = AreButtonSize.Small,
+            )
+        }
+        HomeContent(state, favoriteChannelIds, favoriteVodIds, viewModel, onOpenChannel, onOpenTitle, onOpenEpisode)
+    }
+}
+
+@Composable
+private fun HomeContent(
+    state: HomeUiState,
+    favoriteChannelIds: Set<Long>,
+    favoriteVodIds: Set<Long>,
+    viewModel: HomeViewModel,
+    onOpenChannel: (Channel) -> Unit,
+    onOpenTitle: (VodTitle) -> Unit,
+    onOpenEpisode: (Long) -> Unit,
+) {
+    val colors = AreIptvTheme.colors
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         if (state.continueWatching.isNotEmpty()) {

@@ -34,8 +34,10 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.arashrahimi46.iptv.mobile.R
 import com.arashrahimi46.iptv.mobile.ui.favorites.FavoritesScreen
+import com.arashrahimi46.iptv.mobile.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.mobile.ui.home.HomeScreen
 import com.arashrahimi46.iptv.mobile.ui.live.LiveScreen
+import com.arashrahimi46.iptv.mobile.ui.search.SearchScreen
 import com.arashrahimi46.iptv.mobile.ui.movies.MoviesViewModel
 import com.arashrahimi46.iptv.mobile.ui.movies.SeriesViewModel
 import com.arashrahimi46.iptv.mobile.ui.movies.VodGridScreen
@@ -164,10 +166,21 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
                 onOpenTitle = openTitle,
                 onOpenEpisode = openEpisode,
+                onOpenSearch = { navController.navigate("search") },
+                onOpenGuide = { navController.navigate("guide") },
             )
         }
         composable(Tab.Live.route) {
             LiveScreen(onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) })
+        }
+        composable("guide") {
+            GuideScreen(onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) })
+        }
+        composable("search") {
+            SearchScreen(
+                onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
+                onOpenTitle = openTitle,
+            )
         }
         composable(Tab.Movies.route) {
             val vm: MoviesViewModel = viewModel()

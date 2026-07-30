@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">У этой записи плейлиста нет данных о сезонах/сериях -- используйте «Смотреть» выше, чтобы воспроизвести как один элемент.</string>
     <string name="detail_episodes_load_error">Не удалось загрузить серии: %1$s</string>
     <string name="detail_episodes_loading">Загрузка серий…</string>
+
+    <string name="nav_tv_guide">Телегид</string>
+    <string name="nav_search">Поиск</string>
+    <string name="guide_title">Телегид</string>
+    <string name="guide_no_source">Добавьте плейлист из боковой панели, чтобы увидеть здесь телегид.</string>
+    <string name="guide_epg_unavailable">Источник EPG недоступен -- каналы показаны без данных о программах.</string>
+    <string name="guide_day_yesterday">Вчера</string>
+    <string name="guide_day_today">Сегодня</string>
+    <string name="guide_day_tomorrow">Завтра</string>
+    <string name="search_title">Поиск</string>
+    <string name="search_scope_live">Прямой эфир</string>
+    <string name="search_scope_movies">Фильмы</string>
+    <string name="search_scope_series">Сериалы</string>
+    <string name="search_no_source">Добавьте плейлист из боковой панели, чтобы искать в каталоге.</string>
+    <string name="search_type_to_search">Введите текст для поиска в каталоге.</string>
+    <string name="search_min_chars">Введите не менее %1$d символов для поиска.</string>
+    <string name="search_no_results">Нет результатов по запросу «%1$s».</string>
+    <string name="search_section_live">Прямой эфир</string>
+    <string name="search_section_titles">Фильмы и сериалы</string>
+    <string name="player_no_programme_data">Нет данных о программе</string>
 </resources>

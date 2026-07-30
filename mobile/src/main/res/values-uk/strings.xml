@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Цей запис плейлиста не має даних про сезони/серії -- використайте «Дивитися» вище, щоб відтворити як єдиний елемент.</string>
     <string name="detail_episodes_load_error">Не вдалося завантажити серії: %1$s</string>
     <string name="detail_episodes_loading">Завантаження серій…</string>
+
+    <string name="nav_tv_guide">Телегід</string>
+    <string name="nav_search">Пошук</string>
+    <string name="guide_title">Телегід</string>
+    <string name="guide_no_source">Додайте плейлист з бічної панелі, щоб побачити тут телегід.</string>
+    <string name="guide_epg_unavailable">Джерело EPG недоступне -- канали показано без даних про програми.</string>
+    <string name="guide_day_yesterday">Учора</string>
+    <string name="guide_day_today">Сьогодні</string>
+    <string name="guide_day_tomorrow">Завтра</string>
+    <string name="search_title">Пошук</string>
+    <string name="search_scope_live">Прямий ефір</string>
+    <string name="search_scope_movies">Фільми</string>
+    <string name="search_scope_series">Серіали</string>
+    <string name="search_no_source">Додайте плейлист з бічної панелі, щоб шукати у своєму каталозі.</string>
+    <string name="search_type_to_search">Введіть текст для пошуку у вашому каталозі.</string>
+    <string name="search_min_chars">Мінімум символів для пошуку: %1$d.</string>
+    <string name="search_no_results">Немає результатів за запитом «%1$s».</string>
+    <string name="search_section_live">Прямий ефір</string>
+    <string name="search_section_titles">Фільми та серіали</string>
+    <string name="player_no_programme_data">Немає даних про програму</string>
 </resources>

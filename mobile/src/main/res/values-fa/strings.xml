@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">این مورد در پلی‌لیست اطلاعات فصل و قسمت ندارد — با دکمهٔ پخش بالا آن را به‌صورت یک فایل ببینید.</string>
     <string name="detail_episodes_load_error">قسمت‌ها نیامدند: %1$s</string>
     <string name="detail_episodes_loading">در حال آوردن قسمت‌ها…</string>
+
+    <string name="nav_tv_guide">راهنما</string>
+    <string name="nav_search">جستجو</string>
+    <string name="guide_title">راهنمای برنامه</string>
+    <string name="guide_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا راهنمای برنامه اینجا بیاید.</string>
+    <string name="guide_epg_unavailable">منبع راهنما در دسترس نیست — کانال‌ها بدون اطلاعات برنامه نشان داده می‌شوند.</string>
+    <string name="guide_day_yesterday">دیروز</string>
+    <string name="guide_day_today">امروز</string>
+    <string name="guide_day_tomorrow">فردا</string>
+    <string name="search_title">جستجو</string>
+    <string name="search_scope_live">پخش زنده</string>
+    <string name="search_scope_movies">فیلم‌ها</string>
+    <string name="search_scope_series">سریال‌ها</string>
+    <string name="search_no_source">از نوار کناری یک پلی‌لیست اضافه کنید تا بتوانید در فهرستتان بگردید.</string>
+    <string name="search_type_to_search">تایپ کنید تا در فهرست شما بگردیم.</string>
+    <string name="search_min_chars">برای جستجو حداقل %1$d حرف تایپ کنید.</string>
+    <string name="search_no_results">برای «%1$s» چیزی پیدا نشد.</string>
+    <string name="search_section_live">پخش زنده</string>
+    <string name="search_section_titles">فیلم و سریال</string>
+    <string name="player_no_programme_data">اطلاعات برنامه نیست</string>
 </resources>

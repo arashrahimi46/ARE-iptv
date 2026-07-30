@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Ennek a lejátszásilista-bejegyzésnek nincsenek évad-/epizódadatai -- a fenti Lejátszás gombbal nézheti meg önálló elemként.</string>
     <string name="detail_episodes_load_error">Nem sikerült betölteni az epizódokat: %1$s</string>
     <string name="detail_episodes_loading">Epizódok betöltése…</string>
+
+    <string name="nav_tv_guide">TV-műsor</string>
+    <string name="nav_search">Keresés</string>
+    <string name="guide_title">TV-műsorújság</string>
+    <string name="guide_no_source">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a TV-műsorújságot.</string>
+    <string name="guide_epg_unavailable">Az EPG-forrás nem érhető el -- a csatornák műsoradatok nélkül jelennek meg.</string>
+    <string name="guide_day_yesterday">Tegnap</string>
+    <string name="guide_day_today">Ma</string>
+    <string name="guide_day_tomorrow">Holnap</string>
+    <string name="search_title">Keresés</string>
+    <string name="search_scope_live">Élő TV</string>
+    <string name="search_scope_movies">Filmek</string>
+    <string name="search_scope_series">Sorozatok</string>
+    <string name="search_no_source">Adjon hozzá egy lejátszási listát az oldalsávból a katalógusa kereséséhez.</string>
+    <string name="search_type_to_search">Írjon a katalógusa kereséséhez.</string>
+    <string name="search_min_chars">Írjon be legalább %1$d karaktert a kereséshez.</string>
+    <string name="search_no_results">Nincs találat erre: \"%1$s\".</string>
+    <string name="search_section_live">Élő TV</string>
+    <string name="search_section_titles">Filmek és sorozatok</string>
+    <string name="player_no_programme_data">Nincs műsoradat</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Bu pleylist qeydində mövsüm/epizod məlumatı yoxdur -- onu tək element kimi izləmək üçün yuxarıdakı Oynat düyməsindən istifadə edin.</string>
     <string name="detail_episodes_load_error">Epizodlar yüklənə bilmədi: %1$s</string>
     <string name="detail_episodes_loading">Epizodlar yüklənir…</string>
+
+    <string name="nav_tv_guide">TV Bələdçisi</string>
+    <string name="nav_search">Axtarış</string>
+    <string name="guide_title">TV Bələdçisi</string>
+    <string name="guide_no_source">TV bələdçisini burada görmək üçün yan paneldən pleylist əlavə edin.</string>
+    <string name="guide_epg_unavailable">EPG mənbəyi əlçatan deyil -- kanallar proqram məlumatı olmadan göstərilir.</string>
+    <string name="guide_day_yesterday">Dünən</string>
+    <string name="guide_day_today">Bu gün</string>
+    <string name="guide_day_tomorrow">Sabah</string>
+    <string name="search_title">Axtarış</string>
+    <string name="search_scope_live">Canlı TV</string>
+    <string name="search_scope_movies">Filmlər</string>
+    <string name="search_scope_series">Seriallar</string>
+    <string name="search_no_source">Kataloqunuzu axtarmaq üçün yan paneldən pleylist əlavə edin.</string>
+    <string name="search_type_to_search">Kataloqunuzu axtarmaq üçün yazın.</string>
+    <string name="search_min_chars">Axtarmaq üçün ən azı %1$d simvol yazın.</string>
+    <string name="search_no_results">\"%1$s\" üçün nəticə yoxdur.</string>
+    <string name="search_section_live">Canlı TV</string>
+    <string name="search_section_titles">Filmlər və seriallar</string>
+    <string name="player_no_programme_data">Proqram məlumatı yoxdur</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Denne playlistepost har ingen sæson-/afsnitsdata -- brug Afspil ovenfor for at se den som et enkelt element.</string>
     <string name="detail_episodes_load_error">Kunne ikke indlæse afsnit: %1$s</string>
     <string name="detail_episodes_loading">Indlæser afsnit…</string>
+
+    <string name="nav_tv_guide">Tv-guide</string>
+    <string name="nav_search">Søg</string>
+    <string name="guide_title">Tv-guide</string>
+    <string name="guide_no_source">Tilføj en playliste fra sidebjælken for at se tv-guiden her.</string>
+    <string name="guide_epg_unavailable">EPG-kilden er ikke tilgængelig -- viser kanaler uden programdata.</string>
+    <string name="guide_day_yesterday">I går</string>
+    <string name="guide_day_today">I dag</string>
+    <string name="guide_day_tomorrow">I morgen</string>
+    <string name="search_title">Søg</string>
+    <string name="search_scope_live">Live-tv</string>
+    <string name="search_scope_movies">Film</string>
+    <string name="search_scope_series">Serier</string>
+    <string name="search_no_source">Tilføj en playliste fra sidebjælken for at søge i dit katalog.</string>
+    <string name="search_type_to_search">Skriv for at søge i dit katalog.</string>
+    <string name="search_min_chars">Skriv mindst %1$d tegn for at søge.</string>
+    <string name="search_no_results">Ingen resultater for \"%1$s\".</string>
+    <string name="search_section_live">Live-tv</string>
+    <string name="search_section_titles">Film &amp; serier</string>
+    <string name="player_no_programme_data">Ingen programdata</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Für diesen Playlist-Eintrag gibt es keine Staffel-/Folgendaten — nutzen Sie Abspielen oben, um ihn als einzelnen Titel anzusehen.</string>
     <string name="detail_episodes_load_error">Folgen konnten nicht geladen werden: %1$s</string>
     <string name="detail_episodes_loading">Folgen werden geladen…</string>
+
+    <string name="nav_tv_guide">TV-Programm</string>
+    <string name="nav_search">Suche</string>
+    <string name="guide_title">TV-Programm</string>
+    <string name="guide_no_source">Fügen Sie über die Seitenleiste eine Playlist hinzu, um hier das TV-Programm zu sehen.</string>
+    <string name="guide_epg_unavailable">EPG-Quelle nicht erreichbar — Sender werden ohne Programmdaten angezeigt.</string>
+    <string name="guide_day_yesterday">Gestern</string>
+    <string name="guide_day_today">Heute</string>
+    <string name="guide_day_tomorrow">Morgen</string>
+    <string name="search_title">Suche</string>
+    <string name="search_scope_live">Live-TV</string>
+    <string name="search_scope_movies">Filme</string>
+    <string name="search_scope_series">Serien</string>
+    <string name="search_no_source">Fügen Sie über die Seitenleiste eine Playlist hinzu, um Ihren Katalog zu durchsuchen.</string>
+    <string name="search_type_to_search">Tippen Sie, um Ihren Katalog zu durchsuchen.</string>
+    <string name="search_min_chars">Geben Sie mindestens %1$d Zeichen ein, um zu suchen.</string>
+    <string name="search_no_results">Keine Ergebnisse für „%1$s“.</string>
+    <string name="search_section_live">Live-TV</string>
+    <string name="search_section_titles">Filme &amp; Serien</string>
+    <string name="player_no_programme_data">Keine Programmdaten</string>
 </resources>

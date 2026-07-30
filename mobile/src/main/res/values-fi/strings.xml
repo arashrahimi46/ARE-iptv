@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Tällä soittolistamerkinnällä ei ole kausi-/jaksotietoja -- käytä yllä olevaa Toista-painiketta katsoaksesi sen yksittäisenä kohteena.</string>
     <string name="detail_episodes_load_error">Jaksoja ei voitu ladata: %1$s</string>
     <string name="detail_episodes_loading">Ladataan jaksoja…</string>
+
+    <string name="nav_tv_guide">TV-opas</string>
+    <string name="nav_search">Hae</string>
+    <string name="guide_title">TV-opas</string>
+    <string name="guide_no_source">Lisää soittolista sivupalkista nähdäksesi TV-oppaan täällä.</string>
+    <string name="guide_epg_unavailable">EPG-lähde ei ole käytettävissä -- näytetään kanavat ilman ohjelmatietoja.</string>
+    <string name="guide_day_yesterday">Eilen</string>
+    <string name="guide_day_today">Tänään</string>
+    <string name="guide_day_tomorrow">Huomenna</string>
+    <string name="search_title">Hae</string>
+    <string name="search_scope_live">Live-TV</string>
+    <string name="search_scope_movies">Elokuvat</string>
+    <string name="search_scope_series">Sarjat</string>
+    <string name="search_no_source">Lisää soittolista sivupalkista hakeaksesi luettelostasi.</string>
+    <string name="search_type_to_search">Kirjoita hakeaksesi luettelostasi.</string>
+    <string name="search_min_chars">Kirjoita vähintään %1$d merkkiä hakeaksesi.</string>
+    <string name="search_no_results">Ei tuloksia haulle \"%1$s\".</string>
+    <string name="search_section_live">Live-TV</string>
+    <string name="search_section_titles">Elokuvat &amp; sarjat</string>
+    <string name="player_no_programme_data">Ei ohjelmatietoja</string>
 </resources>

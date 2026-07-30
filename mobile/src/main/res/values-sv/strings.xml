@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Den här spellisteposten har inga säsongs-/avsnittsdata -- använd Spela ovan för att titta på den som ett enda objekt.</string>
     <string name="detail_episodes_load_error">Det gick inte att ladda avsnitt: %1$s</string>
     <string name="detail_episodes_loading">Laddar avsnitt…</string>
+
+    <string name="nav_tv_guide">TV-guide</string>
+    <string name="nav_search">Sök</string>
+    <string name="guide_title">TV-guide</string>
+    <string name="guide_no_source">Lägg till en spellista från sidofältet för att se TV-guiden här.</string>
+    <string name="guide_epg_unavailable">EPG-källan är inte tillgänglig -- visar kanaler utan programdata.</string>
+    <string name="guide_day_yesterday">Igår</string>
+    <string name="guide_day_today">Idag</string>
+    <string name="guide_day_tomorrow">Imorgon</string>
+    <string name="search_title">Sök</string>
+    <string name="search_scope_live">Live-TV</string>
+    <string name="search_scope_movies">Filmer</string>
+    <string name="search_scope_series">Serier</string>
+    <string name="search_no_source">Lägg till en spellista från sidofältet för att söka i din katalog.</string>
+    <string name="search_type_to_search">Skriv för att söka i din katalog.</string>
+    <string name="search_min_chars">Skriv minst %1$d tecken för att söka.</string>
+    <string name="search_no_results">Inga resultat för \"%1$s\".</string>
+    <string name="search_section_live">Live-TV</string>
+    <string name="search_section_titles">Filmer &amp; serier</string>
+    <string name="player_no_programme_data">Ingen programdata</string>
 </resources>

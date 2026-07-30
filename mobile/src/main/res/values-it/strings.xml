@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Questo elemento della playlist non ha dati di stagione/episodio — usa Riproduci sopra per guardarlo come elemento singolo.</string>
     <string name="detail_episodes_load_error">Impossibile caricare gli episodi: %1$s</string>
     <string name="detail_episodes_loading">Caricamento episodi…</string>
+
+    <string name="nav_tv_guide">Guida TV</string>
+    <string name="nav_search">Cerca</string>
+    <string name="guide_title">Guida TV</string>
+    <string name="guide_no_source">Aggiungi una playlist dalla barra laterale per vedere qui la guida TV.</string>
+    <string name="guide_epg_unavailable">Fonte EPG non disponibile — i canali vengono mostrati senza dati del programma.</string>
+    <string name="guide_day_yesterday">Ieri</string>
+    <string name="guide_day_today">Oggi</string>
+    <string name="guide_day_tomorrow">Domani</string>
+    <string name="search_title">Cerca</string>
+    <string name="search_scope_live">TV in diretta</string>
+    <string name="search_scope_movies">Film</string>
+    <string name="search_scope_series">Serie</string>
+    <string name="search_no_source">Aggiungi una playlist dalla barra laterale per cercare nel tuo catalogo.</string>
+    <string name="search_type_to_search">Digita per cercare nel tuo catalogo.</string>
+    <string name="search_min_chars">Digita almeno %1$d caratteri per cercare.</string>
+    <string name="search_no_results">Nessun risultato per \"%1$s\".</string>
+    <string name="search_section_live">TV in diretta</string>
+    <string name="search_section_titles">Film e serie</string>
+    <string name="player_no_programme_data">Nessun dato del programma</string>
 </resources>

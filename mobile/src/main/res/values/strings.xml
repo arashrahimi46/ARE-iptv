@@ -176,4 +176,24 @@
     <string name="detail_m3u_no_episodes">This playlist entry has no season/episode data -- use Play above to watch it as a single item.</string>
     <string name="detail_episodes_load_error">Couldn\'t load episodes: %1$s</string>
     <string name="detail_episodes_loading">Loading episodes…</string>
+
+    <string name="nav_tv_guide">TV Guide</string>
+    <string name="nav_search">Search</string>
+    <string name="guide_title">TV Guide</string>
+    <string name="guide_no_source">Add a playlist from the sidebar to see the TV guide here.</string>
+    <string name="guide_epg_unavailable">EPG source unavailable -- showing channels without programme data.</string>
+    <string name="guide_day_yesterday">Yesterday</string>
+    <string name="guide_day_today">Today</string>
+    <string name="guide_day_tomorrow">Tomorrow</string>
+    <string name="search_title">Search</string>
+    <string name="search_scope_live">Live TV</string>
+    <string name="search_scope_movies">Movies</string>
+    <string name="search_scope_series">Series</string>
+    <string name="search_no_source">Add a playlist from the sidebar to search your catalog.</string>
+    <string name="search_type_to_search">Type to search your catalog.</string>
+    <string name="search_min_chars">Type at least %1$d characters to search.</string>
+    <string name="search_no_results">No results for \"%1$s\".</string>
+    <string name="search_section_live">Live TV</string>
+    <string name="search_section_titles">Movies &amp; series</string>
+    <string name="player_no_programme_data">No programme data</string>
 </resources>

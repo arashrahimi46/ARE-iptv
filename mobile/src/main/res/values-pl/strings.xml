@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Ten wpis playlisty nie ma danych o sezonach/odcinkach -- użyj Odtwórz powyżej, aby obejrzeć go jako pojedynczą pozycję.</string>
     <string name="detail_episodes_load_error">Nie udało się załadować odcinków: %1$s</string>
     <string name="detail_episodes_loading">Ładowanie odcinków…</string>
+
+    <string name="nav_tv_guide">Program TV</string>
+    <string name="nav_search">Szukaj</string>
+    <string name="guide_title">Program TV</string>
+    <string name="guide_no_source">Dodaj playlistę z paska bocznego, aby zobaczyć tu program telewizyjny.</string>
+    <string name="guide_epg_unavailable">Źródło EPG niedostępne -- pokazywane są kanały bez danych programu.</string>
+    <string name="guide_day_yesterday">Wczoraj</string>
+    <string name="guide_day_today">Dziś</string>
+    <string name="guide_day_tomorrow">Jutro</string>
+    <string name="search_title">Szukaj</string>
+    <string name="search_scope_live">Telewizja na żywo</string>
+    <string name="search_scope_movies">Filmy</string>
+    <string name="search_scope_series">Seriale</string>
+    <string name="search_no_source">Dodaj playlistę z paska bocznego, aby przeszukać swój katalog.</string>
+    <string name="search_type_to_search">Wpisz, aby przeszukać swój katalog.</string>
+    <string name="search_min_chars">Wpisz więcej znaków, aby wyszukać (minimum: %1$d).</string>
+    <string name="search_no_results">Brak wyników dla „%1$s”.</string>
+    <string name="search_section_live">Telewizja na żywo</string>
+    <string name="search_section_titles">Filmy &amp; seriale</string>
+    <string name="player_no_programme_data">Brak danych programu</string>
 </resources>

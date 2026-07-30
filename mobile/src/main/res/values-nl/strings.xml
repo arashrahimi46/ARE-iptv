@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Dit afspeellijstitem heeft geen seizoen-/afleveringgegevens -- gebruik Afspelen hierboven om het als één item te bekijken.</string>
     <string name="detail_episodes_load_error">Afleveringen laden mislukt: %1$s</string>
     <string name="detail_episodes_loading">Afleveringen laden…</string>
+
+    <string name="nav_tv_guide">Tv-gids</string>
+    <string name="nav_search">Zoeken</string>
+    <string name="guide_title">Tv-gids</string>
+    <string name="guide_no_source">Voeg een afspeellijst toe via de zijbalk om hier de tv-gids te zien.</string>
+    <string name="guide_epg_unavailable">EPG-bron niet beschikbaar -- kanalen worden zonder programmagegevens getoond.</string>
+    <string name="guide_day_yesterday">Gisteren</string>
+    <string name="guide_day_today">Vandaag</string>
+    <string name="guide_day_tomorrow">Morgen</string>
+    <string name="search_title">Zoeken</string>
+    <string name="search_scope_live">Live-tv</string>
+    <string name="search_scope_movies">Films</string>
+    <string name="search_scope_series">Series</string>
+    <string name="search_no_source">Voeg een afspeellijst toe via de zijbalk om je catalogus te doorzoeken.</string>
+    <string name="search_type_to_search">Typ om je catalogus te doorzoeken.</string>
+    <string name="search_min_chars">Typ minstens %1$d tekens om te zoeken.</string>
+    <string name="search_no_results">Geen resultaten voor \"%1$s\".</string>
+    <string name="search_section_live">Live-tv</string>
+    <string name="search_section_titles">Films &amp; series</string>
+    <string name="player_no_programme_data">Geen programmagegevens</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Denne spillelisteoppføringen har ingen sesong-/episodedata -- bruk Spill av ovenfor for å se den som et enkelt element.</string>
     <string name="detail_episodes_load_error">Kunne ikke laste episoder: %1$s</string>
     <string name="detail_episodes_loading">Laster episoder…</string>
+
+    <string name="nav_tv_guide">TV-guide</string>
+    <string name="nav_search">Søk</string>
+    <string name="guide_title">TV-guide</string>
+    <string name="guide_no_source">Legg til en spilleliste fra sidefeltet for å se TV-guiden her.</string>
+    <string name="guide_epg_unavailable">EPG-kilde utilgjengelig -- viser kanaler uten programdata.</string>
+    <string name="guide_day_yesterday">I går</string>
+    <string name="guide_day_today">I dag</string>
+    <string name="guide_day_tomorrow">I morgen</string>
+    <string name="search_title">Søk</string>
+    <string name="search_scope_live">Direkte-TV</string>
+    <string name="search_scope_movies">Filmer</string>
+    <string name="search_scope_series">Serier</string>
+    <string name="search_no_source">Legg til en spilleliste fra sidefeltet for å søke i katalogen din.</string>
+    <string name="search_type_to_search">Skriv for å søke i katalogen din.</string>
+    <string name="search_min_chars">Skriv minst %1$d tegn for å søke.</string>
+    <string name="search_no_results">Ingen resultater for «%1$s».</string>
+    <string name="search_section_live">Direkte-TV</string>
+    <string name="search_section_titles">Filmer &amp; serier</string>
+    <string name="player_no_programme_data">Ingen programdata</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Bu oynatma listesi öğesinin sezon/bölüm verisi yok -- tek bir öğe olarak izlemek için yukarıdaki Oynat\'ı kullanın.</string>
     <string name="detail_episodes_load_error">Bölümler yüklenemedi: %1$s</string>
     <string name="detail_episodes_loading">Bölümler yükleniyor…</string>
+
+    <string name="nav_tv_guide">TV Rehberi</string>
+    <string name="nav_search">Ara</string>
+    <string name="guide_title">TV Rehberi</string>
+    <string name="guide_no_source">TV rehberini burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="guide_epg_unavailable">EPG kaynağı kullanılamıyor -- kanallar program verisi olmadan gösteriliyor.</string>
+    <string name="guide_day_yesterday">Dün</string>
+    <string name="guide_day_today">Bugün</string>
+    <string name="guide_day_tomorrow">Yarın</string>
+    <string name="search_title">Ara</string>
+    <string name="search_scope_live">Canlı TV</string>
+    <string name="search_scope_movies">Filmler</string>
+    <string name="search_scope_series">Diziler</string>
+    <string name="search_no_source">Kataloğunuzu aramak için kenar çubuğundan bir oynatma listesi ekleyin.</string>
+    <string name="search_type_to_search">Kataloğunuzda aramak için yazın.</string>
+    <string name="search_min_chars">Aramak için en az %1$d karakter yazın.</string>
+    <string name="search_no_results">\"%1$s\" için sonuç bulunamadı.</string>
+    <string name="search_section_live">Canlı TV</string>
+    <string name="search_section_titles">Filmler ve diziler</string>
+    <string name="player_no_programme_data">Program verisi yok</string>
 </resources>

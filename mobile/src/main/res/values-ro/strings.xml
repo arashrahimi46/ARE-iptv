@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Această intrare din lista de redare nu are date despre sezon/episod -- folosește Redă mai sus pentru a o viziona ca element unic.</string>
     <string name="detail_episodes_load_error">Nu s-au putut încărca episoadele: %1$s</string>
     <string name="detail_episodes_loading">Se încarcă episoadele…</string>
+
+    <string name="nav_tv_guide">Ghid TV</string>
+    <string name="nav_search">Caută</string>
+    <string name="guide_title">Ghid TV</string>
+    <string name="guide_no_source">Adaugă o listă de redare din bara laterală pentru a vedea aici ghidul TV.</string>
+    <string name="guide_epg_unavailable">Sursa EPG indisponibilă -- se afișează canalele fără date despre programe.</string>
+    <string name="guide_day_yesterday">Ieri</string>
+    <string name="guide_day_today">Azi</string>
+    <string name="guide_day_tomorrow">Mâine</string>
+    <string name="search_title">Caută</string>
+    <string name="search_scope_live">TV live</string>
+    <string name="search_scope_movies">Filme</string>
+    <string name="search_scope_series">Seriale</string>
+    <string name="search_no_source">Adaugă o listă de redare din bara laterală pentru a căuta în catalogul tău.</string>
+    <string name="search_type_to_search">Scrie pentru a-ți căuta catalogul.</string>
+    <string name="search_min_chars">Scrie cel puțin %1$d caractere pentru a căuta.</string>
+    <string name="search_no_results">Niciun rezultat pentru \"%1$s\".</string>
+    <string name="search_section_live">TV live</string>
+    <string name="search_section_titles">Filme &amp; seriale</string>
+    <string name="player_no_programme_data">Fără date despre programe</string>
 </resources>

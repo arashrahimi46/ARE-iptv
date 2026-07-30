@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">لا تحتوي مدخلة قائمة التشغيل هذه على بيانات مواسم/حلقات -- استخدم زر التشغيل بالأعلى لمشاهدتها كعنصر واحد.</string>
     <string name="detail_episodes_load_error">تعذّر تحميل الحلقات: %1$s</string>
     <string name="detail_episodes_loading">جارٍ تحميل الحلقات…</string>
+
+    <string name="nav_tv_guide">الدليل</string>
+    <string name="nav_search">بحث</string>
+    <string name="guide_title">دليل التلفزيون</string>
+    <string name="guide_no_source">أضف قائمة تشغيل من الشريط الجانبي لرؤية دليل التلفزيون هنا.</string>
+    <string name="guide_epg_unavailable">مصدر EPG غير متاح -- يتم عرض القنوات دون بيانات البرامج.</string>
+    <string name="guide_day_yesterday">أمس</string>
+    <string name="guide_day_today">اليوم</string>
+    <string name="guide_day_tomorrow">غدًا</string>
+    <string name="search_title">بحث</string>
+    <string name="search_scope_live">البث المباشر</string>
+    <string name="search_scope_movies">الأفلام</string>
+    <string name="search_scope_series">المسلسلات</string>
+    <string name="search_no_source">أضف قائمة تشغيل من الشريط الجانبي للبحث في فهرسك.</string>
+    <string name="search_type_to_search">اكتب للبحث في فهرسك.</string>
+    <string name="search_min_chars">اكتب %1$d أحرف على الأقل للبحث.</string>
+    <string name="search_no_results">لا نتائج لـ «%1$s».</string>
+    <string name="search_section_live">البث المباشر</string>
+    <string name="search_section_titles">الأفلام والمسلسلات</string>
+    <string name="player_no_programme_data">لا توجد بيانات برامج</string>
 </resources>

@@ -163,4 +163,24 @@
     <string name="detail_m3u_no_episodes">Este elemento de la lista no tiene datos de temporada/episodio; usa Reproducir arriba para verlo como un solo elemento.</string>
     <string name="detail_episodes_load_error">No se pudieron cargar los episodios: %1$s</string>
     <string name="detail_episodes_loading">Cargando episodios…</string>
+
+    <string name="nav_tv_guide">Guía de TV</string>
+    <string name="nav_search">Buscar</string>
+    <string name="guide_title">Guía de TV</string>
+    <string name="guide_no_source">Añade una lista desde la barra lateral para ver la guía de TV aquí.</string>
+    <string name="guide_epg_unavailable">Fuente de EPG no disponible; se muestran los canales sin datos del programa.</string>
+    <string name="guide_day_yesterday">Ayer</string>
+    <string name="guide_day_today">Hoy</string>
+    <string name="guide_day_tomorrow">Mañana</string>
+    <string name="search_title">Buscar</string>
+    <string name="search_scope_live">TV en vivo</string>
+    <string name="search_scope_movies">Películas</string>
+    <string name="search_scope_series">Series</string>
+    <string name="search_no_source">Añade una lista desde la barra lateral para buscar en tu catálogo.</string>
+    <string name="search_type_to_search">Escribe para buscar en tu catálogo.</string>
+    <string name="search_min_chars">Escribe al menos %1$d caracteres para buscar.</string>
+    <string name="search_no_results">Sin resultados para \"%1$s\".</string>
+    <string name="search_section_live">TV en vivo</string>
+    <string name="search_section_titles">Películas y series</string>
+    <string name="player_no_programme_data">Sin datos del programa</string>
 </resources>
