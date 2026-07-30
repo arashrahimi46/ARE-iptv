@@ -45,7 +45,7 @@ fun VodGridScreen(viewModel: VodGridViewModel, onOpenTitle: (VodTitle) -> Unit) 
                         onClick = { viewModel.selectCategory(null) },
                     )
                 }
-                items(categories) { name ->
+                items(categories, key = { it }) { name ->
                     AreChip(text = name, selected = selected == name, onClick = { viewModel.selectCategory(name) })
                 }
             }

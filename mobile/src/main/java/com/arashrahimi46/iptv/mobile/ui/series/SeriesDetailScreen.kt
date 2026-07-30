@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -58,6 +60,7 @@ fun SeriesDetailScreen(
     ),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
     val colors = AreIptvMobileTheme.colors
 
     Column(Modifier.fillMaxSize()) {
@@ -74,8 +77,22 @@ fun SeriesDetailScreen(
                 color = colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 4.dp),
+                modifier = Modifier.padding(start = 4.dp).weight(1f),
             )
+            if (state.title != null) {
+                Box(
+                    Modifier.size(48.dp).clickable(onClick = viewModel::toggleFavorite),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = stringResource(
+                            if (isFavorite) R.string.detail_remove_from_favorites else R.string.detail_add_to_favorites,
+                        ),
+                        tint = if (isFavorite) colors.danger else colors.textPrimary,
+                    )
+                }
+            }
         }
         when {
             state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -148,7 +165,7 @@ private fun SeriesEpisodeList(state: SeriesDetailUiState, onOpenEpisode: (Long) 
                         modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
                     )
                 }
-                items(episodes) { episode -> EpisodeRow(episode, onClick = { onOpenEpisode(episode.id) }) }
+                items(episodes, key = { it.id }) { episode -> EpisodeRow(episode, onClick = { onOpenEpisode(episode.id) }) }
             }
         }
     }

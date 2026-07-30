@@ -130,7 +130,7 @@ private fun GuideChannelRowItem(row: GuideChannelRow, onClick: () -> Unit) {
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            items(row.slots) { slot ->
+            items(row.slots, key = { it.startMs }) { slot ->
                 GuideProgramCell(slot, onClick)
             }
         }
