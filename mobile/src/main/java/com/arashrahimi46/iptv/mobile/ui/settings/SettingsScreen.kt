@@ -279,19 +279,11 @@ private fun GeneralPane(viewModel: SettingsViewModel) {
             // Provider account panel -- Xtream/Stalker carry account metadata; M3U playlists don't.
             if (activeSource?.type == SourceType.XTREAM) {
                 SettingsSectionTitle(stringResource(CoreR.string.settings_section_provider))
-                ProviderInfoPanel(
-                    status = providerInfo?.status,
-                    expiresText = providerInfo?.let { expiryText(it.expiresAtMs) },
-                    server = providerInfo?.let { serverText(it.host, it.port) },
-                )
+                XtreamProviderPanel(providerInfo)
             }
             if (activeSource?.type == SourceType.STALKER) {
                 SettingsSectionTitle(stringResource(CoreR.string.settings_section_provider))
-                ProviderInfoPanel(
-                    status = stalkerInfo?.status,
-                    expiresText = stalkerInfo?.expiresRaw,
-                    server = stalkerInfo?.host?.takeIf { it.isNotBlank() },
-                )
+                StalkerProviderPanel(stalkerInfo)
             }
 
             SettingsSectionTitle(stringResource(CoreR.string.settings_section_language))
@@ -437,11 +429,13 @@ private fun ConfirmActionDialog(title: String, message: String, confirmText: Str
     }
 }
 
-/** Read-only provider account rows (status/expiry/server) shared by the Xtream and Stalker branches. */
+/** Read-only Xtream provider account rows -- full parity with :tv's `ProviderPanel` (status,
+ * expiry incl. the "Expired"/"Unlimited" branches, trial flag, connections, timezone, server
+ * time, host:port), same [CoreR] string keys, localized day-suffix instead of a hardcoded "d". */
 @Composable
-private fun ProviderInfoPanel(status: String?, expiresText: String?, server: String?) {
+private fun XtreamProviderPanel(info: com.arashrahimi46.iptv.data.parser.XtreamAccountInfo?) {
     val colors = AreIptvMobileTheme.colors
-    if (status == null && expiresText == null && server == null) {
+    if (info == null) {
         Text(
             text = stringResource(CoreR.string.settings_provider_loading),
             style = AreIptvMobileTheme.typography.caption,
@@ -451,9 +445,40 @@ private fun ProviderInfoPanel(status: String?, expiresText: String?, server: Str
         return
     }
     val dash = stringResource(CoreR.string.settings_provider_unknown)
-    status?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_status), it.replaceFirstChar { c -> c.uppercase() }) }
-    ProviderInfoRow(stringResource(CoreR.string.settings_provider_expires), expiresText ?: dash)
-    server?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_server), it) }
+    val status = info.status?.replaceFirstChar { it.uppercase() }
+    ProviderInfoRow(stringResource(CoreR.string.settings_provider_status), status ?: dash)
+    ProviderInfoRow(stringResource(CoreR.string.settings_provider_expires), expiryText(info.expiresAtMs))
+    if (info.isTrial) {
+        ProviderInfoRow(stringResource(CoreR.string.settings_provider_trial), stringResource(CoreR.string.settings_provider_trial_value))
+    }
+    connectionsText(info.maxConnections, info.activeConnections)?.let {
+        ProviderInfoRow(stringResource(CoreR.string.settings_provider_connections), it)
+    }
+    info.timezone?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_timezone), it) }
+    info.serverTime?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_server_time), it) }
+    serverText(info.host, info.port)?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_server), it) }
+}
+
+/** Read-only Stalker portal account rows -- same shape as [XtreamProviderPanel], mirroring :tv's
+ * `StalkerProviderPanel` (no expiry-day countdown or connections count -- Stalker's info block
+ * doesn't carry them, only a raw expiry string). */
+@Composable
+private fun StalkerProviderPanel(info: com.arashrahimi46.iptv.data.parser.StalkerAccountInfo?) {
+    val colors = AreIptvMobileTheme.colors
+    if (info == null) {
+        Text(
+            text = stringResource(CoreR.string.settings_provider_loading),
+            style = AreIptvMobileTheme.typography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        return
+    }
+    val dash = stringResource(CoreR.string.settings_provider_unknown)
+    val status = info.status?.replaceFirstChar { it.uppercase() }
+    ProviderInfoRow(stringResource(CoreR.string.settings_provider_status), status ?: dash)
+    ProviderInfoRow(stringResource(CoreR.string.settings_provider_expires), info.expiresRaw ?: dash)
+    info.host?.takeIf { it.isNotBlank() }?.let { ProviderInfoRow(stringResource(CoreR.string.settings_provider_server), it) }
 }
 
 @Composable
@@ -468,11 +493,26 @@ private fun ProviderInfoRow(label: String, value: String) {
     }
 }
 
-private fun expiryText(expiresAtMs: Long?): String? {
-    if (expiresAtMs == null) return null
+/** Same logic as :tv's `expiryText`: null -> "Unlimited", past -> "Expired", today -> "expires
+ * today", else "<date> · N days left" -- all through [CoreR] string resources (was a hardcoded
+ * literal "d" suffix with no Expired branch; QA-flagged fix). */
+@Composable
+private fun expiryText(expiresAtMs: Long?): String {
+    if (expiresAtMs == null) return stringResource(CoreR.string.settings_provider_unlimited)
     val date = java.text.SimpleDateFormat("d MMM yyyy", Locale.getDefault()).format(java.util.Date(expiresAtMs))
     val daysLeft = (expiresAtMs - System.currentTimeMillis()) / (24L * 60 * 60 * 1000)
-    return "$date · ${daysLeft}d"
+    return when {
+        daysLeft < 0 -> stringResource(CoreR.string.settings_provider_expired)
+        daysLeft == 0L -> stringResource(CoreR.string.settings_provider_expires_today, date)
+        else -> stringResource(CoreR.string.settings_provider_expires_days, date, daysLeft)
+    }
+}
+
+@Composable
+private fun connectionsText(max: Int?, active: Int?): String? = when {
+    max != null && active != null -> stringResource(CoreR.string.settings_provider_connections_value, active, max)
+    max != null -> stringResource(CoreR.string.settings_provider_connections_max, max)
+    else -> null
 }
 
 private fun serverText(host: String?, port: String?): String? {
