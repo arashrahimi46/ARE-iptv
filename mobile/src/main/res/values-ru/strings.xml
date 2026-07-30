@@ -183,4 +183,7 @@
     <string name="search_section_live">Прямой эфир</string>
     <string name="search_section_titles">Фильмы и сериалы</string>
     <string name="player_no_programme_data">Нет данных о программе</string>
+    <string name="detail_storyline">Сюжет</string>
+    <string name="detail_cast_label">В ролях:</string>
+    <string name="detail_director_label">Режиссёр:</string>
 </resources>

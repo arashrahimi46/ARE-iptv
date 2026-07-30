@@ -183,4 +183,7 @@
     <string name="search_section_live">Прямий ефір</string>
     <string name="search_section_titles">Фільми та серіали</string>
     <string name="player_no_programme_data">Немає даних про програму</string>
+    <string name="detail_storyline">Сюжет</string>
+    <string name="detail_cast_label">У ролях:</string>
+    <string name="detail_director_label">Режисер:</string>
 </resources>

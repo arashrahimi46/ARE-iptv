@@ -33,6 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.arashrahimi46.iptv.mobile.R
+import com.arashrahimi46.iptv.mobile.ui.detail.MovieDetailScreen
 import com.arashrahimi46.iptv.mobile.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.mobile.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.mobile.ui.home.HomeScreen
@@ -149,14 +150,18 @@ private fun AppBottomBarItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
 private const val SERIES_DETAIL_ROUTE = "seriesDetail/{id}"
 private fun seriesDetailRoute(id: Long) = "seriesDetail/$id"
 
+private const val MOVIE_DETAIL_ROUTE = "movieDetail/{id}"
+private fun movieDetailRoute(id: Long) = "movieDetail/$id"
+
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier) {
     // Shared by every rail/grid that shows both movies and series (Home, Movies/Series tabs,
     // Favorites): a series has no stream URL of its own (only its episodes do), so it opens the
-    // episode picker instead of jumping straight into the player like a movie does.
+    // episode picker instead of jumping straight into the player; a movie now opens its own detail
+    // screen (poster/meta/plot/cast + Play) instead of jumping straight into the player either.
     val openTitle: (VodTitle) -> Unit = { title ->
         if (title.isSeries) navController.navigate(seriesDetailRoute(title.id))
-        else navController.navigate(playerRoute("movie", title.id))
+        else navController.navigate(movieDetailRoute(title.id))
     }
     val openEpisode: (Long) -> Unit = { episodeId -> navController.navigate(playerRoute("episode", episodeId)) }
 
@@ -203,6 +208,17 @@ fun AppNavHost(navController: NavHostController, modifier: androidx.compose.ui.M
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("id") ?: 0L
             SeriesDetailScreen(vodTitleId = id, onOpenEpisode = openEpisode, onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = MOVIE_DETAIL_ROUTE,
+            arguments = listOf(navArgument("id") { type = NavType.LongType }),
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getLong("id") ?: 0L
+            MovieDetailScreen(
+                vodTitleId = id,
+                onPlay = { navController.navigate(playerRoute("movie", it)) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(
             route = PLAYER_ROUTE,

@@ -183,4 +183,7 @@
     <string name="search_section_live">Canlı TV</string>
     <string name="search_section_titles">Filmler ve diziler</string>
     <string name="player_no_programme_data">Program verisi yok</string>
+    <string name="detail_storyline">Konu</string>
+    <string name="detail_cast_label">Oyuncular:</string>
+    <string name="detail_director_label">Yönetmen:</string>
 </resources>

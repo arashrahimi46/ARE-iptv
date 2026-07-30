@@ -183,4 +183,7 @@
     <string name="search_section_live">Телевизия на живо</string>
     <string name="search_section_titles">Филми и сериали</string>
     <string name="player_no_programme_data">Няма данни за програмата</string>
+    <string name="detail_storyline">Сюжет</string>
+    <string name="detail_cast_label">Актьори:</string>
+    <string name="detail_director_label">Режисьор:</string>
 </resources>

@@ -183,4 +183,7 @@
     <string name="search_section_live">TV em direto</string>
     <string name="search_section_titles">Filmes &amp; séries</string>
     <string name="player_no_programme_data">Sem dados de programação</string>
+    <string name="detail_storyline">Sinopse</string>
+    <string name="detail_cast_label">Elenco:</string>
+    <string name="detail_director_label">Realizador:</string>
 </resources>

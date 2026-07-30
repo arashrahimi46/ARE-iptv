@@ -183,4 +183,7 @@
     <string name="search_section_live">Canlı TV</string>
     <string name="search_section_titles">Filmlər və seriallar</string>
     <string name="player_no_programme_data">Proqram məlumatı yoxdur</string>
+    <string name="detail_storyline">Süjet</string>
+    <string name="detail_cast_label">Heyət:</string>
+    <string name="detail_director_label">Rejissor:</string>
 </resources>

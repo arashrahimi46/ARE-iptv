@@ -183,4 +183,7 @@
     <string name="search_section_live">TV live</string>
     <string name="search_section_titles">Filme &amp; seriale</string>
     <string name="player_no_programme_data">Fără date despre programe</string>
+    <string name="detail_storyline">Subiect</string>
+    <string name="detail_cast_label">Distribuție:</string>
+    <string name="detail_director_label">Regizor:</string>
 </resources>

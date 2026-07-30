@@ -183,4 +183,7 @@
     <string name="search_section_live">Živá TV</string>
     <string name="search_section_titles">Filmy a seriály</string>
     <string name="player_no_programme_data">Žádná data o programu</string>
+    <string name="detail_storyline">Děj</string>
+    <string name="detail_cast_label">Obsazení:</string>
+    <string name="detail_director_label">Režie:</string>
 </resources>

@@ -183,4 +183,7 @@
     <string name="search_section_live">Live-tv</string>
     <string name="search_section_titles">Films &amp; series</string>
     <string name="player_no_programme_data">Geen programmagegevens</string>
+    <string name="detail_storyline">Verhaal</string>
+    <string name="detail_cast_label">Cast:</string>
+    <string name="detail_director_label">Regisseur:</string>
 </resources>

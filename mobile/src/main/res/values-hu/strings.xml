@@ -183,4 +183,7 @@
     <string name="search_section_live">Élő TV</string>
     <string name="search_section_titles">Filmek és sorozatok</string>
     <string name="player_no_programme_data">Nincs műsoradat</string>
+    <string name="detail_storyline">Történet</string>
+    <string name="detail_cast_label">Szereplők:</string>
+    <string name="detail_director_label">Rendező:</string>
 </resources>

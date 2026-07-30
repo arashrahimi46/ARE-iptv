@@ -183,4 +183,7 @@
     <string name="search_section_live">البث المباشر</string>
     <string name="search_section_titles">الأفلام والمسلسلات</string>
     <string name="player_no_programme_data">لا توجد بيانات برامج</string>
+    <string name="detail_storyline">القصة</string>
+    <string name="detail_cast_label">الطاقم:</string>
+    <string name="detail_director_label">المخرج:</string>
 </resources>

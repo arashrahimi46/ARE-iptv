@@ -183,4 +183,7 @@
     <string name="search_section_live">Live-TV</string>
     <string name="search_section_titles">Elokuvat &amp; sarjat</string>
     <string name="player_no_programme_data">Ei ohjelmatietoja</string>
+    <string name="detail_storyline">Juoni</string>
+    <string name="detail_cast_label">Näyttelijät:</string>
+    <string name="detail_director_label">Ohjaaja:</string>
 </resources>

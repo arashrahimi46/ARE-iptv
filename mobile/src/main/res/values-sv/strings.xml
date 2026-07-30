@@ -183,4 +183,7 @@
     <string name="search_section_live">Live-TV</string>
     <string name="search_section_titles">Filmer &amp; serier</string>
     <string name="player_no_programme_data">Ingen programdata</string>
+    <string name="detail_storyline">Handling</string>
+    <string name="detail_cast_label">Rollista:</string>
+    <string name="detail_director_label">Regissör:</string>
 </resources>

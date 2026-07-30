@@ -183,4 +183,7 @@
     <string name="search_section_live">پخش زنده</string>
     <string name="search_section_titles">فیلم و سریال</string>
     <string name="player_no_programme_data">اطلاعات برنامه نیست</string>
+    <string name="detail_storyline">خلاصهٔ داستان</string>
+    <string name="detail_cast_label">بازیگرها:</string>
+    <string name="detail_director_label">کارگردان:</string>
 </resources>

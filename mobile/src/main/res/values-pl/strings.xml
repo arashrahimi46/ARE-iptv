@@ -183,4 +183,7 @@
     <string name="search_section_live">Telewizja na żywo</string>
     <string name="search_section_titles">Filmy &amp; seriale</string>
     <string name="player_no_programme_data">Brak danych programu</string>
+    <string name="detail_storyline">Fabuła</string>
+    <string name="detail_cast_label">Obsada:</string>
+    <string name="detail_director_label">Reżyser:</string>
 </resources>

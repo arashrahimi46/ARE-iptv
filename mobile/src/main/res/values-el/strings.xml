@@ -183,4 +183,7 @@
     <string name="search_section_live">Ζωντανή TV</string>
     <string name="search_section_titles">Ταινίες &amp; σειρές</string>
     <string name="player_no_programme_data">Χωρίς δεδομένα προγράμματος</string>
+    <string name="detail_storyline">Υπόθεση</string>
+    <string name="detail_cast_label">Ηθοποιοί:</string>
+    <string name="detail_director_label">Σκηνοθέτης:</string>
 </resources>

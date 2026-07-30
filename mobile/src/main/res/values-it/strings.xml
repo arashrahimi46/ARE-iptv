@@ -183,4 +183,7 @@
     <string name="search_section_live">TV in diretta</string>
     <string name="search_section_titles">Film e serie</string>
     <string name="player_no_programme_data">Nessun dato del programma</string>
+    <string name="detail_storyline">Trama</string>
+    <string name="detail_cast_label">Cast:</string>
+    <string name="detail_director_label">Regista:</string>
 </resources>
