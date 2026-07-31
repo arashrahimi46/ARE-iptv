@@ -55,6 +55,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -62,6 +63,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.TrackSelectionOverride
@@ -132,6 +136,22 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
     val player = viewModel.player
 
     LaunchedEffect(target) { viewModel.load(target) }
+
+    // Pause when the app goes to the background, UNLESS we went there into PiP (where continuing to
+    // play is the whole point). Nothing did this before: the only leave-app reaction was
+    // MainActivity.onUserLeaveHint -> PiP, which does not fire for the Overview gesture, for
+    // screen-off, or when PiP is unavailable/disabled. In those cases video kept decoding and audio
+    // kept playing indefinitely in the background, draining the battery.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, activity) {
+        val observer = LifecycleEventObserver { _, event ->
+            val inPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                activity?.isInPictureInPictureMode == true
+            if (event == Lifecycle.Event.ON_STOP && !inPip) player.pause()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // ---- immersive + orientation, both restored on the way out ----
     DisposableEffect(activity) {
@@ -242,6 +262,11 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
                         val third = containerSize.width / 3f
                         when {
                             containerSize.width == 0 -> Unit
+                            // Seek only where there IS a timeline. A live stream has no duration,
+                            // so seekBy couldn't clamp and issued an unbounded seekTo on a
+                            // non-seekable window -- a buffering hitch or a jump to the live edge.
+                            // The HUD already hides the scrubber for live; the gesture ignored it.
+                            state.isLive -> if (player.isPlaying) player.pause() else player.play()
                             offset.x < third -> seekBy(-SEEK_STEP_MS)
                             offset.x > third * 2 -> seekBy(SEEK_STEP_MS)
                             else -> {
@@ -343,6 +368,16 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
             },
         contentAlignment = Alignment.Center,
     ) {
+        // Hold the screen awake while actually playing, as :tv does (LivePlayerScreen.kt:601).
+        // PlayerView does not manage this itself, so without it the display slept at the system
+        // timeout part-way through a film you weren't touching. Cleared on pause so a long pause
+        // can still let the device sleep, and on dispose so it never leaks past the player.
+        val view = LocalView.current
+        DisposableEffect(state.playing) {
+            view.keepScreenOn = state.playing
+            onDispose { view.keepScreenOn = false }
+        }
+
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).apply {

@@ -4,6 +4,8 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -23,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,7 +78,29 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
      * that tearing the screen down triggers, otherwise leaving mid-poll loses up to 5s. */
     private val flushScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    val player: ExoPlayer = ExoPlayer.Builder(application).build()
+    /** The final progress write, so [onCleared] can cancel [flushScope] after it lands. */
+    private var flushJob: Job? = null
+
+    val player: ExoPlayer = ExoPlayer.Builder(application)
+        // Request audio focus, exactly as :tv does (LivePlayerScreen.kt:563). The phone build was
+        // constructing a bare player, so the stream never ducked or paused for an incoming call,
+        // an alarm or another media app -- and never yielded focus back. This matters far more on
+        // a phone than on a TV, where it was already handled.
+        .setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(C.USAGE_MEDIA)
+                .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                .build(),
+            /* handleAudioFocus = */ true,
+        )
+        // Unplugging headphones / disconnecting BT pauses instead of blasting the speaker.
+        .setHandleAudioBecomingNoisy(true)
+        .build()
+        .apply {
+            // Keep the network alive while the screen is off, so audio-only / PiP playback of a
+            // network stream doesn't stall the moment the device idles.
+            setWakeMode(C.WAKE_MODE_NETWORK)
+        }
 
     private val _state = MutableStateFlow(PlayerUiState())
     val state: StateFlow<PlayerUiState> = _state.asStateFlow()
@@ -276,6 +301,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         flushProgress()
         player.removeListener(listener)
         player.release()
+        // flushProgress() launched the final write on flushScope precisely so it would outlive
+        // viewModelScope's cancellation; cancelling the scope outright here would defeat that. So
+        // cancel only once THAT job finishes -- flushScope is concurrent, so an empty marker
+        // coroutine would race ahead of the write and cancel it mid-flight.
+        flushJob?.invokeOnCompletion { flushScope.cancel() } ?: flushScope.cancel()
         super.onCleared()
     }
 
@@ -286,7 +316,7 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         val position = player.currentPosition
         if (duration <= 0) return
         val finished = position.toFloat() / duration >= COMPLETION_THRESHOLD
-        flushScope.launch {
+        flushJob = flushScope.launch {
             if (finished) continueWatchingRepo.clear(ids.first, ids.second)
             else continueWatchingRepo.updateProgress(ids.first, ids.second, position, duration)
         }
