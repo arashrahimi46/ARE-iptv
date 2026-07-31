@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -82,15 +83,14 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
-    // The shared data layer (data/repository, data/db, data/parser, data/model, data/settings,
-    // data/player, CredentialsStore), extracted from :tv into :core -- NOT a direct
-    // implementation(project(":tv")) as originally planned. :tv is a com.android.application
-    // module, and depending on another .application module compiles fine but breaks AAPT2
-    // resource linking ("This application is not configured to use dynamic features" -- AGP
-    // treats a second .application on the classpath as an unconfigured dynamic-feature split).
-    // :core is a proper com.android.library, which is the supported way to share code between
-    // two installable apps. See core/build.gradle.kts's top comment for the full story.
+    // :core is now RESOURCES ONLY -- the 24 locale strings.xml files, no code. :mobile owns its
+    // full source tree (data layer + Are* components moved in from the old shared :core), so a
+    // change here can no longer regress :tv. See core/build.gradle.kts for why that was unwound.
     implementation(project(":core"))
 
     implementation(platform(libs.androidx.compose.bom))
@@ -108,12 +108,13 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
 
-    // Needed to compile against :tv's public data-layer API surface (Room entities/DAOs, DataStore
-    // settings, encrypted credentials, parsers, player helpers) -- implementation deps on :tv don't
-    // transit here automatically.
+    // The data layer now lives in this module (data/db, data/repository, data/parser,
+    // data/settings, data/player, data/recording), so :mobile owns Room's annotation processor
+    // and schema output too -- not just the runtime artifacts it needed as a :core consumer.
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.room.paging)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.datastore.preferences)
@@ -129,7 +130,17 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
 
+    // Came in with the components/data layer that moved out of the old shared :core: the Are*
+    // components still render text/glyphs via androidx.tv.material3, glass surfaces use `backdrop`,
+    // and the recording/import paths use DocumentFile.
+    implementation(libs.androidx.tv.material)
+    implementation(libs.backdrop)
+    implementation(libs.androidx.documentfile)
+
     testImplementation(libs.junit)
+    // The 17 data-layer unit tests moved in from :core (parsers, EPG matching, PIN hashing)
+    // are Robolectric-backed.
+    testImplementation(libs.robolectric)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

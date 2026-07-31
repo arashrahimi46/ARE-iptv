@@ -184,10 +184,7 @@ fun ExploreScreen(onAdded: (Long) -> Unit, onBack: () -> Unit) {
 private fun ExploreCard(entry: ExploreEntry, onClick: () -> Unit) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.lg)
-    // Fill comes from glassSurface() below and ONLY from there -- passing backgroundColor as well
-    // stacked a second surfaceGlass (plus glassSurface's own hairline + shadow) on the same card,
-    // which is the "glass must not stack" rule this codebase states at MultiViewScreen/VolumePicker.
-    TvFocusable(onClick = onClick, shape = shape) { _, _ ->
+    TvFocusable(onClick = onClick, shape = shape, backgroundColor = colors.surfaceGlass) { _, _ ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()

@@ -2,7 +2,10 @@ package com.arashrahimi46.iptv.ui.theme
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -11,15 +14,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import kotlinx.coroutines.delay
 import androidx.compose.ui.focus.FocusRequester
-import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
-import com.arashrahimi46.iptv.ui.interaction.AreInteractiveSurface
 import androidx.compose.ui.Modifier
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as NativePaint
@@ -207,9 +207,67 @@ fun Modifier.focusRingCached(
     }
 }
 
-// Modifier.tvGlow moved to :core (ui/theme/Glass.kt) in the Are* component migration -- it is a
-// pure rendering primitive (no D-pad/focus dependency) shared by components now living in :core
-// (Badge, StepIndicator) as well as ones still here (ContinueCard, StreamHealth).
+/**
+ * Symmetric accent glow matching the design system's box-shadow glow tokens
+ * (`--focus-glow-tight`, `--glow-accent`, `--glow-live`, `--glow-smart` — all
+ * `0 0 <blur>`, i.e. zero offset). Draws the [shape]'s outline several times
+ * with growing stroke width and fading alpha so the halo hugs the edge and
+ * fades outward — no directional offset, no boxy backplate. Place this BEFORE
+ * any opaque `.background()` in the chain so the element's fill covers the
+ * glow's inner half and only the outer halo shows.
+ */
+fun Modifier.tvGlow(
+    color: Color,
+    shape: Shape,
+    spread: Dp = 7.dp,
+    alpha: Float = 1f,
+): Modifier = if (alpha <= 0f) this else this.drawWithCache {
+    val spreadPx = spread.toPx()
+    // A thin core stroke that the Gaussian blur softens -- NOT a fat stroke. A wide
+    // stroke (previously == spread) made the halo huge and bleed onto neighbouring
+    // text. Keep the core ~2dp; `spread` controls the blur radius (the softness).
+    val strokePx = 2.dp.toPx()
+    // Push the glow path OUTWARD so the blurred stroke sits just outside the shape
+    // edge instead of straddling it -- otherwise the inner half bleeds INTO the
+    // element ("shadow came into the button"). Any faint inner tail is covered by
+    // the element's own opaque background (drawn on top).
+    val out = spreadPx * 0.5f
+    val path = Path().apply {
+        when (val o = shape.createOutline(size, layoutDirection, this@drawWithCache)) {
+            is Outline.Rounded -> {
+                val rr = o.roundRect
+                addRoundRect(
+                    RoundRect(
+                        left = rr.left - out,
+                        top = rr.top - out,
+                        right = rr.right + out,
+                        bottom = rr.bottom + out,
+                        cornerRadius = CornerRadius(rr.topLeftCornerRadius.x + out, rr.topLeftCornerRadius.y + out),
+                    ),
+                )
+            }
+            is Outline.Rectangle -> addRect(o.rect.inflate(out))
+            is Outline.Generic -> addPath(o.path)
+        }
+    }.asAndroidPath()
+    // One real Gaussian blur (BlurMaskFilter) = one smooth halo (no banded layered
+    // strokes). minSdk 36 -> fully hardware-accelerated.
+    val paint = NativePaint().apply {
+        isAntiAlias = true
+        style = NativePaint.Style.STROKE
+        strokeWidth = strokePx
+        this.color = color.copy(alpha = (0.38f * alpha).coerceIn(0f, 1f)).toArgb()
+        maskFilter = BlurMaskFilter(spreadPx, BlurMaskFilter.Blur.NORMAL)
+    }
+    // PERF: drawWithCache, not drawBehind -- same pixels, built once per size/shape instead of per
+    // draw pass. As drawBehind this allocated a Path, a NativePaint AND a BlurMaskFilter on every
+    // single draw, so each of these badges/dots/switches churned three objects per frame and missed
+    // HWUI's paint cache. [alpha] is a plain parameter, so a change to it recreates the modifier and
+    // invalidates this cache -- correctness is preserved without reading it at draw time.
+    onDrawBehind {
+        drawIntoCanvas { canvas -> canvas.nativeCanvas.drawPath(path, paint) }
+    }
+}
 
 /**
  * Restores D-pad focus to the exact tile that started playback when a screen
@@ -244,15 +302,9 @@ fun rememberPlaybackFocusRequester(savedId: Long?, itemId: Long, onConsumed: () 
 }
 
 /**
- * Convenience wrapper composing [AreInteractive] with D-pad focus + a click target, for the
- * common "focusable tile/card/button" pattern used across the media, category and guide
- * components.
- *
- * A thin D-pad-aware layer, not a second copy of the glass rendering: the fill/border/shadow/
- * scale-on-interaction logic all live in [AreInteractive] (`:core`), shared with `:mobile`. What
- * stays here, TV-only, is registering the D-pad focus target ([Modifier.focusable]), the
- * `DPAD_CENTER` key handling `combinedClickable` alone doesn't cover, and the accent focus ring --
- * none of which apply to a touch surface.
+ * Convenience wrapper composing [tvFocusable] with a click target, for the
+ * common "focusable tile/card/button" pattern used across the media,
+ * category and guide components.
  */
 @Composable
 fun TvFocusable(
@@ -290,46 +342,38 @@ fun TvFocusable(
         animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeOut),
         label = "tvFocusRingOverlay",
     )
-    // The interaction scale lives HERE, on the outer Box, not inside AreInteractiveSurface -- the
-    // ring below is a matchParentSize() sibling of the surface, so a scale applied inside the
-    // surface grows the content while leaving the ring at 1.0x, and the ring reads as the wrong
-    // size around every focused control. Pre-:core-migration this was one Box carrying both.
-    val targetScale = when {
-        disableScale -> 1f
-        pressed -> motionT.pressScale
-        focused -> motionT.focusScale
-        else -> 1f
-    }
-    val scaleState = animateFloatAsState(
-        targetValue = targetScale,
-        animationSpec = tween(durationMillis = motionT.durFastMs, easing = motionT.easeEmph),
-        label = "tvFocusableScale",
-    )
     Box(
-        // `modifier` stays on the OUTER box -- it is the node the caller's layout modifiers describe,
-        // and moving it inward silently changes their meaning (a caller's onGloballyPositioned then
-        // reports positionInParent() inside this wrapper, i.e. always 0: that is what stranded
-        // AreSegmentedControl's sliding lens on the first segment).
-        //
-        // propagateMinConstraints so the surface below still FILLS this box: the caller's sizing
-        // (e.g. AreSwitch's .size(58,34)) has to reach the element that draws the background, or the
-        // fill shrink-wraps its content while the focus ring traces the larger caller-sized box.
-        propagateMinConstraints = true,
-        // `.focusable()` BEFORE `.graphicsLayer{scale}` -- see the identical note in
-        // tvAreInteractiveBinding: a scale layer above the focus target inflates the bounds it
-        // reports, so every bring-into-view nudges the page while an element is focused.
         modifier = modifier
-            .focusable(interactionSource = interactionSource)
-            // combinedClickable() inside AreInteractive handles Enter/NumPadEnter (incl.
-            // long-press) but NOT Key.DirectionCenter -- the key every real Android TV /
-            // Fire TV remote's physical OK/Select button actually sends. Confirmed missing
-            // via a real device-emulator D-pad test (not an emulator artifact): DPAD_CENTER
-            // alone did nothing on a fully-focused, freshly-launched card across multiple
-            // isolated repro attempts, while KEYCODE_ENTER worked every time. Without this,
-            // nothing in the app would be selectable with a real remote's OK button -- fixed
-            // once, here, so every TvFocusable-based component in the library inherits it.
-            // We resolve short vs. long press from the native event's own down->up span so
-            // DPAD_CENTER gets long-press too.
+            .tvFocusable(interactionSource, shape, glowColor, disableScale = disableScale, drawRing = false)
+            .then(if (shadowElevation > 0.dp) Modifier.softShadow(shape) else Modifier)
+            .then(
+                if (backgroundBrush != null) Modifier.background(backgroundBrush, shape)
+                else Modifier.background(backgroundColor, shape),
+            )
+            .then(
+                when {
+                    borderBrush != null -> Modifier.border(1.dp, borderBrush, shape)
+                    borderColor != null -> Modifier.border(1.dp, borderColor, shape)
+                    else -> Modifier
+                },
+            )
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+            // combinedClickable() above handles Enter/NumPadEnter (incl. long-press) but NOT
+            // Key.DirectionCenter -- the key every real Android TV / Fire TV remote's
+            // physical OK/Select button actually sends. Confirmed missing via a real
+            // device-emulator D-pad test (not an emulator artifact): DPAD_CENTER alone
+            // did nothing on a fully-focused, freshly-launched card across multiple
+            // isolated repro attempts, while KEYCODE_ENTER worked every time. Without
+            // this, nothing in the app would be selectable with a real remote's OK
+            // button -- fixed once, here, so every TvFocusable-based component in the
+            // library inherits it. We resolve short vs. long press from the native
+            // event's own down->up span so DPAD_CENTER gets long-press too.
             .onKeyEvent { keyEvent ->
                 if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
                     val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
@@ -340,33 +384,9 @@ fun TvFocusable(
                     // synthetic click on release -- we own the up->down timing above.
                     enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
                 }
-            }
-            .graphicsLayer {
-                val sc = scaleState.value
-                scaleX = sc
-                scaleY = sc
             },
     ) {
-        // NOT matchParentSize(): this is the only non-decorative child, so it must be a normal
-        // (content-sizing) child -- otherwise the outer Box has nothing left to size itself from
-        // (the ring below is matchParentSize()) and collapses to zero width for any caller that
-        // doesn't pass an explicit width (e.g. a non-`full` AreButton), even though its own content
-        // (the label Row) has a perfectly good intrinsic size. Confirmed via an emulator screenshot
-        // regression: dialog action buttons rendered as an invisible sliver.
-        AreInteractiveSurface(
-            onClick = onClick,
-            interactionSource = interactionSource,
-            shape = shape,
-            backgroundColor = backgroundColor,
-            backgroundBrush = backgroundBrush,
-            shadowElevation = shadowElevation,
-            borderColor = borderColor,
-            borderBrush = borderBrush,
-            enabled = enabled,
-            onLongClick = onLongClick,
-            // Always true: the scale is applied by the outer Box above so the ring scales with it.
-            disableScale = true,
-        ) { f, p -> content(f, p) }
+        content(focused, pressed)
         // The focus ring, as a SIBLING of the content with its own graphics layer -- see the
         // `drawRing` note on [tvFocusable] for why this is not a modifier on the Box above.
         Box(
@@ -383,130 +403,6 @@ private val FocusRingWidth = 3.dp
 
 /** Hold threshold (ms) separating a tap from a long-press on the OK/select button. */
 private const val LONG_PRESS_MS = 400L
-
-/**
- * [LocalAreInteractiveBinding] implementation for `:tv`, provided by [TvAppTheme]. Every `:core`
- * component that calls `AreInteractive` directly (Button, Chip, Tabs, SegmentedControl,
- * CategoryCard, CategoryRow, ChannelTile, ContinueCard, GuideCell, PosterTile, Rail,
- * PlayerControls, ...) resolves here, restoring the D-pad focus target and accent focus ring that
- * `AreInteractiveSurface` alone deliberately omits.
- *
- * This is the same wrapping [TvFocusable] applies (focusable registration, `DPAD_CENTER` handling,
- * a sibling focus-ring box), minus [TvFocusable]'s customizable `glowColor` -- callers that need a
- * non-default ring color (e.g. multi-view's selected-pane accent ring) keep using [TvFocusable]
- * directly, which calls [AreInteractiveSurface] itself rather than going through this binding, so
- * there is no double focus-registration or double ring.
- */
-private val tvAreInteractiveBinding: AreInteractiveBinding = { onClick,
-    modifier,
-    interactionSource,
-    shape,
-    backgroundColor,
-    backgroundBrush,
-    shadowElevation,
-    borderColor,
-    borderBrush,
-    enabled,
-    onLongClick,
-    disableScale,
-    content,
-    ->
-    val focused by interactionSource.collectIsFocusedAsState()
-    val pressed by interactionSource.collectIsPressedAsState()
-    val motion = AreIptvTheme.motion
-    val ringAlpha = animateFloatAsState(
-        targetValue = if (focused) 1f else 0f,
-        animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeOut),
-        label = "areInteractiveFocusRing",
-    )
-    // Scale on the outer Box, not inside the surface -- see the note in TvFocusable: the ring is a
-    // matchParentSize() sibling, so scaling only the surface leaves the ring at the wrong size.
-    val targetScale = when {
-        disableScale -> 1f
-        pressed -> motion.pressScale
-        focused -> motion.focusScale
-        else -> 1f
-    }
-    val scaleState = animateFloatAsState(
-        targetValue = targetScale,
-        animationSpec = tween(durationMillis = motion.durFastMs, easing = motion.easeEmph),
-        label = "areInteractiveBindingScale",
-    )
-    Box(
-        // See the identical notes in TvFocusable: `modifier` belongs on the outer box (caller layout
-        // semantics), propagateMinConstraints makes the caller's size reach the fill, and the child
-        // must stay a normal (content-sizing) child, not matchParentSize(), or the outer Box
-        // collapses to zero width whenever the caller relies on wrap-content sizing.
-        propagateMinConstraints = true,
-        // `.focusable()` sits BEFORE `.graphicsLayer{scale}` in this chain, exactly as pre-migration
-        // `tvFocusable` had it, and that ordering is load-bearing: a focus target reports its bounds
-        // from its own coordinator, so any scale layer ABOVE it inflates them by 6% while focused.
-        // Every bring-into-view then asks the enclosing scrollable for a rect 6% too tall, and the
-        // page nudges a couple of pixels on every single focus move -- the "screen shakes when I
-        // move between swatches / on Home" report. With the layer below the focus target the
-        // reported bounds are the layout bounds, and the scale stays purely a draw-time effect.
-        modifier = modifier
-            .focusable(interactionSource = interactionSource)
-            // See the identical block in TvFocusable for why DPAD_CENTER needs its own handling on
-            // top of combinedClickable's Enter/NumPadEnter.
-            .onKeyEvent { keyEvent ->
-                if (enabled && keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.DirectionCenter) {
-                    val heldMs = keyEvent.nativeKeyEvent.eventTime - keyEvent.nativeKeyEvent.downTime
-                    if (onLongClick != null && heldMs >= LONG_PRESS_MS) onLongClick() else onClick()
-                    true
-                } else {
-                    enabled && keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.DirectionCenter
-                }
-            }
-            .graphicsLayer {
-                val sc = scaleState.value
-                scaleX = sc
-                scaleY = sc
-            },
-    ) {
-        AreInteractiveSurface(
-            onClick = onClick,
-            interactionSource = interactionSource,
-            shape = shape,
-            backgroundColor = backgroundColor,
-            backgroundBrush = backgroundBrush,
-            shadowElevation = shadowElevation,
-            borderColor = borderColor,
-            borderBrush = borderBrush,
-            enabled = enabled,
-            onLongClick = onLongClick,
-            // Always true: the scale is applied by the outer Box above so the ring scales with it.
-            disableScale = true,
-            content = content,
-        )
-        Box(
-            Modifier
-                .matchParentSize()
-                .graphicsLayer { alpha = ringAlpha.value }
-                .focusRingCached(AreIptvTheme.colors.focusRing, shape, FocusRingWidth) { 1f },
-        )
-    }
-}
-
-/**
- * `:tv`'s composition root theme wrap: [AreIptvTheme] (`:core`, platform-agnostic tokens) plus
- * binding [LocalAreInteractiveBinding] to [tvAreInteractiveBinding] -- the one piece of TV-only
- * (D-pad focus/key-event) wiring `:core` cannot provide itself. Every `:tv` composition root
- * (MainActivity's splash and main NavHost) uses this instead of calling [AreIptvTheme] directly.
- */
-@Composable
-fun TvAppTheme(
-    isDark: Boolean = true,
-    accent: AccentPreset = AccentPreset.BLUE,
-    reducedMotion: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-    AreIptvTheme(isDark = isDark, accent = accent, reducedMotion = reducedMotion) {
-        CompositionLocalProvider(LocalAreInteractiveBinding provides tvAreInteractiveBinding) {
-            content()
-        }
-    }
-}
 
 /**
  * Requests focus once the target actually exists, retrying for a few frames.

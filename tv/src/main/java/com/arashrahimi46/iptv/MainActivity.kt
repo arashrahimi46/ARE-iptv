@@ -99,7 +99,6 @@ import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.TvAppTheme
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -343,7 +342,7 @@ fun AreIptvApp() {
     val startStateReady = activeSourceId != UNKNOWN && hasAcceptedTerms != null &&
         hasSelectedLanguage != null && sources != null
     if (!splashFloorElapsed || !startStateReady) {
-        TvAppTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
+        AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
             AreSplashScreen()
         }
         return
@@ -390,7 +389,7 @@ fun AreIptvApp() {
         }
     }
 
-    TvAppTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
+    AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("language") {
             LanguageSelectScreen(onDone = {
@@ -434,12 +433,7 @@ fun AreIptvApp() {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 },
-                // Explore entry point withheld for the Play Store build: pointing users at a
-                // catalogue of third-party free-IPTV playlists is the kind of thing store review
-                // reacts to. `onExplore = null` hides the link (SourceStep only renders it when
-                // non-null); the "explore" destination itself stays wired up below, so restoring
-                // the entry point is this one line.
-                onExplore = null,
+                onExplore = { navController.navigate("explore") },
             )
         }
         // Curated free-playlist catalogue. An add here is an ordinary M3U import, so it lands in the

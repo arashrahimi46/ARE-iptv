@@ -124,13 +124,11 @@ private fun SourceCard(
     val shape = RoundedCornerShape(AreIptvTheme.radius.lg)
     TvFocusable(
         onClick = onClick,
-        // NOTE: the selected/default border is applied INSIDE the content below, not on this outer
-        // modifier -- a border modifier passed in `modifier` would land outside the focus scale.
-        // (Post-:core-migration the scale lives on TvFocusable's own outer Box, so the `borderColor`
-        // /`borderBrush` PARAMETERS scale with the ring and would be the better home for this; the
-        // width/colour here depend on `selected` only, so either works. What must never come back is
-        // a fill or border on an inner element of a DIFFERENT size than the focusable -- that is
-        // what makes the ring stop tracing the control.)
+        // NOTE: the selected/default border is applied INSIDE the content below, not
+        // on this outer modifier. TvFocusable scales its content up on focus; a border
+        // on the outer modifier stays outside that scale, so the card's own border and
+        // the blue focus ring drift apart on focus ("blue line doesn't match white
+        // line"). Inside the content it scales together with the focus ring.
         modifier = modifier,
         interactionSource = interactionSource,
         shape = shape,

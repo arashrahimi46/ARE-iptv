@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -130,14 +132,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
  *  accent ring/glow has headroom, then offset back so it lines up with the title/cards. */
 @Composable
 private fun SettingsTabStrip(selected: SettingsTab, onSelect: (SettingsTab) -> Unit, tabsFocus: FocusRequester) {
-    // No horizontalScroll here: AreSegmentedControl (core/SegmentedControl.kt) now owns its own
-    // overflow-scroll internally (commit 917a44c). Nesting a second horizontalScroll around it
-    // measures the inner one with an infinite max-width constraint and crashes
-    // ("Horizontally scrollable component was measured with an infinity maximum width
-    // constraints") -- 100% repro opening Settings on :tv (qa-reviewer, commit 101a487).
     Row(
         modifier = Modifier
             .offset(x = (-14).dp)
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = 14.dp, vertical = 14.dp),
     ) {
         AreSegmentedControl(

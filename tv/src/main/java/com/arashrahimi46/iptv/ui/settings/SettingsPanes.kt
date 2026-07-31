@@ -661,14 +661,11 @@ private fun SubtitleFontChoice.labelRes(): Int = when (this) {
 private fun SubtitleColorSwatch(color: Color, selected: Boolean, onSelect: () -> Unit) {
     val colors = AreIptvTheme.colors
     val fillShape = RoundedCornerShape(AreIptvTheme.radius.sm)
-    // The inset is OUTSIDE the focusable and the shape matches the swatch: the focus ring is drawn
-    // at the focusable's bounds, so a 40dp/radius.md focusable around a 32dp/radius.sm fill drew the
-    // accent ring floating 4dp off the swatch with the wrong corner radius. Same footprint as before
-    // (4dp padding + 32dp = 40dp), so the row's density is unchanged.
-    TvFocusable(onClick = onSelect, modifier = Modifier.padding(4.dp).size(32.dp), shape = fillShape) { focused, _ ->
+    TvFocusable(onClick = onSelect, modifier = Modifier.size(40.dp), shape = RoundedCornerShape(AreIptvTheme.radius.md)) { focused, _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(4.dp)
                 .background(color, fillShape)
                 .border(
                     width = if (focused || selected) 2.dp else 1.dp,
@@ -1521,12 +1518,13 @@ private fun AccentPickerBlock(selected: AccentPreset, isDark: Boolean, onSelect:
 private fun AccentSwatch(preset: AccentPreset, isDark: Boolean, selected: Boolean, onSelect: () -> Unit) {
     val colors = AreIptvTheme.colors
     val swatchColor = preset.swatch(isDark)
+    val outerShape = RoundedCornerShape(AreIptvTheme.radius.md)
     val fillShape = RoundedCornerShape(AreIptvTheme.radius.sm)
-    // Inset outside the focusable so the ring traces the swatch -- see SubtitleColorSwatch.
-    TvFocusable(onClick = onSelect, modifier = Modifier.padding(5.dp).size(42.dp), shape = fillShape) { focused, _ ->
+    TvFocusable(onClick = onSelect, modifier = Modifier.size(52.dp), shape = outerShape) { focused, _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(5.dp)
                 .background(swatchColor, fillShape)
                 .border(
                     width = if (focused || selected) 2.dp else 1.dp,

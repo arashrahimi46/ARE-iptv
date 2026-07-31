@@ -90,9 +90,12 @@ ksp {
 }
 
 dependencies {
-    // Shared data layer + a handful of pure token/logic files UserSettings depends on -- moved
-    // out to :core so :mobile can reuse them too (an app-on-app project dependency broke AAPT2
-    // resource linking; see core/build.gradle.kts's top comment for the full story).
+    // :core is a resources-ONLY library: the 24 locale strings.xml files, nothing else. It exists
+    // so :tv and :mobile add a user-facing string in one place instead of two. Do NOT put Kotlin
+    // back in here -- the previous shared-code :core made every :mobile change a :tv regression
+    // risk, which is why it was unwound. :tv references these as `com.arashrahimi46.iptv.core.R`
+    // (AGP's non-transitive R class), aliased to CoreR in the three files that also use :tv's own
+    // R.drawable/R.font.
     implementation(project(":core"))
 
     implementation(platform(libs.androidx.compose.bom))
