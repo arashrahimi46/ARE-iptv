@@ -474,6 +474,12 @@ interface ContinueWatchingDao {
     @Query("SELECT * FROM continue_watching WHERE seriesEpisodeId = :episodeId LIMIT 1")
     suspend fun findByEpisode(episodeId: Long): ContinueWatchingEntry?
 
+    /** Bulk, observable form of [findByEpisode] -- the Series detail screen needs every in-progress
+     *  episode of one series at once (per-row progress bars + which episode "Resume" reopens).
+     *  A Flow so returning from the player repaints the list without any lifecycle plumbing. */
+    @Query("SELECT * FROM continue_watching WHERE seriesEpisodeId IN (:episodeIds)")
+    fun observeByEpisodes(episodeIds: List<Long>): Flow<List<ContinueWatchingEntry>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entry: ContinueWatchingEntry): Long
 

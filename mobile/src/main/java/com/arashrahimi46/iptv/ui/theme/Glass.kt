@@ -159,8 +159,8 @@ private fun shadowPath(
  * (see the design spec: real blur is reserved for dialogs via the window API, and is impossible over
  * the SurfaceView video).
  *
- * Compose [TvFocusable] / [Modifier.tvFocusable] outside this so the accent ring + glow still draw
- * on top -- focus is intentionally not baked into the glass.
+ * Compose [com.arashrahimi46.iptv.mobile.ui.components.areTouch] outside this so the press feedback
+ * still draws on top -- interaction state is intentionally not baked into the glass.
  *
  * @param elevated denser fill for modals/HUD over media so text stays legible.
  * @param shadow set false for surfaces that shouldn't lift (e.g. an inline track already inside a
@@ -311,9 +311,9 @@ fun Modifier.tvGlow(
  * PERF NOTE for every modifier in this file: these are plain `@Composable` extensions, NOT
  * `Modifier.composed {}`. `composed` modifiers are materialized per layout node, cannot be
  * equality-compared, and re-execute whenever their element recomposes -- it is the documented way to
- * defeat modifier skipping. A 40-tile grid instantiated ~4-5 of them per tile (`tvFocusable`,
- * `glassChild` in the logo well, `tileWash`, the favourite button's own `tvFocusable`), i.e. ~180
- * non-reusable nodes all re-running on scroll and focus travel. None of these needed `composed`'s
+ * defeat modifier skipping. A 40-tile grid instantiated ~4-5 of them per tile (`areTouch`,
+ * `glassChild` in the logo well, `tileWash`, the favourite button's own `areTouch`), i.e. ~180
+ * non-reusable nodes all re-running on scroll. None of these needed `composed`'s
  * per-node scope: they only read theme/composition-local values, which a `@Composable` function reads
  * just as well and far more cheaply.
  */
@@ -345,8 +345,8 @@ fun glassBorderBrush(): Brush {
 /**
  * The accent-gradient fill for the SELECTED / current state (design §6b: "accent-gradient glass
  * chip, denser than plain focus"). A glossy lighter-top -> accent-bottom sheen that separates a
- * flat *selection* from the *focus* ring -- the piece that was missing everywhere and made active
- * items read as the old flat wash. Pass to [TvFocusable]'s `backgroundBrush`.
+ * flat *selection* from transient press feedback -- the piece that was missing everywhere and made
+ * active items read as the old flat wash. Pass wherever a `backgroundBrush` is taken.
  *
  * V2 note: this is now reserved for **actions** (Primary button, active icon button). *Selection*
  * indicators use [accentLensBrush] instead -- see [glassLens].
@@ -446,7 +446,7 @@ fun Modifier.glassLens(shape: Shape): Modifier =
         .border(1.dp, lensBorderBrush(), shape)
         .clip(shape)
 
-/** [glassLens] as a plain [Brush], for the [TvFocusable] `backgroundBrush` funnel. */
+/** [glassLens] as a plain [Brush], for the `backgroundBrush` funnel. */
 @Composable
 fun accentLensBrush(): Brush {
     val c = LocalAreIptvColors.current

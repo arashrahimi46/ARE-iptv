@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Adjon hozzá egy lejátszási listát az oldalsávból, hogy itt lássa a csatornáit, filmjeit és sorozatait.</string>
     <string name="home_section_continue_watching">Megtekintés folytatása</string>
     <string name="home_section_live_now">Most élőben</string>
+    <string name="home_favorite_channels">Kedvenc csatornák</string>
+    <string name="home_favorite_titles">Kedvenc címek</string>
     <string name="home_section_categories">Böngészés kategória szerint</string>
     <string name="home_section_recommended">Önnek</string>
     <string name="home_section_for_you">Önnek</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">Következik</string>
     <string name="player_open_guide">Műsorújság megnyitása</string>
     <string name="player_live_badge">Élő</string>
+    <string name="player_go_live">Ugrás az élő adásra</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Ki</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Használja a szolgáltatója által ehhez a portálhoz regisztrált MAC-címet.</string>
     <string name="onboarding_mac_invalid">Adjon meg teljes MAC-címet, pl. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Adj meg érvényes címet, pl. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Adj nevet ennek a lejátszási listának</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Előnyben részesített hang</string>
     <string name="settings_preferred_audio_desc">Ennek a hangnyelvnek automatikus kiválasztása, ha elérhető</string>
@@ -711,4 +716,25 @@
     <string name="browse_category_search_empty">Nincs találat a kategóriák közt</string>
     <string name="tile_action_resume">Folytatás</string>
     <string name="tile_action_play_from_start">Lejátszás elejétől</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Részletek</string>
+    <string name="common_more">Több</string>
+    <string name="common_undo">Visszavonás</string>
+    <string name="common_deleted">Törölve</string>
+    <string name="common_paste">Beillesztés</string>
+    <string name="settings_section_library">Könyvtár</string>
+    <string name="settings_section_general">Általános</string>
+    <string name="settings_section_more">Továbbiak</string>
+    <string name="subtitle_color_white">Fehér</string>
+    <string name="subtitle_color_yellow">Sárga</string>
+    <string name="subtitle_color_cyan">Cián</string>
+    <string name="subtitle_color_green">Zöld</string>
+    <string name="settings_more_playback_desc">Dekódolás, hangsáv nyelve, automatikus lejátszás</string>
+    <string name="settings_more_subtitles_desc">Nyelv, méret, stílus, szín, betűtípus</string>
+    <string name="settings_more_parental_desc">PIN-zár, automatikus zárolás, zárolt tartalom</string>
+    <string name="settings_more_about_desc">Verzió, támogatás, adatvédelem, jogi információk</string>
+    <string name="favorites_removed">Eltávolítva a kedvencekből</string>
+    <string name="search_recent">Legutóbbi keresések</string>
+    <string name="search_clear_recent">Legutóbbi keresések törlése</string>
+    <string name="series_no_episodes">Ennek a sorozatnak még nincsenek epizódjai.</string>
 </resources>

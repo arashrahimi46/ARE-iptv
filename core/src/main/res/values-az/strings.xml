@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Kanallarınızı, filmlərinizi və seriallarınızı burada görmək üçün yan paneldən pleylist əlavə edin.</string>
     <string name="home_section_continue_watching">İzləməyə davam</string>
     <string name="home_section_live_now">İndi canlı</string>
+    <string name="home_favorite_channels">Sevimli kanallar</string>
+    <string name="home_favorite_titles">Sevimli başlıqlar</string>
     <string name="home_section_categories">Kateqoriyaya görə bax</string>
     <string name="home_section_recommended">Sizin üçün</string>
     <string name="home_section_for_you">Sizin üçün</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">Növbəti</string>
     <string name="player_open_guide">Bələdçini aç</string>
     <string name="player_live_badge">Canlı</string>
+    <string name="player_go_live">Canlıya keç</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Söndürülüb</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Provayderinizin bu portal üçün qeydə aldığı MAC ünvanından istifadə edin.</string>
     <string name="onboarding_mac_invalid">Tam MAC ünvanı daxil edin, məs. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Düzgün bir ünvan daxil edin, məs. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Bu pleylistə ad verin</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Tərcih edilən səs</string>
     <string name="settings_preferred_audio_desc">Mümkün olduqda bu səs dilini avtomatik seç</string>
@@ -711,4 +716,25 @@
     <string name="browse_category_search_empty">Uyğun kateqoriya yoxdur</string>
     <string name="tile_action_resume">Davam et</string>
     <string name="tile_action_play_from_start">Əvvəldən oynat</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Təfərrüatlar</string>
+    <string name="common_more">Daha çox</string>
+    <string name="common_undo">Geri al</string>
+    <string name="common_deleted">Silindi</string>
+    <string name="common_paste">Yapışdır</string>
+    <string name="settings_section_library">Kitabxana</string>
+    <string name="settings_section_general">Ümumi</string>
+    <string name="settings_section_more">Daha çox</string>
+    <string name="subtitle_color_white">Ağ</string>
+    <string name="subtitle_color_yellow">Sarı</string>
+    <string name="subtitle_color_cyan">Firuzəyi</string>
+    <string name="subtitle_color_green">Yaşıl</string>
+    <string name="settings_more_playback_desc">Dekodlaşdırma, səs dili, avtomatik oxutma</string>
+    <string name="settings_more_subtitles_desc">Dil, ölçü, üslub, rəng, şrift</string>
+    <string name="settings_more_parental_desc">PIN kilidi, avtomatik kilid, kilidli məzmun</string>
+    <string name="settings_more_about_desc">Versiya, dəstək, məxfilik, hüquqi</string>
+    <string name="favorites_removed">Sevimlilərdən silindi</string>
+    <string name="search_recent">Son axtarışlar</string>
+    <string name="search_clear_recent">Son axtarışları təmizlə</string>
+    <string name="series_no_episodes">Bu serialın hələ epizodu yoxdur.</string>
 </resources>

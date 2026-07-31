@@ -29,6 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -37,7 +40,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
-import com.arashrahimi46.iptv.mobile.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.mobile.ui.detail.MovieDetailScreen
 import com.arashrahimi46.iptv.mobile.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.mobile.ui.guide.GuideScreen
@@ -53,10 +56,14 @@ import com.arashrahimi46.iptv.mobile.ui.recordings.RecordingsScreen
 import com.arashrahimi46.iptv.mobile.ui.series.SeriesDetailScreen
 import com.arashrahimi46.iptv.mobile.ui.streams.StreamsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SettingsScreen
+import com.arashrahimi46.iptv.mobile.ui.settings.AboutSettingsScreen
+import com.arashrahimi46.iptv.mobile.ui.settings.ParentalSettingsScreen
+import com.arashrahimi46.iptv.mobile.ui.settings.PlaybackSettingsScreen
+import com.arashrahimi46.iptv.mobile.ui.settings.SubtitleSettingsScreen
+import com.arashrahimi46.iptv.mobile.ui.components.areTouch
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.ui.interaction.AreInteractive
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.ControlTone
 import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
@@ -65,11 +72,11 @@ import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Bottom-nav destinations, per product-lead's Phase 1 spec: Home / Live / Movies / Series / Settings. */
 sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    data object Home : Tab("home", R.string.nav_home, Icons.Filled.Home)
-    data object Live : Tab("live", R.string.nav_live_tv, Icons.Filled.LiveTv)
-    data object Movies : Tab("movies", R.string.nav_movies, Icons.Filled.Movie)
-    data object Series : Tab("series", R.string.nav_series, Icons.Filled.Tv)
-    data object Settings : Tab("settings", R.string.nav_settings, Icons.Filled.Settings)
+    data object Home : Tab("home", CoreR.string.nav_home, Icons.Filled.Home)
+    data object Live : Tab("live", CoreR.string.nav_live_tv, Icons.Filled.LiveTv)
+    data object Movies : Tab("movies", CoreR.string.nav_movies, Icons.Filled.Movie)
+    data object Series : Tab("series", CoreR.string.nav_series, Icons.Filled.Tv)
+    data object Settings : Tab("settings", CoreR.string.nav_settings, Icons.Filled.Settings)
 }
 
 private val tabs = listOf(Tab.Home, Tab.Live, Tab.Movies, Tab.Series, Tab.Settings)
@@ -86,15 +93,16 @@ fun playerRoute(kind: String, id: Long) = "player/$kind/$id"
 fun isPlayerRoute(route: String?): Boolean = route?.startsWith("player/") == true
 
 /**
- * Bottom tab bar, rebuilt on :core's glass primitives (Step 5 milestone A) in place of the stock
+ * Bottom tab bar, rebuilt on the glass primitives in `com.arashrahimi46.iptv.ui.theme` (this
+ * module's own copy -- :core is resources-only) in place of the stock
  * Material3 [androidx.compose.material3.NavigationBar]. The bar itself is a page-level glass
  * surface -- it sits directly on the screen, not nested inside another glass panel -- so it takes
  * [glassSurface] (the same "translucent fill + lit hairline edge" every full glass surface uses).
  * Each tab is then a control ONE LEVEL IN, so it takes the nested-child treatment via
  * [ProvideOnGlass] rather than a second glass fill (see ControlSkin.kt: "glass never stacks" --
  * two glassSurface fills would compound to ~87% opacity and read as an opaque bar). The selected
- * tab uses the same accent-lens `controlSkin(selectable = true, selected = ...)` funnel TV's
- * `AreTab` (Tabs.kt) uses, for visual parity between the two apps.
+ * tab uses the same accent-lens `controlSkin(selectable = true, selected = ...)` funnel :tv's own
+ * `AreTab` uses, for visual parity between the two apps.
  */
 @Composable
 fun AppBottomBar(navController: NavHostController) {
@@ -148,26 +156,26 @@ private fun AppBottomBarItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     val skin = controlSkin(ControlTone.Neutral, selected = selected, selectable = true)
     val label = stringResource(tab.labelRes)
-    AreInteractive(
-        onClick = onClick,
-        interactionSource = interactionSource,
-        shape = RoundedCornerShape(AreIptvTheme.radius.md),
-        backgroundColor = skin.fillColor,
-        backgroundBrush = skin.fillBrush,
-        shadowElevation = skin.elevation,
-        borderColor = skin.borderColor,
-        borderBrush = skin.borderBrush,
-    ) { _, _ ->
-        Column(
-            modifier = Modifier
-                .wrapContentWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Icon(tab.icon, contentDescription = null, tint = skin.content, modifier = Modifier.size(22.dp))
-            Text(text = label, style = AreIptvTheme.typography.caption, color = skin.content, maxLines = 1)
-        }
+    Column(
+        modifier = Modifier
+            .wrapContentWidth()
+            .areTouch(
+                onClick = onClick,
+                skin = skin,
+                shape = RoundedCornerShape(AreIptvTheme.radius.md),
+                role = Role.Tab,
+                interactionSource = interactionSource,
+            )
+            // Role.Tab alone tells TalkBack *what* this is, not *which one is current* -- without
+            // the selected property every tab announces identically and the current one is
+            // unknowable non-visually. Same pattern as AreChip (Chip.kt).
+            .semantics { this.selected = selected }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Icon(tab.icon, contentDescription = null, tint = skin.content, modifier = Modifier.size(22.dp))
+        Text(text = label, style = AreIptvTheme.typography.caption, color = skin.content, maxLines = 1)
     }
 }
 
@@ -211,8 +219,6 @@ fun AppNavHost(
                 onOpenEpisode = openEpisode,
                 onOpenSearch = { navController.navigate("search") },
                 onOpenGuide = { navController.navigate("guide") },
-                onOpenStreams = { navController.navigate("streams") },
-                onOpenRecordings = { navController.navigate("recordings") },
                 onOpenFavorites = { navController.navigate("favorites") },
             )
         }
@@ -220,47 +226,71 @@ fun AppNavHost(
             LiveScreen(onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) })
         }
         composable("guide") {
-            GuideScreen(onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) })
+            GuideScreen(
+                onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable("search") {
             SearchScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
                 onOpenTitle = openTitle,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Tab.Movies.route) {
             val vm: MoviesViewModel = viewModel()
-            VodGridScreen(vm, openTitle)
+            VodGridScreen(vm, openTitle, onOpenSearch = { navController.navigate("search") })
         }
         composable(Tab.Series.route) {
             val vm: SeriesViewModel = viewModel()
-            VodGridScreen(vm, openTitle)
+            VodGridScreen(vm, openTitle, onOpenSearch = { navController.navigate("search") })
         }
         composable(Tab.Settings.route) {
             SettingsScreen(
                 onOpenFavorites = { navController.navigate("favorites") },
                 onOpenRecordings = { navController.navigate("recordings") },
                 onOpenStreams = { navController.navigate("streams") },
+                onOpenPlayback = { navController.navigate("settings/playback") },
+                onOpenSubtitles = { navController.navigate("settings/subtitles") },
+                onOpenParental = { navController.navigate("settings/parental") },
+                onOpenAbout = { navController.navigate("settings/about") },
             )
         }
+        composable("settings/playback") { PlaybackSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable("settings/subtitles") { SubtitleSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable("settings/parental") { ParentalSettingsScreen(onBack = { navController.popBackStack() }) }
+        composable("settings/about") { AboutSettingsScreen(onBack = { navController.popBackStack() }) }
         composable("favorites") {
             FavoritesScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
                 onOpenTitle = openTitle,
+                onBack = { navController.popBackStack() },
             )
         }
         composable("recordings") {
-            RecordingsScreen(onPlay = { navController.navigate(playerRoute("recording", it)) })
+            RecordingsScreen(
+                onPlay = { navController.navigate(playerRoute("recording", it)) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable("streams") {
-            StreamsScreen(onPlay = { navController.navigate(playerRoute("direct", it)) })
+            StreamsScreen(
+                onPlay = { navController.navigate(playerRoute("direct", it)) },
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(
             route = SERIES_DETAIL_ROUTE,
             arguments = listOf(navArgument("id") { type = NavType.LongType }),
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("id") ?: 0L
-            SeriesDetailScreen(vodTitleId = id, onOpenEpisode = openEpisode, onBack = { navController.popBackStack() })
+            SeriesDetailScreen(
+                vodTitleId = id,
+                onOpenEpisode = openEpisode,
+                onBack = { navController.popBackStack() },
+                onPlayTitle = { navController.navigate(playerRoute("movie", it)) },
+            )
         }
         composable(
             route = MOVIE_DETAIL_ROUTE,

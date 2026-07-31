@@ -12,6 +12,7 @@ import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.data.settings.ParentalFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import com.arashrahimi46.iptv.ui.home.HomeRailCurator
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -35,12 +37,19 @@ data class HomeUiState(
      * the specific episode to resume -- so tapping it jumps straight back into that episode
      * instead of re-opening the season/episode picker the user already got past. */
     val continueWatchingEpisodeIds: Map<Long, Long> = emptyMap(),
+    /** 0f..1f watched fraction per [continueWatching] title id, for the tile's progress bar. */
+    val continueWatchingProgress: Map<Long, Float> = emptyMap(),
     val favoriteChannels: List<Channel> = emptyList(),
     val favoriteTitles: List<VodTitle> = emptyList(),
     val recommended: List<VodTitle> = emptyList(),
     val liveNow: List<Channel> = emptyList(),
     val isLoading: Boolean = true,
-)
+) {
+    /** Every rail is empty -- Home renders its "no playlist / nothing yet" state instead. */
+    val isEmpty: Boolean
+        get() = continueWatching.isEmpty() && liveNow.isEmpty() && recommended.isEmpty() &&
+            favoriteChannels.isEmpty() && favoriteTitles.isEmpty()
+}
 
 private const val SAMPLE_SIZE = 200
 
@@ -64,6 +73,31 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         favoritesRepo.favoriteVodIds.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     private val daySeed: Long = System.currentTimeMillis() / (24L * 60 * 60 * 1000)
+
+    private val _isRefreshing = MutableStateFlow(false)
+    /** Drives the pull-to-refresh spinner. */
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    /**
+     * Pull-to-refresh: re-imports the active playlist. The rails themselves are Room-backed flows,
+     * so they repaint on their own once the import lands -- this only has to run the fetch and hold
+     * the spinner. A failed refresh leaves the existing catalog intact (see
+     * [PlaylistRepository.refreshSource]), so there is nothing to surface but the spinner settling.
+     */
+    fun refresh() {
+        if (_isRefreshing.value) return
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                val sourceId = settings.activeSourceId.first()
+                if (sourceId != null) repository.refreshSource(sourceId)
+            } catch (_: Exception) {
+                // Network/parse failure -- the catalog on screen is still the last good one.
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
 
     fun toggleChannelFavorite(channel: Channel) {
         viewModelScope.launch { favoritesRepo.toggleChannel(channel.id) }
@@ -93,11 +127,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         favoritesRepo.favoriteVodIds,
                     ) { cw, favCh, favVod -> Triple(cw, favCh, favVod) }
 
-                    combine(pools, engagement) { (channelPool, moviePool, seriesPool), (cwEntries, favChannelIds, favVodIds) ->
-                        Triple(channelPool, moviePool, seriesPool) to Triple(cwEntries, favChannelIds, favVodIds)
-                    }.mapLatest { (poolTriple, engagementTriple) ->
-                        val (channelPool, moviePool, seriesPool) = poolTriple
+                    combine(pools, engagement, settings.parentalFilter) { poolTriple, engagementTriple, parental ->
+                        Triple(poolTriple, engagementTriple, parental)
+                    }.mapLatest { (poolTriple, engagementTriple, parental) ->
+                        val (rawChannelPool, rawMoviePool, rawSeriesPool) = poolTriple
                         val (cwEntries, favChannelIds, favVodIds) = engagementTriple
+                        // Parental lock, HIDE mode: strip adult items from every pool BEFORE the
+                        // curator ranks them, so a hidden item can't consume a rail slot and leave
+                        // a short rail behind (same ordering :tv's HomeViewModel uses). BLUR mode
+                        // leaves ParentalFilter.hideLocked false -- those items stay and are
+                        // obscured at the tile via LocalParentalBlur instead.
+                        val channelPool = rawChannelPool.filterNot { parental.hidden(it.categoryName) }
+                        val moviePool = rawMoviePool.filterNot { parental.hidden(it.categoryName) }
+                        val seriesPool = rawSeriesPool.filterNot { parental.hidden(it.categoryName) }
                         // recordingId bookmarks stay out of scope (recording playback isn't wired
                         // on mobile yet); vodTitleId (movies) and seriesEpisodeId (series, resolved
                         // to their parent series title) both resolve.
@@ -106,11 +148,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                             .mapValues { it.value.size.toDouble() }
                         val liveNow = HomeRailCurator.curateChannels(channelPool, watchedWeights, daySeed, limit = 20)
                         val recommended = HomeRailCurator.recommend(moviePool, seriesPool, emptyMap(), daySeed, limit = 20)
-                        val continueWatching = resolveContinueWatching(cwEntries, sourceId)
+                        // Continue-watching resolves straight from Room, not from the sampled
+                        // pools, so it needs the same filter applied at its own source.
+                        val continueWatching = resolveContinueWatching(cwEntries, sourceId, parental)
                         HomeUiState(
                             hasSource = true,
                             continueWatching = continueWatching.titles,
                             continueWatchingEpisodeIds = continueWatching.episodeIdsByTitleId,
+                            continueWatchingProgress = continueWatching.progressByTitleId,
                             favoriteChannels = channelPool.filter { it.id in favChannelIds }.take(20),
                             favoriteTitles = vodPool.filter { it.id in favVodIds }.take(20),
                             recommended = recommended,
@@ -124,7 +169,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             .launchIn(viewModelScope)
     }
 
-    private data class ResolvedContinueWatching(val titles: List<VodTitle>, val episodeIdsByTitleId: Map<Long, Long>)
+    private data class ResolvedContinueWatching(
+        val titles: List<VodTitle>,
+        val episodeIdsByTitleId: Map<Long, Long>,
+        val progressByTitleId: Map<Long, Float>,
+    )
 
     /** Resolves raw [ContinueWatchingEntry] rows to [VodTitle]s for the rail -- a movie resolves
      * directly by [ContinueWatchingEntry.vodTitleId]; a series episode resolves via its
@@ -133,29 +182,42 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
      * that exact episode (see [HomeUiState.continueWatchingEpisodeIds]) instead of only reopening
      * the series' episode picker. Only titles in [activeSourceId] resolve; unresolvable entries
      * (deleted title, other source, or a [ContinueWatchingEntry.recordingId] bookmark -- out of
-     * mobile v1 scope) are dropped rather than shown blank. */
-    private suspend fun resolveContinueWatching(entries: List<ContinueWatchingEntry>, activeSourceId: Long?): ResolvedContinueWatching {
+     * mobile v1 scope) are dropped rather than shown blank, as is anything [parental] hides. */
+    private suspend fun resolveContinueWatching(
+        entries: List<ContinueWatchingEntry>,
+        activeSourceId: Long?,
+        parental: ParentalFilter,
+    ): ResolvedContinueWatching {
         val vodIds = entries.mapNotNull { it.vodTitleId }
         val episodeIds = entries.mapNotNull { it.seriesEpisodeId }
         val episodesById = episodeIds.mapNotNull { db.seriesEpisodeDao().getById(it) }.associateBy { it.id }
         val seriesIds = (vodIds + episodesById.values.map { it.seriesTitleId }).distinct()
         val titlesById = repository.titlesByIds(seriesIds)
-            .filter { it.sourceId == activeSourceId }
+            .filter { it.sourceId == activeSourceId && !parental.hidden(it.categoryName) }
             .associateBy { it.id }
 
         val titles = mutableListOf<VodTitle>()
         val episodeIdsByTitleId = mutableMapOf<Long, Long>()
+        val progressByTitleId = mutableMapOf<Long, Float>()
         entries.forEach { entry ->
             when {
-                entry.vodTitleId != null -> titlesById[entry.vodTitleId]?.let { titles += it }
+                entry.vodTitleId != null -> titlesById[entry.vodTitleId]?.let {
+                    titles += it
+                    progressByTitleId[it.id] = entry.watchedFraction()
+                }
                 entry.seriesEpisodeId != null -> {
                     val episode = episodesById[entry.seriesEpisodeId] ?: return@forEach
                     val title = titlesById[episode.seriesTitleId] ?: return@forEach
                     titles += title
                     episodeIdsByTitleId[title.id] = episode.id
+                    progressByTitleId[title.id] = entry.watchedFraction()
                 }
             }
         }
-        return ResolvedContinueWatching(titles, episodeIdsByTitleId)
+        return ResolvedContinueWatching(titles, episodeIdsByTitleId, progressByTitleId)
     }
 }
+
+/** 0f..1f watched fraction; 0f when the duration is unknown (a live/unseekable bookmark). */
+private fun ContinueWatchingEntry.watchedFraction(): Float =
+    if (durationMs <= 0L) 0f else (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)

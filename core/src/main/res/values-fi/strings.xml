@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Lisää soittolista sivupalkista nähdäksesi kanavasi, elokuvasi ja sarjasi täällä.</string>
     <string name="home_section_continue_watching">Jatka katselua</string>
     <string name="home_section_live_now">Suorana nyt</string>
+    <string name="home_favorite_channels">Suosikkikanavat</string>
+    <string name="home_favorite_titles">Suosikkinimikkeet</string>
     <string name="home_section_categories">Selaa kategorioittain</string>
     <string name="home_section_recommended">Sinulle</string>
     <string name="home_section_for_you">Sinulle</string>
@@ -532,6 +534,7 @@
     <string name="player_up_next_action">Seuraavaksi</string>
     <string name="player_open_guide">Avaa opas</string>
     <string name="player_live_badge">Suora</string>
+    <string name="player_go_live">Katso suorana</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Pois</string>
@@ -689,6 +692,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Käytä MAC-osoitetta, jonka palveluntarjoajasi rekisteröi tälle portaalille.</string>
     <string name="onboarding_mac_invalid">Anna täydellinen MAC-osoite, esim. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Anna kelvollinen osoite, esim. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Anna soittolistalle nimi</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Ensisijainen ääni</string>
     <string name="settings_preferred_audio_desc">Valitse tämä äänen kieli automaattisesti, kun saatavilla</string>
@@ -732,4 +737,25 @@
     <string name="support_dialog_body">Sen tekee ja ylläpitää yksi ihminen iltaisin ja viikonloppuisin. Ei tilausmaksua, ei mainoksia, ei seurantaa siitä, mitä katsot — vain sovellus, joka toimii. Jos se ansaitsee paikkansa televisiossasi, kahvit auttavat jatkamaan.</string>
     <string name="support_dialog_scan">Skannaa avataksesi puhelimessa</string>
     <string name="support_dialog_visit">Tai käy osoitteessa:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Tiedot</string>
+    <string name="common_more">Lisää</string>
+    <string name="common_undo">Kumoa</string>
+    <string name="common_deleted">Poistettu</string>
+    <string name="common_paste">Liitä</string>
+    <string name="settings_section_library">Kirjasto</string>
+    <string name="settings_section_general">Yleiset</string>
+    <string name="settings_section_more">Lisää</string>
+    <string name="subtitle_color_white">Valkoinen</string>
+    <string name="subtitle_color_yellow">Keltainen</string>
+    <string name="subtitle_color_cyan">Syaani</string>
+    <string name="subtitle_color_green">Vihreä</string>
+    <string name="settings_more_playback_desc">Dekoodaus, äänen kieli, automaattinen toisto</string>
+    <string name="settings_more_subtitles_desc">Kieli, koko, tyyli, väri, fontti</string>
+    <string name="settings_more_parental_desc">PIN-lukitus, automaattinen lukitus, lukittu sisältö</string>
+    <string name="settings_more_about_desc">Versio, tuki, tietosuoja, oikeudelliset tiedot</string>
+    <string name="favorites_removed">Poistettu suosikeista</string>
+    <string name="search_recent">Viimeisimmät haut</string>
+    <string name="search_clear_recent">Tyhjennä viimeisimmät haut</string>
+    <string name="series_no_episodes">Tällä sarjalla ei ole vielä jaksoja.</string>
 </resources>

@@ -5,6 +5,7 @@ import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -53,6 +54,18 @@ class ContinueWatchingRepository(context: Context) {
             ?: recordingId?.let { dao.findByRecording(it) }
         entry?.positionMs ?: 0L
     }
+
+    /** Every bookmark among [episodeIds], keyed by episode id, re-emitted whenever one changes.
+     * Used by the Series detail screen to draw per-episode progress and to pick which episode
+     * "Resume" reopens (the most recently updated one). */
+    fun observeEntriesForEpisodes(episodeIds: List<Long>): Flow<Map<Long, ContinueWatchingEntry>> =
+        if (episodeIds.isEmpty()) {
+            flowOf(emptyMap())
+        } else {
+            dao.observeByEpisodes(episodeIds).map { entries ->
+                entries.mapNotNull { entry -> entry.seriesEpisodeId?.let { it to entry } }.toMap()
+            }
+        }
 
     /** Most-recently-updated in-progress entries, bounded for the Home rail -- at most one entry
      * per series (see [dedupeBySeries]); movie/recording entries pass through untouched. */

@@ -3,6 +3,7 @@ package com.arashrahimi46.iptv.mobile.ui.settings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
@@ -12,6 +13,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
 import com.arashrahimi46.iptv.data.settings.AutoRelock
 import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
+import com.arashrahimi46.iptv.data.settings.ParentalGate
 import com.arashrahimi46.iptv.data.settings.PinHasher
 import com.arashrahimi46.iptv.data.settings.StartScreen
 import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
@@ -138,7 +140,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val sourceId = settings.activeSourceId.first()
             if (sourceId == null) {
-                _refreshState.value = MobileRefreshState.Error(getApplication<Application>().getString(com.arashrahimi46.iptv.mobile.R.string.settings_refresh_no_playlist))
+                _refreshState.value = MobileRefreshState.Error(getApplication<Application>().getString(CoreR.string.settings_refresh_no_playlist))
                 return@launch
             }
             _refreshState.value = MobileRefreshState.Refreshing
@@ -146,7 +148,7 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
                 val summary = playlists.refreshSource(sourceId)
                 MobileRefreshState.Success(summary.channels, summary.movies, summary.series)
             } catch (e: Exception) {
-                MobileRefreshState.Error(e.message ?: getApplication<Application>().getString(com.arashrahimi46.iptv.mobile.R.string.settings_refresh_failed))
+                MobileRefreshState.Error(e.message ?: getApplication<Application>().getString(CoreR.string.settings_refresh_failed))
             }
         }
     }
@@ -181,7 +183,14 @@ class SettingsViewModel(app: Application) : AndroidViewModel(app) {
     val lockedContentDisplay: StateFlow<LockedContentDisplay> = flowState(settings.lockedContentDisplay, LockedContentDisplay.HIDE)
     val isPinOnLaunch: StateFlow<Boolean> = flowState(settings.isPinOnLaunch, false)
 
-    fun setParentalLockEnabled(enabled: Boolean) = viewModelScope.launch { settings.setParentalLockEnabled(enabled) }
+    /** Turning the lock ON also drops any session unlock still in flight ([ParentalGate]): without
+     * this, enabling the lock inside an unlocked window leaves [UserSettings.parentalFilter]
+     * reporting "nothing to hide" and the switch appears to do nothing until the relock timer
+     * happens to fire. */
+    fun setParentalLockEnabled(enabled: Boolean) = viewModelScope.launch {
+        if (enabled) ParentalGate.relock()
+        settings.setParentalLockEnabled(enabled)
+    }
     fun setParentalAutoRelock(value: AutoRelock) = viewModelScope.launch { settings.setParentalAutoRelock(value) }
     fun setLockedContentDisplay(value: LockedContentDisplay) = viewModelScope.launch { settings.setLockedContentDisplay(value) }
     fun setPinOnLaunch(enabled: Boolean) = viewModelScope.launch { settings.setPinOnLaunch(enabled) }

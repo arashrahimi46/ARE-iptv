@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Dodaj playlistę z paska bocznego, aby zobaczyć tu swoje kanały, filmy i seriale.</string>
     <string name="home_section_continue_watching">Kontynuuj oglądanie</string>
     <string name="home_section_live_now">Na żywo teraz</string>
+    <string name="home_favorite_channels">Ulubione kanały</string>
+    <string name="home_favorite_titles">Ulubione tytuły</string>
     <string name="home_section_categories">Przeglądaj według kategorii</string>
     <string name="home_section_recommended">Dla Ciebie</string>
     <string name="home_section_for_you">Dla Ciebie</string>
@@ -536,6 +538,7 @@
     <string name="player_up_next_action">Następnie</string>
     <string name="player_open_guide">Otwórz program</string>
     <string name="player_live_badge">Na żywo</string>
+    <string name="player_go_live">Przejdź na żywo</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Wyłączone</string>
@@ -691,6 +694,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Użyj adresu MAC, który dostawca zarejestrował dla tego portalu.</string>
     <string name="onboarding_mac_invalid">Wpisz pełny adres MAC, np. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Podaj prawidłowy adres, np. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Nadaj tej playliście nazwę</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Preferowany dźwięk</string>
     <string name="settings_preferred_audio_desc">Automatycznie wybierz ten język dźwięku, gdy jest dostępny</string>
@@ -734,4 +739,25 @@
     <string name="support_dialog_body">Tworzy ją i utrzymuje jedna osoba, wieczorami i w weekendy. Bez abonamentu, bez reklam, bez śledzenia tego, co oglądasz — po prostu aplikacja, która działa. Jeśli zasłużyła na miejsce w Twoim telewizorze, kawa pomoże mi ją rozwijać.</string>
     <string name="support_dialog_scan">Zeskanuj, aby otworzyć na telefonie</string>
     <string name="support_dialog_visit">Lub wejdź na:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Szczegóły</string>
+    <string name="common_more">Więcej</string>
+    <string name="common_undo">Cofnij</string>
+    <string name="common_deleted">Usunięto</string>
+    <string name="common_paste">Wklej</string>
+    <string name="settings_section_library">Biblioteka</string>
+    <string name="settings_section_general">Ogólne</string>
+    <string name="settings_section_more">Więcej</string>
+    <string name="subtitle_color_white">Biały</string>
+    <string name="subtitle_color_yellow">Żółty</string>
+    <string name="subtitle_color_cyan">Cyjan</string>
+    <string name="subtitle_color_green">Zielony</string>
+    <string name="settings_more_playback_desc">Dekodowanie, język dźwięku, autoodtwarzanie</string>
+    <string name="settings_more_subtitles_desc">Język, rozmiar, styl, kolor, czcionka</string>
+    <string name="settings_more_parental_desc">Blokada PIN, automatyczna blokada, zablokowane treści</string>
+    <string name="settings_more_about_desc">Wersja, wsparcie, prywatność, informacje prawne</string>
+    <string name="favorites_removed">Usunięto z ulubionych</string>
+    <string name="search_recent">Ostatnie wyszukiwania</string>
+    <string name="search_clear_recent">Wyczyść ostatnie wyszukiwania</string>
+    <string name="series_no_episodes">Ten serial nie ma jeszcze odcinków.</string>
 </resources>

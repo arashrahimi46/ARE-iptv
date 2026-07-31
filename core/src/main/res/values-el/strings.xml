@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Προσθέστε μια λίστα από την πλαϊνή μπάρα για να δείτε εδώ τα κανάλια, τις ταινίες και τις σειρές σας.</string>
     <string name="home_section_continue_watching">Συνέχιση προβολής</string>
     <string name="home_section_live_now">Ζωντανά τώρα</string>
+    <string name="home_favorite_channels">Αγαπημένα κανάλια</string>
+    <string name="home_favorite_titles">Αγαπημένοι τίτλοι</string>
     <string name="home_section_categories">Περιήγηση ανά κατηγορία</string>
     <string name="home_section_recommended">Για εσάς</string>
     <string name="home_section_for_you">Για εσάς</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">Ακολουθεί</string>
     <string name="player_open_guide">Άνοιγμα οδηγού</string>
     <string name="player_live_badge">Ζωντανά</string>
+    <string name="player_go_live">Μετάβαση σε ζωντανά</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Ανενεργοί</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Χρησιμοποιήστε τη διεύθυνση MAC που καταχώρισε ο πάροχός σας για αυτήν την πύλη.</string>
     <string name="onboarding_mac_invalid">Εισαγάγετε πλήρη διεύθυνση MAC, π.χ. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Εισαγάγετε έγκυρη διεύθυνση, π.χ. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Δώστε ένα όνομα σε αυτή τη λίστα</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Προτιμώμενος ήχος</string>
     <string name="settings_preferred_audio_desc">Αυτόματη επιλογή αυτής της γλώσσας ήχου όταν είναι διαθέσιμη</string>
@@ -711,4 +716,25 @@
     <string name="tile_action_play_from_start">Αναπαραγωγή από την αρχή</string>
     <string name="browse_category_search_placeholder">Αναζήτηση κατηγοριών</string>
     <string name="browse_category_search_empty">Δεν βρέθηκαν κατηγορίες</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Λεπτομέρειες</string>
+    <string name="common_more">Περισσότερα</string>
+    <string name="common_undo">Αναίρεση</string>
+    <string name="common_deleted">Διαγράφηκε</string>
+    <string name="common_paste">Επικόλληση</string>
+    <string name="settings_section_library">Βιβλιοθήκη</string>
+    <string name="settings_section_general">Γενικά</string>
+    <string name="settings_section_more">Περισσότερα</string>
+    <string name="subtitle_color_white">Λευκό</string>
+    <string name="subtitle_color_yellow">Κίτρινο</string>
+    <string name="subtitle_color_cyan">Κυανό</string>
+    <string name="subtitle_color_green">Πράσινο</string>
+    <string name="settings_more_playback_desc">Αποκωδικοποίηση, γλώσσα ήχου, αυτόματη αναπαραγωγή</string>
+    <string name="settings_more_subtitles_desc">Γλώσσα, μέγεθος, στυλ, χρώμα, γραμματοσειρά</string>
+    <string name="settings_more_parental_desc">Κλείδωμα PIN, αυτόματο κλείδωμα, κλειδωμένο περιεχόμενο</string>
+    <string name="settings_more_about_desc">Έκδοση, υποστήριξη, απόρρητο, νομικά</string>
+    <string name="favorites_removed">Αφαιρέθηκε από τα αγαπημένα</string>
+    <string name="search_recent">Πρόσφατες αναζητήσεις</string>
+    <string name="search_clear_recent">Διαγραφή πρόσφατων αναζητήσεων</string>
+    <string name="series_no_episodes">Αυτή η σειρά δεν έχει ακόμη επεισόδια.</string>
 </resources>

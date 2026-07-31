@@ -402,6 +402,8 @@
     <string name="home_no_playlist_body">Lägg till en spellista från sidofältet för att se dina kanaler, filmer och serier här.</string>
     <string name="home_section_continue_watching">Fortsätt titta</string>
     <string name="home_section_live_now">Live nu</string>
+    <string name="home_favorite_channels">Favoritkanaler</string>
+    <string name="home_favorite_titles">Favorittitlar</string>
     <string name="home_section_categories">Bläddra efter kategori</string>
     <string name="home_section_recommended">För dig</string>
     <string name="home_section_for_you">För dig</string>
@@ -537,6 +539,7 @@
     <string name="player_up_next_action">Nästa</string>
     <string name="player_open_guide">Öppna guide</string>
     <string name="player_live_badge">Live</string>
+    <string name="player_go_live">Gå till live</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Av</string>
@@ -692,6 +695,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Använd MAC-adressen som din leverantör registrerade för den här portalen.</string>
     <string name="onboarding_mac_invalid">Ange en fullständig MAC-adress, t.ex. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Ange en giltig adress, t.ex. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Ge spellistan ett namn</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Föredraget ljud</string>
     <string name="settings_preferred_audio_desc">Välj detta ljudspråk automatiskt när det är tillgängligt</string>
@@ -735,4 +740,25 @@
     <string name="support_dialog_body">Den byggs och underhålls av en enda person, på kvällar och helger. Ingen prenumeration, inga annonser, ingen spårning av vad du tittar på — bara en app som fungerar. Om den förtjänar sin plats på din tv håller en kopp kaffe den igång.</string>
     <string name="support_dialog_scan">Skanna för att öppna i telefonen</string>
     <string name="support_dialog_visit">Eller besök:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Detaljer</string>
+    <string name="common_more">Mer</string>
+    <string name="common_undo">Ångra</string>
+    <string name="common_deleted">Borttagen</string>
+    <string name="common_paste">Klistra in</string>
+    <string name="settings_section_library">Bibliotek</string>
+    <string name="settings_section_general">Allmänt</string>
+    <string name="settings_section_more">Mer</string>
+    <string name="subtitle_color_white">Vit</string>
+    <string name="subtitle_color_yellow">Gul</string>
+    <string name="subtitle_color_cyan">Cyan</string>
+    <string name="subtitle_color_green">Grön</string>
+    <string name="settings_more_playback_desc">Avkodning, ljudspråk, automatisk uppspelning</string>
+    <string name="settings_more_subtitles_desc">Språk, storlek, stil, färg, teckensnitt</string>
+    <string name="settings_more_parental_desc">PIN-lås, automatisk låsning, låst innehåll</string>
+    <string name="settings_more_about_desc">Version, support, integritet, juridisk information</string>
+    <string name="favorites_removed">Borttagen från favoriter</string>
+    <string name="search_recent">Senaste sökningar</string>
+    <string name="search_clear_recent">Rensa senaste sökningar</string>
+    <string name="series_no_episodes">Den här serien har inga avsnitt än.</string>
 </resources>

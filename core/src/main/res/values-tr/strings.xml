@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Kanallarınızı, filmlerinizi ve dizilerinizi burada görmek için kenar çubuğundan bir oynatma listesi ekleyin.</string>
     <string name="home_section_continue_watching">İzlemeye Devam Et</string>
     <string name="home_section_live_now">Şimdi canlı</string>
+    <string name="home_favorite_channels">Favori kanallar</string>
+    <string name="home_favorite_titles">Favori içerikler</string>
     <string name="home_section_categories">Kategoriye göre gözat</string>
     <string name="home_section_recommended">Sizin İçin</string>
     <string name="home_section_for_you">Sizin İçin</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">Sıradaki</string>
     <string name="player_open_guide">Rehberi aç</string>
     <string name="player_live_badge">Canlı</string>
+    <string name="player_go_live">Canlı yayına git</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Kapalı</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Sağlayıcınızın bu portal için kaydettiği MAC adresini kullanın.</string>
     <string name="onboarding_mac_invalid">Tam bir MAC adresi girin, örn. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Geçerli bir adres girin, ör. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Bu oynatma listesine bir ad verin</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Tercih edilen ses</string>
     <string name="settings_preferred_audio_desc">Mevcut olduğunda bu ses dilini otomatik seç</string>
@@ -711,4 +716,25 @@
     <string name="browse_category_search_empty">Eşleşen kategori yok</string>
     <string name="tile_action_resume">Devam et</string>
     <string name="tile_action_play_from_start">Baştan oynat</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Ayrıntılar</string>
+    <string name="common_more">Daha fazla</string>
+    <string name="common_undo">Geri al</string>
+    <string name="common_deleted">Silindi</string>
+    <string name="common_paste">Yapıştır</string>
+    <string name="settings_section_library">Kitaplık</string>
+    <string name="settings_section_general">Genel</string>
+    <string name="settings_section_more">Daha fazla</string>
+    <string name="subtitle_color_white">Beyaz</string>
+    <string name="subtitle_color_yellow">Sarı</string>
+    <string name="subtitle_color_cyan">Camgöbeği</string>
+    <string name="subtitle_color_green">Yeşil</string>
+    <string name="settings_more_playback_desc">Kod çözme, ses dili, otomatik oynatma</string>
+    <string name="settings_more_subtitles_desc">Dil, boyut, stil, renk, yazı tipi</string>
+    <string name="settings_more_parental_desc">PIN kilidi, otomatik kilitleme, kilitli içerik</string>
+    <string name="settings_more_about_desc">Sürüm, destek, gizlilik, yasal bilgiler</string>
+    <string name="favorites_removed">Favorilerden kaldırıldı</string>
+    <string name="search_recent">Son aramalar</string>
+    <string name="search_clear_recent">Son aramaları temizle</string>
+    <string name="series_no_episodes">Bu dizinin henüz bölümü yok.</string>
 </resources>

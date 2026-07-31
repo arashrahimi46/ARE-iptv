@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Přidejte playlist z bočního panelu, abyste zde viděli své kanály, filmy a seriály.</string>
     <string name="home_section_continue_watching">Pokračovat ve sledování</string>
     <string name="home_section_live_now">Právě běží</string>
+    <string name="home_favorite_channels">Oblíbené kanály</string>
+    <string name="home_favorite_titles">Oblíbené tituly</string>
     <string name="home_section_categories">Procházet podle kategorie</string>
     <string name="home_section_recommended">Pro vás</string>
     <string name="home_section_for_you">Pro vás</string>
@@ -536,6 +538,7 @@
     <string name="player_up_next_action">Následuje</string>
     <string name="player_open_guide">Otevřít program</string>
     <string name="player_live_badge">Živě</string>
+    <string name="player_go_live">Přejít na živě</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Vypnuto</string>
@@ -691,6 +694,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Použijte MAC adresu, kterou pro tento portál zaregistroval váš poskytovatel.</string>
     <string name="onboarding_mac_invalid">Zadejte úplnou MAC adresu, např. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Zadejte platnou adresu, např. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Pojmenujte tento playlist</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Preferovaný zvuk</string>
     <string name="settings_preferred_audio_desc">Automaticky vybrat tento jazyk zvuku, je-li dostupný</string>
@@ -734,4 +739,25 @@
     <string name="support_dialog_body">Vyvíjí a udržuje ji jeden člověk, po večerech a o víkendech. Žádné předplatné, žádné reklamy, žádné sledování toho, na co se díváte — prostě aplikace, která funguje. Pokud si své místo u vaší televize zaslouží, jedna káva pomůže, aby to tak zůstalo.</string>
     <string name="support_dialog_scan">Naskenujte a otevřete v telefonu</string>
     <string name="support_dialog_visit">Nebo přejděte na:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Podrobnosti</string>
+    <string name="common_more">Více</string>
+    <string name="common_undo">Zpět</string>
+    <string name="common_deleted">Smazáno</string>
+    <string name="common_paste">Vložit</string>
+    <string name="settings_section_library">Knihovna</string>
+    <string name="settings_section_general">Obecné</string>
+    <string name="settings_section_more">Více</string>
+    <string name="subtitle_color_white">Bílá</string>
+    <string name="subtitle_color_yellow">Žlutá</string>
+    <string name="subtitle_color_cyan">Azurová</string>
+    <string name="subtitle_color_green">Zelená</string>
+    <string name="settings_more_playback_desc">Dekódování, jazyk zvuku, automatické přehrávání</string>
+    <string name="settings_more_subtitles_desc">Jazyk, velikost, styl, barva, písmo</string>
+    <string name="settings_more_parental_desc">Zámek PIN, automatické uzamčení, uzamčený obsah</string>
+    <string name="settings_more_about_desc">Verze, podpora, soukromí, právní informace</string>
+    <string name="favorites_removed">Odebráno z oblíbených</string>
+    <string name="search_recent">Nedávná hledání</string>
+    <string name="search_clear_recent">Vymazat nedávná hledání</string>
+    <string name="series_no_episodes">Tento seriál zatím nemá žádné epizody.</string>
 </resources>

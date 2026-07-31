@@ -130,10 +130,9 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
 
-    // Came in with the components/data layer that moved out of the old shared :core: the Are*
-    // components still render text/glyphs via androidx.tv.material3, glass surfaces use `backdrop`,
-    // and the recording/import paths use DocumentFile.
-    implementation(libs.androidx.tv.material)
+    // Came in with the components/data layer that moved out of the old shared :core: glass surfaces
+    // use `backdrop`, and the recording/import paths use DocumentFile. androidx.tv.material is
+    // deliberately absent -- :mobile's Are* components are touch-first androidx.compose.material3.
     implementation(libs.backdrop)
     implementation(libs.androidx.documentfile)
 

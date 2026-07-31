@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.directStreamLabel
@@ -16,12 +18,17 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
+import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** What's being played -- mirrors [StreamKind] but also carries the row id so progress can be saved. */
@@ -38,9 +45,22 @@ sealed interface PlayerTarget {
 
 data class PlayerUiState(
     val title: String = "",
+    /** Series name for an episode, provider label for a direct stream; null when there is nothing to add. */
+    val subtitle: String? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
+    /** A live channel has no seekable timeline -- the HUD swaps the scrubber for a LIVE badge. */
+    val isLive: Boolean = false,
+    val playing: Boolean = false,
+    val buffering: Boolean = false,
+    /** Sibling episode ids, published only for [PlayerTarget.Episode]. */
+    val prevEpisodeId: Long? = null,
+    val nextEpisodeId: Long? = null,
+    /** Non-null while the autoplay-next countdown is running; seconds remaining. */
+    val upNextSeconds: Int? = null,
 )
+
+private const val COMPLETION_THRESHOLD = 0.95f
 
 class PlayerViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(application)
@@ -49,6 +69,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
     private val db = AppDatabase.get(application)
     private val recordingRepository = RecordingRepository(application)
     private val recordingStorage = RecordingStorage(application)
+    private val settings = UserSettings(application)
+
+    /** Outlives [viewModelScope] by design: the last progress write must survive the cancellation
+     * that tearing the screen down triggers, otherwise leaving mid-poll loses up to 5s. */
+    private val flushScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val player: ExoPlayer = ExoPlayer.Builder(application).build()
 
@@ -57,13 +82,42 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private var target: PlayerTarget? = null
     private var progressJob: Job? = null
+    private var countdownJob: Job? = null
+
+    /** (vodTitleId, seriesEpisodeId) of whatever progress is currently being tracked, or null. */
+    private var tracked: Pair<Long?, Long?>? = null
+
+    private val listener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            _state.update { it.copy(playing = isPlaying) }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            _state.update { it.copy(buffering = playbackState == Player.STATE_BUFFERING) }
+            if (playbackState == Player.STATE_ENDED) onPlaybackEnded()
+        }
+
+        override fun onPlayerError(error: PlaybackException) {
+            _state.update {
+                it.copy(isLoading = false, buffering = false, error = error.message ?: error.errorCodeName)
+            }
+        }
+    }
+
+    init {
+        player.addListener(listener)
+    }
 
     fun load(target: PlayerTarget) {
         if (this.target == target) return
         this.target = target
-        _state.value = PlayerUiState(isLoading = true)
+        countdownJob?.cancel()
+        progressJob?.cancel()
+        tracked = null
+        _state.value = PlayerUiState(isLoading = true, isLive = target is PlayerTarget.LiveChannel)
         viewModelScope.launch {
             try {
+                seedTrackPreferences()
                 // A direct stream or local recording plays straight from its own URI -- no
                 // source/credentials lookup, no resolver, no continue-watching tracking (matches
                 // :tv's LivePlayerViewModel, which doesn't track progress for either either).
@@ -82,6 +136,9 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     }
                     else -> Unit
                 }
+                var subtitle: String? = null
+                var prevId: Long? = null
+                var nextId: Long? = null
                 val (name, sourceId, kind, externalId, storedUrl, resumeMs, seriesNum) = when (target) {
                     is PlayerTarget.LiveChannel -> {
                         val channel = repository.channelsByIds(listOf(target.channelId)).firstOrNull()
@@ -99,6 +156,15 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                         val series = repository.titlesByIds(listOf(episode.seriesTitleId)).firstOrNull()
                             ?: error("Series not found")
                         val resume = continueWatchingRepo.resumePositionFor(vodTitleId = null, seriesEpisodeId = episode.id)
+                        subtitle = series.name
+                        // Siblings drive the HUD's prev/next and the autoplay-next chain. The DAO
+                        // returns them in season/episode order.
+                        val siblings = db.seriesEpisodeDao().episodeIdsForSeries(episode.seriesTitleId)
+                        val at = siblings.indexOf(episode.id)
+                        if (at >= 0) {
+                            prevId = siblings.getOrNull(at - 1)
+                            nextId = siblings.getOrNull(at + 1)
+                        }
                         PlayTarget(episode.name, series.sourceId, StreamKind.SERIES, episode.externalId, episode.streamUrl, resume, episode.episode)
                     }
                     is PlayerTarget.DirectStream, is PlayerTarget.Recording -> error("handled above")
@@ -108,7 +174,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                 player.setMediaItem(MediaItem.fromUri(url), resumeMs)
                 player.prepare()
                 player.playWhenReady = true
-                _state.value = PlayerUiState(title = name, isLoading = false)
+                _state.value = PlayerUiState(
+                    title = name,
+                    subtitle = subtitle,
+                    isLoading = false,
+                    isLive = target is PlayerTarget.LiveChannel,
+                    prevEpisodeId = prevId,
+                    nextEpisodeId = nextId,
+                )
                 when (target) {
                     is PlayerTarget.Movie -> startProgressTracking(vodTitleId = target.vodTitleId, seriesEpisodeId = null)
                     is PlayerTarget.Episode -> startProgressTracking(vodTitleId = null, seriesEpisodeId = target.episodeId)
@@ -120,6 +193,38 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /** Re-runs the current target from scratch -- the retry behind [PlayerUiState.error]. */
+    fun retry() {
+        val current = target ?: return
+        target = null
+        load(current)
+    }
+
+    /** Jump to a sibling episode. The same-target guard in [load] makes a repeat call idempotent. */
+    fun playEpisode(episodeId: Long) {
+        countdownJob?.cancel()
+        _state.update { it.copy(upNextSeconds = null) }
+        load(PlayerTarget.Episode(episodeId))
+    }
+
+    fun cancelUpNext() {
+        countdownJob?.cancel()
+        _state.update { it.copy(upNextSeconds = null) }
+    }
+
+    /** Makes the stored subtitle/audio language preferences actually do something: they are pushed
+     * into the selector before the media item is set, so the first render already honours them. */
+    private suspend fun seedTrackPreferences() {
+        val text = settings.subtitleLanguage.first()
+        val audio = settings.preferredAudioLanguage.first()
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+            .apply {
+                if (text.isNotBlank()) setPreferredTextLanguage(text)
+                if (audio.isNotBlank()) setPreferredAudioLanguage(audio)
+            }
+            .build()
+    }
+
     private fun playUri(uri: Uri, title: String) {
         player.setMediaItem(MediaItem.fromUri(uri))
         player.prepare()
@@ -129,22 +234,62 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun startProgressTracking(vodTitleId: Long?, seriesEpisodeId: Long?) {
         progressJob?.cancel()
+        tracked = vodTitleId to seriesEpisodeId
         progressJob = viewModelScope.launch {
             while (true) {
                 delay(5000)
                 val duration = player.duration
                 val position = player.currentPosition
                 if (duration > 0) {
-                    continueWatchingRepo.updateProgress(vodTitleId, seriesEpisodeId, position, duration)
+                    // Past the completion threshold the row leaves "Continue watching" instead of
+                    // being pinned at 99% forever.
+                    if (position.toFloat() / duration >= COMPLETION_THRESHOLD) {
+                        continueWatchingRepo.clear(vodTitleId, seriesEpisodeId)
+                    } else {
+                        continueWatchingRepo.updateProgress(vodTitleId, seriesEpisodeId, position, duration)
+                    }
                 }
             }
         }
     }
 
+    /** Autoplay-next: the phone replacement for :tv's D-pad chapter buttons. `0` seconds = off. */
+    private fun onPlaybackEnded() {
+        val next = _state.value.nextEpisodeId ?: return
+        if (target !is PlayerTarget.Episode) return
+        countdownJob?.cancel()
+        countdownJob = viewModelScope.launch {
+            val seconds = settings.autoplayNextDelaySeconds.first().toInt()
+            if (seconds <= 0) return@launch
+            for (remaining in seconds downTo 1) {
+                _state.update { it.copy(upNextSeconds = remaining) }
+                delay(1000)
+            }
+            _state.update { it.copy(upNextSeconds = null) }
+            playEpisode(next)
+        }
+    }
+
     override fun onCleared() {
         progressJob?.cancel()
+        countdownJob?.cancel()
+        flushProgress()
+        player.removeListener(listener)
         player.release()
         super.onCleared()
+    }
+
+    /** One last write before [ExoPlayer.release] wipes the clock. */
+    private fun flushProgress() {
+        val ids = tracked ?: return
+        val duration = player.duration
+        val position = player.currentPosition
+        if (duration <= 0) return
+        val finished = position.toFloat() / duration >= COMPLETION_THRESHOLD
+        flushScope.launch {
+            if (finished) continueWatchingRepo.clear(ids.first, ids.second)
+            else continueWatchingRepo.updateProgress(ids.first, ids.second, position, duration)
+        }
     }
 }
 

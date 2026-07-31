@@ -53,6 +53,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">همان آدرس MACی را وارد کنید که ارائه‌دهنده‌تان برای این پورتال ثبت کرده است.</string>
     <string name="onboarding_mac_invalid">آدرس MAC را کامل وارد کنید، مثلاً 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">نشانی معتبر وارد کنید، مثلاً portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">برای این فهرست پخش نامی بگذارید</string>
     <string name="onboarding_portal_name_label">نام پورتال</string>
     <string name="onboarding_portal_name_placeholder">اتاق نشیمن</string>
     <string name="onboarding_server_url_label">نشانی سرور</string>
@@ -465,6 +467,8 @@
     <string name="home_no_playlist_body">از نوار کناری یک پلی‌لیست اضافه کنید تا کانال‌ها، فیلم‌ها و سریال‌هایتان اینجا بیایند.</string>
     <string name="home_section_continue_watching">ادامهٔ تماشا</string>
     <string name="home_section_live_now">الان روی آنتن</string>
+    <string name="home_favorite_channels">کانال‌های مورد علاقه</string>
+    <string name="home_favorite_titles">عنوان‌های مورد علاقه</string>
     <string name="home_section_categories">مرور بر اساس دسته</string>
     <string name="home_section_recommended">برای شما</string>
     <string name="home_section_for_you">برای شما</string>
@@ -600,6 +604,7 @@
     <string name="player_up_next_action">بعدی</string>
     <string name="player_open_guide">راهنمای برنامه</string>
     <string name="player_live_badge">زنده</string>
+    <string name="player_go_live">رفتن به پخش زنده</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">خاموش</string>
@@ -731,4 +736,25 @@
     <string name="support_dialog_body">این برنامه را یک نفر می‌سازد و نگه می‌دارد؛ شب‌ها و آخر هفته‌ها. نه اشتراکی در کار است، نه تبلیغی، نه ردیابی آنچه تماشا می‌کنید — فقط برنامه‌ای که کارش را درست انجام می‌دهد. اگر جایش را روی تلویزیون شما باز کرده، یک قهوه سرِ پا نگهش می‌دارد.</string>
     <string name="support_dialog_scan">برای باز کردن روی گوشی، اسکن کنید</string>
     <string name="support_dialog_visit">یا به این نشانی بروید:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">جزئیات</string>
+    <string name="common_more">بیشتر</string>
+    <string name="common_undo">واگرد</string>
+    <string name="common_deleted">حذف شد</string>
+    <string name="common_paste">چسباندن</string>
+    <string name="settings_section_library">کتابخانه</string>
+    <string name="settings_section_general">عمومی</string>
+    <string name="settings_section_more">بیشتر</string>
+    <string name="subtitle_color_white">سفید</string>
+    <string name="subtitle_color_yellow">زرد</string>
+    <string name="subtitle_color_cyan">فیروزه‌ای</string>
+    <string name="subtitle_color_green">سبز</string>
+    <string name="settings_more_playback_desc">رمزگشایی، زبان صدا، پخش خودکار</string>
+    <string name="settings_more_subtitles_desc">زبان، اندازه، سبک، رنگ، قلم</string>
+    <string name="settings_more_parental_desc">قفل پین، قفل خودکار، محتوای قفل‌شده</string>
+    <string name="settings_more_about_desc">نسخه، پشتیبانی، حریم خصوصی، حقوقی</string>
+    <string name="favorites_removed">از علاقه‌مندی‌ها حذف شد</string>
+    <string name="search_recent">جست‌وجوهای اخیر</string>
+    <string name="search_clear_recent">پاک کردن جست‌وجوهای اخیر</string>
+    <string name="series_no_episodes">این سریال هنوز قسمتی ندارد.</string>
 </resources>

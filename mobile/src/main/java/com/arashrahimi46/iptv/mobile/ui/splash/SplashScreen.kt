@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.mobile.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 
@@ -35,12 +35,13 @@ import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 @Composable
 fun MobileSplashScreen() {
     val accent = AreIptvTheme.colors.accent
+    val bgBase = AreIptvTheme.colors.bgBase
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                drawRect(Color.Black)
+                drawRect(bgBase)
                 drawRect(
                     brush = Brush.radialGradient(
                         colors = listOf(accent.copy(alpha = 0.22f), Color.Transparent),
@@ -59,16 +60,16 @@ fun MobileSplashScreen() {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = stringResource(R.string.brand_name).take(1),
+                    text = stringResource(CoreR.string.brand_name).take(1),
                     style = AreIptvTheme.typography.h1,
                     color = AreIptvTheme.colors.accentFg,
                 )
             }
             Spacer(Modifier.height(20.dp))
             Text(
-                text = stringResource(R.string.brand_name),
+                text = stringResource(CoreR.string.brand_name),
                 style = AreIptvTheme.typography.h2,
-                color = Color.White,
+                color = AreIptvTheme.colors.textPrimary,
             )
         }
     }

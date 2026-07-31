@@ -400,6 +400,8 @@
     <string name="home_no_playlist_body">Добавьте плейлист из боковой панели, чтобы увидеть здесь свои каналы, фильмы и сериалы.</string>
     <string name="home_section_continue_watching">Продолжить просмотр</string>
     <string name="home_section_live_now">В эфире сейчас</string>
+    <string name="home_favorite_channels">Избранные каналы</string>
+    <string name="home_favorite_titles">Избранные фильмы и сериалы</string>
     <string name="home_section_categories">Просмотр по категориям</string>
     <string name="home_section_recommended">Для вас</string>
     <string name="home_section_for_you">Для вас</string>
@@ -535,6 +537,7 @@
     <string name="player_up_next_action">Далее</string>
     <string name="player_open_guide">Открыть телегид</string>
     <string name="player_live_badge">Прямой эфир</string>
+    <string name="player_go_live">Перейти к эфиру</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Выкл.</string>
@@ -690,6 +693,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Используйте MAC-адрес, зарегистрированный вашим провайдером для этого портала.</string>
     <string name="onboarding_mac_invalid">Введите полный MAC-адрес, напр. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Введите корректный адрес, например portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Укажите название плейлиста</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Предпочитаемый звук</string>
     <string name="settings_preferred_audio_desc">Автоматически выбирать этот язык звука, когда он доступен</string>
@@ -733,4 +738,25 @@
     <string name="support_dialog_body">Его создаёт и поддерживает один человек, по вечерам и по выходным. Без подписки, без рекламы, без слежки за тем, что вы смотрите — просто приложение, которое работает. Если оно заслужило место на вашем телевизоре, чашка кофе поможет мне его развивать.</string>
     <string name="support_dialog_scan">Отсканируйте, чтобы открыть на телефоне</string>
     <string name="support_dialog_visit">Или откройте:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Подробности</string>
+    <string name="common_more">Ещё</string>
+    <string name="common_undo">Отменить</string>
+    <string name="common_deleted">Удалено</string>
+    <string name="common_paste">Вставить</string>
+    <string name="settings_section_library">Библиотека</string>
+    <string name="settings_section_general">Общие</string>
+    <string name="settings_section_more">Ещё</string>
+    <string name="subtitle_color_white">Белый</string>
+    <string name="subtitle_color_yellow">Жёлтый</string>
+    <string name="subtitle_color_cyan">Голубой</string>
+    <string name="subtitle_color_green">Зелёный</string>
+    <string name="settings_more_playback_desc">Декодирование, язык звука, автовоспроизведение</string>
+    <string name="settings_more_subtitles_desc">Язык, размер, стиль, цвет, шрифт</string>
+    <string name="settings_more_parental_desc">PIN-код, автоблокировка, заблокированное содержимое</string>
+    <string name="settings_more_about_desc">Версия, поддержка, конфиденциальность, правовая информация</string>
+    <string name="favorites_removed">Удалено из избранного</string>
+    <string name="search_recent">Недавние запросы</string>
+    <string name="search_clear_recent">Очистить недавние запросы</string>
+    <string name="series_no_episodes">У этого сериала пока нет серий.</string>
 </resources>

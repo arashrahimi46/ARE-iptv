@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Voeg een afspeellijst toe via de zijbalk om hier je kanalen, films en series te zien.</string>
     <string name="home_section_continue_watching">Verder kijken</string>
     <string name="home_section_live_now">Nu live</string>
+    <string name="home_favorite_channels">Favoriete kanalen</string>
+    <string name="home_favorite_titles">Favoriete titels</string>
     <string name="home_section_categories">Bladeren op categorie</string>
     <string name="home_section_recommended">Voor jou</string>
     <string name="home_section_for_you">Voor jou</string>
@@ -532,6 +534,7 @@
     <string name="player_up_next_action">Hierna</string>
     <string name="player_open_guide">Gids openen</string>
     <string name="player_live_badge">Live</string>
+    <string name="player_go_live">Ga naar live</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Uit</string>
@@ -689,6 +692,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Gebruik het MAC-adres dat je provider voor deze portal heeft geregistreerd.</string>
     <string name="onboarding_mac_invalid">Voer een volledig MAC-adres in, bijv. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Voer een geldig adres in, bijv. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Geef deze afspeellijst een naam</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Voorkeursaudio</string>
     <string name="settings_preferred_audio_desc">Deze audiotaal automatisch kiezen indien beschikbaar</string>
@@ -732,4 +737,25 @@
     <string name="support_dialog_body">Deze app wordt gemaakt en onderhouden door één persoon, \'s avonds en in het weekend. Geen abonnement, geen advertenties, geen bijhouden van wat je kijkt — gewoon een app die werkt. Als hij zijn plek op je tv verdient, houdt een kop koffie hem draaiende.</string>
     <string name="support_dialog_scan">Scan om te openen op je telefoon</string>
     <string name="support_dialog_visit">Of ga naar:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Details</string>
+    <string name="common_more">Meer</string>
+    <string name="common_undo">Ongedaan maken</string>
+    <string name="common_deleted">Verwijderd</string>
+    <string name="common_paste">Plakken</string>
+    <string name="settings_section_library">Bibliotheek</string>
+    <string name="settings_section_general">Algemeen</string>
+    <string name="settings_section_more">Meer</string>
+    <string name="subtitle_color_white">Wit</string>
+    <string name="subtitle_color_yellow">Geel</string>
+    <string name="subtitle_color_cyan">Cyaan</string>
+    <string name="subtitle_color_green">Groen</string>
+    <string name="settings_more_playback_desc">Decodering, audiotaal, automatisch afspelen</string>
+    <string name="settings_more_subtitles_desc">Taal, grootte, stijl, kleur, lettertype</string>
+    <string name="settings_more_parental_desc">Pincodevergrendeling, automatisch vergrendelen, vergrendelde inhoud</string>
+    <string name="settings_more_about_desc">Versie, ondersteuning, privacy, juridisch</string>
+    <string name="favorites_removed">Verwijderd uit favorieten</string>
+    <string name="search_recent">Recente zoekopdrachten</string>
+    <string name="search_clear_recent">Recente zoekopdrachten wissen</string>
+    <string name="series_no_episodes">Deze serie heeft nog geen afleveringen.</string>
 </resources>

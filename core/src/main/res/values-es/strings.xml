@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Añade una lista desde la barra lateral para ver aquí tus canales, películas y series.</string>
     <string name="home_section_continue_watching">Continuar viendo</string>
     <string name="home_section_live_now">En vivo ahora</string>
+    <string name="home_favorite_channels">Canales favoritos</string>
+    <string name="home_favorite_titles">Títulos favoritos</string>
     <string name="home_section_categories">Explorar por categoría</string>
     <string name="home_section_recommended">Explorar películas y series</string>
     <string name="home_section_for_you">Para ti</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">A continuación</string>
     <string name="player_open_guide">Abrir guía</string>
     <string name="player_live_badge">En vivo</string>
+    <string name="player_go_live">Ver en vivo</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Desactivados</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Usa la dirección MAC que tu proveedor registró para este portal.</string>
     <string name="onboarding_mac_invalid">Introduce una dirección MAC completa, p. ej. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Introduce una dirección válida, p. ej. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Ponle un nombre a esta lista</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Audio preferido</string>
     <string name="settings_preferred_audio_desc">Seleccionar automáticamente este idioma de audio cuando esté disponible</string>
@@ -718,4 +723,25 @@
     <string name="tile_action_resume">Reanudar</string>
     <string name="tile_action_play_from_start">Reproducir desde el principio</string>
 
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Detalles</string>
+    <string name="common_more">Más</string>
+    <string name="common_undo">Deshacer</string>
+    <string name="common_deleted">Eliminado</string>
+    <string name="common_paste">Pegar</string>
+    <string name="settings_section_library">Biblioteca</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_section_more">Más</string>
+    <string name="subtitle_color_white">Blanco</string>
+    <string name="subtitle_color_yellow">Amarillo</string>
+    <string name="subtitle_color_cyan">Cian</string>
+    <string name="subtitle_color_green">Verde</string>
+    <string name="settings_more_playback_desc">Decodificación, idioma de audio, reproducción automática</string>
+    <string name="settings_more_subtitles_desc">Idioma, tamaño, estilo, color, fuente</string>
+    <string name="settings_more_parental_desc">Bloqueo con PIN, rebloqueo automático, contenido bloqueado</string>
+    <string name="settings_more_about_desc">Versión, soporte, privacidad, aspectos legales</string>
+    <string name="favorites_removed">Eliminado de favoritos</string>
+    <string name="search_recent">Búsquedas recientes</string>
+    <string name="search_clear_recent">Borrar búsquedas recientes</string>
+    <string name="series_no_episodes">Esta serie aún no tiene episodios.</string>
 </resources>

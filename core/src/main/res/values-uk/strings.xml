@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Додайте плейлист з бічної панелі, щоб побачити тут свої канали, фільми та серіали.</string>
     <string name="home_section_continue_watching">Продовжити перегляд</string>
     <string name="home_section_live_now">В ефірі зараз</string>
+    <string name="home_favorite_channels">Улюблені канали</string>
+    <string name="home_favorite_titles">Улюблені фільми та серіали</string>
     <string name="home_section_categories">Перегляд за категоріями</string>
     <string name="home_section_recommended">Для вас</string>
     <string name="home_section_for_you">Для вас</string>
@@ -536,6 +538,7 @@
     <string name="player_up_next_action">Далі</string>
     <string name="player_open_guide">Відкрити телегід</string>
     <string name="player_live_badge">Прямий ефір</string>
+    <string name="player_go_live">Перейти до ефіру</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Вимк.</string>
@@ -691,6 +694,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Використовуйте MAC-адресу, яку ваш провайдер зареєстрував для цього порталу.</string>
     <string name="onboarding_mac_invalid">Введіть повну MAC-адресу, напр. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Введіть коректну адресу, наприклад portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Вкажіть назву плейлиста</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Бажаний звук</string>
     <string name="settings_preferred_audio_desc">Автоматично вибирати цю мову звуку, коли доступна</string>
@@ -734,4 +739,25 @@
     <string name="support_dialog_body">Його створює й підтримує одна людина, вечорами та у вихідні. Без підписки, без реклами, без стеження за тим, що ви дивитеся — просто застосунок, який працює. Якщо він заслужив місце на вашому телевізорі, кава допоможе мені розвивати його далі.</string>
     <string name="support_dialog_scan">Відскануйте, щоб відкрити на телефоні</string>
     <string name="support_dialog_visit">Або відкрийте:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Деталі</string>
+    <string name="common_more">Більше</string>
+    <string name="common_undo">Скасувати</string>
+    <string name="common_deleted">Видалено</string>
+    <string name="common_paste">Вставити</string>
+    <string name="settings_section_library">Бібліотека</string>
+    <string name="settings_section_general">Загальні</string>
+    <string name="settings_section_more">Більше</string>
+    <string name="subtitle_color_white">Білий</string>
+    <string name="subtitle_color_yellow">Жовтий</string>
+    <string name="subtitle_color_cyan">Блакитний</string>
+    <string name="subtitle_color_green">Зелений</string>
+    <string name="settings_more_playback_desc">Декодування, мова звуку, автовідтворення</string>
+    <string name="settings_more_subtitles_desc">Мова, розмір, стиль, колір, шрифт</string>
+    <string name="settings_more_parental_desc">PIN-блокування, автоблокування, заблокований вміст</string>
+    <string name="settings_more_about_desc">Версія, підтримка, конфіденційність, правова інформація</string>
+    <string name="favorites_removed">Вилучено з обраного</string>
+    <string name="search_recent">Нещодавні запити</string>
+    <string name="search_clear_recent">Очистити нещодавні запити</string>
+    <string name="series_no_episodes">У цього серіалу поки немає серій.</string>
 </resources>

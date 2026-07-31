@@ -43,8 +43,9 @@ enum class ControlTone {
 }
 
 /**
- * The resolved appearance of one control. Every field maps 1:1 onto a [TvFocusable] parameter, so a
- * call site is `val skin = controlSkin(...)` followed by passing the fields through.
+ * The resolved appearance of one control. Every field maps 1:1 onto a
+ * [com.arashrahimi46.iptv.mobile.ui.components.areTouch] parameter, so a call site is
+ * `val skin = controlSkin(...)` followed by passing the fields through.
  */
 @Immutable
 data class ControlSkin(
@@ -62,7 +63,7 @@ data class ControlSkin(
  * call sites must not re-derive fills locally.
  *
  * @param selected a *state* (this tab/chip is current), which renders as the glass lens (§6.2).
- *   Distinct from focus, which [TvFocusable] draws on top and this function never touches.
+ *   Distinct from the transient press feedback `areTouch` draws on top, which this never touches.
  */
 @Composable
 fun controlSkin(

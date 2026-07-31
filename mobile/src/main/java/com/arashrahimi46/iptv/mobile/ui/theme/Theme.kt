@@ -11,23 +11,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
-import com.arashrahimi46.iptv.ui.interaction.AreInteractiveSurface
 import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvDarkColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvLightColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvMotionDefault
+import com.arashrahimi46.iptv.ui.theme.AreIptvMotionReduced
 import com.arashrahimi46.iptv.ui.theme.AreIptvRadiusDefault
 import com.arashrahimi46.iptv.ui.theme.AreIptvSpacingDefault
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork as CoreLocalAmbientArtwork
-import com.arashrahimi46.iptv.ui.theme.LocalAreInteractiveBinding
+import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
+import com.arashrahimi46.iptv.ui.theme.LocalReducedMotion
+import com.arashrahimi46.iptv.ui.theme.rememberGlassTier
+import com.arashrahimi46.iptv.ui.theme.withBlurredBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors as CoreLocalAreIptvColors
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion as CoreLocalAreIptvMotion
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvRadius as CoreLocalAreIptvRadius
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvSpacing as CoreLocalAreIptvSpacing
 import com.arashrahimi46.iptv.ui.theme.LocalAreIptvTypography as CoreLocalAreIptvTypography
-import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.LocalMinTouchTarget as CoreLocalMinTouchTarget
 import com.arashrahimi46.iptv.ui.theme.LocalThemeIsDark as CoreLocalThemeIsDark
 import com.arashrahimi46.iptv.ui.theme.AreIptvTypography as CoreAreIptvTypography
 import com.arashrahimi46.iptv.ui.theme.DisplayFontFamily as CoreDisplayFontFamily
@@ -40,10 +40,11 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
 /**
- * Phone theming, wired to the SAME design-system tokens as :tv
- * ([com.arashrahimi46.iptv.ui.theme.AreIptvColors]/[AreIptvTypography]) so the two apps read as one
- * product, on top of standard `androidx.compose.material3` (NOT `androidx.tv.material3` -- :tv's
- * [com.arashrahimi46.iptv.ui.theme.AreIptvTheme] is D-pad/TV-material specific and wrong for touch).
+ * Phone theming, wired to this module's own copy of the design-system tokens
+ * ([com.arashrahimi46.iptv.ui.theme.AreIptvColors]/[AreIptvTypography]) -- the same token *values*
+ * :tv uses, so the two apps read as one product, but a separate source tree (:core is
+ * resources-only; only strings are shared). Built on standard `androidx.compose.material3`, NEVER
+ * `androidx.tv.material3`, which is D-pad specific and wrong for touch.
  */
 val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
 val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
@@ -59,9 +60,15 @@ object AreIptvMobileTheme {
 @Composable
 fun AreIptvMobileTheme(
     isDark: Boolean = isSystemInDarkTheme(),
+    reducedMotion: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colors = if (isDark) AreIptvDarkColors else AreIptvLightColors
+    val base = if (isDark) AreIptvDarkColors else AreIptvLightColors
+    // Glass V2 §7/§8: the fill alphas only get lighter where a real blurred backdrop exists to carry
+    // legibility. Tier C keeps the known-good V1 numbers, so it is the safe fallback.
+    val tier = rememberGlassTier()
+    val colors = if (tier.hasBackdropBlur) base.withBlurredBackdrop() else base
+    val motion = if (reducedMotion) AreIptvMotionReduced else AreIptvMotionDefault
     val scheme = if (isDark) {
         darkColorScheme(
             primary = colors.accent,
@@ -108,36 +115,33 @@ fun AreIptvMobileTheme(
     CompositionLocalProvider(
         LocalAreIptvColors provides colors,
         LocalAreIptvTypography provides typography,
-        LocalAreInteractiveBinding provides mobileAreInteractiveBinding,
-        // Bridges :core's OWN CompositionLocals (a distinct set from the two above, despite the
-        // matching names) so components imported straight from :core -- AreButton, AreTabs,
-        // controlSkin, glassSurface -- resolve the real per-session theme instead of silently
-        // falling back to core Theme.kt's defaults (AreIptvDarkColors, always, regardless of
-        // [isDark]). Typography can't reuse the `typography` val above -- :mobile's AreIptvTypography
-        // (Type.kt in this package) is a deliberately separate data class from :core's identically
-        // named one (own duplicated font families), so :core components need :core's own instance,
-        // picked by the same RTL rule. :mobile has no per-platform spacing/radius/motion of its own,
-        // so those three just get :core's shared default token sets -- the same objects :tv uses at rest.
+        // Bridges the CompositionLocals declared in `com.arashrahimi46.iptv.ui.theme` -- the glass
+        // layer this module owns a copy of -- which are a distinct set from the two above despite
+        // the matching names. (The `Core*` import aliases are legacy naming from when that package
+        // lived in :core; :core is resources-only now.) Without this, everything built on that
+        // layer -- glassSurface, controlSkin, the Are* tiles -- would silently fall back to its
+        // Theme.kt defaults (AreIptvDarkColors, always, regardless of [isDark]). Typography can't
+        // reuse the `typography` val above: that package declares its own AreIptvTypography data
+        // class, separate from this one, so it needs an instance of its own type picked by the same
+        // RTL rule. There is no phone-specific spacing/radius/motion, so those three take the
+        // shared default token sets.
         CoreLocalAreIptvColors provides colors,
-        // Step 6: :core's own AreIptvTypographyDefault/Vazir are :tv-scale (hero 64sp/display 44sp/
-        // h1 34sp/...) -- feeding those to :core components (ArePosterTile, AreButton, AreChip, the
-        // whole Milestone A/B surface) would render TV-sized headings on a handset. Build a
-        // phone-scale instance of :core's OWN AreIptvTypography type instead (same role names/
-        // weights, :core's font families since these ARE :core components), using the same sp
-        // values as :mobile's own Type.kt phone scale so the two stay in lockstep.
+        // Step 6: the glass layer's own AreIptvTypographyDefault/Vazir are TV-scale (hero 64sp/
+        // display 44sp/h1 34sp/...) -- feeding those to the components built on it would render
+        // TV-sized headings on a handset. Build a phone-scale instance of ITS AreIptvTypography
+        // type instead (same role names/weights, its font families since these are its components),
+        // using the same sp values as this package's Type.kt phone scale so the two stay in step.
         CoreLocalAreIptvTypography provides (
             if (LocalLayoutDirection.current == LayoutDirection.Rtl) corePhoneTypographyVazir
             else corePhoneTypographyDefault
         ),
         CoreLocalAreIptvSpacing provides AreIptvSpacingDefault,
         CoreLocalAreIptvRadius provides AreIptvRadiusDefault,
-        CoreLocalAreIptvMotion provides AreIptvMotionDefault,
+        CoreLocalAreIptvMotion provides motion,
+        LocalReducedMotion provides reducedMotion,
+        LocalGlassTier provides tier,
         CoreLocalThemeIsDark provides isDark,
-        // Touch accessibility minimum. :tv leaves this 0 -- see LocalMinTouchTarget: on TV the focus
-        // ring is drawn at the focusable's bounds, so inflating them would ring a larger box than
-        // the control. A finger needs the 48dp; a D-pad does not.
-        CoreLocalMinTouchTarget provides 48.dp,
-        // :mobile has no ambient-backdrop concept (that's :tv's AreIptvAppShell) -- ArePosterTile/
+        // :mobile has no ambient-backdrop concept (that's :tv's own AreIptvAppShell) -- ArePosterTile/
         // AreChannelTile still read LocalAmbientArtwork.current unconditionally (no guard at the
         // call site), and it has no default, so any screen rendering those tiles without this
         // crashed with "LocalAmbientArtwork not provided". A static, never-updated null state is
@@ -151,46 +155,9 @@ fun AreIptvMobileTheme(
 }
 
 /**
- * [LocalAreInteractiveBinding] implementation for `:mobile`: a plain passthrough to
- * [AreInteractiveSurface] -- a touch surface never registers `.focusable()`, so `focused` reads
- * false naturally off [interactionSource] with no extra wiring needed, matching what
- * `AreTouchable` already assumed before this binding existed.
- */
-private val mobileAreInteractiveBinding: AreInteractiveBinding = { onClick,
-    modifier,
-    interactionSource,
-    shape,
-    backgroundColor,
-    backgroundBrush,
-    shadowElevation,
-    borderColor,
-    borderBrush,
-    enabled,
-    onLongClick,
-    disableScale,
-    content,
-    ->
-    AreInteractiveSurface(
-        onClick = onClick,
-        modifier = modifier,
-        interactionSource = interactionSource,
-        shape = shape,
-        backgroundColor = backgroundColor,
-        backgroundBrush = backgroundBrush,
-        shadowElevation = shadowElevation,
-        borderColor = borderColor,
-        borderBrush = borderBrush,
-        enabled = enabled,
-        onLongClick = onLongClick,
-        disableScale = disableScale,
-        content = content,
-    )
-}
-
-/**
- * Phone-scale instances of :core's OWN [CoreAreIptvTypography] type -- same sp values as
+ * Phone-scale instances of the glass layer's OWN [CoreAreIptvTypography] type -- same sp values as
  * [AreIptvTypographyDefault]/[AreIptvTypographyVazir] above (this package's Type.kt), just built
- * against :core's font families since these feed :core components directly via
+ * against that package's font families since they feed its components directly via
  * [CoreLocalAreIptvTypography]. Kept in lockstep by construction: both read the same
  * Phone*Sp/LineHeight* constants from Type.kt.
  */

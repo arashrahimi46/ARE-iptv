@@ -384,6 +384,8 @@
     <string name="home_no_playlist_body">Добавете плейлист от страничната лента, за да видите каналите, филмите и сериалите си тук.</string>
     <string name="home_section_continue_watching">Продължете гледането</string>
     <string name="home_section_live_now">На живо сега</string>
+    <string name="home_favorite_channels">Любими канали</string>
+    <string name="home_favorite_titles">Любими заглавия</string>
     <string name="home_section_categories">Разгледай по категория</string>
     <string name="home_section_recommended">За вас</string>
     <string name="home_section_for_you">За вас</string>
@@ -519,6 +521,7 @@
     <string name="player_up_next_action">Следва</string>
     <string name="player_open_guide">Отвори програмата</string>
     <string name="player_live_badge">На живо</string>
+    <string name="player_go_live">Гледай на живо</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Изключено</string>
@@ -674,6 +677,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Използвайте MAC адреса, който доставчикът ви е регистрирал за този портал.</string>
     <string name="onboarding_mac_invalid">Въведете пълен MAC адрес, напр. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Въведете валиден адрес, напр. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Дайте име на този плейлист</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Предпочитан звук</string>
     <string name="settings_preferred_audio_desc">Автоматично да се избере този език на звука, когато е наличен</string>
@@ -717,4 +722,25 @@
     <string name="support_dialog_body">Създава го и го поддържа един човек, вечер и през почивните дни. Без абонамент, без реклами, без следене какво гледате — просто приложение, което работи. Ако си е заслужило мястото на телевизора ви, едно кафе помага нещата да продължат.</string>
     <string name="support_dialog_scan">Сканирайте, за да го отворите на телефона си</string>
     <string name="support_dialog_visit">Или отворете:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Подробности</string>
+    <string name="common_more">Още</string>
+    <string name="common_undo">Отмяна</string>
+    <string name="common_deleted">Изтрито</string>
+    <string name="common_paste">Постави</string>
+    <string name="settings_section_library">Библиотека</string>
+    <string name="settings_section_general">Общи</string>
+    <string name="settings_section_more">Още</string>
+    <string name="subtitle_color_white">Бяло</string>
+    <string name="subtitle_color_yellow">Жълто</string>
+    <string name="subtitle_color_cyan">Циан</string>
+    <string name="subtitle_color_green">Зелено</string>
+    <string name="settings_more_playback_desc">Декодиране, език на звука, автоматично възпроизвеждане</string>
+    <string name="settings_more_subtitles_desc">Език, размер, стил, цвят, шрифт</string>
+    <string name="settings_more_parental_desc">PIN заключване, автоматично заключване, заключено съдържание</string>
+    <string name="settings_more_about_desc">Версия, поддръжка, поверителност, правна информация</string>
+    <string name="favorites_removed">Премахнато от любими</string>
+    <string name="search_recent">Скорошни търсения</string>
+    <string name="search_clear_recent">Изчистване на скорошните търсения</string>
+    <string name="series_no_episodes">Този сериал още няма епизоди.</string>
 </resources>

@@ -401,6 +401,8 @@
     <string name="home_no_playlist_body">Fügen Sie über die Seitenleiste eine Playlist hinzu, um hier Ihre Sender, Filme und Serien zu sehen.</string>
     <string name="home_section_continue_watching">Weiterschauen</string>
     <string name="home_section_live_now">Jetzt live</string>
+    <string name="home_favorite_channels">Favorisierte Sender</string>
+    <string name="home_favorite_titles">Favorisierte Titel</string>
     <string name="home_section_categories">Nach Kategorie durchsuchen</string>
     <string name="home_section_recommended">Für Sie</string>
     <string name="home_section_for_you">Für Sie</string>
@@ -536,6 +538,7 @@
     <string name="player_up_next_action">Als Nächstes</string>
     <string name="player_open_guide">Programm öffnen</string>
     <string name="player_live_badge">Live</string>
+    <string name="player_go_live">Zu Live springen</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Aus</string>
@@ -691,6 +694,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Verwenden Sie die MAC-Adresse, die Ihr Anbieter für dieses Portal registriert hat.</string>
     <string name="onboarding_mac_invalid">Vollständige MAC-Adresse eingeben, z. B. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Gib eine gültige Adresse ein, z. B. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Gib dieser Playlist einen Namen</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Bevorzugtes Audio</string>
     <string name="settings_preferred_audio_desc">Diese Audiosprache automatisch wählen, wenn verfügbar</string>
@@ -734,4 +739,25 @@
     <string name="support_dialog_body">Entwickelt und gepflegt von einer einzelnen Person, abends und am Wochenende. Kein Abo, keine Werbung, keine Aufzeichnung dessen, was Sie schauen — einfach eine App, die funktioniert. Wenn sie bei Ihnen einen festen Platz hat, freue ich mich über einen Kaffee.</string>
     <string name="support_dialog_scan">Scannen, um auf dem Handy zu öffnen</string>
     <string name="support_dialog_visit">Oder besuchen Sie:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Details</string>
+    <string name="common_more">Mehr</string>
+    <string name="common_undo">Rückgängig</string>
+    <string name="common_deleted">Gelöscht</string>
+    <string name="common_paste">Einfügen</string>
+    <string name="settings_section_library">Bibliothek</string>
+    <string name="settings_section_general">Allgemein</string>
+    <string name="settings_section_more">Mehr</string>
+    <string name="subtitle_color_white">Weiß</string>
+    <string name="subtitle_color_yellow">Gelb</string>
+    <string name="subtitle_color_cyan">Cyan</string>
+    <string name="subtitle_color_green">Grün</string>
+    <string name="settings_more_playback_desc">Dekodierung, Audiosprache, Autoplay</string>
+    <string name="settings_more_subtitles_desc">Sprache, Größe, Stil, Farbe, Schriftart</string>
+    <string name="settings_more_parental_desc">PIN-Sperre, automatische Sperre, gesperrte Inhalte</string>
+    <string name="settings_more_about_desc">Version, Support, Datenschutz, Rechtliches</string>
+    <string name="favorites_removed">Aus Favoriten entfernt</string>
+    <string name="search_recent">Letzte Suchanfragen</string>
+    <string name="search_clear_recent">Letzte Suchanfragen löschen</string>
+    <string name="series_no_episodes">Diese Serie hat noch keine Folgen.</string>
 </resources>

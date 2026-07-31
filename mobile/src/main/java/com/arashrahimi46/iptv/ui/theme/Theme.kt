@@ -5,12 +5,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.darkColorScheme
-import androidx.tv.material3.lightColorScheme
-import com.arashrahimi46.iptv.ui.interaction.AreInteractiveBinding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 
 val LocalAreIptvColors = staticCompositionLocalOf { AreIptvDarkColors }
 val LocalAreIptvTypography = staticCompositionLocalOf { AreIptvTypographyDefault }
@@ -20,27 +17,6 @@ val LocalAreIptvRadius = staticCompositionLocalOf { AreIptvRadiusDefault }
  * (via [AreIptvTheme.isDark]) instead of the stored theme pref when a component needs to know which
  * mode is actually on screen (e.g. the per-mode accent picker). */
 val LocalThemeIsDark = staticCompositionLocalOf { true }
-
-/**
- * Minimum hit-target a control must expand to, or [androidx.compose.ui.unit.Dp.Unspecified]-like
- * 0.dp for "don't expand". `:mobile` provides 48.dp (the touch accessibility minimum); `:tv` leaves
- * it at 0.dp because a D-pad has no fat finger AND -- the reason this is a token rather than an
- * unconditional `defaultMinSize` -- the focus ring is drawn at the focusable's bounds, so inflating
- * those bounds on TV draws the ring 6dp larger than the control it is supposed to trace. That is a
- * visible halo-with-a-gap around every focused chip, which is how this regressed.
- */
-val LocalMinTouchTarget = staticCompositionLocalOf { 0.dp }
-
-/**
- * Platform rendering binding for [com.arashrahimi46.iptv.ui.interaction.AreInteractive] -- `:tv`
- * provides one that layers D-pad focus registration + the accent focus ring on top of the shared
- * glass rendering; `:mobile` provides the plain touch rendering. No default: a theme root that
- * forgets to provide this must fail composition loudly (every focusable in the app would otherwise
- * silently lose its focus indicator) rather than degrade quietly.
- */
-val LocalAreInteractiveBinding = staticCompositionLocalOf<AreInteractiveBinding> {
-    error("LocalAreInteractiveBinding has no value -- provide it at the theme composition root (AreIptvTheme for :tv, AreIptvMobileTheme for :mobile) before rendering any AreInteractive-based component.")
-}
 
 /**
  * Design-system token accessors, analogous to `MaterialTheme.colorScheme` /
@@ -69,9 +45,8 @@ object AreIptvTheme {
 }
 
 /**
- * Root theme composable for the ARE iptv app. Wraps `androidx.tv.material3.MaterialTheme`
- * for base TV component compatibility (Card, Button, etc. focus/scale defaults) while
- * exposing the custom design-token layer via [AreIptvTheme].
+ * Root theme composable for the ARE iptv app. Wraps `androidx.compose.material3.MaterialTheme`
+ * while exposing the custom design-token layer via [AreIptvTheme].
  *
  * @param isDark false switches every color token to the light ramp (single theme
  *   object, not a build variant — see tokens/colors.css `[data-theme="light"]`).
@@ -84,7 +59,6 @@ object AreIptvTheme {
  *   since Phase 4 (via [com.arashrahimi46.iptv.data.settings.UserSettings.isReducedMotion],
  *   read at the composition root in MainActivity) -- this doc-comment was stale.
  */
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun AreIptvTheme(
     isDark: Boolean = true,
@@ -107,7 +81,7 @@ fun AreIptvTheme(
         AreIptvTypographyDefault
     }
 
-    val tvColorScheme = if (isDark) {
+    val colorScheme = if (isDark) {
         darkColorScheme(
             primary = colors.accent,
             onPrimary = colors.accentFg,
@@ -119,8 +93,8 @@ fun AreIptvTheme(
             onSurface = colors.textPrimary,
             surfaceVariant = colors.surface2,
             onSurfaceVariant = colors.textSecondary,
-            border = colors.borderDefault,
-            borderVariant = colors.borderSubtle,
+            outline = colors.borderDefault,
+            outlineVariant = colors.borderSubtle,
             error = colors.danger,
         )
     } else {
@@ -135,8 +109,8 @@ fun AreIptvTheme(
             onSurface = colors.textPrimary,
             surfaceVariant = colors.surface2,
             onSurfaceVariant = colors.textSecondary,
-            border = colors.borderDefault,
-            borderVariant = colors.borderSubtle,
+            outline = colors.borderDefault,
+            outlineVariant = colors.borderSubtle,
             error = colors.danger,
         )
     }
@@ -152,7 +126,7 @@ fun AreIptvTheme(
         LocalGlassTier provides tier,
     ) {
         MaterialTheme(
-            colorScheme = tvColorScheme,
+            colorScheme = colorScheme,
             content = content,
         )
     }

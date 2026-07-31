@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Adicione uma lista a partir da barra lateral para ver aqui os seus canais, filmes e séries.</string>
     <string name="home_section_continue_watching">Continuar a ver</string>
     <string name="home_section_live_now">Em direto agora</string>
+    <string name="home_favorite_channels">Canais favoritos</string>
+    <string name="home_favorite_titles">Títulos favoritos</string>
     <string name="home_section_categories">Explorar por categoria</string>
     <string name="home_section_recommended">Para si</string>
     <string name="home_section_for_you">Para si</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">A seguir</string>
     <string name="player_open_guide">Abrir guia</string>
     <string name="player_live_badge">Direto</string>
+    <string name="player_go_live">Ir para o direto</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Desativadas</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Utilize o endereço MAC que o seu fornecedor registou para este portal.</string>
     <string name="onboarding_mac_invalid">Introduza um endereço MAC completo, ex.: 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Introduza um endereço válido, p. ex. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Dê um nome a esta playlist</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Áudio preferido</string>
     <string name="settings_preferred_audio_desc">Selecionar automaticamente este idioma de áudio quando disponível</string>
@@ -718,4 +723,25 @@
     <string name="tile_action_resume">Retomar</string>
     <string name="tile_action_play_from_start">Reproduzir desde o início</string>
 
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Detalhes</string>
+    <string name="common_more">Mais</string>
+    <string name="common_undo">Anular</string>
+    <string name="common_deleted">Eliminado</string>
+    <string name="common_paste">Colar</string>
+    <string name="settings_section_library">Biblioteca</string>
+    <string name="settings_section_general">Geral</string>
+    <string name="settings_section_more">Mais</string>
+    <string name="subtitle_color_white">Branco</string>
+    <string name="subtitle_color_yellow">Amarelo</string>
+    <string name="subtitle_color_cyan">Ciano</string>
+    <string name="subtitle_color_green">Verde</string>
+    <string name="settings_more_playback_desc">Descodificação, idioma do áudio, reprodução automática</string>
+    <string name="settings_more_subtitles_desc">Idioma, tamanho, estilo, cor, tipo de letra</string>
+    <string name="settings_more_parental_desc">Bloqueio por PIN, rebloqueio automático, conteúdo bloqueado</string>
+    <string name="settings_more_about_desc">Versão, apoio, privacidade, jurídico</string>
+    <string name="favorites_removed">Removido dos favoritos</string>
+    <string name="search_recent">Pesquisas recentes</string>
+    <string name="search_clear_recent">Limpar pesquisas recentes</string>
+    <string name="series_no_episodes">Esta série ainda não tem episódios.</string>
 </resources>

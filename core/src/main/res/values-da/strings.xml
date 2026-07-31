@@ -384,6 +384,8 @@
     <string name="home_no_playlist_body">Tilføj en playliste fra sidebjælken for at se dine kanaler, film og serier her.</string>
     <string name="home_section_continue_watching">Fortsæt med at se</string>
     <string name="home_section_live_now">Live nu</string>
+    <string name="home_favorite_channels">Foretrukne kanaler</string>
+    <string name="home_favorite_titles">Foretrukne titler</string>
     <string name="home_section_categories">Gennemse efter kategori</string>
     <string name="home_section_recommended">Til dig</string>
     <string name="home_section_for_you">Til dig</string>
@@ -516,6 +518,7 @@
     <string name="player_up_next_action">Næste</string>
     <string name="player_open_guide">Åbn guide</string>
     <string name="player_live_badge">Live</string>
+    <string name="player_go_live">Gå til live</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Fra</string>
@@ -673,6 +676,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Brug den MAC-adresse, som din udbyder har registreret til denne portal.</string>
     <string name="onboarding_mac_invalid">Indtast en fuld MAC-adresse, f.eks. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Indtast en gyldig adresse, f.eks. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Giv denne playliste et navn</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Foretrukken lyd</string>
     <string name="settings_preferred_audio_desc">Vælg automatisk dette lydsprog, når det er tilgængeligt</string>
@@ -716,4 +721,25 @@
     <string name="support_dialog_body">Den er bygget og vedligeholdt af én person, om aftenen og i weekenden. Intet abonnement, ingen reklamer, ingen sporing af, hvad du ser — bare en app, der virker. Hvis den fortjener sin plads på dit tv, holder en kop kaffe den i gang.</string>
     <string name="support_dialog_scan">Scan for at åbne på din telefon</string>
     <string name="support_dialog_visit">Eller besøg:</string>
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Detaljer</string>
+    <string name="common_more">Mere</string>
+    <string name="common_undo">Fortryd</string>
+    <string name="common_deleted">Slettet</string>
+    <string name="common_paste">Indsæt</string>
+    <string name="settings_section_library">Bibliotek</string>
+    <string name="settings_section_general">Generelt</string>
+    <string name="settings_section_more">Mere</string>
+    <string name="subtitle_color_white">Hvid</string>
+    <string name="subtitle_color_yellow">Gul</string>
+    <string name="subtitle_color_cyan">Cyan</string>
+    <string name="subtitle_color_green">Grøn</string>
+    <string name="settings_more_playback_desc">Afkodning, lydsprog, automatisk afspilning</string>
+    <string name="settings_more_subtitles_desc">Sprog, størrelse, stil, farve, skrifttype</string>
+    <string name="settings_more_parental_desc">PIN-lås, automatisk genlåsning, låst indhold</string>
+    <string name="settings_more_about_desc">Version, support, privatliv, juridisk</string>
+    <string name="favorites_removed">Fjernet fra favoritter</string>
+    <string name="search_recent">Seneste søgninger</string>
+    <string name="search_clear_recent">Ryd seneste søgninger</string>
+    <string name="series_no_episodes">Denne serie har ingen afsnit endnu.</string>
 </resources>

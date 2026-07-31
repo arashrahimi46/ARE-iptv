@@ -10,7 +10,7 @@ import com.arashrahimi46.iptv.data.recording.RecordingStorage
 import com.arashrahimi46.iptv.data.recording.RecordingSupervisor
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
 import com.arashrahimi46.iptv.data.settings.UserSettings
-import com.arashrahimi46.iptv.mobile.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -76,20 +76,20 @@ class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
         val location = treeUri?.let { storage.driveLabel(it) }
         val date = DATE_FORMAT.format(Instant.ofEpochMilli(startedAtMs).atZone(ZoneId.systemDefault()))
         val durationText = durationMs?.takeIf { it > 0 }?.let { formatDuration(it) }?.let { d ->
-            if (status == RecordingStatus.INTERRUPTED) ctx.getString(R.string.recordings_duration_approx, d) else d
+            if (status == RecordingStatus.INTERRUPTED) ctx.getString(CoreR.string.recordings_duration_approx, d) else d
         }
         val sizeText = formatSize(sizeBytes)
-        val partsText = if (parts > 1) ctx.getString(R.string.recordings_parts, parts) else null
+        val partsText = if (parts > 1) ctx.getString(CoreR.string.recordings_parts, parts) else null
         val metaLabel = listOfNotNull(date, durationText, sizeText, location, partsText).joinToString("  ·  ")
         val statusLabel = when (status) {
-            RecordingStatus.INTERRUPTED -> statusReason?.let { localizeReason(ctx, it) } ?: ctx.getString(R.string.recordings_status_interrupted)
-            RecordingStatus.FAILED -> ctx.getString(R.string.recordings_status_failed)
-            RecordingStatus.MISSING -> ctx.getString(R.string.recordings_missing)
+            RecordingStatus.INTERRUPTED -> statusReason?.let { localizeReason(ctx, it) } ?: ctx.getString(CoreR.string.recordings_status_interrupted)
+            RecordingStatus.FAILED -> ctx.getString(CoreR.string.recordings_status_failed)
+            RecordingStatus.MISSING -> ctx.getString(CoreR.string.recordings_missing)
             else -> null
         }
         val reconnectMessage = if (status == RecordingStatus.UNAVAILABLE) {
-            location?.let { ctx.getString(R.string.recordings_unavailable_reconnect, it) }
-                ?: ctx.getString(R.string.recordings_unavailable_generic)
+            location?.let { ctx.getString(CoreR.string.recordings_unavailable_reconnect, it) }
+                ?: ctx.getString(CoreR.string.recordings_unavailable_generic)
         } else {
             null
         }
@@ -112,10 +112,10 @@ class RecordingsViewModel(app: Application) : AndroidViewModel(app) {
             DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault())
 
         fun localizeReason(ctx: Application, reason: String): String = when (reason) {
-            RecordingSupervisor.STREAM_LOST -> ctx.getString(R.string.recording_reason_stream_lost)
-            RecordingSupervisor.DISK_FULL -> ctx.getString(R.string.recording_reason_disk_full)
-            RecordingSupervisor.DRIVE_REMOVED -> ctx.getString(R.string.recording_reason_drive_removed)
-            RecordingSupervisor.SLOW_DISK -> ctx.getString(R.string.recording_reason_slow_disk)
+            RecordingSupervisor.STREAM_LOST -> ctx.getString(CoreR.string.recording_reason_stream_lost)
+            RecordingSupervisor.DISK_FULL -> ctx.getString(CoreR.string.recording_reason_disk_full)
+            RecordingSupervisor.DRIVE_REMOVED -> ctx.getString(CoreR.string.recording_reason_drive_removed)
+            RecordingSupervisor.SLOW_DISK -> ctx.getString(CoreR.string.recording_reason_slow_disk)
             else -> reason
         }
 

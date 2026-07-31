@@ -335,6 +335,8 @@
     <string name="home_no_playlist_body">أضف قائمة تشغيل من الشريط الجانبي لرؤية قنواتك وأفلامك ومسلسلاتك هنا.</string>
     <string name="home_section_continue_watching">متابعة المشاهدة</string>
     <string name="home_section_live_now">مباشر الآن</string>
+    <string name="home_favorite_channels">القنوات المفضلة</string>
+    <string name="home_favorite_titles">العناوين المفضلة</string>
     <string name="home_section_categories">تصفّح حسب الفئة</string>
     <string name="home_section_recommended">لك</string>
     <string name="home_section_for_you">لك</string>
@@ -459,6 +461,7 @@
     <string name="player_up_next_action">التالي</string>
     <string name="player_open_guide">فتح الدليل</string>
     <string name="player_live_badge">مباشر</string>
+    <string name="player_go_live">الانتقال للمباشر</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">إيقاف</string>
@@ -618,6 +621,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">استخدم عنوان MAC الذي سجّله مزوّدك لهذه البوابة.</string>
     <string name="onboarding_mac_invalid">أدخل عنوان MAC كاملاً، مثل 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">أدخل عنوانًا صالحًا، مثل portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">امنح قائمة التشغيل هذه اسمًا</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">الصوت المفضل</string>
     <string name="settings_preferred_audio_desc">اختيار لغة الصوت هذه تلقائيًا عند توفرها</string>
@@ -720,4 +725,25 @@
     <string name="player_audio_delay">مزامنة الصوت</string>
 
     <!-- Privacy policy &amp; terms of service -->
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">التفاصيل</string>
+    <string name="common_more">المزيد</string>
+    <string name="common_undo">تراجع</string>
+    <string name="common_deleted">تم الحذف</string>
+    <string name="common_paste">لصق</string>
+    <string name="settings_section_library">المكتبة</string>
+    <string name="settings_section_general">عام</string>
+    <string name="settings_section_more">المزيد</string>
+    <string name="subtitle_color_white">أبيض</string>
+    <string name="subtitle_color_yellow">أصفر</string>
+    <string name="subtitle_color_cyan">سماوي</string>
+    <string name="subtitle_color_green">أخضر</string>
+    <string name="settings_more_playback_desc">فك التشفير، لغة الصوت، التشغيل التلقائي</string>
+    <string name="settings_more_subtitles_desc">اللغة، الحجم، النمط، اللون، الخط</string>
+    <string name="settings_more_parental_desc">قفل PIN، إعادة القفل التلقائي، المحتوى المقفل</string>
+    <string name="settings_more_about_desc">الإصدار، الدعم، الخصوصية، الشؤون القانونية</string>
+    <string name="favorites_removed">تمت الإزالة من المفضلة</string>
+    <string name="search_recent">عمليات البحث الأخيرة</string>
+    <string name="search_clear_recent">مسح عمليات البحث الأخيرة</string>
+    <string name="series_no_episodes">لا توجد حلقات لهذا المسلسل بعد.</string>
 </resources>

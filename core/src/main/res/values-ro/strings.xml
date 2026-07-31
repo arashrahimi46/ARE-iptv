@@ -365,6 +365,8 @@
     <string name="home_no_playlist_body">Adaugă o listă de redare din bara laterală pentru a-ți vedea aici canalele, filmele și serialele.</string>
     <string name="home_section_continue_watching">Continuă vizionarea</string>
     <string name="home_section_live_now">Live acum</string>
+    <string name="home_favorite_channels">Canale favorite</string>
+    <string name="home_favorite_titles">Titluri favorite</string>
     <string name="home_section_categories">Răsfoiește pe categorii</string>
     <string name="home_section_recommended">Pentru tine</string>
     <string name="home_section_for_you">Pentru tine</string>
@@ -492,6 +494,7 @@
     <string name="player_up_next_action">Urmează</string>
     <string name="player_open_guide">Deschide ghidul</string>
     <string name="player_live_badge">Live</string>
+    <string name="player_go_live">Treci la live</string>
 
     <!-- Subtitle menu -->
     <string name="subtitle_off">Dezactivat</string>
@@ -647,6 +650,8 @@
     <string name="onboarding_mac_placeholder">00:1A:79:XX:XX:XX</string>
     <string name="onboarding_mac_helper">Folosește adresa MAC pe care furnizorul a înregistrat-o pentru acest portal.</string>
     <string name="onboarding_mac_invalid">Introdu o adresă MAC completă, ex. 00:1A:79:AB:CD:EF</string>
+    <string name="onboarding_invalid_url">Introdu o adresă validă, de ex. portal.example.tv:8080</string>
+    <string name="onboarding_invalid_name">Dă un nume acestei liste</string>
     <string name="sources_type_stalker">Stalker</string>
     <string name="settings_preferred_audio_title">Audio preferat</string>
     <string name="settings_preferred_audio_desc">Selectează automat această limbă audio când este disponibilă</string>
@@ -718,4 +723,25 @@
     <string name="tile_action_resume">Reia</string>
     <string name="tile_action_play_from_start">Redă de la început</string>
 
+    <!-- Shared touch-UI labels -->
+    <string name="common_details">Detalii</string>
+    <string name="common_more">Mai multe</string>
+    <string name="common_undo">Anulează</string>
+    <string name="common_deleted">Șters</string>
+    <string name="common_paste">Lipește</string>
+    <string name="settings_section_library">Bibliotecă</string>
+    <string name="settings_section_general">General</string>
+    <string name="settings_section_more">Mai multe</string>
+    <string name="subtitle_color_white">Alb</string>
+    <string name="subtitle_color_yellow">Galben</string>
+    <string name="subtitle_color_cyan">Cian</string>
+    <string name="subtitle_color_green">Verde</string>
+    <string name="settings_more_playback_desc">Decodare, limba audio, redare automată</string>
+    <string name="settings_more_subtitles_desc">Limbă, dimensiune, stil, culoare, font</string>
+    <string name="settings_more_parental_desc">Blocare cu PIN, reblocare automată, conținut blocat</string>
+    <string name="settings_more_about_desc">Versiune, asistență, confidențialitate, informații juridice</string>
+    <string name="favorites_removed">Eliminat din favorite</string>
+    <string name="search_recent">Căutări recente</string>
+    <string name="search_clear_recent">Șterge căutările recente</string>
+    <string name="series_no_episodes">Acest serial nu are încă episoade.</string>
 </resources>
