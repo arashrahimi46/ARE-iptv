@@ -299,11 +299,47 @@ theming. App package: `com.arashrahimi46.iptv`.
 | Module | What it is |
 |--------|------------|
 | `:tv` | **The app** — nearly all work happens here |
-| `:mobile` | Phone stub — not the focus |
+| `:mobile` | The phone app — its own complete, independent source tree |
+| `:core` | **Strings only.** 24 `values*/strings.xml` files. No Kotlin, ever. |
 | `:baselineprofile` | Startup baseline profile generation |
 
 Layout under `tv/src/main/java/com/arashrahimi46/iptv/`: `data/` (db=Room, repository, parser,
 settings=DataStore, model) · `ui/` (one package per screen + `ui/components` + `ui/theme`).
+`:mobile` mirrors that layout with its own copy, plus a `mobile/` package for phone-only screens.
+
+### `:tv` and `:mobile` share NOTHING but strings — do not "fix" this
+
+**The only shared module is `:core`, and it contains string resources and nothing else.** No
+Kotlin, no Compose, no dependencies, an empty manifest. `:tv` and `:mobile` each own a full,
+independent copy of the data layer, the `Are*` components, and the theme. Yes, that is duplicated
+code. It is deliberate.
+
+It was tried the other way. Between `a5a7034` and `417fc29` (2026-07-29/30) `:core` held the shared
+data layer *and* the whole `Are*` rendering/interaction layer behind a per-platform
+`LocalAreInteractiveBinding`. The coupling did not pay for itself: every `:mobile` change had to be
+re-verified on `:tv`, and a run of real TV regressions arrived through exactly that seam —
+
+- focus-ring geometry, four separate times (`b23cea1`, `c806da6`, `9d147f3`, `417fc29`), ending in
+  a bug where the 1.06× focus scale sat *above* the focus target, so every focus move in every
+  scrollable nudged the page a few px;
+- `AreSegmentedControl` selection breaking, then its track clipping (`917a44c`, `4014aa3`);
+- `AreDialog` scrolling the whole card so opening a modal stranded D-pad focus (`101a487`);
+- a hard crash that made Settings **unreachable** on `:tv` (`167be2e`).
+
+The unwind is `refactor: unwind the shared-code :core` — `tv/` was restored to `6d3d9cc`, the
+commit immediately before the extraction started, verified byte-identical apart from
+`import ...iptv.R` → `import ...iptv.core.R`.
+
+Rules that follow from this:
+
+- **Never move Kotlin into `:core`.** If `:tv` and `:mobile` need the same logic, copy it. A phone
+  app and a D-pad TV app have different interaction models; a shared component grows a platform
+  switch, and the switch is where the TV bugs come from.
+- Adding a user-facing string still means **one** edit in `core/src/main/res/values*/strings.xml`
+  (all 24 locales — see the i18n section below, which still applies verbatim, just at that path).
+- Consumers reference strings as `com.arashrahimi46.iptv.core.R.string.*` (AGP's non-transitive R
+  class), aliased to `CoreR` in the few files that also use their own module's `R.drawable`/`R.font`.
+- A `:tv` change needs `:tv` verification only. That is the entire point.
 
 ## Build / test / run (Gradle, JDK 21)
 
@@ -325,11 +361,15 @@ settings=DataStore, model) · `ui/` (one package per screen + `ui/components` + 
 Ships **English + 23 translated locales**. A missing translation silently falls back to English
 (no build error), so keep them in sync by hand.
 
-- Every user-facing string goes through `stringResource(R.string.…)` — never a hardcoded literal
-  in `Text(...)` / `contentDescription` (glyphs, counters, and the brand mark excepted).
-- When you add/rename a key, add it to **`values/strings.xml` AND all 23 `values-*/strings.xml`**:
-  `ar, az, b+pt+BR, b+pt+PT, bg, cs, da, de, el, es, fa, fi, fr, hu, it, nb, nl, pl, ro, ru, sv,
-  tr, uk`.
+**All strings live in `core/src/main/res/`** — that is the whole of the `:core` module, and it is
+the one thing `:tv` and `:mobile` share (see the Modules section). Adding a key there covers both
+apps at once; there is no per-app strings file to keep in step.
+
+- Every user-facing string goes through `stringResource(CoreR.string.…)` — never a hardcoded
+  literal in `Text(...)` / `contentDescription` (glyphs, counters, and the brand mark excepted).
+- When you add/rename a key, add it to **`core/…/values/strings.xml` AND all 23
+  `core/…/values-*/strings.xml`**: `ar, az, b+pt+BR, b+pt+PT, bg, cs, da, de, el, es, fa, fi, fr,
+  hu, it, nb, nl, pl, ro, ru, sv, tr, uk`.
 - **`fa` and `ar` are RTL and are the two everyone forgets.** They ship like the rest —
   `android:supportsRtl="true"`, no `locales_config.xml`, no `resourceConfigurations` filter. This
   doc used to say "21 locales" and omit them; contributors followed that list literally and left
@@ -408,19 +448,73 @@ feature — decisions there were made deliberately; don't relitigate them.
   `CredentialsStore`, `cmd` in `Channel.externalId`, **no DB migration** (schema stays v11).
   Visual one-pager: https://claude.ai/code/artifact/d34083e0-3255-41ce-8189-dbb84e9c237c
 
+## Competitive position (`docs/feature-matrix-2026-07-29.html`)
+
+Code-verified feature audit of the app benchmarked against 10 competing IPTV players, dated
+2026-07-29. Open it in a browser, or read it as an artifact:
+https://claude.ai/code/artifact/a688611e-a2ba-480f-a7f9-0c71c80cd2ea
+
+It supersedes `docs/competitive-analysis-2026.md` wherever the two conflict — catch-up, timeshift,
+recording and Stalker have all shipped since that doc was written. Two entries above are stale
+against it: **Stalker Portal is fully shipped** (all 5 phases, not "not yet built") and the **glass
+redesign shipped app-wide** (~27 files, device-capability-tiered, not "design only"). The matrix
+also flags that the in-app corner player is UI-labeled "Picture-in-Picture" but is *not* OS PiP.
+
 ## Rendering performance — READ BEFORE OPTIMIZING ANY JANK
 
-`docs/glass-render-perf-findings.md` — profiled 2026-07-27 with `dumpsys gfxinfo framestats`.
+`docs/glass-render-perf-findings.md` — profiled 2026-07-27 with `dumpsys gfxinfo framestats`,
+corrected 2026-07-28 with a real Perfetto trace on the XL95.
 
-**This app is draw-bound, not recomposition-bound.** On a Settings D-pad scroll, composition +
-measure + layout came to **0.04ms** of a 27ms frame; the frame is spent rasterizing glass. Do not
-chase recomposition for a jank report — profile first, and read the RenderThread column
-(`SwapBuffers - IssueDrawCommandsStart`), which is the only number that transfers to real hardware.
-The emulator translates GLES→Metal on the host, so its GPU time and absolute frame time are not
-comparable to a TV.
+**framestats cannot see Compose's recompose/measure/layout — do not conclude "not
+recomposition-bound" from it.** Its composition+measure+layout column starts at
+`PerformTraversalsStart`, but Compose schedules its own pass in the Choreographer **ANIMATION**
+callback, which Android runs *before* traversal. That is the only reason the column reads ~0.04ms.
+A Perfetto trace of a Home D-pad sweep found one 66.6ms frame spending
+`animation(59ms) → Recomposer:animation(55ms) → AndroidOwner:measureAndLayout(53ms)` — all of it
+invisible to framestats. Per newly-visible tile: ~3× `TextAnnotatedStringNode:measure` (1–1.5ms
+each) + `Compose:recompose` (2.5–4ms) + `Compose:applyChanges` (2–3.6ms) + image-painter
+`onRemembered` (~2ms).
 
-Locked there: the **glass backdrop system stays** (costs ~4ms/frame but removing it is a real
-visual change — measured), and the ambient mesh stays static (`t = 0`) because the bake depends on
-it. Also: `softShadow`/mesh bakes use `drawWithCache`, which re-runs on size change — any new
-size-animating glass surface must pass `bake = false`. Best open lead is **input latency**
-(241 high-latency events per 14 keypresses), which is untouched.
+So: **Settings scroll is draw-bound (glass rasterization); Home scroll is recomposition-bound**
+(new LazyRow tiles entering). Profile with Perfetto (`adb shell perfetto -t 20s -b 32mb -a
+com.arashrahimi46.iptv gfx view res`) before assuming either. The RenderThread column
+(`SwapBuffers - IssueDrawCommandsStart`) is still the number that transfers to real hardware, and
+the emulator translates GLES→Metal on the host so its GPU/absolute frame times aren't comparable
+to a TV.
+
+**Measurement harness caveat:** `adb shell input keyevent` sweeps (one process fork per key) do
+not land on the same view-hierarchy state rep to rep — same-build reruns swung p90 20–46ms and
+janky 2.7–56%, and one rep showed 94 attached Views vs the usual 9–10. Aggregate framestats
+percentiles are useless at that noise level. Use **trace-to-trace diffing** of a named slice
+(e.g. `AndroidOwner:measureAndLayout` total) over a fixed protocol: force-stop → fresh launch →
+settle → 20s capture → identical scripted sweep, ≥2 reps per build.
+
+Locked there: the ambient mesh stays static (`t = 0`) because the bake depends on it. Also:
+`softShadow`/mesh bakes use `drawWithCache`, which re-runs on size change — any new size-animating
+glass surface must pass `bake = false`.
+
+**The sidebar rail has NO backdrop blur, and that is measured, not taste (2026-07-28).** It used to
+frost the page behind it. On the XL95 that one blur was **30% of the whole RenderThread budget** and
+turned 4 janky frames into 60; deleting it (and the now-dead page-capture apparatus with it) took
+RenderThread 2156 → 1113ms (−48%), p90 19.2 → 10.2ms, janky frames 65 → 2. Crucially, **halving the
+blur radius made it worse** — the cost is the blur *pass*, not the kernel, so there is no cheap-blur
+setting. The rail keeps `surfaceGlassSheer`, so it is still see-through, just unblurred. Do not
+reintroduce a backdrop blur there without re-running the measurement in
+`docs/glass-render-perf-findings.md`. Two things that *look* like the culprit and are not: the
+panel's `softShadow(bake = false)` (0.4%) and `scrollEdgeFade`'s offscreen layer (1.8%).
+
+**D-pad input is paced to one directional key per 120ms** (`DPAD_STEP_MS` in `MainActivity`), extras
+dropped, giving ~8 steps/s on a held key. Do NOT "optimise" this into a per-frame gate: that was
+tried and is a no-op, because frames are ~6.6ms and the thing being paced is the bring-into-view
+scroll animation, which is many frames long. When testing this, send the burst inside a SINGLE
+`input keyevent 20 20 20 ...` call — one `adb shell` per key is ~100ms apart and exercises nothing.
+
+**Landed (2026-07-28, `a565ac6`):** the Home `LazyColumn`'s `itemsIndexed` now passes a
+`contentType` (poster / channel / category) so Compose's slot-reuse pool can tell rail shapes
+apart. Measured: `AndroidOwner:measureAndLayout` total 748/715ms → 659/651ms, per-animation-
+callback cost −28% (1.24ms → 0.89ms), screenshot-verified pixel-identical. **Any new
+heterogeneous lazy list needs the same treatment** — `key` alone is not enough.
+
+Open leads: ~5ms RenderThread + ~4ms sync/upload still unattributed, and **input latency**
+(241 high-latency events per 14 keypresses), untouched. Ruled out: `computePalette` (0.79ms
+across a whole 20s trace — a red herring).
