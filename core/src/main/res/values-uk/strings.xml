@@ -762,6 +762,7 @@
     <string name="search_clear_recent">Очистити нещодавні запити</string>
     <string name="series_no_episodes">У цього серіалу поки немає серій.</string>
     <string name="blocked_title">Потрібне оновлення</string>
+    <string name="blocked_title_unavailable">Тимчасово недоступно</string>
     <string name="blocked_body_update">Ця версія ARE iptv більше не підтримується. Оновіть до останньої версії, щоб продовжити перегляд.</string>
     <string name="blocked_body_unavailable">ARE iptv тимчасово недоступний. Спробуйте пізніше.</string>
     <string name="blocked_action_update">Оновити в Google Play</string>

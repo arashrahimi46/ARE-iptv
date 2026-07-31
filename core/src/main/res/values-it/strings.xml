@@ -746,6 +746,7 @@
     <string name="search_clear_recent">Cancella ricerche recenti</string>
     <string name="series_no_episodes">Questa serie non ha ancora episodi.</string>
     <string name="blocked_title">Aggiornamento necessario</string>
+    <string name="blocked_title_unavailable">Temporaneamente non disponibile</string>
     <string name="blocked_body_update">Questa versione di ARE iptv non è più supportata. Aggiorna all\'ultima versione per continuare a guardare.</string>
     <string name="blocked_body_unavailable">ARE iptv non è temporaneamente disponibile. Riprova più tardi.</string>
     <string name="blocked_action_update">Aggiorna su Google Play</string>

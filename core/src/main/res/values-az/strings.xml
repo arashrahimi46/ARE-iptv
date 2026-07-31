@@ -739,6 +739,7 @@
     <string name="search_clear_recent">Son axtarışları təmizlə</string>
     <string name="series_no_episodes">Bu serialın hələ epizodu yoxdur.</string>
     <string name="blocked_title">Yeniləmə tələb olunur</string>
+    <string name="blocked_title_unavailable">Müvəqqəti olaraq əlçatmazdır</string>
     <string name="blocked_body_update">ARE iptv-nin bu versiyası artıq dəstəklənmir. İzləməyə davam etmək üçün ən son versiyaya yeniləyin.</string>
     <string name="blocked_body_unavailable">ARE iptv müvəqqəti olaraq əlçatan deyil. Zəhmət olmasa, sonra yenidən cəhd edin.</string>
     <string name="blocked_action_update">Google Play-də yeniləyin</string>

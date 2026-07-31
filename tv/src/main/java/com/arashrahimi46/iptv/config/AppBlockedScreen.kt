@@ -55,7 +55,12 @@ fun AppBlockedScreen(updateAvailable: Boolean) {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = stringResource(CoreR.string.blocked_title),
+                // Title tracks the branch, not just the body. Shipping one shared title read
+                // "Update required" above "ARE iptv is temporarily unavailable" -- two different
+                // claims in the same message. Caught by putting it on a screen, not by reading it.
+                text = stringResource(
+                    if (updateAvailable) CoreR.string.blocked_title else CoreR.string.blocked_title_unavailable,
+                ),
                 style = AreIptvTheme.typography.display,
                 color = colors.textPrimary,
                 textAlign = TextAlign.Center,

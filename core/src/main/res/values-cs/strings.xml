@@ -762,6 +762,7 @@
     <string name="search_clear_recent">Vymazat nedávná hledání</string>
     <string name="series_no_episodes">Tento seriál zatím nemá žádné epizody.</string>
     <string name="blocked_title">Vyžaduje se aktualizace</string>
+    <string name="blocked_title_unavailable">Dočasně nedostupné</string>
     <string name="blocked_body_update">Tato verze aplikace ARE iptv už není podporována. Aktualizujte na nejnovější verzi a pokračujte ve sledování.</string>
     <string name="blocked_body_unavailable">ARE iptv je dočasně nedostupné. Zkuste to prosím později.</string>
     <string name="blocked_action_update">Aktualizovat v Google Play</string>

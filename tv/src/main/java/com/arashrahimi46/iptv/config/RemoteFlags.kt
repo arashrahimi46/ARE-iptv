@@ -15,12 +15,18 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * Two server-controlled keys decide whether this build is allowed to run:
  *
- *  - `app_enabled` (bool) -- a global off switch for every version.
+ *  - `app_disabled` (bool) -- a global off switch for every version. **True means off.**
  *  - `min_supported_version_code` (long) -- the lowest [BuildConfig.VERSION_CODE] still allowed. 0
- *    disables the gate. Prefer this over `app_enabled`: it retires a specific broken build while
+ *    disables the gate. Prefer this over `app_disabled`: it retires a specific broken build while
  *    leaving everyone who has already updated alone.
  *
- * Remote Config also supports per-version *conditions* in its console, so `app_enabled` can be
+ * The negative polarity of `app_disabled` is chosen for safety, not style. Firebase hands back
+ * `false` for any boolean it has no value for -- a missing key, a config that never loaded, a typo
+ * in the console. With this naming every one of those accidents resolves to "not disabled", so the
+ * app keeps working. Phrased as `app_enabled`, that same fallback would read as "not enabled" and
+ * would take the app down.
+ *
+ * Remote Config also supports per-version *conditions* in its console, so `app_disabled` can be
  * targeted at one version without touching anyone else. The explicit version key exists anyway
  * because a number in a config is far harder to misread at 3am than a condition expression.
  *
@@ -45,7 +51,7 @@ object RemoteFlags {
         data class Blocked(val updateAvailable: Boolean) : AppGate
     }
 
-    private const val KEY_APP_ENABLED = "app_enabled"
+    private const val KEY_APP_DISABLED = "app_disabled"
     private const val KEY_MIN_VERSION = "min_supported_version_code"
 
     /**
@@ -87,19 +93,17 @@ object RemoteFlags {
     /** Recomputes the gate from [rc]'s currently active values. Any failure leaves it open. */
     private fun apply(rc: FirebaseRemoteConfig) {
         runCatching {
-            val enabledValue = rc.getValue(KEY_APP_ENABLED)
-            // STATIC means Remote Config holds neither a fetched value nor a loaded default for this
-            // key. getBoolean() would then hand back `false` -- which this gate reads as "killed".
-            //
-            // This is not hypothetical: because setDefaultsAsync is async, every cold start passes
-            // through exactly this state, and an earlier revision blocked the app on it. Verified on
-            // device via "W FirebaseRemoteConfig: No value of type 'Boolean' exists for parameter
+            // STATIC means Remote Config holds neither a fetched value nor a loaded default for a
+            // key, and hands back the type's zero value. Both reads below are written so that zero
+            // value ALREADY means "allowed" -- `false` = not disabled, `0` = no version floor -- so
+            // this is belt-and-braces rather than the only thing standing between users and a dead
+            // app. An earlier revision keyed on `app_enabled`, where the same fallback meant "not
+            // enabled", and blocked the app on every cold start before setDefaultsAsync finished.
+            // Device log: "W FirebaseRemoteConfig: No value of type 'Boolean' exists for parameter
             // key 'app_enabled'". Absence of an answer must never be read as a "no".
-            if (enabledValue.source == FirebaseRemoteConfig.VALUE_SOURCE_STATIC) {
-                _state.value = AppGate.Allowed
-                return@runCatching
-            }
-            val enabled = enabledValue.asBoolean()
+            val disabled = rc.getValue(KEY_APP_DISABLED)
+                .takeIf { it.source != FirebaseRemoteConfig.VALUE_SOURCE_STATIC }
+                ?.asBoolean() ?: false
             val minVersion = rc.getValue(KEY_MIN_VERSION)
                 .takeIf { it.source != FirebaseRemoteConfig.VALUE_SOURCE_STATIC }
                 ?.asLong() ?: 0L
@@ -108,7 +112,7 @@ object RemoteFlags {
                 // Retired by version: a newer build necessarily exists, so point at the store.
                 tooOld -> AppGate.Blocked(updateAvailable = true)
                 // Killed outright: updating may not help, so do not promise that it will.
-                !enabled -> AppGate.Blocked(updateAvailable = false)
+                disabled -> AppGate.Blocked(updateAvailable = false)
                 else -> AppGate.Allowed
             }
         }

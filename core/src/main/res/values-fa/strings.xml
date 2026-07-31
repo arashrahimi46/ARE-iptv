@@ -759,6 +759,7 @@
     <string name="search_clear_recent">پاک کردن جست‌وجوهای اخیر</string>
     <string name="series_no_episodes">این سریال هنوز قسمتی ندارد.</string>
     <string name="blocked_title">به‌روزرسانی لازم است</string>
+    <string name="blocked_title_unavailable">موقتاً در دسترس نیست</string>
     <string name="blocked_body_update">این نسخه از ARE iptv دیگر پشتیبانی نمی‌شود. برای ادامهٔ تماشا به آخرین نسخه به‌روزرسانی کنید.</string>
     <string name="blocked_body_unavailable">ARE iptv موقتاً در دسترس نیست. لطفاً بعداً دوباره تلاش کنید.</string>
     <string name="blocked_action_update">به‌روزرسانی در Google Play</string>

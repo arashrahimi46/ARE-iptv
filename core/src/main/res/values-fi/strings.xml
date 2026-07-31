@@ -760,6 +760,7 @@
     <string name="search_clear_recent">Tyhjennä viimeisimmät haut</string>
     <string name="series_no_episodes">Tällä sarjalla ei ole vielä jaksoja.</string>
     <string name="blocked_title">Päivitys vaaditaan</string>
+    <string name="blocked_title_unavailable">Tilapäisesti ei käytettävissä</string>
     <string name="blocked_body_update">Tätä ARE iptv:n versiota ei enää tueta. Päivitä uusimpaan versioon, niin voit jatkaa katselua.</string>
     <string name="blocked_body_unavailable">ARE iptv ei ole tilapäisesti käytettävissä. Yritä myöhemmin uudelleen.</string>
     <string name="blocked_action_update">Päivitä Google Playssä</string>

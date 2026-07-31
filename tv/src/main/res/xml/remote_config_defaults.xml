@@ -9,8 +9,11 @@
 -->
 <defaultsMap>
     <entry>
-        <key>app_enabled</key>
-        <value>true</value>
+        <!-- TRUE disables the app. Negative polarity on purpose: Firebase returns `false` for any
+             boolean it has no value for, so every accident (missing key, console typo, defaults not
+             yet loaded) resolves to "not disabled" and the app keeps working. -->
+        <key>app_disabled</key>
+        <value>false</value>
     </entry>
     <entry>
         <!-- Lowest versionCode allowed to run. 0 disables the version gate entirely. -->

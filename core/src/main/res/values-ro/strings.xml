@@ -746,6 +746,7 @@
     <string name="search_clear_recent">Șterge căutările recente</string>
     <string name="series_no_episodes">Acest serial nu are încă episoade.</string>
     <string name="blocked_title">Actualizare necesară</string>
+    <string name="blocked_title_unavailable">Temporar indisponibil</string>
     <string name="blocked_body_update">Această versiune ARE iptv nu mai este acceptată. Actualizează la cea mai recentă versiune pentru a continua vizionarea.</string>
     <string name="blocked_body_unavailable">ARE iptv este temporar indisponibil. Încearcă din nou mai târziu.</string>
     <string name="blocked_action_update">Actualizează în Google Play</string>
