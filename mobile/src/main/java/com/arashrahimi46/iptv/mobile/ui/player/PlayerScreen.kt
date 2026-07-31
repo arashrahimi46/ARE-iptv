@@ -68,6 +68,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
+import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
@@ -531,7 +532,9 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
                 onPictureInPicture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && activity != null) {
                     {
                         activity.enterPictureInPictureMode(
-                            PictureInPictureParams.Builder().setAspectRatio(Rational(16, 9)).build(),
+                            PictureInPictureParams.Builder()
+                                .setAspectRatio(player.pipAspectRatio())
+                                .build(),
                         )
                     }
                 } else {
@@ -684,4 +687,20 @@ private fun applyTrack(
             .setOverrideForType(TrackSelectionOverride(choice.group.mediaTrackGroup, choice.index))
     }
     player.trackSelectionParameters = builder.build()
+}
+
+/**
+ * The real video aspect ratio for Picture-in-Picture, instead of a hardcoded 16:9 that letterboxed
+ * every 4:3, 21:9 or vertical stream inside the PiP window.
+ *
+ * Falls back to 16:9 before the first frame reports a size, and clamps to the range Android accepts
+ * -- `enterPictureInPictureMode` throws IllegalArgumentException outside roughly 1:2.39..2.39:1, and
+ * a stream reporting a degenerate size would otherwise crash the app on the PiP button.
+ */
+private fun Player.pipAspectRatio(): Rational {
+    val size = videoSize
+    if (size.width <= 0 || size.height <= 0) return Rational(16, 9)
+    val ratio = size.width.toDouble() / size.height.toDouble() * (if (size.pixelWidthHeightRatio > 0f) size.pixelWidthHeightRatio else 1f)
+    val clamped = ratio.coerceIn(1.0 / 2.39, 2.39)
+    return Rational((clamped * 1000).toInt(), 1000)
 }

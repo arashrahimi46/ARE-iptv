@@ -10,6 +10,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.datasource.HttpDataSource
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.directStreamLabel
 import com.arashrahimi46.iptv.data.player.DefaultStreamUrlResolver
@@ -21,6 +23,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import java.net.UnknownHostException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -124,13 +127,41 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
 
         override fun onPlayerError(error: PlaybackException) {
             _state.update {
-                it.copy(isLoading = false, buffering = false, error = error.message ?: error.errorCodeName)
+                it.copy(isLoading = false, buffering = false, error = describeError(error))
             }
         }
     }
 
     init {
         player.addListener(listener)
+    }
+
+    /**
+     * A message the user can act on, instead of ExoPlayer's own.
+     *
+     * `PlaybackException.message` is NOT usable here: for any source failure it is the literal
+     * string "Source error", so a dead network, an expired line and a 403 all rendered identically
+     * -- and "Source error" tells a phone user nothing about which. (Verified on device: an
+     * UnknownHostException surfaced as "Source error".) The cause chain carries the real
+     * information, so this mirrors what :tv already does in LivePlayerScreen.onPlayerError, with
+     * the offline case added because a phone loses connectivity constantly and a TV rarely does.
+     */
+    private fun describeError(error: PlaybackException): String {
+        val failed = getApplication<Application>().getString(CoreR.string.player_playback_failed)
+        return when (val cause = error.cause) {
+            // The provider's own rejection -- 403/461 for an expired, IP-locked or
+            // connection-limited line. The number is the single most actionable thing we have.
+            is HttpDataSource.InvalidResponseCodeException -> "$failed: HTTP ${cause.responseCode}"
+            // No host / no route: the device is offline or DNS failed. Deliberately the same copy
+            // as any other transport failure -- there is no "you're offline" string in :core, and
+            // inventing one means translating it into 24 locales. Flagged as a follow-up rather
+            // than machine-translated.
+            is UnknownHostException -> failed
+            is HttpDataSource.HttpDataSourceException -> failed
+            else -> error.errorCodeName.replace('_', ' ').lowercase()
+                .replaceFirstChar { it.uppercase() }
+                .ifBlank { failed }
+        }
     }
 
     fun load(target: PlayerTarget) {
