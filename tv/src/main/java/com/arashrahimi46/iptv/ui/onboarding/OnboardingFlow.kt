@@ -1,6 +1,5 @@
 package com.arashrahimi46.iptv.ui.onboarding
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,6 +37,7 @@ import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
+import com.arashrahimi46.iptv.ui.components.AreLogoMark
 import com.arashrahimi46.iptv.ui.components.AreStepIndicator
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 
@@ -89,11 +88,7 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit
                 .padding(horizontal = 40.dp, vertical = 20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Image(
-                    painter = painterResource(R.drawable.ic_logo_mark),
-                    contentDescription = null,
-                    modifier = Modifier.size(44.dp),
-                )
+                AreLogoMark(size = 44.dp)
                 Text(text = stringResource(CoreR.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
             Box(Modifier.height(8.dp))

@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.border
@@ -67,7 +66,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -87,7 +85,6 @@ import kotlin.math.roundToInt
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -611,13 +608,9 @@ private fun Modifier.scrollEdgeFade(fade: Dp, opaqueFill: Color?): Modifier =
 
 @Composable
 private fun BrandMark() {
-    // The real logo mark, which carries its own navy plate -- so it reads identically in both
-    // themes and needs no accent fill behind it. No glow: it read as a heavy halo.
-    Image(
-        painter = painterResource(R.drawable.ic_logo_mark),
-        contentDescription = null,
-        modifier = Modifier.size(32.dp),
-    )
+    // Accent-tinted, not the plated icon: the rail is page chrome, and a fixed navy tile reads as a
+    // foreign object once the user picks a non-blue accent. No glow -- it read as a heavy halo.
+    AreLogoMark(size = 32.dp)
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
