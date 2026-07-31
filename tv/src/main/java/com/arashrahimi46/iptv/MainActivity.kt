@@ -100,6 +100,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import com.arashrahimi46.iptv.ui.sources.SelectSourceScreen
 import com.arashrahimi46.iptv.ui.shell.AreIptvAppShell
+import com.arashrahimi46.iptv.config.AppBlockedScreen
+import com.arashrahimi46.iptv.config.RemoteFlags
 import com.arashrahimi46.iptv.ui.splash.AreSplashScreen
 import com.arashrahimi46.iptv.ui.shell.AreTopBar
 import com.arashrahimi46.iptv.ui.theme.AccentPreset
@@ -372,6 +374,18 @@ fun AreIptvApp() {
         }
         return
     }
+
+    // Remote kill switch. Placed AFTER the splash gate so a blocked build still shows the normal
+    // launch rather than flashing an error at frame zero, and so a fetch that lands mid-splash is
+    // already reflected here. Defaults to Allowed and only ever tightens -- see RemoteFlags for why
+    // every failure path deliberately fails open.
+    val appGate by RemoteFlags.state.collectAsState()
+    (appGate as? RemoteFlags.AppGate.Blocked)?.let { blocked ->
+        AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
+            AppBlockedScreen(updateAvailable = blocked.updateAvailable)
+        }
+        return
+    }
     val hasMultipleSources = (sources?.size ?: 0) > 1
     val hasAnySource = (sources?.isNotEmpty() == true)
 
@@ -458,7 +472,11 @@ fun AreIptvApp() {
                         popUpTo("onboarding") { inclusive = true }
                     }
                 },
-                onExplore = { navController.navigate("explore") },
+                // Explore (the curated free-playlist catalogue) is switched off: SourceStep renders
+                // its link only when this is non-null, so null removes the only entry point to it.
+                // The route and screen below are left in place, unreachable, so re-enabling is a
+                // one-line change rather than a revert.
+                onExplore = null,
             )
         }
         // Curated free-playlist catalogue. An add here is an ordinary M3U import, so it lands in the
