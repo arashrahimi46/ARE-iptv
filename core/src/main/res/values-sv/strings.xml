@@ -762,4 +762,8 @@
     <string name="search_recent">Senaste sökningar</string>
     <string name="search_clear_recent">Rensa senaste sökningar</string>
     <string name="series_no_episodes">Den här serien har inga avsnitt än.</string>
+    <string name="blocked_title">Uppdatering krävs</string>
+    <string name="blocked_body_update">Den här versionen av ARE iptv stöds inte längre. Uppdatera till den senaste versionen för att fortsätta titta.</string>
+    <string name="blocked_body_unavailable">ARE iptv är tillfälligt otillgängligt. Försök igen senare.</string>
+    <string name="blocked_action_update">Uppdatera i Google Play</string>
 </resources>

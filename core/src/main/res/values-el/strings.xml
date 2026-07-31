@@ -738,4 +738,8 @@
     <string name="search_recent">Πρόσφατες αναζητήσεις</string>
     <string name="search_clear_recent">Διαγραφή πρόσφατων αναζητήσεων</string>
     <string name="series_no_episodes">Αυτή η σειρά δεν έχει ακόμη επεισόδια.</string>
+    <string name="blocked_title">Απαιτείται ενημέρωση</string>
+    <string name="blocked_body_update">Αυτή η έκδοση του ARE iptv δεν υποστηρίζεται πλέον. Ενημερώστε στην πιο πρόσφατη έκδοση για να συνεχίσετε την παρακολούθηση.</string>
+    <string name="blocked_body_unavailable">Το ARE iptv δεν είναι προσωρινά διαθέσιμο. Δοκιμάστε ξανά αργότερα.</string>
+    <string name="blocked_action_update">Ενημέρωση στο Google Play</string>
 </resources>

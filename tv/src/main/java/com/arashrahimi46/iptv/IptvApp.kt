@@ -4,6 +4,7 @@ import android.app.Application
 import com.arashrahimi46.iptv.core.R
 import io.sentry.android.core.SentryAndroid
 import com.arashrahimi46.iptv.analytics.Analytics
+import com.arashrahimi46.iptv.config.RemoteFlags
 import com.arashrahimi46.iptv.analytics.CrashReporting
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import coil.ImageLoader
@@ -60,6 +61,10 @@ class IptvApp : Application(), ImageLoaderFactory {
         // Product analytics: dormant until google-services.json is added (see Analytics doc). Seed
         // collection from the persisted opt-out before any screen/play event can fire.
         Analytics.init(this, enabledInitially = true)
+
+        // Remote kill switch. Seeds from the cached config and refreshes in the background; never
+        // blocks startup and fails open on every path (see RemoteFlags).
+        RemoteFlags.init(this)
 
         val crashReason = getString(R.string.recording_reason_crash)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

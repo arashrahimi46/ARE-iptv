@@ -738,4 +738,8 @@
     <string name="search_recent">Legutóbbi keresések</string>
     <string name="search_clear_recent">Legutóbbi keresések törlése</string>
     <string name="series_no_episodes">Ennek a sorozatnak még nincsenek epizódjai.</string>
+    <string name="blocked_title">Frissítés szükséges</string>
+    <string name="blocked_body_update">Az ARE iptv ezen verziója már nem támogatott. Frissítsen a legújabb verzióra a nézés folytatásához.</string>
+    <string name="blocked_body_unavailable">Az ARE iptv átmenetileg nem érhető el. Próbálja meg később.</string>
+    <string name="blocked_action_update">Frissítés a Google Play-en</string>
 </resources>

@@ -738,4 +738,8 @@
     <string name="search_recent">Son aramalar</string>
     <string name="search_clear_recent">Son aramaları temizle</string>
     <string name="series_no_episodes">Bu dizinin henüz bölümü yok.</string>
+    <string name="blocked_title">Güncelleme gerekli</string>
+    <string name="blocked_body_update">ARE iptv\'nin bu sürümü artık desteklenmiyor. İzlemeye devam etmek için en son sürüme güncelleyin.</string>
+    <string name="blocked_body_unavailable">ARE iptv geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</string>
+    <string name="blocked_action_update">Google Play\'de güncelle</string>
 </resources>

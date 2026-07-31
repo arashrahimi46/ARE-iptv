@@ -759,4 +759,8 @@
     <string name="search_recent">Recente zoekopdrachten</string>
     <string name="search_clear_recent">Recente zoekopdrachten wissen</string>
     <string name="series_no_episodes">Deze serie heeft nog geen afleveringen.</string>
+    <string name="blocked_title">Update vereist</string>
+    <string name="blocked_body_update">Deze versie van ARE iptv wordt niet meer ondersteund. Werk bij naar de nieuwste versie om verder te kijken.</string>
+    <string name="blocked_body_unavailable">ARE iptv is tijdelijk niet beschikbaar. Probeer het later opnieuw.</string>
+    <string name="blocked_action_update">Bijwerken in Google Play</string>
 </resources>

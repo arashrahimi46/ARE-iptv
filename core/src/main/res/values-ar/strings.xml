@@ -747,4 +747,8 @@
     <string name="search_recent">عمليات البحث الأخيرة</string>
     <string name="search_clear_recent">مسح عمليات البحث الأخيرة</string>
     <string name="series_no_episodes">لا توجد حلقات لهذا المسلسل بعد.</string>
+    <string name="blocked_title">مطلوب التحديث</string>
+    <string name="blocked_body_update">لم تعد هذه النسخة من ARE iptv مدعومة. حدّث إلى أحدث إصدار لمواصلة المشاهدة.</string>
+    <string name="blocked_body_unavailable">ARE iptv غير متاح مؤقتًا. يرجى المحاولة مرة أخرى لاحقًا.</string>
+    <string name="blocked_action_update">التحديث على Google Play</string>
 </resources>

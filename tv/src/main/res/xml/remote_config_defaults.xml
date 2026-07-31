@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Baked-in Remote Config defaults. These are the values a fresh install uses before it has ever
+  reached the network, and the values it keeps forever if the network is never reachable.
+
+  They MUST describe a fully working app. The kill switch fails open by design: "we could not ask
+  whether we are allowed to run" must never mean "do not run", or a Firebase outage bricks every
+  installed copy at once with no way for a user to recover.
+-->
+<defaultsMap>
+    <entry>
+        <key>app_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <!-- Lowest versionCode allowed to run. 0 disables the version gate entirely. -->
+        <key>min_supported_version_code</key>
+        <value>0</value>
+    </entry>
+</defaultsMap>
