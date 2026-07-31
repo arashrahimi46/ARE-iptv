@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.baselineprofile)
+    // Reads tv/google-services.json and generates the Firebase config resources. Applying this is
+    // what wakes up the otherwise-dormant Analytics facade: with a real FirebaseApp on the classpath
+    // its null check passes and events start flowing (see analytics/Analytics.kt).
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -16,7 +20,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.arashrahimi46.iptv"
+        // Play Store identity, and permanent once published -- it cannot be changed for the life of
+        // the listing. Deliberately NOT the same as `namespace` above: namespace is the internal
+        // Kotlin/R package (277 source files), which no store surface ever shows, so rebranding the
+        // product only requires this line. Suffixed `.tv` because :mobile ships as its own listing
+        // (com.areiptv.mobile) -- two .application modules cannot share an applicationId.
+        applicationId = "com.areiptv.tv"
         minSdk = 23
         //noinspection OldTargetApi
         targetSdk = 36

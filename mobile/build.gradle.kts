@@ -21,14 +21,15 @@ android {
     }
 
     defaultConfig {
-        // MUST differ from :tv's "com.arashrahimi46.iptv" -- this isn't just a future Play Store
-        // collision (as originally flagged to release-manager): with an *identical* applicationId,
-        // AGP's resource linker treats :mobile as if it were a dynamic-feature split of :tv and
-        // processDebugResources hard-fails ("not configured to use dynamic features"). Sharing an
-        // id across two independent .application modules isn't supported at all, so this had to
-        // be resolved locally to get ANY build; release-manager still owns the real Play Store
-        // identity/signing decision for the final applicationId.
-        applicationId = "com.arashrahimi46.iptv.mobile"
+        // MUST differ from :tv's "com.areiptv.tv" -- this isn't just a Play Store collision: with an
+        // *identical* applicationId, AGP's resource linker treats :mobile as if it were a
+        // dynamic-feature split of :tv and processDebugResources hard-fails ("not configured to use
+        // dynamic features"). Sharing an id across two independent .application modules isn't
+        // supported at all.
+        //
+        // Permanent once published. Unlike `namespace` above (still the internal
+        // com.arashrahimi46.iptv.mobile Kotlin package), this is the public store identity.
+        applicationId = "com.areiptv.mobile"
         // 26 (Android 8.0/Oreo), not :tv's 36 -- a phone app needs real device-market reach, and
         // PictureInPictureParams (real Android PiP, per the v1 spec) requires API 26 anyway.
         minSdk = 26
