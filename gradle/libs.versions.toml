@@ -31,6 +31,7 @@ documentfile = "1.0.1"
 zxing = "3.5.3"
 sentry = "7.18.0"
 firebaseBom = "33.7.0"
+googleServices = "4.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -89,3 +90,4 @@ android-test = { id = "com.android.test", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

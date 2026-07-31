@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "114096591889",
+    "project_id": "are-iptv",
+    "storage_bucket": "are-iptv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114096591889:android:845ed4504919b06f21cdb0",
+        "android_client_info": {
+          "package_name": "com.areiptv.tv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaubge2ijnyW--oqhwouDoCShZV1j3_xM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
