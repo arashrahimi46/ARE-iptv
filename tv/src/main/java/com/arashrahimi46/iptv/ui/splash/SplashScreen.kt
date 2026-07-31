@@ -28,13 +28,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,34 +46,33 @@ import com.arashrahimi46.iptv.R
 import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalReducedMotion
-import com.arashrahimi46.iptv.ui.theme.Violet400
 import com.arashrahimi46.iptv.ui.theme.White
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
- * Cold-start splash (Issue #13), rebuilt as a choreographed reveal in the Glass
- * design language (docs/glass-redesign-v1-design.md).
+ * Cold-start splash (Issue #13): the brand mark held high on pure black, with a slowly turning
+ * dotted **globe** rising from the bottom edge -- only its top half is on screen, so the frame
+ * reads as standing on a planet rather than looking at a ball.
  *
- * A one-shot intro plays on launch -- an accent bloom blooms, the frosted
- * **glass plate** scales in and settles with a soft overshoot, the mark and
- * brand fade up in turn, and a shimmer rail draws underneath. Layered on top,
- * continuous ambient life runs for as long as the splash holds: a drifting
- * accent/violet mesh, concentric "broadcast" rings emanating from the plate
- * (echoing the play-with-signal mark), orbiting spark particles, a breathing
- * bloom, and a specular light sweep travelling across the glass.
+ * The globe is drawn procedurally, not textured. There is no map asset in the repo and per-pixel
+ * sphere-mapping a bitmap is far too slow for TV hardware, so [WORLD] carries a 72x36 land/water
+ * mask (5-degree cells) that is projected onto a sphere every frame. Per-cell trig is precomputed
+ * once into [landCells]; a frame costs two `sin`/`cos` calls for the spin plus multiply-adds, and
+ * the visible dots are flushed as four bucketed [DrawScope.drawPoints] batches rather than ~700
+ * individual `drawCircle`s.
  *
- * The backdrop is ALWAYS the dark ink ramp regardless of app theme, so the
- * plate/brand contrast is fixed rather than dark-on-light in light mode; the
- * accent hue comes from the active theme via [AreIptvTheme.colors.accent].
+ * The backdrop is ALWAYS black regardless of app theme, so the white mark's contrast is fixed
+ * rather than white-on-white in light mode; the globe's hue comes from the active theme via
+ * [AreIptvTheme.colors.accent].
  *
- * No `androidx.core.splashscreen` dependency exists yet (manifest has no
- * windowSplashScreen theme), so this is a plain Compose screen shown by
- * [com.arashrahimi46.iptv.MainActivity] before the app routes to the privacy
- * gate / onboarding / shell.
+ * No `androidx.core.splashscreen` dependency exists yet (manifest has no windowSplashScreen theme),
+ * so this is a plain Compose screen shown by [com.arashrahimi46.iptv.MainActivity] before the app
+ * routes to the privacy gate / onboarding / shell.
  *
- * Everything is gated on [LocalReducedMotion]: the intro snaps to its final
- * frame and every loop freezes, leaving a still, fully-composed image.
+ * Everything is gated on [LocalReducedMotion]: the intro snaps to its final frame and the globe
+ * freezes mid-rotation, leaving a still, fully-composed image.
  */
 @Composable
 fun AreSplashScreen() {
@@ -83,131 +85,113 @@ fun AreSplashScreen() {
         if (!reduced) intro.animateTo(1f, tween(1900, easing = LinearEasing))
     }
     val p = intro.value
-    val bloomIn = seg(p, 0f, 0.45f, FastOutSlowInEasing)
-    val markIn = seg(p, 0.30f, 0.72f, EaseOutBack)
-    val brandIn = seg(p, 0.62f, 0.92f, FastOutSlowInEasing)
-    val ambientIn = seg(p, 0.55f, 1f, FastOutSlowInEasing) // rings/particles fade in last
+    val markIn = seg(p, 0.05f, 0.50f, EaseOutBack)
+    val brandIn = seg(p, 0.34f, 0.68f, FastOutSlowInEasing)
+    val globeIn = seg(p, 0.20f, 1f, FastOutSlowInEasing)
 
     val transition = rememberInfiniteTransition(label = "splash")
     val breathe by transition.pulse(reduced, mid = 0.7f, from = 0.45f, to = 1f, durationMs = 2600)
     val sweep by transition.sweepPass(reduced, durationMs = 3400)
-    val drift by transition.pulse(reduced, mid = 0.5f, from = 0f, to = 1f, durationMs = 22_000)
-    val orbit by transition.sweepPass(reduced, durationMs = 18_000)
-    val ripple by transition.sweepPass(reduced, durationMs = 4200)
+    val spin by transition.sweepPass(reduced, durationMs = 20_000)
+
+    val cells = remember { landCells() }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                // 1. Cinematic base: true black, with the accent living only as a faint centred pool
-                //    of light that the glass sits in. Mesh is subdued and pulled toward the middle;
-                //    a hard vignette crushes the frame edges to pure black (letterbox-dark mood).
                 drawRect(Color.Black)
-                val r = size.maxDimension * 0.72f
-                val t = drift
-                meshLobe(accent, 0.16f, r, size.width * (0.42f + 0.05f * cos(t * TAU)), size.height * (0.40f + 0.04f * sin(t * TAU)))
-                meshLobe(Violet400, 0.08f, r * 0.8f, size.width * (0.62f - 0.05f * sin(t * TAU)), size.height * (0.60f - 0.04f * cos(t * TAU)))
-                drawRect(
-                    Brush.radialGradient(
-                        colors = listOf(Color.Transparent, Color.Transparent, Color.Black),
-                        center = Offset(size.width * 0.5f, size.height * 0.46f),
-                        radius = size.maxDimension * 0.62f,
+
+                // Globe: centred exactly on the bottom edge so precisely half the sphere shows,
+                // grown in on entrance so it appears to rise into frame.
+                val radius = size.height * 0.40f * (0.90f + 0.10f * globeIn)
+                val cx = size.width / 2f
+                val cy = size.height
+
+                // Atmosphere: a soft accent halo hugging the limb, plus a wide bleed above it.
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(Color.Transparent, Color.Transparent, accent.copy(alpha = 0.22f * globeIn), Color.Transparent),
+                        center = Offset(cx, cy),
+                        radius = radius * 1.30f,
                     ),
+                    radius = radius * 1.30f,
+                    center = Offset(cx, cy),
+                )
+                // Body: a barely-lifted disc so the dots read as sitting on a solid sphere, lit
+                // from the upper left and falling to black at the limb.
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            accent.copy(alpha = 0.16f * globeIn),
+                            accent.copy(alpha = 0.05f * globeIn),
+                            Color.Transparent,
+                        ),
+                        center = Offset(cx - radius * 0.34f, cy - radius * 0.42f),
+                        radius = radius * 1.5f,
+                    ),
+                    radius = radius,
+                    center = Offset(cx, cy),
+                )
+                // Terminator rim: a thin bright arc where the lit edge catches the light.
+                drawCircle(
+                    color = accent.copy(alpha = 0.30f * globeIn),
+                    radius = radius,
+                    center = Offset(cx, cy),
+                    style = Stroke(width = 1.dp.toPx()),
                 )
 
-                // 2. Broadcast rings + orbiting sparks, centred on the floating mark (which sits a little
-                //    above screen centre because the brand + rail hang beneath it in the column).
-                if (!reduced && ambientIn > 0f) {
-                    val cx = size.width / 2f
-                    val cy = size.height / 2f - 46.dp.toPx()
-                    val markHalf = 60.dp.toPx()
-                    // Three concentric rings, staggered, expanding out and fading.
-                    for (i in 0 until 3) {
-                        val phase = frac(ripple + i / 3f)
-                        val rad = markHalf * 1.3f + phase * markHalf * 3.4f
-                        val a = (1f - phase) * 0.42f * ambientIn
-                        if (a > 0.01f) {
-                            drawCircle(
-                                color = accent.copy(alpha = a),
-                                radius = rad,
-                                center = Offset(cx, cy),
-                                style = Stroke(width = 1.5.dp.toPx()),
-                            )
-                        }
-                    }
-                    // Orbiting spark particles on a gentle ellipse.
-                    val orbitR = markHalf * 2.6f
-                    for (i in 0 until 6) {
-                        val ang = orbit * TAU + i * (TAU / 6f)
-                        val px = cx + cos(ang) * orbitR * 1.15f
-                        val py = cy + sin(ang) * orbitR * 0.78f
-                        val twinkle = 0.35f + 0.35f * (0.5f + 0.5f * sin(ang * 3f))
-                        val dot = 2.6.dp.toPx()
+                drawGlobeDots(cells, cx, cy, radius, spin, accent, globeIn * (0.85f + 0.15f * breathe))
+            },
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.weight(0.16f))
+
+            // Two layers: the glyph face in white, its detail pass punched back to black so the play
+            // triangle and crossbar read as cut-outs. Both assets are alpha-only masks.
+            //
+            // The bloom is a drawBehind rather than a larger sibling Box on purpose: drawBehind is
+            // unclipped, so the glow can bleed well past the 132dp mark without the mark's *layout*
+            // slot growing to match. As a sibling it reserved its full diameter of vertical space and
+            // shoved the wordmark down onto the globe.
+            Box(
+                modifier = Modifier
+                    .size(132.dp)
+                    .drawBehind {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf(accent.copy(alpha = twinkle * ambientIn), Color.Transparent),
-                                center = Offset(px, py),
-                                radius = dot * 3f,
+                                colors = listOf(accent.copy(alpha = (0.16f + 0.13f * breathe) * markIn), Color.Transparent),
+                                center = center,
+                                radius = size.minDimension * 1.30f,
                             ),
-                            radius = dot * 3f,
-                            center = Offset(px, py),
+                            radius = size.minDimension * 1.30f,
                         )
                     }
-                }
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(contentAlignment = Alignment.Center) {
-                // Accent bloom + anamorphic lens streak, both centred on the floating mark. No plate --
-                // the mark is the hero, suspended in the pool of light against pure black.
-                Box(
-                    modifier = Modifier
-                        .size(440.dp)
-                        .graphicsLayer { alpha = bloomIn.coerceIn(0f, 1f) }
-                        .drawBehind {
-                            // Soft radial bloom the mark floats inside.
-                            val glow = 0.30f + 0.34f * breathe
-                            drawCircle(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(accent.copy(alpha = glow), Color.Transparent),
-                                    radius = size.minDimension * (0.20f + 0.14f * bloomIn),
-                                ),
-                                radius = size.minDimension * 0.5f,
-                            )
-                            // Anamorphic horizontal lens flare through the mark: stacked thin lines with a
-                            // bright core falling off to a wide, faint bleed -- the classic cinematic streak.
-                            val cy = size.height / 2f
-                            val flareA = markIn * (0.45f + 0.55f * breathe)
-                            listOf(1.5.dp to 0.85f, 4.dp to 0.26f, 11.dp to 0.09f).forEach { (half, a) ->
-                                val h = half.toPx() * 2f
-                                drawRect(
-                                    brush = Brush.horizontalGradient(
-                                        listOf(Color.Transparent, White.copy(alpha = a * flareA), Color.Transparent),
-                                    ),
-                                    topLeft = Offset(0f, cy - h / 2f),
-                                    size = Size(size.width, h),
-                                )
-                            }
-                        },
-                )
-
-                // The mark, floating free -- scales in with a soft settle, then breathes with the bloom.
+                    .graphicsLayer {
+                        val s = 0.80f + 0.20f * markIn
+                        scaleX = s
+                        scaleY = s
+                        alpha = markIn.coerceIn(0f, 1f)
+                    },
+            ) {
                 Image(
-                    painter = painterResource(R.drawable.ic_logo_mark),
+                    painter = painterResource(R.drawable.ic_logo_glyph),
                     contentDescription = stringResource(CoreR.string.splash_logo_content_description),
-                    modifier = Modifier
-                        .size(120.dp)
-                        .graphicsLayer {
-                            val s = (0.78f + 0.22f * markIn) * (0.98f + 0.03f * breathe)
-                            scaleX = s
-                            scaleY = s
-                            alpha = markIn.coerceIn(0f, 1f)
-                        },
+                    colorFilter = ColorFilter.tint(White, BlendMode.SrcIn),
+                    modifier = Modifier.fillMaxSize(),
+                )
+                Image(
+                    painter = painterResource(R.drawable.ic_logo_glyph_detail),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(Color.Black, BlendMode.SrcIn),
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(26.dp))
             Text(
                 text = stringResource(CoreR.string.brand_name),
                 style = AreIptvTheme.typography.h2,
@@ -218,8 +202,8 @@ fun AreSplashScreen() {
                 },
             )
 
-            // Loading shimmer: a slim glass rail with a bright accent highlight sliding across it.
-            Spacer(Modifier.height(20.dp))
+            // Loading shimmer: a slim rail with a bright accent highlight sliding across it.
+            Spacer(Modifier.height(22.dp))
             Box(
                 modifier = Modifier
                     .width(128.dp)
@@ -238,27 +222,169 @@ fun AreSplashScreen() {
                         )
                     },
             )
+
+            Spacer(Modifier.weight(1f))
         }
     }
 }
 
 private const val TAU = 6.2831855f
 
-/** One wide radial mesh lobe, sized past the viewport so only its soft interior shows. */
-private fun DrawScope.meshLobe(color: Color, alpha: Float, radius: Float, cx: Float, cy: Float) {
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(color.copy(alpha = alpha), Color.Transparent),
-            center = Offset(cx, cy),
-            radius = radius,
-        ),
-        radius = radius,
-        center = Offset(cx, cy),
-    )
+/** Axial tilt, radians -- enough to sell "planet" without hiding the northern landmasses. */
+private const val TILT = 0.30f
+
+/**
+ * Coarse world land mask, 72 columns x 36 rows of 5-degree cells.
+ *
+ * Row `r` is latitude `87.5 - 5r`, column `c` is longitude `-180 + 5c + 2.5`; `#` is land. Deliberately
+ * low-fidelity -- at ~4px dots the continents only need to be recognisable in silhouette.
+ */
+private val WORLD = arrayOf(
+    "........................................................................",
+    "................#########..#####........................................",
+    "..............####################.....##............####...............",
+    "........##################.#######.....#################################",
+    ".....#####################..#####...####################################",
+    "....######################...####.######################################",
+    "...#######################........######################################",
+    "....#######################.......##.###################################",
+    ".....#######################.......#####################################",
+    ".......######################......#####################################",
+    "........#####################......#####################################",
+    "...........##################....######################################.",
+    "...............#############.....#######################################",
+    ".................############...###########################.####........",
+    "...................###########..#################################.......",
+    "..................########......#####################.##############....",
+    "....................########.....##############........###.########.....",
+    "....................#########.....#############...........#############.",
+    "...................###########....##############..........#############.",
+    "...................############...##############..........#############.",
+    "....................###########...##############............####.##.....",
+    ".....................###########..##############...........#########....",
+    "......................##########..#############...........##########....",
+    ".......................#########..############............#########.....",
+    "........................#######....########................#######......",
+    ".........................#####..............................#####.....##",
+    "..........................####.......................................###",
+    "..........................####..........................................",
+    "...........................###..........................................",
+    "............................#...........................................",
+    "..........................#####.........................................",
+    "#####################...################################################",
+    "########################################################################",
+    "########################################################################",
+    "########################################################################",
+    "########################################################################",
+)
+
+/**
+ * Flattens [WORLD] into a packed `[cosLat, sinLat, sinLon, cosLon]` quad per land cell.
+ *
+ * Splitting longitude into its sine and cosine here is what makes the per-frame cost trivial: the
+ * spin only rotates about the polar axis, so `sin(lon + spin)` expands to a multiply-add against
+ * the frame's single `sin(spin)`/`cos(spin)` pair -- no trig inside the hot loop.
+ *
+ * Rows are thinned by `1/cos(lat)`. A fixed 5-degree longitude step is a *shrinking* arc as you
+ * climb toward a pole, so keeping every cell packs Siberia and northern Canada into dense concentric
+ * arcs while the tropics stay sparse -- it reads as a coiled spring, not a planet. Dropping cells in
+ * proportion to the convergence holds the surface density roughly even from equator to pole.
+ */
+private fun landCells(): FloatArray {
+    val out = ArrayList<Float>(4096)
+    for (r in WORLD.indices) {
+        val lat = (87.5f - 5f * r) * TAU / 360f
+        val cosLat = cos(lat)
+        val sinLat = sin(lat)
+        val step = (1f / cosLat.coerceAtLeast(0.04f)).toInt().coerceIn(1, 24)
+        val row = WORLD[r]
+        for (c in row.indices) {
+            if (row[c] != '#' || c % step != 0) continue
+            val lon = (-177.5f + 5f * c) * TAU / 360f
+            out.add(cosLat)
+            out.add(sinLat)
+            out.add(sin(lon))
+            out.add(cos(lon))
+        }
+    }
+    return out.toFloatArray()
 }
 
-/** Fractional part in [0,1). */
-private fun frac(v: Float): Float = v - kotlin.math.floor(v)
+/** Alpha buckets the dots are quantised into, so the whole globe flushes in [BUCKETS] draw calls. */
+private const val BUCKETS = 4
+
+/**
+ * Projects every land cell onto the sphere and draws the front-facing ones.
+ *
+ * Back-facing cells (`z <= 0`) and cells below the bottom edge are dropped, and the survivors are
+ * quantised into [BUCKETS] brightness tiers -- one [DrawScope.drawPoints] per tier. Brightness
+ * combines a fixed upper-left key light with a limb falloff, which is what gives the flat dot field
+ * its curvature.
+ */
+private fun DrawScope.drawGlobeDots(
+    cells: FloatArray,
+    cx: Float,
+    cy: Float,
+    radius: Float,
+    spin: Float,
+    accent: Color,
+    alpha: Float,
+) {
+    if (alpha <= 0.01f) return
+    val a = spin * TAU
+    val sinS = sin(a)
+    val cosS = cos(a)
+    val sinT = sin(TILT)
+    val cosT = cos(TILT)
+    // Key light, normalised: up and to the left, tipped toward the viewer.
+    val lx = -0.46f
+    val ly = 0.55f
+    val lz = 0.70f
+
+    val buckets = Array(BUCKETS) { ArrayList<Offset>(256) }
+    var i = 0
+    while (i < cells.size) {
+        val cosLat = cells[i]
+        val sinLat = cells[i + 1]
+        val sinLon0 = cells[i + 2]
+        val cosLon0 = cells[i + 3]
+        i += 4
+
+        // Spin about the polar axis, then tilt about X.
+        val sinLon = sinLon0 * cosS + cosLon0 * sinS
+        val cosLon = cosLon0 * cosS - sinLon0 * sinS
+        val x = cosLat * sinLon
+        val y0 = sinLat
+        val z0 = cosLat * cosLon
+        val y = y0 * cosT - z0 * sinT
+        val z = y0 * sinT + z0 * cosT
+        if (z <= 0.02f) continue
+
+        val sy = cy - y * radius
+        if (sy > cy) continue // below the screen edge -- the hidden half of the disc
+
+        val lit = (x * lx + y * ly + z * lz).coerceAtLeast(0f)
+        // Limb falloff: dots near the silhouette dim out so the sphere doesn't end in a hard ring.
+        val v = (0.20f + 0.80f * lit) * sqrt(z) * alpha
+        val b = (v * BUCKETS).toInt().coerceIn(0, BUCKETS - 1)
+        if (v < 0.05f) continue
+        buckets[b].add(Offset(cx + x * radius, sy))
+    }
+
+    val dot = radius * 0.0125f
+    for (b in 0 until BUCKETS) {
+        val pts = buckets[b]
+        if (pts.isEmpty()) continue
+        val tier = (b + 1f) / BUCKETS
+        drawPoints(
+            points = pts,
+            pointMode = PointMode.Points,
+            color = accent.copy(alpha = (0.22f + 0.78f * tier) * alpha),
+            strokeWidth = dot * (0.72f + 0.42f * tier),
+            cap = StrokeCap.Round,
+        )
+    }
+}
 
 /** Eased slice of the intro clock [p], mapping [start]..[end] onto 0..1. */
 private fun seg(

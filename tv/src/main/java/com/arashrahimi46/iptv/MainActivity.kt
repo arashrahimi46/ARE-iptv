@@ -4,7 +4,9 @@ import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
+import android.text.TextUtils
 import android.view.KeyEvent
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.BackHandler
@@ -38,6 +40,9 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.tween
@@ -266,7 +271,27 @@ class MainActivity : AppCompatActivity() {
             // player and the shell's tabs. Released when the Activity's composition tears down.
             val livePlayback = androidx.compose.runtime.remember { LivePlaybackController() }
             DisposableEffect(Unit) { onDispose { livePlayback.closeMini() } }
-            CompositionLocalProvider(LocalLivePlaybackController provides livePlayback) {
+            // Derive layout direction from the locale that is actually rendering, rather than
+            // trusting Configuration.layoutDirection. On API < 33 AppCompatDelegate applies the
+            // per-app locale through an override Configuration built with `setLocales()`, which
+            // swaps resource resolution (so translations DO appear) but never recomputes
+            // layoutDirection -- only `setLocale()` does that. So en -> fa stayed LTR and fa -> en
+            // stayed RTL until the process was restarted. Where the platform already gets it right
+            // (API 33+ LocaleManager, system language change) this resolves to the same value.
+            val locales = LocalConfiguration.current.locales
+            val layoutDirection = androidx.compose.runtime.remember(locales) {
+                if (!locales.isEmpty &&
+                    TextUtils.getLayoutDirectionFromLocale(locales[0]) == View.LAYOUT_DIRECTION_RTL
+                ) {
+                    LayoutDirection.Rtl
+                } else {
+                    LayoutDirection.Ltr
+                }
+            }
+            CompositionLocalProvider(
+                LocalLivePlaybackController provides livePlayback,
+                LocalLayoutDirection provides layoutDirection,
+            ) {
                 AreIptvApp()
             }
         }
@@ -981,8 +1006,8 @@ private val UNKNOWN = -1L
 /** Guards the launch auto-refresh so it fires at most once per process, not on every recomposition. */
 private var autoRefreshChecked = false
 
-/** Minimum time [AreSplashScreen] stays up on cold start (Issue #13) -- one full pass of the
- *  choreographed glass reveal (bloom -> plate settle -> mark -> brand), matching `intro`'s 1900ms
- *  tween so the reveal is never cut off mid-play. Past this floor the splash leaves as soon as the
- *  start state has loaded, so it holds the animation and nothing else. */
-private const val SPLASH_FLOOR_MS = 1900L
+/** Minimum time [AreSplashScreen] stays up on cold start (Issue #13). `intro`'s reveal (mark ->
+ *  brand -> globe rise) is a 1900ms tween, so that is the floor below which it would be cut off
+ *  mid-play; the extra time past it is deliberate dwell, letting the globe visibly turn before the
+ *  app moves on. Past this floor the splash leaves as soon as the start state has loaded. */
+private const val SPLASH_FLOOR_MS = 3400L
