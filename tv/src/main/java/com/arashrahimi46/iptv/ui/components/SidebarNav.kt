@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.border
@@ -66,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -85,13 +87,12 @@ import kotlin.math.roundToInt
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
-import com.arashrahimi46.iptv.ui.theme.AreIptvColors
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
 import com.arashrahimi46.iptv.ui.theme.TvFocusable
-import com.arashrahimi46.iptv.ui.theme.accentGradientBrush
 import com.arashrahimi46.iptv.ui.theme.softShadow
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassLens
@@ -105,16 +106,16 @@ private val LabelSizeSteps = listOf(14.sp, 13.sp, 12.sp, 11.sp)
 
 /** Default nav items per the app shell spec (app.jsx `navItems`), with placeholder Material icons. */
 val DefaultSidebarNavItems = listOf(
-    SidebarNavItem("home", R.string.nav_home, Icons.Outlined.Home),
-    SidebarNavItem("live", R.string.nav_live_tv, Icons.Outlined.LiveTv),
-    SidebarNavItem("guide", R.string.nav_tv_guide, Icons.Outlined.TableChart),
-    SidebarNavItem("movies", R.string.nav_movies, Icons.Outlined.Movie),
-    SidebarNavItem("series", R.string.nav_series, Icons.Outlined.Theaters),
-    SidebarNavItem("search", R.string.nav_search, Icons.Outlined.Search),
-    SidebarNavItem("favorites", R.string.nav_favorites, Icons.Outlined.Favorite),
-    SidebarNavItem("recordings", R.string.nav_recordings, Icons.Outlined.VideoLibrary),
-    SidebarNavItem("streams", R.string.nav_streams, Icons.Outlined.Link),
-    SidebarNavItem("settings", R.string.nav_settings, Icons.Outlined.Settings),
+    SidebarNavItem("home", CoreR.string.nav_home, Icons.Outlined.Home),
+    SidebarNavItem("live", CoreR.string.nav_live_tv, Icons.Outlined.LiveTv),
+    SidebarNavItem("guide", CoreR.string.nav_tv_guide, Icons.Outlined.TableChart),
+    SidebarNavItem("movies", CoreR.string.nav_movies, Icons.Outlined.Movie),
+    SidebarNavItem("series", CoreR.string.nav_series, Icons.Outlined.Theaters),
+    SidebarNavItem("search", CoreR.string.nav_search, Icons.Outlined.Search),
+    SidebarNavItem("favorites", CoreR.string.nav_favorites, Icons.Outlined.Favorite),
+    SidebarNavItem("recordings", CoreR.string.nav_recordings, Icons.Outlined.VideoLibrary),
+    SidebarNavItem("streams", CoreR.string.nav_streams, Icons.Outlined.Link),
+    SidebarNavItem("settings", CoreR.string.nav_settings, Icons.Outlined.Settings),
 )
 
 /**
@@ -452,7 +453,7 @@ private fun ColumnScope.SidebarNavBody(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        BrandMark(brand = brand, colors = colors)
+        BrandMark()
         Text(
             text = "$brand iptv",
             // 16sp, not the 21sp h3 role: the rail was narrowed to 168dp and the 32dp mark must stay
@@ -609,19 +610,14 @@ private fun Modifier.scrollEdgeFade(fade: Dp, opaqueFill: Color?): Modifier =
     }
 
 @Composable
-private fun BrandMark(brand: String, colors: AreIptvColors) {
-    val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            // Solid accent gradient, NOT the selection lens: the brand mark is identity, not a
-            // selected state. Turning it translucent drained it in the light theme, where the lens
-            // is a white-over-accent wash. No glow: it read as a heavy halo.
-            .background(accentGradientBrush(), shape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = brand.take(1), style = AreIptvTheme.typography.h3, color = colors.accentFg)
-    }
+private fun BrandMark() {
+    // The real logo mark, which carries its own navy plate -- so it reads identically in both
+    // themes and needs no accent fill behind it. No glow: it read as a heavy halo.
+    Image(
+        painter = painterResource(R.drawable.ic_logo_mark),
+        contentDescription = null,
+        modifier = Modifier.size(32.dp),
+    )
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)

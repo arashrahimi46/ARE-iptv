@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.sources
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,13 +25,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.data.model.PlaylistSource
 import com.arashrahimi46.iptv.data.model.SourceType
 import com.arashrahimi46.iptv.ui.components.AreButton
@@ -60,10 +62,10 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     val sources by viewModel.sources.collectAsState()
     val colors = AreIptvTheme.colors
     val firstItemFocus = remember { FocusRequester() }
-    val xtreamLabel = stringResource(R.string.sources_type_xtream)
-    val m3uLabel = stringResource(R.string.sources_type_m3u)
-    val stalkerLabel = stringResource(R.string.sources_type_stalker)
-    val exploreLabel = stringResource(R.string.sources_from_explore)
+    val xtreamLabel = stringResource(CoreR.string.sources_type_xtream)
+    val m3uLabel = stringResource(CoreR.string.sources_type_m3u)
+    val stalkerLabel = stringResource(CoreR.string.sources_type_stalker)
+    val exploreLabel = stringResource(CoreR.string.sources_from_explore)
     // At most one of these is non-null at a time -- they are the three steps of the hold-OK flow:
     // options menu -> rename dialog OR delete confirmation.
     var pendingOptions by remember { mutableStateOf<PlaylistSource?>(null) }
@@ -83,28 +85,25 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(text = "A", style = AreIptvTheme.typography.h2, color = colors.accentFg)
-                }
-                Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                Image(
+                    painter = painterResource(R.drawable.ic_logo_mark),
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp),
+                )
+                Text(text = stringResource(CoreR.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
             Box(Modifier.height(18.dp))
-            Text(text = stringResource(R.string.sources_choose_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
+            Text(text = stringResource(CoreR.string.sources_choose_title), style = AreIptvTheme.typography.display, color = colors.textPrimary)
             Box(Modifier.height(6.dp))
             Text(
-                text = stringResource(R.string.sources_choose_subtitle),
+                text = stringResource(CoreR.string.sources_choose_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
             if (sources.isNotEmpty()) {
                 Box(Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.sources_delete_hint),
+                    text = stringResource(CoreR.string.sources_delete_hint),
                     style = AreIptvTheme.typography.caption,
                     color = colors.textTertiary,
                 )
@@ -147,7 +146,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
 
             Box(Modifier.height(8.dp))
             AreButton(
-                text = stringResource(R.string.sources_add_new_playlist),
+                text = stringResource(CoreR.string.sources_add_new_playlist),
                 onClick = onAddNew,
                 variant = AreButtonVariant.Ghost,
                 size = AreButtonSize.Large,
@@ -175,19 +174,19 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                 title = target.name,
                 actions = {
                     AreButton(
-                        stringResource(R.string.action_rename),
+                        stringResource(CoreR.string.action_rename),
                         onClick = { pendingRename = target; pendingOptions = null },
                         variant = AreButtonVariant.Secondary,
                     )
                     AreButton(
-                        stringResource(R.string.action_delete),
+                        stringResource(CoreR.string.action_delete),
                         onClick = { pendingDelete = target; pendingOptions = null },
                         variant = AreButtonVariant.Danger,
                     )
                 },
             ) {
                 Text(
-                    text = stringResource(R.string.sources_options_body),
+                    text = stringResource(CoreR.string.sources_options_body),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )
@@ -206,11 +205,11 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
         ) {
             AreDialog(
                 onDismiss = { pendingRename = null },
-                title = stringResource(R.string.sources_rename_title),
+                title = stringResource(CoreR.string.sources_rename_title),
                 actions = {
-                    AreButton(stringResource(R.string.action_cancel), onClick = { pendingRename = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(stringResource(CoreR.string.action_cancel), onClick = { pendingRename = null }, variant = AreButtonVariant.Ghost)
                     AreButton(
-                        stringResource(R.string.action_save),
+                        stringResource(CoreR.string.action_save),
                         onClick = { viewModel.rename(target.id, draft); pendingRename = null },
                         disabled = draft.isBlank(),
                         modifier = Modifier.focusRequester(saveFocus),
@@ -219,7 +218,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
-                        text = stringResource(R.string.sources_rename_body),
+                        text = stringResource(CoreR.string.sources_rename_body),
                         style = AreIptvTheme.typography.body,
                         color = colors.textSecondary,
                     )
@@ -229,7 +228,7 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
                     AreTextField(
                         value = draft,
                         onValueChange = { draft = it },
-                        label = stringResource(R.string.sources_rename_label),
+                        label = stringResource(CoreR.string.sources_rename_label),
                         activateOnClick = true,
                         modifier = Modifier.focusProperties { down = saveFocus },
                     )
@@ -249,18 +248,18 @@ fun SelectSourceScreen(onSelected: () -> Unit, onAddNew: () -> Unit) {
         ) {
             AreDialog(
                 onDismiss = { pendingDelete = null },
-                title = stringResource(R.string.sources_delete_title),
+                title = stringResource(CoreR.string.sources_delete_title),
                 actions = {
-                    AreButton(stringResource(R.string.action_cancel), onClick = { pendingDelete = null }, variant = AreButtonVariant.Ghost)
+                    AreButton(stringResource(CoreR.string.action_cancel), onClick = { pendingDelete = null }, variant = AreButtonVariant.Ghost)
                     AreButton(
-                        stringResource(R.string.action_delete),
+                        stringResource(CoreR.string.action_delete),
                         onClick = { viewModel.delete(target.id); pendingDelete = null },
                         variant = AreButtonVariant.Danger,
                     )
                 },
             ) {
                 Text(
-                    text = stringResource(R.string.sources_delete_body, target.name),
+                    text = stringResource(CoreR.string.sources_delete_body, target.name),
                     style = AreIptvTheme.typography.body,
                     color = colors.textSecondary,
                 )

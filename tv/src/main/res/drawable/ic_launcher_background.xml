@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Glass redesign V1: frosted-blue tile for the adaptive launcher icon — a blue→ink diagonal
-     gradient with a soft top highlight, so the icon reads as the same glass material as the app. -->
+<!-- The adaptive launcher tile: the deep-navy plate the brand mark is drawn against, sampled
+     from the master icon render (#03143D top -> #010A28 bottom) with the same lit top edge.
+     It is deliberately NOT the app's accent blue — the foreground glyph is bright #01A1FE, so a
+     blue tile would leave the mark with almost no contrast. Kept as a vector: it is a flat
+     gradient, so a bitmap would cost KBs for nothing. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
@@ -11,11 +14,10 @@
         <aapt:attr name="android:fillColor">
             <gradient
                 android:type="linear"
-                android:startX="0" android:startY="0"
-                android:endX="108" android:endY="108">
-                <item android:offset="0.0" android:color="#FF2E6BF0" />
-                <item android:offset="0.55" android:color="#FF1D4ED8" />
-                <item android:offset="1.0" android:color="#FF0B1220" />
+                android:startX="54" android:startY="0"
+                android:endX="54" android:endY="108">
+                <item android:offset="0.0" android:color="#FF03143D" />
+                <item android:offset="1.0" android:color="#FF010A28" />
             </gradient>
         </aapt:attr>
     </path>
@@ -26,7 +28,7 @@
                 android:type="linear"
                 android:startX="54" android:startY="0"
                 android:endX="54" android:endY="54">
-                <item android:offset="0.0" android:color="#40FFFFFF" />
+                <item android:offset="0.0" android:color="#1FFFFFFF" />
                 <item android:offset="1.0" android:color="#00FFFFFF" />
             </gradient>
         </aapt:attr>

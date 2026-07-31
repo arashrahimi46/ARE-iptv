@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.onboarding
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,7 +34,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.tv.material3.Text
-import com.arashrahimi46.iptv.core.R
+import com.arashrahimi46.iptv.R
+import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.components.AreButton
 import com.arashrahimi46.iptv.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.ui.components.AreButtonVariant
@@ -63,10 +65,10 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit
     val colors = AreIptvTheme.colors
 
     val stepLabels = listOf(
-        stringResource(R.string.onboarding_step_source),
-        stringResource(R.string.onboarding_step_credentials),
-        stringResource(R.string.onboarding_step_epg),
-        stringResource(R.string.onboarding_step_confirm),
+        stringResource(CoreR.string.onboarding_step_source),
+        stringResource(CoreR.string.onboarding_step_credentials),
+        stringResource(CoreR.string.onboarding_step_epg),
+        stringResource(CoreR.string.onboarding_step_confirm),
     )
 
     Box(
@@ -87,21 +89,18 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit
                 .padding(horizontal = 40.dp, vertical = 20.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(colors.accent, RoundedCornerShape(AreIptvTheme.radius.sm)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(text = "A", style = AreIptvTheme.typography.h2, color = colors.accentFg)
-                }
-                Text(text = stringResource(R.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
+                Image(
+                    painter = painterResource(R.drawable.ic_logo_mark),
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp),
+                )
+                Text(text = stringResource(CoreR.string.brand_name), style = AreIptvTheme.typography.h2, color = colors.textPrimary)
             }
             Box(Modifier.height(8.dp))
-            Text(text = stringResource(R.string.onboarding_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
+            Text(text = stringResource(CoreR.string.onboarding_title), style = AreIptvTheme.typography.h1, color = colors.textPrimary)
             Box(Modifier.height(4.dp))
             Text(
-                text = stringResource(R.string.onboarding_subtitle),
+                text = stringResource(CoreR.string.onboarding_subtitle),
                 style = AreIptvTheme.typography.body,
                 color = colors.textSecondary,
             )
@@ -169,10 +168,10 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit
             // growth before it started covering Continue's tap area. 40dp gives real clearance.
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
                 if (stepIndex > 0) {
-                    AreButton(stringResource(R.string.action_back), onClick = { viewModel.clearError(); navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
+                    AreButton(stringResource(CoreR.string.action_back), onClick = { viewModel.clearError(); navController.popBackStack() }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 }
                 Box(Modifier.weight(1f))
-                AreButton(stringResource(R.string.onboarding_skip_for_now), onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
+                AreButton(stringResource(CoreR.string.onboarding_skip_for_now), onClick = { onFinished(null) }, variant = AreButtonVariant.Ghost, size = AreButtonSize.Large)
                 if (stepIndex < stepRoutes.lastIndex) {
                     val canContinue = when (currentRoute) {
                         "credentials" -> when (uiState.sourceType) {
@@ -185,14 +184,14 @@ fun OnboardingFlow(onFinished: (sourceId: Long?) -> Unit, onExplore: (() -> Unit
                         else -> true
                     }
                     AreButton(
-                        stringResource(R.string.action_continue),
+                        stringResource(CoreR.string.action_continue),
                         onClick = { viewModel.clearError(); navController.navigate(stepRoutes[stepIndex + 1]) },
                         size = AreButtonSize.Large,
                         disabled = !canContinue,
                     )
                 } else {
                     AreButton(
-                        text = if (uiState.result != null) stringResource(R.string.onboarding_go_to_home) else stringResource(R.string.onboarding_add_playlist),
+                        text = if (uiState.result != null) stringResource(CoreR.string.onboarding_go_to_home) else stringResource(CoreR.string.onboarding_add_playlist),
                         modifier = Modifier.focusRequester(primaryFocus),
                         onClick = {
                             if (uiState.result != null) {
