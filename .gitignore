@@ -9,6 +9,11 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+# Module build outputs -- only the root /build was covered, so :tv/:mobile/:core/:baselineprofile
+# outputs showed up as untracked noise on every status.
+**/build/
+/.idea/
+/.kotlin/
 /captures
 .externalNativeBuild
 .cxx

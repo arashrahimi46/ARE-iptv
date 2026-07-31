@@ -1100,6 +1100,12 @@ function fmtCost(n) {
   return '$' + n.toFixed(4);
 }
 
+// Account organization — the same value /status shows, from ~/.claude.json
+function getAccountOrg() {
+  const acct = readJSON(path.join(os.homedir(), '.claude.json'))?.oauthAccount;
+  return acct?.organizationName || acct?.emailAddress || null;
+}
+
 // ── Single-line statusline (compact) ─────────────────────────────
 function generateStatusline() {
   const git       = getGitInfo();
@@ -1113,6 +1119,9 @@ function generateStatusline() {
   // Brand + swarm dot
   const swarmDot = swarm.coordinationActive ? `${x.green}●${x.reset}` : `${x.slate}○${x.reset}`;
   parts.push(`${x.bold}${x.purple}▊ Monomind${x.reset} ${swarmDot}`);
+
+  const acctOrg = getAccountOrg();
+  if (acctOrg) parts.push(`${x.purple}${x.bold}${acctOrg}${x.reset}`);
 
   // Git branch + changes (compact)
   if (git.gitBranch) {
@@ -1210,6 +1219,9 @@ function generateDashboard() {
   const projName = getProjectName();
   const cwdName = path.basename(CWD);
   let hdr = `${x.bold}${x.purple}▊Monomind ${VERSION}${x.reset} ${swarmDot} ${x.teal}${x.bold}${projName}${x.reset} ${DIV} ${x.dim}◎${cwdName}${x.reset} ${DIV} ${x.violet}⬡${git.name}${x.reset}`;
+
+  const org = getAccountOrg();
+  if (org) hdr += ` ${DIV} ${x.purple}${x.bold}${org}${x.reset}`;
 
   if (git.gitBranch) {
     hdr += ` ${DIV} ${x.sky}⎇${x.bold}${git.gitBranch}${x.reset}`;
