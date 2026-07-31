@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
@@ -291,6 +292,11 @@ fun LivePlayerScreen(
     // move between them (driven explicitly by the handler so focus can't escape the panel).
     val seekBarFocusRequester = remember { FocusRequester() }
     var seekBarFocused by remember { mutableStateOf(false) }
+    // The top-bar Back button is the row ABOVE the panel. Without these the model consumed Up at the
+    // panel's top row, so Back was only reachable by a Left-fallthrough out of the button row -- and
+    // once there, the next Up bounced focus straight back down into the seek bar.
+    val backFocusRequester = remember { FocusRequester() }
+    var backFocused by remember { mutableStateOf(false) }
     // Auto-hide the HUD after a stretch of inactivity -- EVEN while a control is focused. Any
     // D-pad activity bumps interactionTick (see onPreviewKeyEvent), restarting this timer; only
     // genuine idleness hides it. (Previously it never hid once the panel was focused, so a single
@@ -391,9 +397,14 @@ fun LivePlayerScreen(
                             if (!panelFocused) {
                                 if (!isVod) viewModel.switchChannel(-1)
                                 controlsVisible = true
+                            } else if (backFocused) {
+                                // Already on the topmost row.
                             } else if (isVod && !seekBarFocused) {
                                 // Button row -> back up to the seek bar.
                                 runCatching { seekBarFocusRequester.requestFocus() }
+                            } else {
+                                // Top row of the panel -> the Back button above it.
+                                runCatching { backFocusRequester.requestFocus() }
                             }
                             true
                         }
@@ -403,6 +414,11 @@ fun LivePlayerScreen(
                                 else {
                                     viewModel.switchChannel(1)
                                     controlsVisible = true
+                                }
+                            } else if (backFocused) {
+                                // Back -> re-enter the panel at its top row.
+                                runCatching {
+                                    (if (isVod) seekBarFocusRequester else hudFocusRequester).requestFocus()
                                 }
                             } else if (isVod && seekBarFocused) {
                                 // Seek bar -> drop to the transport buttons (Play).
@@ -1032,6 +1048,9 @@ fun LivePlayerScreen(
                         contentDescription = stringResource(CoreR.string.action_back),
                         onClick = handleBack,
                         variant = AreIconButtonVariant.Glass,
+                        modifier = Modifier
+                            .focusRequester(backFocusRequester)
+                            .onFocusChanged { backFocused = it.isFocused },
                     )
                     Box(Modifier.align(Alignment.CenterEnd)) {
                         AreStreamHealth(
