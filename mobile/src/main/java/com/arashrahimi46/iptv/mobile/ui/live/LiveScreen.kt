@@ -126,7 +126,11 @@ fun LiveScreen(onOpenChannel: (Channel) -> Unit, viewModel: LiveViewModel = view
                         selected = selected,
                         label = { it ?: allLabel },
                         onSelect = viewModel::selectCategory,
-                        modifier = Modifier.fillMaxWidth(),
+                        // 16dp is the horizontal inset every other tab strip in the app uses
+                        // (Guide, Favorites, Search, Movies/Series, the season strip). Live was the
+                        // only one passing a bare fillMaxWidth, so its track ran hard into both
+                        // screen edges while every other screen's floated clear of them.
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                         scrollable = true,
                     )
                 }
