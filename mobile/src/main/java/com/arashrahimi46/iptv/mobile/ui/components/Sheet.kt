@@ -89,6 +89,14 @@ fun AreBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = maxHeight)
+                    // Opaque base UNDER the glass fill. `surfaceGlassElevated` is 0.72 alpha (0.58
+                    // on the blur-capable tier) and there is no per-surface blur -- that pass was
+                    // removed deliberately for perf because the ambient backdrop it samples is
+                    // already low-frequency. A modal is the documented exception: it sits over the
+                    // real page, i.e. SHARP text, so 0.72 of nothing left the settings list plainly
+                    // readable through the sheet. Layering the opaque surface first keeps the glass
+                    // tint and hairline while blocking read-through, and costs no render pass.
+                    .background(AreIptvTheme.colors.surface1, shape)
                     .glassSurface(shape, elevated = true)
                     .navigationBarsPadding(),
             ) {

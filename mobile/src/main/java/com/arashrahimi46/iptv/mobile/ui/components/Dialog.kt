@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -51,6 +52,10 @@ fun AreAlertDialog(
                 modifier = modifier
                     .fillMaxWidth(0.92f)
                     .widthIn(max = 400.dp)
+                    // Opaque base under the glass: see the note in Sheet.kt. A dialog floats over
+                    // sharp page content with no blur pass behind it, so the translucent fill alone
+                    // let the page read straight through the card.
+                    .background(colors.surface1, RoundedCornerShape(AreIptvTheme.radius.xl))
                     .glassSurface(RoundedCornerShape(AreIptvTheme.radius.xl), elevated = true)
                     .padding(24.dp),
             ) {
