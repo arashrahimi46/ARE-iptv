@@ -77,6 +77,13 @@ data class GuideUiState(
     val epgUnavailable: Boolean = false,
     /** Drives the pull-to-refresh indicator; set only by [GuideViewModel.refresh]. */
     val isRefreshing: Boolean = false,
+    /**
+     * True until the first real emission resolves. Without it the initial state is
+     * indistinguishable from two genuine failures -- `hasSource = false` rendered "no playlist
+     * source" and `rows = []` rendered "nothing in this category" -- so opening the Guide flashed
+     * two wrong error screens before the data it already had in Room arrived.
+     */
+    val isLoading: Boolean = true,
 )
 
 /**
@@ -122,18 +129,18 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                 sourceId to parental
             }.collectLatest { (sourceId, parental) ->
                 if (sourceId == null) {
-                    _uiState.value = GuideUiState(hasSource = false)
+                    _uiState.value = GuideUiState(hasSource = false, isLoading = false)
                     return@collectLatest
                 }
                 val source = db.playlistSourceDao().getById(sourceId)
                 if (source == null) {
-                    _uiState.value = GuideUiState(hasSource = false)
+                    _uiState.value = GuideUiState(hasSource = false, isLoading = false)
                     return@collectLatest
                 }
                 repository.channelCategoryCounts(sourceId).collectLatest { counts ->
                     val groups = counts.map { it.name }.filterNot { parental.hidden(it) }
                     if (groups.isEmpty()) {
-                        _uiState.value = GuideUiState(hasSource = true)
+                        _uiState.value = GuideUiState(hasSource = true, isLoading = false)
                         return@collectLatest
                     }
                     observeRows(source, groups, parental)
@@ -161,7 +168,14 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
             }
             .collectLatest { e ->
                 _uiState.update {
-                    it.copy(hasSource = true, groups = e.groups, selectedGroup = e.group, day = e.day, rows = e.rows)
+                    it.copy(
+                        hasSource = true,
+                        groups = e.groups,
+                        selectedGroup = e.group,
+                        day = e.day,
+                        rows = e.rows,
+                        isLoading = false,
+                    )
                 }
             }
     }

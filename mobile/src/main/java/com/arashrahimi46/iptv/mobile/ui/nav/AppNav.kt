@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -109,7 +111,7 @@ fun AppBottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val colors = AreIptvTheme.colors
-    val shape = RoundedCornerShape(AreIptvTheme.radius.xl)
+    val shape = RoundedCornerShape(AreIptvTheme.radius.pill)
 
     // Only Home/Live/Movies/Series/Settings are real tab destinations; every other route (search,
     // guide, favorites, streams, recordings, the detail/player screens) is a child screen pushed
@@ -128,9 +130,16 @@ fun AppBottomBar(navController: NavHostController) {
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .glassSurface(shape, elevated = true),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .glassSurface(shape, elevated = true)
+            // Clip AFTER the glass fill: each tab's selected-state skin paints its own rounded
+            // rect, and at the two ends that rect's corners sat outside the bar's much rounder
+            // `pill` edge -- the selected pill visibly poked past the glass and read as a broken /
+            // clipped border. Clipping the container confines every child's paint to the bar shape.
+            .clip(shape)
+            .padding(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         ProvideOnGlass {
             tabs.forEach { tab ->
@@ -138,6 +147,10 @@ fun AppBottomBar(navController: NavHostController) {
                 AppBottomBarItem(
                     tab = tab,
                     selected = selected,
+                    // Equal weight, not SpaceEvenly: the tabs wrapped their own width, so a long
+                    // label ("Settings") claimed more room than a short one ("Live") and the icons
+                    // ended up on an irregular pitch instead of a rhythm.
+                    modifier = Modifier.weight(1f),
                     onClick = {
                         navController.navigate(tab.route) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -152,17 +165,24 @@ fun AppBottomBar(navController: NavHostController) {
 }
 
 @Composable
-private fun AppBottomBarItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
+private fun AppBottomBarItem(
+    tab: Tab,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val skin = controlSkin(ControlTone.Neutral, selected = selected, selectable = true)
     val label = stringResource(tab.labelRes)
     Column(
-        modifier = Modifier
-            .wrapContentWidth()
+        modifier = modifier
+            .heightIn(min = 52.dp)
             .areTouch(
                 onClick = onClick,
                 skin = skin,
-                shape = RoundedCornerShape(AreIptvTheme.radius.md),
+                // Pill, matching the bar's own curve. The old `md` (14dp) corner inside a 999dp
+                // container looked like a rounded rectangle rattling around inside a capsule.
+                shape = RoundedCornerShape(AreIptvTheme.radius.pill),
                 role = Role.Tab,
                 interactionSource = interactionSource,
             )
@@ -170,12 +190,20 @@ private fun AppBottomBarItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
             // the selected property every tab announces identically and the current one is
             // unknowable non-visually. Same pattern as AreChip (Chip.kt).
             .semantics { this.selected = selected }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         Icon(tab.icon, contentDescription = null, tint = skin.content, modifier = Modifier.size(22.dp))
-        Text(text = label, style = AreIptvTheme.typography.caption, color = skin.content, maxLines = 1)
+        Text(
+            text = label,
+            style = AreIptvTheme.typography.caption,
+            color = skin.content,
+            maxLines = 1,
+            // Five equal columns on a narrow handset leave ~60dp each; without this a long
+            // translation (de "Einstellungen", fa "تنظیمات") hard-truncates mid-glyph.
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -220,6 +248,8 @@ fun AppNavHost(
                 onOpenSearch = { navController.navigate("search") },
                 onOpenGuide = { navController.navigate("guide") },
                 onOpenFavorites = { navController.navigate("favorites") },
+                onOpenRecordings = { navController.navigate("recordings") },
+                onOpenStreams = { navController.navigate("streams") },
             )
         }
         composable(Tab.Live.route) {
@@ -248,9 +278,6 @@ fun AppNavHost(
         }
         composable(Tab.Settings.route) {
             SettingsScreen(
-                onOpenFavorites = { navController.navigate("favorites") },
-                onOpenRecordings = { navController.navigate("recordings") },
-                onOpenStreams = { navController.navigate("streams") },
                 onOpenPlayback = { navController.navigate("settings/playback") },
                 onOpenSubtitles = { navController.navigate("settings/subtitles") },
                 onOpenParental = { navController.navigate("settings/parental") },

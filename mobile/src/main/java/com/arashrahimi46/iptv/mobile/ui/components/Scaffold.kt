@@ -13,10 +13,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
 import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
@@ -73,9 +76,24 @@ fun AreTopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val backLabel = stringResource(CoreR.string.action_back)
+    val colors = AreIptvTheme.colors
     ProvideOnGlass(true) {
         TopAppBar(
-            modifier = modifier.glassSurface(RectangleShape, elevated = false, shadow = false),
+            // Not `glassSurface`: that draws a 1dp border around the WHOLE shape, and on a
+            // full-bleed rectangle the result is a boxed outline running down both sides and
+            // across the top, so the bar read as a floating card rather than page chrome. Page
+            // chrome only wants the fill plus the hairline where it meets the content.
+            modifier = modifier
+                .background(colors.surfaceGlass)
+                .drawBehind {
+                    val stroke = 1.dp.toPx()
+                    drawLine(
+                        color = colors.borderDefault,
+                        start = Offset(0f, size.height - stroke / 2f),
+                        end = Offset(size.width, size.height - stroke / 2f),
+                        strokeWidth = stroke,
+                    )
+                },
             title = {
                 Text(
                     text = title,

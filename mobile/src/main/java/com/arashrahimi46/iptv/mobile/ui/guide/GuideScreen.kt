@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -43,6 +45,7 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreBottomSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.mobile.ui.components.AreEmptyState
+import com.arashrahimi46.iptv.mobile.ui.components.AreSkeleton
 import com.arashrahimi46.iptv.mobile.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButtonSize
@@ -118,6 +121,12 @@ fun GuideScreen(
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            // Loading is checked BEFORE the two empty states, because at first composition the
+            // state is legitimately "no source, no rows" and both of those render as errors.
+            if (state.isLoading) {
+                GuideSkeletons()
+                return@Column
+            }
             if (!state.hasSource) {
                 AreEmptyState(
                     title = stringResource(CoreR.string.guide_no_source),
@@ -253,6 +262,30 @@ private data class GuideSheetTarget(val channel: Channel, val slot: GuideProgram
 
 /** `contentType` values so Compose's slot-reuse pool never tries to recycle a header into a cell. */
 private enum class GuideItem { Header, Cell, More }
+
+/**
+ * Placeholder agenda shown while the first emission resolves. It mirrors the real layout (day
+ * strip, then channel-header + two programme cells per channel) so the screen doesn't visibly
+ * re-flow when the data lands.
+ */
+@Composable
+private fun GuideSkeletons() {
+    val sm = RoundedCornerShape(AreIptvTheme.radius.sm)
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        AreSkeleton(
+            modifier = Modifier.padding(top = 8.dp).fillMaxWidth().height(40.dp),
+            shape = RoundedCornerShape(AreIptvTheme.radius.pill),
+        )
+        repeat(5) {
+            AreSkeleton(modifier = Modifier.padding(top = 6.dp).size(width = 160.dp, height = 20.dp), shape = sm)
+            AreSkeleton(modifier = Modifier.fillMaxWidth().height(56.dp))
+            AreSkeleton(modifier = Modifier.fillMaxWidth().height(56.dp))
+        }
+    }
+}
 
 @Composable
 private fun GuideChannelHeader(channel: Channel, obscured: Boolean, onPlay: () -> Unit) {

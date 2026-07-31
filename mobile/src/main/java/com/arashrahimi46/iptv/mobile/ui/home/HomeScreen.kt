@@ -3,6 +3,7 @@ package com.arashrahimi46.iptv.mobile.ui.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,9 +16,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,9 +31,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
@@ -42,7 +52,10 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreRefreshBox
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSkeleton
 import com.arashrahimi46.iptv.mobile.ui.components.AreTileActionSheet
+import com.arashrahimi46.iptv.mobile.ui.components.areTouch
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
+import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Phone-scale rail tile widths. The TV `tilePosterWidth`/`tileLandWidth` tokens (208dp/320dp) are
  * sized for a ~1920px arm's-length viewport; on a ~360-411dp portrait phone they would fit ~1.5
@@ -64,10 +77,12 @@ fun HomeScreen(
     onOpenEpisode: (Long) -> Unit,
     onOpenSearch: () -> Unit = {},
     onOpenGuide: () -> Unit = {},
-    // Retained so the existing nav call site keeps compiling. The two quick-action button rows this
-    // screen used to render are gone (design §4.2): Streams/Recordings live in Settings, Favorites
-    // is the "See all" of the two favourites rails.
+    // Favorites / Recordings / Streams are reachable from Home, not buried in Settings. They are
+    // library destinations you visit while browsing, not preferences you configure once, and
+    // Settings is the wrong shelf for them (design §4.2 said otherwise; that was wrong in use).
     onOpenFavorites: () -> Unit = {},
+    onOpenRecordings: () -> Unit = {},
+    onOpenStreams: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -115,6 +130,8 @@ fun HomeScreen(
                 else -> HomeRails(
                     state = state,
                     contentPadding = contentPadding,
+                    onOpenRecordings = onOpenRecordings,
+                    onOpenStreams = onOpenStreams,
                     favoriteChannelIds = favoriteChannelIds,
                     favoriteVodIds = favoriteVodIds,
                     onToggleChannelFavorite = viewModel::toggleChannelFavorite,
@@ -163,6 +180,8 @@ private fun HomeRails(
     onOpenTitle: (VodTitle) -> Unit,
     onOpenEpisode: (Long) -> Unit,
     onOpenFavorites: () -> Unit,
+    onOpenRecordings: () -> Unit,
+    onOpenStreams: () -> Unit,
     onLongPress: (HomeTileAction) -> Unit,
 ) {
     LazyColumn(
@@ -170,6 +189,13 @@ private fun HomeRails(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        item(key = "quick-actions", contentType = "quick-actions") {
+            HomeQuickActions(
+                onOpenFavorites = onOpenFavorites,
+                onOpenRecordings = onOpenRecordings,
+                onOpenStreams = onOpenStreams,
+            )
+        }
         // Every rail is conditional, so without a key the LazyColumn re-associates saved item state
         // (each rail's LazyRow scroll offset) BY INDEX: the moment a rail appears or disappears,
         // every rail below it inherits its neighbour's scroll position. The key fixes that; the
@@ -277,6 +303,89 @@ private fun TitleRail(
                 onToggleFavorite = { onToggleTitleFavorite(item) },
                 onLongClick = { onLongPress(HomeTileAction.OnTitle(item, null)) },
                 lockCategory = item.categoryName,
+            )
+        }
+    }
+}
+
+/**
+ * The three library destinations that are not bottom-nav tabs. They sit at the top of Home as
+ * glass cards rather than as rows inside Settings: they are places you go while browsing, not
+ * preferences you set once, and reaching Recordings meant three taps through a settings list.
+ *
+ * Real [glassSurface], not a nested control skin, because Home's rails render straight onto the
+ * page background -- this IS the page's first glass layer, so it is not the "glass never stacks"
+ * case that makes the bottom bar's tabs use [controlSkin] instead.
+ */
+@Composable
+private fun HomeQuickActions(
+    onOpenFavorites: () -> Unit,
+    onOpenRecordings: () -> Unit,
+    onOpenStreams: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            // 16dp matches the rails' own contentPadding, so the cards line up with the first
+            // tile of every rail below instead of sitting on their own margin.
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        HomeQuickAction(
+            icon = Icons.Filled.Favorite,
+            label = stringResource(CoreR.string.nav_favorites),
+            onClick = onOpenFavorites,
+            modifier = Modifier.weight(1f),
+        )
+        HomeQuickAction(
+            icon = Icons.Filled.Videocam,
+            label = stringResource(CoreR.string.nav_recordings),
+            onClick = onOpenRecordings,
+            modifier = Modifier.weight(1f),
+        )
+        HomeQuickAction(
+            icon = Icons.Filled.Wifi,
+            label = stringResource(CoreR.string.nav_streams),
+            onClick = onOpenStreams,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun HomeQuickAction(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(AreIptvTheme.radius.lg)
+    Column(
+        modifier = modifier
+            .glassSurface(shape, elevated = true)
+            // Clip before areTouch so the ripple stays inside the rounded card instead of
+            // squaring off its corners on press.
+            .clip(shape)
+            .areTouch(onClick = onClick, shape = shape, contentDescription = label)
+            .padding(vertical = 14.dp, horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ProvideOnGlass {
+            Icon(
+                imageVector = icon,
+                // The label directly beneath says the same thing; announcing it twice makes
+                // TalkBack read every card as "Favorites, Favorites".
+                contentDescription = null,
+                tint = AreIptvTheme.colors.accent,
+                modifier = Modifier.size(24.dp),
+            )
+            Text(
+                text = label,
+                style = AreIptvTheme.typography.label,
+                color = AreIptvTheme.colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

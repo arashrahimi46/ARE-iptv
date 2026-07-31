@@ -66,9 +66,6 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onOpenFavorites: () -> Unit = {},
-    onOpenRecordings: () -> Unit = {},
-    onOpenStreams: () -> Unit = {},
     onOpenPlayback: () -> Unit = {},
     onOpenSubtitles: () -> Unit = {},
     onOpenParental: () -> Unit = {},
@@ -120,29 +117,9 @@ fun SettingsScreen(
                 bottom = padding.calculateBottomPadding() + 32.dp,
             ),
         ) {
-            // ---- Library -------------------------------------------------------------------
-            item(contentType = "header") { AreSectionHeader(stringResource(CoreR.string.settings_section_library)) }
-            item(contentType = "row") {
-                AreListRow(
-                    title = stringResource(CoreR.string.nav_favorites),
-                    leadingIcon = Icons.Filled.Favorite,
-                    onClick = onOpenFavorites,
-                )
-            }
-            item(contentType = "row") {
-                AreListRow(
-                    title = stringResource(CoreR.string.nav_recordings),
-                    leadingIcon = Icons.Filled.Videocam,
-                    onClick = onOpenRecordings,
-                )
-            }
-            item(contentType = "row") {
-                AreListRow(
-                    title = stringResource(CoreR.string.nav_streams),
-                    leadingIcon = Icons.Filled.Wifi,
-                    onClick = onOpenStreams,
-                )
-            }
+            // The Library section (Favorites / Recordings / Streams) moved to Home's quick-action
+            // cards -- they are destinations you browse to, not preferences, and three taps deep
+            // in a settings list was the wrong place for them.
 
             // ---- General -------------------------------------------------------------------
             item(contentType = "header") { AreSectionHeader(stringResource(CoreR.string.settings_section_general)) }

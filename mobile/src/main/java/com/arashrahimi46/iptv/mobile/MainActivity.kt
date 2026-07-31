@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -218,6 +219,16 @@ class MainActivity : AppCompatActivity() {
                             CompositionLocalProvider(LocalParentalBlur provides parentalBlur) {
                                 Scaffold(
                                     modifier = Modifier.fillMaxSize(),
+                                    // No system-bar insets here. Everything below already handles its
+                                    // own: AreScreenScaffold's TopAppBar applies the status-bar inset,
+                                    // the detail screens pad their floating back button, onboarding /
+                                    // language use safeDrawingPadding, and the player hides the bars
+                                    // outright. Letting Scaffold add them too inset every screen
+                                    // TWICE -- which is what made the top bar look about double
+                                    // height, and what put a status-bar-tall black band above the
+                                    // video. The bottom bar is unaffected: Scaffold still measures it
+                                    // into contentPadding, and it applies navigationBarsPadding itself.
+                                    contentWindowInsets = WindowInsets(0),
                                     bottomBar = { if (!playerActive) AppBottomBar(navController) },
                                 ) { padding ->
                                     AppNavHost(navController, modifier = Modifier.padding(padding), startDestination = startRoute)
