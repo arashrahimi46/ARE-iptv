@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
+import com.arashrahimi46.iptv.data.parser.OmdbClient
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.glassChild
@@ -76,8 +77,14 @@ fun ArePosterTile(
 ) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.lg)
-    val initials = remember(title) {
-        title.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    // Cleaned once, here, rather than at each of the six call sites (grids, rails, search,
+    // favorites, continue-watching) -- every one of them was passing the provider's raw name.
+    val display = remember(title) { OmdbClient.displayTitle(title) }
+    // Initials come off the CLEANED name too. On a raw "FR - The Matrix" the old code took the
+    // first letters of "FR" and "-", so every French title in the catalog fell back to the same
+    // "F-" placeholder instead of "TM".
+    val initials = remember(display) {
+        display.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
     }
     val washHue = rememberTileWashHue(posterUrl, seed = title)
     val blur = LocalParentalBlur.current
@@ -92,6 +99,11 @@ fun ArePosterTile(
                 .areTouch(
                     onClick = if (obscured) blur.onReveal else onClick,
                     shape = shape,
+                    // Without this the tappable poster is an unlabeled "Button": the title Text
+                    // lives outside this Box, so it never merges into the clickable, and the
+                    // artwork is correctly contentDescription=null. TalkBack announced the whole
+                    // grid as a run of anonymous buttons with the names stranded as separate stops.
+                    contentDescription = listOfNotNull(display, meta).joinToString(", "),
                     onLongClick = if (obscured) null else onLongClick,
                     interactionSource = interactionSource,
                     backgroundColor = colors.surfaceGlass,
@@ -197,11 +209,15 @@ fun ArePosterTile(
         }
         Box(Modifier.height(10.dp))
         Text(
-            text = title,
+            text = display,
             style = AreIptvTheme.typography.tile,
-            color = colors.textPrimary,
+            // Always two lines tall, even for a one-word title. The block used to size to its
+            // content, so neighbours in the same row ended at different heights and every rail and
+            // grid had a ragged bottom edge.
+            minLines = 2,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            color = colors.textPrimary,
         )
         if (meta != null) {
             Text(

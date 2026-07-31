@@ -132,6 +132,44 @@ object OmdbClient {
         return s to year
     }
 
+    /**
+     * The same idea as [cleanTitle] but safe to SHOW, e.g. `"FR - The Matrix (1999) 1080p x265"` ->
+     * `"The Matrix"`. Providers ship release-scene filenames as titles and we were rendering them
+     * verbatim, which is the single loudest "this app is cheap" tell in the grids.
+     *
+     * Deliberately more conservative than [cleanTitle], because the two failure modes differ: a bad
+     * lookup key just misses and falls back, whereas a bad display name is a permanently wrong title
+     * in front of the user. So this does NOT reuse [cleanTitle], which would corrupt real titles --
+     * its prefix rule strips any 2-4 letter token before a separator (`"FBI: Most Wanted"` ->
+     * `"Most Wanted"`) and it always maps `.` to a space (`"S.W.A.T."` -> `"S W A T"`).
+     *
+     * Falls back to the raw name if cleaning would leave nothing.
+     */
+    fun displayTitle(raw: String): String {
+        var s = raw
+        // Dot/underscore separators only when the name has no real spaces -- i.e. it IS a filename.
+        if (!s.contains(' ')) s = s.replace('.', ' ').replace('_', ' ')
+        // Only strip a leading code we recognise as a language/country/quality tag.
+        s = LEADING_TAG.replace(s) { m -> if (m.groupValues[1].lowercase() in KNOWN_TAGS) "" else m.value }
+        s = s.replace(SQUARE_GROUP, " ")
+        s = s.replace(JUNK, " ")
+        s = s.replace(Regex("\\s{2,}"), " ").trim().trim('-', '|', ':', '_', ' ')
+        return s.ifBlank { raw }
+    }
+
+    /** Square-bracket groups in an IPTV title are release tags essentially without exception. */
+    private val SQUARE_GROUP = Regex("\\[[^\\]]*\\]")
+
+    private val LEADING_TAG = Regex("^\\s*\\|?\\s*([A-Za-z]{2,4})\\s*[|\\-:]\\s+")
+
+    /** Leading tags that are a source/language/quality marker rather than part of the title. */
+    private val KNOWN_TAGS = setOf(
+        "ar", "az", "bg", "br", "ca", "cz", "da", "de", "dk", "el", "en", "es", "eu", "fa", "fi",
+        "fr", "gr", "hr", "hu", "in", "it", "nl", "no", "pl", "pt", "ro", "rs", "ru", "se", "si",
+        "sk", "sv", "tr", "uk", "us", "ex", "vip", "hd", "sd", "fhd", "uhd", "4k", "multi", "lat",
+        "ger", "fre", "spa", "ita", "por", "pol", "rus", "tur", "ara", "hin", "eng",
+    )
+
     /** Quality/codec/language/year tokens that pollute IPTV titles -- dropped before an OMDb lookup. */
     private val JUNK = Regex(
         "\\b((19|20)\\d{2}|1080p|720p|480p|2160p|4k|uhd|hdr|x264|x265|h264|h265|hevc|" +

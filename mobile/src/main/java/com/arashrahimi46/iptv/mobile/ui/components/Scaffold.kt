@@ -90,8 +90,15 @@ fun AreTopBar(
             // full-bleed rectangle the result is a boxed outline running down both sides and
             // across the top, so the bar read as a floating card rather than page chrome. Page
             // chrome only wants the fill plus the hairline where it meets the content.
+            // Opaque, not `surfaceGlass`. Screens differ in how they clear the bar: Movies pads
+            // its Column by the top inset, but Settings passes it as LazyColumn contentPadding,
+            // so its rows deliberately scroll THROUGH the bar's band. At 55% alpha with no
+            // backdrop blur that band is see-through, and the scrolled rows rendered straight
+            // over the title -- "Start screen / Home" on top of "Settings", both unreadable.
+            // Glass over the opaque page is arithmetically just a lighter grey anyway, so it was
+            // paying a translucency cost for no material effect.
             modifier = modifier
-                .background(colors.surfaceGlass)
+                .background(colors.surface1)
                 .drawBehind {
                     val stroke = 1.dp.toPx()
                     drawLine(

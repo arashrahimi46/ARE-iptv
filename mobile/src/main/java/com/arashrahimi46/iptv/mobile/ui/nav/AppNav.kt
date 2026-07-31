@@ -1,18 +1,12 @@
 package com.arashrahimi46.iptv.mobile.ui.nav
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
@@ -20,20 +14,20 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -62,15 +56,10 @@ import com.arashrahimi46.iptv.mobile.ui.settings.AboutSettingsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.ParentalSettingsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.PlaybackSettingsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SubtitleSettingsScreen
-import com.arashrahimi46.iptv.mobile.ui.components.areTouch
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.data.model.VodTitle
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.controlSkin
-import com.arashrahimi46.iptv.ui.theme.glassSurface
 
 /** Bottom-nav destinations, per product-lead's Phase 1 spec: Home / Live / Movies / Series / Settings. */
 sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -95,23 +84,26 @@ fun playerRoute(kind: String, id: Long) = "player/$kind/$id"
 fun isPlayerRoute(route: String?): Boolean = route?.startsWith("player/") == true
 
 /**
- * Bottom tab bar, rebuilt on the glass primitives in `com.arashrahimi46.iptv.ui.theme` (this
- * module's own copy -- :core is resources-only) in place of the stock
- * Material3 [androidx.compose.material3.NavigationBar]. The bar itself is a page-level glass
- * surface -- it sits directly on the screen, not nested inside another glass panel -- so it takes
- * [glassSurface] (the same "translucent fill + lit hairline edge" every full glass surface uses).
- * Each tab is then a control ONE LEVEL IN, so it takes the nested-child treatment via
- * [ProvideOnGlass] rather than a second glass fill (see ControlSkin.kt: "glass never stacks" --
- * two glassSurface fills would compound to ~87% opacity and read as an opaque bar). The selected
- * tab uses the same accent-lens `controlSkin(selectable = true, selected = ...)` funnel :tv's own
- * `AreTab` uses, for visual parity between the two apps.
+ * Bottom tab bar: the stock Material 3 [NavigationBar].
+ *
+ * This was previously a hand-built floating pill row on the glass primitives -- a capsule container
+ * with each tab drawn as its own smaller capsule via the `controlSkin(selectable = true)` funnel,
+ * for visual parity with :tv's `AreTab`. It didn't hold up on a phone. Chasing parity with a D-pad
+ * app imported a focus-shaped idiom into a touch surface: five nested capsules inside a capsule read
+ * as buttons in a tray rather than navigation, and the selected state was a ~30% accent lens with a
+ * neutral label -- the weakest-contrast element on screen doing the most important job (telling you
+ * where you are). M3's indicator pill answers that unambiguously, and the component brings correct
+ * spec height, touch targets, `Role.Tab` + selected semantics, and its own window-inset handling
+ * for free -- all of which the custom version had to restate by hand.
+ *
+ * The theme is still ours: `AreIptvColors` maps onto [NavigationBarItemDefaults] explicitly, since
+ * this app doesn't drive Material's own `colorScheme`.
  */
 @Composable
 fun AppBottomBar(navController: NavHostController) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val colors = AreIptvTheme.colors
-    val shape = RoundedCornerShape(AreIptvTheme.radius.pill)
 
     // Only Home/Live/Movies/Series/Settings are real tab destinations; every other route (search,
     // guide, favorites, streams, recordings, the detail/player screens) is a child screen pushed
@@ -135,84 +127,56 @@ fun AppBottomBar(navController: NavHostController) {
             ?: Tab.Home
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-            .glassSurface(shape, elevated = true)
-            // Clip AFTER the glass fill: each tab's selected-state skin paints its own rounded
-            // rect, and at the two ends that rect's corners sat outside the bar's much rounder
-            // `pill` edge -- the selected pill visibly poked past the glass and read as a broken /
-            // clipped border. Clipping the container confines every child's paint to the bar shape.
-            .clip(shape)
-            .padding(6.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        ProvideOnGlass {
-            tabs.forEach { tab ->
-                val selected = tab == selectedTab
-                AppBottomBarItem(
-                    tab = tab,
-                    selected = selected,
-                    // Equal weight, not SpaceEvenly: the tabs wrapped their own width, so a long
-                    // label ("Settings") claimed more room than a short one ("Live") and the icons
-                    // ended up on an irregular pitch instead of a rhythm.
-                    modifier = Modifier.weight(1f),
-                    onClick = {
-                        navController.navigate(tab.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun AppBottomBarItem(
-    tab: Tab,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val skin = controlSkin(ControlTone.Neutral, selected = selected, selectable = true)
-    val label = stringResource(tab.labelRes)
-    Column(
-        modifier = modifier
-            .heightIn(min = 52.dp)
-            .areTouch(
-                onClick = onClick,
-                skin = skin,
-                // Pill, matching the bar's own curve. The old `md` (14dp) corner inside a 999dp
-                // container looked like a rounded rectangle rattling around inside a capsule.
-                shape = RoundedCornerShape(AreIptvTheme.radius.pill),
-                role = Role.Tab,
-                interactionSource = interactionSource,
+    NavigationBar(
+        // Opaque, matching the top bar. Both are page chrome sitting on the solid page, where a
+        // translucent fill composites to little more than a lighter grey while still costing a
+        // blend -- and on the top bar it was letting scrolled content render through the title.
+        containerColor = colors.surface1,
+        contentColor = colors.textPrimary,
+        // The 1dp hairline where the bar meets content, same treatment as AreScreenScaffold's bar.
+        modifier = Modifier.drawBehind {
+            val stroke = 1.dp.toPx()
+            drawLine(
+                color = colors.borderDefault,
+                start = Offset(0f, stroke / 2f),
+                end = Offset(size.width, stroke / 2f),
+                strokeWidth = stroke,
             )
-            // Role.Tab alone tells TalkBack *what* this is, not *which one is current* -- without
-            // the selected property every tab announces identically and the current one is
-            // unknowable non-visually. Same pattern as AreChip (Chip.kt).
-            .semantics { this.selected = selected }
-            .padding(horizontal = 4.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        },
     ) {
-        Icon(tab.icon, contentDescription = null, tint = skin.content, modifier = Modifier.size(22.dp))
-        Text(
-            text = label,
-            style = AreIptvTheme.typography.caption,
-            color = skin.content,
-            maxLines = 1,
-            // Five equal columns on a narrow handset leave ~60dp each; without this a long
-            // translation (de "Einstellungen", fa "تنظیمات") hard-truncates mid-glyph.
-            overflow = TextOverflow.Ellipsis,
-        )
+        tabs.forEach { tab ->
+            val selected = tab == selectedTab
+            val label = stringResource(tab.labelRes)
+            NavigationBarItem(
+                selected = selected,
+                onClick = {
+                    navController.navigate(tab.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = { Icon(tab.icon, contentDescription = null) },
+                label = {
+                    Text(
+                        text = label,
+                        maxLines = 1,
+                        // Five items on a narrow handset leave ~60dp each; without this a long
+                        // translation (de "Einstellungen", fa "تنظیمات") hard-truncates mid-glyph.
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    // Accent lives in the indicator pill and the active glyph, so "where am I" is
+                    // carried by hue AND shape rather than by a faint fill difference alone.
+                    selectedIconColor = colors.accentFg,
+                    selectedTextColor = colors.textPrimary,
+                    indicatorColor = colors.accent,
+                    unselectedIconColor = colors.textSecondary,
+                    unselectedTextColor = colors.textSecondary,
+                ),
+            )
+        }
     }
 }
 

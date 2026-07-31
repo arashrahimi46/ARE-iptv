@@ -225,6 +225,11 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     }
                     is PlayerTarget.DirectStream, is PlayerTarget.Recording -> error("handled above")
                 }
+                // Publish the name BEFORE the network work below. Resolving the URL and preparing
+                // the stream is where playback actually fails, and until this landed the catch had
+                // nothing to preserve -- a dead channel rendered as "Playback failed" on black with
+                // no indication of WHICH channel had failed.
+                _state.update { it.copy(title = name, subtitle = subtitle) }
                 val source = repository.observeSource(sourceId).first() ?: error("Source not found")
                 val url = resolver.resolve(source, kind, externalId, storedUrl, series = seriesNum)
                 player.setMediaItem(MediaItem.fromUri(url), resumeMs)
@@ -244,7 +249,16 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
                     else -> Unit
                 }
             } catch (t: Throwable) {
-                _state.value = PlayerUiState(isLoading = false, error = t.message ?: "Playback failed")
+                // Was `_state.value = PlayerUiState(...)`, which built a BLANK state and so threw
+                // away the title published above, plus isLive and the episode siblings. Copy
+                // instead, so the error screen can still say what failed and Back/next still work.
+                // The fallback was also the hardcoded English literal "Playback failed" -- the one
+                // user-facing string in this file that skipped :core and shipped untranslated to
+                // all 24 locales.
+                val failed = getApplication<Application>().getString(CoreR.string.player_playback_failed)
+                _state.update {
+                    it.copy(isLoading = false, buffering = false, error = t.message ?: failed)
+                }
             }
         }
     }

@@ -29,12 +29,17 @@ data class AreIptvSpacing(
 
     // Common sizing
     val sidebarWidth: Dp = 104.dp,
-    val sidebarWidthOpen: Dp = 183.dp,
+    // Open widths trimmed 16dp (183/179). The expanded rail OVERLAYS the page rather than reflowing
+    // it, so every dp it opens to is a dp of content it covers -- at the old width it sat on top of
+    // the first rail's heading and clipped the first tile. Safe to narrow because SidebarNav derives
+    // its label size from this token: it measures the current locale's labels and steps 14->11sp to
+    // fit, so a shorter budget shrinks the text rather than cutting it.
+    val sidebarWidthOpen: Dp = 167.dp,
     // Floating-glass sidebar (SidebarStyle.FLOATING): a box inset off the screen edge, so it runs a
     // touch narrower than the flush rail and reserves box-width + 2×inset in the shell Row.
     val sidebarInset: Dp = 20.dp,
     val sidebarBoxWidth: Dp = 96.dp,
-    val sidebarBoxWidthOpen: Dp = 179.dp,
+    val sidebarBoxWidthOpen: Dp = 163.dp,
     val tilePosterWidth: Dp = 208.dp,
     val tilePosterHeight: Dp = 312.dp,
     val tileLandWidth: Dp = 320.dp,

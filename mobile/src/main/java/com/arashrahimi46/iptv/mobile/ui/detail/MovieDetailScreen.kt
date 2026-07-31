@@ -102,6 +102,7 @@ fun MovieDetailScreen(
         else -> MovieDetailContent(
             title = title,
             isFavorite = isFavorite,
+            hasResumePoint = state.resumeMs > 0L,
             onPlay = { onPlay(vodTitleId) },
             onToggleFavorite = viewModel::toggleFavorite,
             onBack = onBack,
@@ -113,6 +114,7 @@ fun MovieDetailScreen(
 private fun MovieDetailContent(
     title: VodTitle,
     isFavorite: Boolean,
+    hasResumePoint: Boolean,
     onPlay: () -> Unit,
     onToggleFavorite: () -> Unit,
     onBack: () -> Unit,
@@ -186,7 +188,13 @@ private fun MovieDetailContent(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 AreButton(
-                    text = stringResource(CoreR.string.detail_play),
+                    // The player already seeks to the stored position on load, so the button was
+                    // resuming while promising "Play" -- the action was right and only the label
+                    // lied. Both strings already ship in all 24 locales (the tile action sheet
+                    // uses them), so this costs no translation work.
+                    text = stringResource(
+                        if (hasResumePoint) CoreR.string.tile_action_resume else CoreR.string.detail_play,
+                    ),
                     onClick = onPlay,
                     modifier = Modifier.weight(1f),
                     variant = AreButtonVariant.Primary,
@@ -217,8 +225,15 @@ private fun MovieDetailContent(
 @Composable
 private fun Hero(title: VodTitle) {
     val colors = AreIptvTheme.colors
+    // Two scrims, not one. The bottom gradient blends artwork into the page; the top one is for
+    // legibility -- the status-bar icons and the floating Back button are drawn straight onto this
+    // image, and Back is a translucent glass disc, so over a bright poster (an overcast sky, a
+    // snow scene) both vanished completely. It read as though the screen had no back button at all.
     val scrim = remember(colors.bgBase) {
         Brush.verticalGradient(0.45f to Color.Transparent, 1f to colors.bgBase)
+    }
+    val topScrim = remember {
+        Brush.verticalGradient(0f to Color.Black.copy(alpha = 0.45f), 0.28f to Color.Transparent)
     }
     Box(Modifier.fillMaxWidth().aspectRatio(HeroAspect)) {
         AsyncImage(
@@ -228,6 +243,7 @@ private fun Hero(title: VodTitle) {
             modifier = Modifier.fillMaxSize().background(colors.surface1),
         )
         Box(Modifier.matchParentSize().background(scrim))
+        Box(Modifier.matchParentSize().background(topScrim))
     }
 }
 

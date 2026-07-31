@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.model.ContentType
 import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
 import com.arashrahimi46.iptv.data.repository.FavoritesRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
@@ -22,6 +23,13 @@ import kotlinx.coroutines.launch
 data class MovieDetailUiState(
     val loading: Boolean = true,
     val title: VodTitle? = null,
+    /**
+     * Where the user left off, or 0 if they haven't started. The screen was entirely resume-blind:
+     * it never consulted [ContinueWatchingRepository] at all, so a half-watched film offered a
+     * "Play" button that silently resumed mid-scene, and there was no way to start over. The rest
+     * of the app (Home's Continue Watching rail, the tile action sheet) already knew this position.
+     */
+    val resumeMs: Long = 0L,
 )
 
 /**
@@ -34,6 +42,7 @@ data class MovieDetailUiState(
 class MovieDetailViewModel(app: Application, private val vodTitleId: Long) : AndroidViewModel(app) {
     private val repository: PlaylistRepository = PlaylistRepositoryImpl(app)
     private val favoritesRepository = FavoritesRepository(app)
+    private val continueWatchingRepository = ContinueWatchingRepository(app)
 
     val isFavorite: StateFlow<Boolean> = favoritesRepository.favoriteVodIds
         .map { vodTitleId in it }
@@ -45,7 +54,8 @@ class MovieDetailViewModel(app: Application, private val vodTitleId: Long) : And
     init {
         viewModelScope.launch {
             val title = repository.titlesByIds(listOf(vodTitleId)).firstOrNull()
-            _uiState.update { it.copy(loading = false, title = title) }
+            val resumeMs = continueWatchingRepository.resumePositionFor(vodTitleId = vodTitleId, seriesEpisodeId = null)
+            _uiState.update { it.copy(loading = false, title = title, resumeMs = resumeMs) }
             if (title == null) return@launch
             val enriched = runCatching { repository.ensureMetadataLoaded(title) }.getOrNull()
             if (enriched != null) _uiState.update { it.copy(title = enriched) }

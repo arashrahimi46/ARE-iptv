@@ -11,7 +11,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -228,8 +231,21 @@ class MainActivity : AppCompatActivity() {
                                     // height, and what put a status-bar-tall black band above the
                                     // video. The bottom bar is unaffected: Scaffold still measures it
                                     // into contentPadding, and it applies navigationBarsPadding itself.
-                                    contentWindowInsets = WindowInsets(0),
-                                    bottomBar = { if (!playerActive) AppBottomBar(navController) },
+                                    // Bottom only. The top/side comment above still holds -- those
+                                    // stay at zero so nothing insets twice. The bottom is the
+                                    // shell's to own in BOTH states: with the bar, Scaffold reports
+                                    // the bar's height (it applies navigationBarsPadding itself);
+                                    // without it, this hands child screens the system nav inset
+                                    // they'd otherwise have to each remember to add.
+                                    contentWindowInsets = WindowInsets.navigationBars
+                                        .only(WindowInsetsSides.Bottom),
+                                    // Tab roots only. `!playerActive` also left the bar on child
+                                    // screens -- detail, search, guide, settings sub-pages -- where
+                                    // it highlighted whichever tab you happened to arrive from, and
+                                    // on detail it stacked underneath that screen's own sticky Play
+                                    // bar, giving two bottom bars. Splash and onboarding got one
+                                    // too, which is why setup looked like a tab of the app.
+                                    bottomBar = { if (currentRoute in tabRoutes) AppBottomBar(navController) },
                                 ) { padding ->
                                     AppNavHost(navController, modifier = Modifier.padding(padding), startDestination = startRoute)
                                 }

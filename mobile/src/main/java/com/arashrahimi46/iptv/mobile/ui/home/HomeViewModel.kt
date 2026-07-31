@@ -144,10 +144,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         // on mobile yet); vodTitleId (movies) and seriesEpisodeId (series, resolved
                         // to their parent series title) both resolve.
                         val vodPool = moviePool + seriesPool
-                        val watchedWeights = channelPool.groupBy { it.categoryName ?: "" }
-                            .mapValues { it.value.size.toDouble() }
-                        val liveNow = HomeRailCurator.curateChannels(channelPool, watchedWeights, daySeed, limit = 20)
-                        val recommended = HomeRailCurator.recommend(moviePool, seriesPool, emptyMap(), daySeed, limit = 20)
                         // Continue-watching resolves straight from Room, not from the sampled
                         // pools, so it needs the same filter applied at its own source.
                         val continueWatching = resolveContinueWatching(cwEntries, sourceId, parental)
@@ -162,6 +158,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         val favoriteTitles = repository.titlesByIds(favVodIds.toList())
                             .filter { it.sourceId == sourceId && !parental.hidden(it.categoryName) }
                             .take(20)
+                        // Real taste signal, from what this user actually watches and favourites.
+                        // `recommend` was being handed an EMPTY map, which zeroes the 0.6 category
+                        // term inside curateTitles and collapses "For You" to rating + year +
+                        // daily jitter -- byte-identical for every user of the app.
+                        val vodWeights = categoryWeights(
+                            continueWatching.titles.map { it.categoryName } + favoriteTitles.map { it.categoryName },
+                        )
+                        // Live had a weight map, but it counted how many channels each category
+                        // CONTAINS, so it just floated the provider's fattest bundle to the top and
+                        // called it personalisation. Prefer favourites; fall back to that density
+                        // heuristic only when there's no signal yet, which at least beats raw order.
+                        val channelWeights = categoryWeights(favoriteChannels.map { it.categoryName })
+                            .ifEmpty {
+                                channelPool.groupBy { it.categoryName ?: "" }
+                                    .mapValues { it.value.size.toDouble() }
+                            }
+                        val liveNow = HomeRailCurator.curateChannels(channelPool, channelWeights, daySeed, limit = 20)
+                        val recommended = HomeRailCurator.recommend(moviePool, seriesPool, vodWeights, daySeed, limit = 20)
                         HomeUiState(
                             hasSource = true,
                             continueWatching = continueWatching.titles,
@@ -178,6 +192,21 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
             .onEach { _state.value = it }
             .launchIn(viewModelScope)
+    }
+
+    /**
+     * Counts how often each category shows up in the user's engagement, normalized so the most-
+     * engaged category is 1.0. `curateTitles`/`curateChannels` mix this in at 0.6 against rating
+     * (0.25) and recency (0.15), so the values only need to be relative to each other. Blank/absent
+     * categories are dropped rather than bucketed under "", which would otherwise become the single
+     * heaviest "category" on any playlist with sloppy group tags.
+     */
+    private fun categoryWeights(categories: List<String?>): Map<String, Double> {
+        val counts = categories.filterNot { it.isNullOrBlank() }
+            .groupingBy { it!! }
+            .eachCount()
+        val top = counts.values.maxOrNull()?.toDouble() ?: return emptyMap()
+        return counts.mapValues { it.value / top }
     }
 
     private data class ResolvedContinueWatching(
