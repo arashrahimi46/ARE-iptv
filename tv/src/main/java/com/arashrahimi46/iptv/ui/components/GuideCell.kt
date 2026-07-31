@@ -78,6 +78,12 @@ fun AreGuideCell(
         // accent border so the "on now" block stays the clear focal point.
         borderColor = if (now) colors.accent else null,
         borderBrush = if (now) null else glassBorderBrush(),
+        // No scale-up here, unlike every other focusable. The programme lane is a
+        // `horizontalScroll` container, which CLIPS: a 1.06x cell at the lane's left edge grew
+        // straight into that clip and had its ring/glow shaved off against the pinned channel
+        // column. The ring + glow alone still mark focus, and this also drops a graphicsLayer
+        // animation from the D-pad path, which is the hottest path on this screen.
+        disableScale = true,
     ) { _, _ ->
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
             if (now) {
@@ -89,12 +95,22 @@ fun AreGuideCell(
                         .background(colors.accent),
                 )
             }
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+            // A programme that began before the window opens is clamped to the window edge and lands
+            // on the layout's 24dp minimum width -- far too narrow for a clock, let alone a title, so
+            // it rendered as a cropped glyph or two ("1 8", ": ."). Below the threshold the cell is
+            // still a focusable block (it must be: it plays the channel, and D-pad focus has to be
+            // able to reach it) but it draws no text at all.
+            if (width >= MinLabelledWidth) {
+            Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = time,
                         style = AreIptvTheme.typography.mono,
                         color = if (now) colors.accentHover else colors.textTertiary,
+                        // A programme that started before the window opens is clamped to the window
+                        // edge and lands on the 24dp minimum width -- without this the clock wrapped
+                        // to two lines ("18" / "00") and blew the cell's fixed height.
+                        maxLines = 1,
                     )
                     // P0.3 (WCAG 1.4.1): these are color-only status cues to a sighted user
                     // (a colored dot / a glyph-only chip) -- contentDescription exposes the
@@ -117,14 +133,18 @@ fun AreGuideCell(
                         )
                     }
                 }
-                Box(Modifier.height(4.dp))
+                Box(Modifier.height(2.dp))
                 Text(
                     text = title,
-                    style = AreIptvTheme.typography.label,
+                    // caption (14sp), not label (16sp): the design system's stated 16sp floor is for
+                    // *UI* text, and this is dense tabular schedule data -- the same 14sp the mono
+                    // time label above it already uses. Buys ~10 more channel rows on screen.
+                    style = AreIptvTheme.typography.caption,
                     color = colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+            }
             }
             if (now && progress > 0f) {
                 Box(
@@ -138,6 +158,10 @@ fun AreGuideCell(
         }
     }
 }
+
+/** Narrowest cell that still gets a time + title. A "HH:MM" at 14sp mono plus the cell's 10dp side
+ *  padding needs roughly this much; below it the label is cropped mid-glyph rather than ellipsized. */
+private val MinLabelledWidth = 56.dp
 
 @Preview(widthDp = 900, heightDp = 140, showBackground = true)
 @Composable

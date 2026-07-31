@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,12 +57,20 @@ import com.arashrahimi46.iptv.ui.components.AreGuideCell
 import com.arashrahimi46.iptv.ui.components.rememberClockFormatter
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.glassSurface
+import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
 import com.arashrahimi46.iptv.ui.theme.rememberPlaybackFocusRequester
 import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import java.time.Instant
 import java.time.ZoneId
 
-/** px-per-minute scale for proportional GuideCell widths (mirrors Guide.jsx `PX`). */
+/**
+ * px-per-minute scale for proportional GuideCell widths (mirrors Guide.jsx `PX`).
+ *
+ * Left at 3dp deliberately. It was tried at 2.4 to fit more of the window on screen, and that is the
+ * wrong axis to compress: a 30-minute programme is then 72dp wide, which after the cell's padding
+ * leaves ~52dp of title -- every real programme rendered as "Hom...". The screen's wasted space was
+ * vertical (the category chip strip and 64dp rows), and that is where the density came from.
+ */
 private val DpPerMinute = 3.dp
 
 /**
@@ -110,18 +122,19 @@ fun GuideScreen(
     val zone = remember { ZoneId.systemDefault() }
 
     // Initial D-pad focus, matching every other tab: without it the shell leaves focus on the
-    // sidebar and the Guide reads as dead. Lands on the SELECTED category chip rather than a
-    // programme cell -- from there Down enters the grid and Left/Right switches category, whereas
-    // starting inside the grid would mean travelling back up past the info bar to change category.
+    // sidebar and the Guide reads as dead. Lands on the category button rather than a programme
+    // cell -- from there Down enters the grid, whereas starting inside the grid would mean
+    // travelling back up past the info bar to change category.
     // Stands down when returning from the player (the played cell is restored instead).
     val groupFocusRequester = remember { FocusRequester() }
-    // Keyed on whether the selected chip EXISTS yet, not on which one is selected: categories arrive
+    // Keyed on whether categories have ARRIVED, not on which one is selected: they load
     // asynchronously (so LaunchedEffect(Unit) would fire before there is anything to focus), but
     // re-firing on every category change would yank focus back out of the grid mid-browse.
-    val selectedChipExists = state.selectedGroup in state.groups
-    LaunchedEffect(selectedChipExists) {
-        if (selectedChipExists && lastPlayedChannelId == null) groupFocusRequester.requestFocusWhenReady()
+    val hasGroups = state.groups.isNotEmpty()
+    LaunchedEffect(hasGroups) {
+        if (hasGroups && lastPlayedChannelId == null) groupFocusRequester.requestFocusWhenReady()
     }
+    var categoryPickerOpen by remember { mutableStateOf(false) }
 
     // P0.2: fillMaxSize (not just padding) so this root Column has a real bounded height to
     // hand down -- GuideScreen's caller (MainActivity) no longer wraps this tab in a
@@ -131,13 +144,28 @@ fun GuideScreen(
     // "measured with an unbounded amount of height" -- a lazy layout can't live inside another
     // unbounded-height vertical scroll container (same-axis nesting), which is exactly what
     // wrapping this tab in a scrolling container would still do.
-    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp10)) {
-        // Header: day chips (the page title lives in the shell top bar).
+    // bottom = sp5, not sp10: the grid's own last row needs headroom for its focus ring, but 40dp of
+    // it was a whole channel row's worth of dead space on a 540dp-tall screen.
+    Column(modifier = modifier.fillMaxSize().padding(top = spacing.sp2, bottom = spacing.sp5)) {
+        // Header: category button + day chips (the page title lives in the shell top bar).
+        //
+        // The category used to be a horizontally-scrolling strip of one chip per group, on its own
+        // row. On a real playlist that is dozens of chips the user has to D-pad through one at a
+        // time, and it cost a whole row of vertical space on the one screen whose entire value is
+        // density. It is now a single button opening a searchable, pinnable picker -- the same
+        // trade Browse's category column already makes.
         Row(
             modifier = Modifier.padding(horizontal = spacing.safeX).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            AreChip(
+                text = state.selectedGroup.ifEmpty { stringResource(R.string.browse_categories_header) },
+                onClick = { categoryPickerOpen = true },
+                icon = Icons.Filled.FilterList,
+                selected = true,
+                modifier = Modifier.focusRequester(groupFocusRequester),
+            )
             Box(Modifier.weight(1f))
             AreSegmentedControl(
                 options = GuideDay.entries,
@@ -146,28 +174,7 @@ fun GuideScreen(
                 onSelect = { viewModel.selectDay(it) },
             )
         }
-        Box(Modifier.height(spacing.sp5))
-
-        // Category tabs -- horizontally scrollable so every category is reachable on a real
-        // playlist with dozens of groups (the Guide is strictly per-category; no "All" tab).
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = spacing.safeX),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            state.groups.forEach { group ->
-                val isSelected = group == state.selectedGroup
-                AreChip(
-                    text = group,
-                    onClick = { viewModel.selectGroup(group) },
-                    selected = isSelected,
-                    modifier = if (isSelected) Modifier.focusRequester(groupFocusRequester) else Modifier,
-                )
-            }
-        }
-        Box(Modifier.height(spacing.sp5))
+        Box(Modifier.height(spacing.sp3))
 
         // P0.4: EPG source unreachable -- a small banner, not a full-screen replacement. Channel
         // rows below still render (each with its own "No programme data" placeholder slot).
@@ -179,14 +186,14 @@ fun GuideScreen(
                     color = colors.danger,
                 )
             }
-            Box(Modifier.height(spacing.sp4))
+            Box(Modifier.height(spacing.sp2))
         }
 
         // Sticky focused-program info bar (no hover/tooltips on TV -- last focused cell stays shown).
         Box(Modifier.padding(horizontal = spacing.safeX)) {
             FocusedInfoBar(viewModel)
         }
-        Box(Modifier.height(spacing.sp5))
+        Box(Modifier.height(spacing.sp3))
 
         // Shared horizontal ScrollState -- the SAME instance applied to the timeline header
         // and every row below keeps them scrolling in lockstep (Compose's standard
@@ -218,7 +225,14 @@ fun GuideScreen(
             // that's hundreds of rows composed up front. LazyColumn only composes the rows
             // actually visible (plus a small buffer). weight(1f) fills the remaining height
             // left in this Column after the timeline header row above.
-            LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                // Headroom INSIDE the viewport (CLAUDE.md's grid rule): a focused cell's ring and
+                // glow are drawn outside the row's own bounds, so without this the first and last
+                // rows have theirs shaved flat against the viewport edge.
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 4.dp, bottom = 20.dp),
+            ) {
                 items(state.rows, key = { it.channel.id }) { row ->
                     // A focused cell scales up (1.06) + draws an outward glow that overflows the
                     // row height. LazyColumn draws items in order, so the NEXT row would paint over
@@ -232,7 +246,7 @@ fun GuideScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        ChannelHeaderCell(name = row.channel.name, number = row.channel.number)
+                        ChannelHeaderCell(channel = row.channel)
                         // PERF: the lane is virtualized BY HAND -- see [rememberGuideLane]. It cannot be
                         // a LazyRow: every lane and the timeline header share one pixel [ScrollState] so
                         // the grid stays aligned by TIME, and a LazyRow scrolls by item index, which
@@ -311,6 +325,20 @@ fun GuideScreen(
         }
     }
 
+    if (categoryPickerOpen) {
+        GuideCategoryDialog(
+            categories = state.groupCounts,
+            pinned = state.pinnedGroups,
+            selected = state.selectedGroup,
+            onSelect = {
+                viewModel.selectGroup(it)
+                categoryPickerOpen = false
+            },
+            onTogglePin = viewModel::togglePinnedGroup,
+            onDismiss = { categoryPickerOpen = false },
+        )
+    }
+
     catchupMenu?.let { (channel, slot) ->
         CatchupActionDialog(
             channelName = channel.name,
@@ -332,6 +360,111 @@ fun GuideScreen(
             onDismiss = { catchupMenu = null },
         )
     }
+}
+
+/** Combining marks left by an NFD decomposition -- stripping them is what makes the category
+ *  filter diacritic-insensitive ("Deportes" matches "Déportes", "Turkiye" matches "Türkiye"). */
+private val CombiningMarks = Regex("\\p{Mn}+")
+
+private fun String.foldForSearch(): String =
+    java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD).replace(CombiningMarks, "").lowercase()
+
+/**
+ * The Guide's category picker: search field + the category list with pinned entries floated to the
+ * top (hold OK on a row to pin/unpin). Replaces the old chip strip -- see the header Row above.
+ *
+ * A real [androidx.compose.ui.window.Dialog] window, not an inline overlay, so D-pad focus is
+ * trapped and can't leak into the guide grid behind it (CLAUDE.md's dialog rule).
+ */
+@Composable
+private fun GuideCategoryDialog(
+    categories: List<com.arashrahimi46.iptv.data.db.CategoryCount>,
+    pinned: Set<String>,
+    selected: String,
+    onSelect: (String) -> Unit,
+    onTogglePin: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    var query by remember { mutableStateOf("") }
+    val searchFocus = remember { FocusRequester() }
+
+    // Folded once per catalog, not once per keystroke -- Normalizer over a few hundred names on
+    // every character typed is the kind of per-frame work that shows up as jank on a TV.
+    val folded = remember(categories) { categories.map { it.name.foldForSearch() } }
+    val visible = remember(folded, query, pinned) {
+        val needle = query.foldForSearch().trim()
+        categories.indices
+            .filter { needle.isEmpty() || folded[it].contains(needle) }
+            // Pinned first, otherwise the provider's own order is preserved (it is usually
+            // meaningful) -- so this is a stable partition, not a re-sort.
+            .sortedBy { if (categories[it].name in pinned) 0 else 1 }
+            .map { categories[it] }
+    }
+
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = stringResource(R.string.browse_categories_header),
+            width = 520.dp,
+            // No action row. A Close button here bought nothing -- Back already dismisses, and
+            // picking a category dismisses -- while AreDialog's fixed 32dp gap above the actions
+            // rendered as a dead black band under the list.
+        ) {
+            // activateOnClick: D-pad'ing DOWN past this field into the list must NOT pop the IME
+            // (CLAUDE.md's TV text-input rule). OK enters edit mode, Back/Done leaves it.
+            com.arashrahimi46.iptv.ui.components.AreTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = stringResource(R.string.browse_category_search_placeholder),
+                icon = Icons.Filled.Search,
+                activateOnClick = true,
+                modifier = Modifier.focusRequester(searchFocus),
+            )
+            Box(Modifier.height(8.dp))
+            if (visible.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.browse_category_search_empty),
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+            } else {
+                // Lazy, and height-capped: a real playlist has hundreds of groups, and eagerly
+                // composing every one (each a focusable + glow) is what makes a fast flick stutter.
+                LazyColumn(
+                    // heightIn(max), NOT a fixed height. Capped because the dialog also carries a
+                    // title and the search field, and an uncapped list on a 300-category playlist
+                    // pushes the card off a 540dp-tall screen. Bounded rather than fixed because a
+                    // filtered list of two results must shrink to two rows -- a fixed height left
+                    // the rest as a black band under them. 264dp = exactly four 56dp rows + gaps.
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 264.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    // Room INSIDE the viewport at both ends so a focused row's ring/glow is never
+                    // shaved off against the list edge -- the ring is drawn outside the row's bounds.
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
+                ) {
+                    // Keyed by name, not position: pinning floats a row, and the filter renumbers
+                    // the list, so index-keyed slots would reuse BY POSITION and leave each row's
+                    // remembered interaction source attached to the wrong category.
+                    items(visible, key = { it.name }, contentType = { "category" }) { category ->
+                        com.arashrahimi46.iptv.ui.components.AreCategoryRow(
+                            name = category.name,
+                            onClick = { onSelect(category.name) },
+                            count = category.count,
+                            active = category.name == selected,
+                            pinned = category.name in pinned,
+                            onLongClick = { onTogglePin(category.name) },
+                        )
+                    }
+                }
+            }
+        }
+    }
+    // Focus the search field on open -- typing is the fast path through a few hundred categories.
+    LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
 }
 
 /**
@@ -511,7 +644,7 @@ private fun rememberGuideLane(slots: List<GuideProgramSlot>): GuideLane {
 }
 
 @Composable
-private fun ChannelHeaderCell(name: String, number: String?) {
+private fun ChannelHeaderCell(channel: com.arashrahimi46.iptv.data.model.Channel) {
     val colors = AreIptvTheme.colors
     val shape = RoundedCornerShape(AreIptvTheme.radius.sm)
     Row(
@@ -522,23 +655,51 @@ private fun ChannelHeaderCell(name: String, number: String?) {
             // programme cells (surface1) beside it -- and give the rail a visible edge on the
             // near-white light-theme background, where a borderless white-on-white cell vanished.
             .glassSurface(shape)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // Channel initials tile -- the same identity cue the focused-info bar uses, so the
-        // left rail reads unmistakably as "a channel" rather than another programme block.
-        Box(
-            modifier = Modifier.size(36.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.xs)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = name.take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
-        }
+        ChannelLogo(logoUrl = channel.logoUrl, name = channel.name)
         Column(modifier = Modifier.weight(1f)) {
-            if (number != null) {
-                Text(text = number, style = AreIptvTheme.typography.mono, color = colors.textTertiary)
+            if (channel.number != null) {
+                Text(text = channel.number, style = AreIptvTheme.typography.mono, color = colors.textTertiary, maxLines = 1)
             }
-            Text(text = name, style = AreIptvTheme.typography.label, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            // caption (14sp), not label (16sp): at the narrowed rail width the name is the thing
+            // being traded against programme space, and 14sp keeps ~2 more characters visible.
+            Text(text = channel.name, style = AreIptvTheme.typography.caption, color = colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+/**
+ * The channel's real logo, falling back to its initials only while (or if) the logo doesn't
+ * resolve. The guide rail used to show initials unconditionally -- the provider logo was never
+ * requested at all, so every row read as grey alt-text.
+ *
+ * [rememberTileArtwork] is the same decoder [com.arashrahimi46.iptv.ui.components.AreChannelTile]
+ * uses: Coil-cached and size-bounded, so a guide row shares the tile's already-decoded bitmap
+ * rather than issuing a second request to a provider that rate-limits by IP.
+ */
+@Composable
+private fun ChannelLogo(logoUrl: String?, name: String, size: Dp = 34.dp) {
+    val colors = AreIptvTheme.colors
+    val shape = RoundedCornerShape(AreIptvTheme.radius.xs)
+    Box(
+        // logoWellScrim, not surface3: it is the luminance floor that keeps the white-on-transparent
+        // logos most providers ship visible -- in BOTH themes (see Color.kt:logoWell).
+        modifier = Modifier.size(size).background(colors.logoWellScrim, shape),
+        contentAlignment = Alignment.Center,
+    ) {
+        val logo = rememberTileArtwork(logoUrl, maxDimension = size)
+        if (logo == null) {
+            Text(text = name.take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.logoWellText)
+        } else {
+            androidx.compose.foundation.Image(
+                bitmap = logo,
+                contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                modifier = Modifier.fillMaxSize().padding(3.dp),
+            )
         }
     }
 }
@@ -560,21 +721,23 @@ private fun FocusedInfoBar(viewModel: GuideViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .glassSurface(RoundedCornerShape(AreIptvTheme.radius.md))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            // 8dp/32dp, down from 12dp/40dp: this bar sits between the header and the grid, so every
+            // dp it takes is a dp the channel rows don't get on a 540dp-tall screen.
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(
-            modifier = Modifier.size(44.dp).background(colors.surface3, RoundedCornerShape(AreIptvTheme.radius.xs)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = (info?.channel?.name ?: stringResource(R.string.guide_no_channel_placeholder)).take(3).uppercase(), style = AreIptvTheme.typography.caption, color = colors.textPrimary)
-        }
+        ChannelLogo(
+            logoUrl = info?.channel?.logoUrl,
+            name = info?.channel?.name ?: stringResource(R.string.guide_no_channel_placeholder),
+            size = 32.dp,
+        )
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     text = info?.slot?.title ?: stringResource(R.string.guide_focus_hint),
-                    style = AreIptvTheme.typography.h3,
+                    // label (16sp) rather than h3 (21sp) -- one line of the bar's height back.
+                    style = AreIptvTheme.typography.label,
                     color = colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

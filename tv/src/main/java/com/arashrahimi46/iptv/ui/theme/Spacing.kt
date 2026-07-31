@@ -39,8 +39,12 @@ data class AreIptvSpacing(
     val tilePosterHeight: Dp = 312.dp,
     val tileLandWidth: Dp = 320.dp,
     val tileLandHeight: Dp = 180.dp,
-    val guideRowHeight: Dp = 64.dp,
-    val guideChannelWidth: Dp = 220.dp,
+    // Guide density: two 14sp lines (mono time + caption title) at 4dp vertical padding measure
+    // 52dp, so 54 leaves 2dp of slack. Sized down from 64/220 together with GuideScreen's
+    // DpPerMinute so the EPG grid fits ~13 channel rows instead of 7 -- the whole point of the
+    // screen is seeing a lot of schedule at once.
+    val guideRowHeight: Dp = 54.dp,
+    val guideChannelWidth: Dp = 140.dp,
 )
 
 val AreIptvSpacingDefault = AreIptvSpacing()

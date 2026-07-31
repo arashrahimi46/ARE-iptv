@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.db.CategoryCount
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
@@ -82,6 +83,10 @@ internal fun isCatchupEligible(catchupDays: Int, programStartMs: Long, nowMs: Lo
 data class GuideUiState(
     val hasSource: Boolean = false,
     val groups: List<String> = emptyList(),
+    /** [groups] with their channel counts, for the category picker dialog's rows. */
+    val groupCounts: List<CategoryCount> = emptyList(),
+    /** Categories the user pinned in the picker -- floated to the top of its list. */
+    val pinnedGroups: Set<String> = emptySet(),
     val selectedGroup: String = "",
     val day: GuideDay = GuideDay.Today,
     val windowStartMs: Long = 0L,
@@ -130,6 +135,13 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
         // rows pipeline below -- a plain .copy() (not a full GuideUiState(...) replacement) so
         // it doesn't race the rows collector's own state writes; observeRows carries the
         // current value forward on every emission (see there) for the same reason.
+        // Same .copy() discipline as the availability collector below -- an independent stream
+        // folded into the shared state without clobbering the rows pipeline's writes.
+        viewModelScope.launch {
+            settings.pinnedCategories(PIN_NAMESPACE).collectLatest { pinned ->
+                _uiState.update { it.copy(pinnedGroups = pinned) }
+            }
+        }
         viewModelScope.launch {
             epgRepository.availability.collectLatest { availability ->
                 _uiState.update { it.copy(epgUnavailable = availability is EpgAvailability.Unavailable) }
@@ -138,12 +150,12 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             settings.activeSourceId.collectLatest { sourceId ->
                 if (sourceId == null) {
-                    _uiState.value = GuideUiState(hasSource = false)
+                    resetCatalog(hasSource = false)
                     return@collectLatest
                 }
                 val source = db.playlistSourceDao().getById(sourceId)
                 if (source == null) {
-                    _uiState.value = GuideUiState(hasSource = false)
+                    resetCatalog(hasSource = false)
                     return@collectLatest
                 }
                 // Tabs are the source's FULL live-category list (a GROUP BY, no catalog rows
@@ -153,12 +165,25 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                 repository.channelCategoryCounts(sourceId).collectLatest { counts ->
                     val groups = counts.map { it.name }
                     if (groups.isEmpty()) {
-                        _uiState.value = GuideUiState(hasSource = true)
+                        resetCatalog(hasSource = true)
                         return@collectLatest
                     }
+                    _uiState.update { it.copy(groupCounts = counts) }
                     observeRows(source, groups)
                 }
             }
+        }
+    }
+
+    /**
+     * Clears everything the current source contributed, keeping the cross-source bits
+     * ([GuideUiState.pinnedGroups], which is user preference, not catalog). Was a wholesale
+     * `_uiState.value = GuideUiState(...)`, which dropped the pinned set on every source switch --
+     * the pinned collector only re-emits when the *preference* changes, so it never came back.
+     */
+    private fun resetCatalog(hasSource: Boolean) {
+        _uiState.update {
+            GuideUiState(hasSource = hasSource, pinnedGroups = it.pinnedGroups)
         }
     }
 
@@ -263,6 +288,10 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { settings.setGuideSelectedCategory(group) }
     }
 
+    fun togglePinnedGroup(group: String) {
+        viewModelScope.launch { settings.togglePinnedCategory(PIN_NAMESPACE, group) }
+    }
+
     fun setFocused(info: GuideFocusedInfo?) {
         _focused.value = info
     }
@@ -270,6 +299,10 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
         /** Max channels rendered in the EPG grid -- bounds memory + EPG fetch on large catalogs. */
         private const val GUIDE_CHANNEL_LIMIT = 300
+
+        /** Its own [UserSettings.pinnedCategories] namespace, matching Series/MultiView: the Guide's
+         *  useful categories aren't necessarily the ones pinned for browsing Live TV. */
+        private const val PIN_NAMESPACE = "guide"
 
         fun factory(app: Application): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
