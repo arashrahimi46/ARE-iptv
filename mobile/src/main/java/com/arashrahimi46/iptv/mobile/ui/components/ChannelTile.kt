@@ -191,22 +191,6 @@ fun AreChannelTile(
                         )
                     }
                 }
-                // Hidden while obscured -- same parental-lock leak as PosterTile: the tile's click
-                // and long-press are gated but the heart called onToggleFavorite directly.
-                if (onToggleFavorite != null && !obscured) {
-                    AreIconButton(
-                        icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isFavorite == true) {
-                            stringResource(CoreR.string.detail_remove_from_favorites)
-                        } else {
-                            stringResource(CoreR.string.detail_add_to_favorites)
-                        },
-                        onClick = onToggleFavorite,
-                        variant = AreIconButtonVariant.Glass,
-                        size = AreIconButtonSize.Small,
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp),
-                    )
-                }
             }
             Column(
                 modifier = Modifier
@@ -230,9 +214,26 @@ fun AreChannelTile(
                         modifier = Modifier.weight(1f),
                     )
                 }
-                if (isRadio || category != null) {
+                // The favourite button sits on the BADGE row, not over the artwork and not beside
+                // the name. The artwork box already carries LIVE/catch-up top-left, quality +
+                // health top-right and the centred logo well, so a bottom-right button had only a
+                // few dp of clearance from the well and read as stuck to the logo; shrinking the
+                // well to make room just made every provider logo small. Putting it on the name row
+                // instead cost the channel name ~40dp of an already-truncating line. This row has
+                // spare width, so nothing else gives up space. It renders even with no badges, so
+                // a channel with neither radio nor category still has the control.
+                val showFavorite = onToggleFavorite != null && !obscured
+                if (isRadio || category != null || showFavorite) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(top = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                    // The badge row FILLS the leftover width, which is what pushes the heart hard
+                    // right. Two earlier attempts didn't: a Spacer(weight(1f)) split the leftover
+                    // with the category badge's own weight, and SpaceBetween had nothing left to
+                    // distribute because a weighted child had already consumed it.
+                    Row(
+                        modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
@@ -248,6 +249,20 @@ fun AreChannelTile(
                                 text = category,
                                 tone = AreBadgeTone.Neutral,
                                 modifier = Modifier.weight(1f, fill = false),
+                            )
+                        }
+                        }
+                        if (showFavorite) {
+                            AreIconButton(
+                                icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                contentDescription = if (isFavorite == true) {
+                                    stringResource(CoreR.string.detail_remove_from_favorites)
+                                } else {
+                                    stringResource(CoreR.string.detail_add_to_favorites)
+                                },
+                                onClick = onToggleFavorite!!,
+                                variant = AreIconButtonVariant.Ghost,
+                                size = AreIconButtonSize.Small,
                             )
                         }
                     }

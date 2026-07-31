@@ -227,6 +227,11 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
             gauge = null
         }
     }
+    // On an error the transport cluster is suppressed and only the top bar carries the back button --
+    // so the HUD must be up, or a failed stream (e.g. a 403 from the provider) strands the viewer on a
+    // black screen with no visible way back. The auto-hide can't fight this: it only runs while
+    // playing, and an error is never playing.
+    LaunchedEffect(state.error) { if (state.error != null) hudVisible = true }
 
     LaunchedEffect(playerView, resizeMode) { playerView?.resizeMode = resizeMode }
 
@@ -489,12 +494,13 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
             visible = hudVisible,
             enter = fadeIn(tween(motion.durFastMs)),
             exit = fadeOut(tween(motion.durFastMs)),
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.fillMaxSize(),
         ) {
             ArePlayerControls(
                 title = state.title,
                 subtitle = state.subtitle,
                 live = state.isLive,
+                transport = state.error == null && !state.isLoading,
                 playing = state.playing,
                 buffering = state.buffering,
                 position = { positionMs },
