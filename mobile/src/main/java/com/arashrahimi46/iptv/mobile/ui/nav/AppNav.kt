@@ -22,7 +22,7 @@ import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -121,9 +121,18 @@ fun AppBottomBar(navController: NavHostController) {
     // child of Home showed no highlight at all, which read as the tap not registering). Track the
     // last tab actually landed on instead, so the bar keeps highlighting the owning tab through any
     // number of child-screen pushes.
-    var selectedTab by remember { mutableStateOf<Tab>(Tab.Home) }
-    LaunchedEffect(currentRoute) {
-        tabs.firstOrNull { it.route == currentRoute }?.let { selectedTab = it }
+    // Derived from the actual back stack, not accumulated as a side effect. The previous version
+    // only ever ASSIGNED when the current route was itself a tab, so any route reached without
+    // passing through its owning tab -- Settings > Playback opened while the last visited tab was
+    // Series, a deep link, or a process-death restore -- left the bar highlighting whatever tab
+    // happened to be latched, e.g. Series while sitting in Settings. Walking the back stack for the
+    // nearest tab entry answers "which tab owns this screen" directly, and needs no remembered
+    // state to survive recomposition or restore.
+    val backStack by navController.currentBackStack.collectAsState()
+    val selectedTab: Tab = remember(backStack) {
+        backStack.asReversed()
+            .firstNotNullOfOrNull { entry -> tabs.firstOrNull { it.route == entry.destination.route } }
+            ?: Tab.Home
     }
 
     Row(

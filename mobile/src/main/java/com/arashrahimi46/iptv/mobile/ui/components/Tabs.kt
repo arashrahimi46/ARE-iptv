@@ -47,7 +47,7 @@ import com.arashrahimi46.iptv.ui.theme.glassTrack
 import com.arashrahimi46.iptv.ui.theme.lensContentColor
 
 private val TrackHeight = 48.dp
-private val TrackInset = 6.dp
+private val TrackInset = 8.dp
 
 /**
  * The one segmented selector in the app -- it replaces the TV `AreSegmentedControl` at every call

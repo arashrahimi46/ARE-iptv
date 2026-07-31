@@ -14,6 +14,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
+import com.arashrahimi46.iptv.mobile.R
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
@@ -95,13 +102,27 @@ fun AreTopBar(
                     )
                 },
             title = {
-                Text(
-                    text = title,
-                    style = AreIptvTheme.typography.h3,
-                    color = AreIptvTheme.colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // The brand mark, only where there is no Back arrow -- i.e. on the five tab
+                    // roots. A child screen's chrome is "where am I", not "whose app is this", and
+                    // pairing the logo with a back arrow reads as a button.
+                    if (onBack == null) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_logo_mark),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(26.dp),
+                        )
+                    }
+                    Text(
+                        text = title,
+                        style = AreIptvTheme.typography.h3,
+                        color = AreIptvTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             },
             navigationIcon = {
                 if (onBack != null) {
