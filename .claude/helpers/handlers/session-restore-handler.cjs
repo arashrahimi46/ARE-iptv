@@ -125,7 +125,7 @@ module.exports = {
         if (bundledDir) {
           var healed = [];
           // Top-level critical files — mirrors executor.ts's `criticalHelpers` list.
-          var helpersToCheck = ['hook-handler.cjs', 'statusline.cjs', 'router.cjs', 'graphify-freshen.cjs', 'intelligence.cjs', 'auto-memory-hook.mjs'];
+          var helpersToCheck = ['hook-handler.cjs', 'statusline.cjs', 'router.cjs', 'graphify-freshen.cjs', 'intelligence.cjs', 'auto-memory-hook.mjs', 'build-skill-registry.cjs'];
           for (var hi = 0; hi < helpersToCheck.length; hi++) {
             var hName = helpersToCheck[hi];
             var healedName = _healIfStale(
@@ -284,7 +284,6 @@ module.exports = {
         { factory: 'createDDDWorker',         file: 'worker-ddd.js',         out: 'ddd-progress.json',    always: true },
         { factory: 'createMapWorker',         file: 'worker-map.js',         out: 'codebase-map.json' },
         { factory: 'createAuditWorker',       file: 'worker-audit.js',       out: 'security-audit.json' },
-        { factory: 'createOptimizeWorker',    file: 'worker-optimize.js',    out: 'performance.json' },
         { factory: 'createConsolidateWorker', file: 'worker-consolidate.js', out: 'consolidation.json' },
       ];
       var _hooksDistDir = path.join(CWD, 'packages', '@monomind', 'hooks', 'dist', 'workers');
@@ -334,12 +333,12 @@ module.exports = {
         var kRetriever = new memoryMod.KnowledgeRetriever(kSearchFn, kStore);
         var kResult = await kRetriever.retrieveForTask('shared', sessionCtx, 5);
         if (kResult.excerpts.length > 0) {
-          console.log('[KNOWLEDGE_PRELOADED] ' + kResult.excerpts.length + ' excerpts (KnowledgeRetriever)');
+          if (String(process.env.MONOMIND_HOOK_QUIET || '') !== '1') console.log('[KNOWLEDGE_PRELOADED] ' + kResult.excerpts.length + ' excerpts (KnowledgeRetriever)');
         }
       } else {
         var directResults = await kSearchFn(sessionCtx, { namespace: 'knowledge:shared', limit: 5, minScore: 0.3 });
         if (directResults.length > 0) {
-          console.log('[KNOWLEDGE_PRELOADED] ' + directResults.length + ' excerpts (direct keyword search)');
+          if (String(process.env.MONOMIND_HOOK_QUIET || '') !== '1') console.log('[KNOWLEDGE_PRELOADED] ' + directResults.length + ' excerpts (direct keyword search)');
         }
       }
     } catch (e) { /* non-fatal */ }
@@ -351,10 +350,29 @@ module.exports = {
     // (c) a 30-min rate limit. Detached+unref spawn (same pattern as the
     // helper-heal block below) — session start never waits on model loading.
     try {
-      var _kbMetaPath = path.join(CWD, '.monomind', 'knowledge', 'doc-metadata.jsonl');
-      if (fs.existsSync(_kbMetaPath)) {
+      // Nearest enclosing knowledge base, CWD first. The CLI keys the store to
+      // the PROJECT ROOT, so a session started in a package subdirectory finds
+      // no doc-metadata.jsonl under CWD and would silently stop re-ingesting
+      // forever. Everything below (mtime gate, marker, document scan, spawn
+      // cwd) uses this one resolved root, so the check and the ingest can never
+      // disagree about which brain they mean.
+      //
+      // A stat walk, not `git rev-parse` (monograph.cjs's pattern): this runs on
+      // EVERY session start, including the majority with no knowledge base at
+      // all, and spawning git there costs a subprocess per session and writes
+      // "not a git repository" to stderr.
+      var _kbRoot = null;
+      var _kbProbe = CWD;
+      for (var _kbUp = 0; _kbUp < 8; _kbUp++) {
+        if (fs.existsSync(path.join(_kbProbe, '.monomind', 'knowledge', 'doc-metadata.jsonl'))) { _kbRoot = _kbProbe; break; }
+        var _kbParent = path.dirname(_kbProbe);
+        if (_kbParent === _kbProbe) break;
+        _kbProbe = _kbParent;
+      }
+      var _kbMetaPath = _kbRoot && path.join(_kbRoot, '.monomind', 'knowledge', 'doc-metadata.jsonl');
+      if (_kbMetaPath && fs.existsSync(_kbMetaPath)) {
         var _kbMetaMtime = fs.statSync(_kbMetaPath).mtimeMs;
-        var _kbMarkerPath = path.join(CWD, '.monomind', 'knowledge', 'reindex-check.json');
+        var _kbMarkerPath = path.join(_kbRoot, '.monomind', 'knowledge', 'reindex-check.json');
         var _kbLastCheck = 0;
         try { _kbLastCheck = JSON.parse(fs.readFileSync(_kbMarkerPath, 'utf-8')).ts || 0; } catch (_) {}
         if (Date.now() - _kbLastCheck > 30 * 60 * 1000) {
@@ -389,11 +407,11 @@ module.exports = {
               if (_DOC_EXT[ext] && st.mtimeMs > _kbMetaMtime) _kbDirty = true;
             }
           };
-          _kbWalk(CWD, 0);
+          _kbWalk(_kbRoot, 0);
           if (_kbDirty) {
             var _kbSpawn = require('child_process').spawn;
             var _kbChild = _kbSpawn('npx', ['-y', 'monomind@latest', 'doc', 'ingest', '.'], {
-              cwd: CWD,
+              cwd: _kbRoot,
               detached: true,
               stdio: 'ignore',
               env: process.env,
@@ -518,7 +536,7 @@ module.exports = {
       var tokenTracker = require(path.join(helpersDir, 'token-tracker.cjs'));
       var tokenSummary = tokenTracker.quickSummary();
       if (tokenSummary) {
-        console.log(tokenSummary);
+        if (String(process.env.MONOMIND_HOOK_QUIET || '') !== '1') console.log(tokenSummary);
       }
       try {
         var tokenData = tokenTracker.quickSummaryData();
