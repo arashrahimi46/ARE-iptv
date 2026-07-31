@@ -429,6 +429,7 @@
     <string name="guide_focus_hint">Wählen Sie ein Programm für Details aus</string>
     <string name="guide_live_badge">LIVE</string>
     <string name="guide_catchup_available_desc">Wiederholung verfügbar</string>
+    <string name="guide_search_placeholder">Sendungen suchen</string>
     <string name="guide_day_yesterday">Gestern</string>
     <string name="guide_day_today">Heute</string>
     <string name="guide_day_tomorrow">Morgen</string>

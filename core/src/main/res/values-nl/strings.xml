@@ -433,6 +433,7 @@
     <string name="guide_focus_hint">Focus op een programma om details te zien</string>
     <string name="guide_live_badge">LIVE</string>
     <string name="guide_catchup_available_desc">Terugkijken beschikbaar</string>
+    <string name="guide_search_placeholder">Programma\'s zoeken</string>
     <string name="guide_day_yesterday">Gisteren</string>
     <string name="guide_day_today">Vandaag</string>
     <string name="guide_day_tomorrow">Morgen</string>

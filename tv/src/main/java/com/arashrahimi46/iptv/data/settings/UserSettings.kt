@@ -21,6 +21,7 @@ import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "are_iptv_settings")
@@ -153,6 +154,9 @@ class UserSettings(private val context: Context) {
 
         /** Curated multi-view channel ids, per source (see [multiViewChannelIds]). */
         fun multiViewChannelsKey(sourceId: Long) = stringPreferencesKey("multiview_channels_$sourceId")
+
+        /** When this source's EPG was last fetched (see [epgFetchedAt]). */
+        fun epgFetchedAtKey(sourceId: Long) = longPreferencesKey("epg_fetched_at_$sourceId")
     }
 
     /**
@@ -650,6 +654,20 @@ class UserSettings(private val context: Context) {
      */
     fun pinnedCategories(namespace: String): Flow<Set<String>> =
         pref { it[Keys.pinnedCategoriesKey(namespace)] ?: emptySet() }
+
+    /**
+     * Epoch-ms of this source's last successful EPG fetch; 0 when never fetched.
+     *
+     * Lives here rather than as a `playlist_sources` column purely to avoid a schema migration for
+     * one scalar. It is what makes the guide's cache more than a within-session convenience: without
+     * it every cold start re-downloaded the source's whole XMLTV export before showing anything new.
+     */
+    suspend fun epgFetchedAt(sourceId: Long): Long =
+        context.dataStore.data.first()[Keys.epgFetchedAtKey(sourceId)] ?: 0L
+
+    suspend fun setEpgFetchedAt(sourceId: Long, ts: Long) {
+        context.dataStore.edit { it[Keys.epgFetchedAtKey(sourceId)] = ts }
+    }
 
     suspend fun togglePinnedCategory(namespace: String, name: String) {
         context.dataStore.edit { prefs ->

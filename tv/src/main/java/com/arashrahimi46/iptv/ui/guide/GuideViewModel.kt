@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.db.CategoryCount
+import com.arashrahimi46.iptv.data.db.EpgSearchHit
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
@@ -19,14 +20,17 @@ import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -53,12 +57,23 @@ data class GuideProgramSlot(
      * or now-airing, for Start-Over), and it falls inside that window. Drives the ⟲ glyph + action menu.
      * See docs/catchup-v1-design.md (D5/D6/D8). */
     val catchupEligible: Boolean = false,
+    /** The synthetic "no programme data" filler, not a real broadcast. The screen recomputes
+     * live/elapsed state from a ticking clock, and a placeholder spanning the current time would
+     * otherwise light up as on-air with a progress bar. */
+    val isPlaceholder: Boolean = false,
 )
 
 /** A programme-less row still renders -- a single "no programme data" placeholder slot spanning the window. */
 data class GuideChannelRow(val channel: Channel, val slots: List<GuideProgramSlot>)
 
 data class GuideFocusedInfo(val channel: Channel, val slot: GuideProgramSlot)
+
+/**
+ * A pending "show me this programme" navigation from the search dialog: the day/category have
+ * already been switched, and the screen still has to scroll the grid to [channelId] at [startMs]
+ * and land D-pad focus on that cell. Cleared via [GuideViewModel.consumeJump] once focus lands.
+ */
+data class GuideJump(val channelId: Long, val startMs: Long)
 
 /**
  * Pure resolution of the effective category filter: falls back to the first available category
@@ -97,6 +112,11 @@ data class GuideUiState(
      * Drives a small banner in [com.arashrahimi46.iptv.ui.guide.GuideScreen], not a full-screen
      * replacement -- channel rows still render with their per-row "No programme data" placeholder. */
     val epgUnavailable: Boolean = false,
+    /** A guide refresh is in flight. The grid keeps rendering the cached rows underneath -- this
+     *  only drives the header's "Refreshing…" pill, so the update is visible but never blocking. */
+    val refreshing: Boolean = false,
+    /** Pending search navigation; see [GuideJump]. */
+    val jump: GuideJump? = null,
 )
 
 /**
@@ -121,9 +141,30 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
     private val _focused = MutableStateFlow<GuideFocusedInfo?>(null)
     val focused: StateFlow<GuideFocusedInfo?> = _focused.asStateFlow()
 
-    /** EPG already fetched for these "sourceId:category" pairs this session -- so switching back
-     * to a tab doesn't re-download the source's XMLTV export every time. */
-    private val refreshedCategories = mutableSetOf<String>()
+    /**
+     * Wall clock, re-sampled every 30s.
+     *
+     * The Guide had no clock at all: `isNow` was baked into each slot by [buildRows] from a single
+     * `System.currentTimeMillis()` and only re-evaluated when Room re-emitted, so the "on now" cell
+     * drifted out of date and nothing could animate. This drives the now-line, the elapsed fill and
+     * the live cell. 30s is the coarsest tick that keeps the now-line's motion continuous rather
+     * than steppy at the guide's dp-per-minute scale.
+     */
+    val nowMs: StateFlow<Long> = flow {
+        while (true) {
+            emit(System.currentTimeMillis())
+            kotlinx.coroutines.delay(30_000L)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis())
+
+    /** EPG already fetched for these source ids this session. Keyed by SOURCE, not by
+     * "sourceId:category" as it once was -- [EpgRepository.refresh] now matches the whole XMLTV
+     * export in one pass, so a second category is already covered by the first fetch. */
+    private val refreshedSources = mutableSetOf<Long>()
+
+    /** The active source, for [searchProgrammes] -- which is a one-shot query, not part of the
+     *  rows pipeline, so it needs the id without re-reading DataStore per keystroke. */
+    private var activeSourceId: Long? = null
 
     init {
         // Restore the last-selected category filter (persisted in [UserSettings]) so
@@ -148,7 +189,13 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
         viewModelScope.launch {
+            epgRepository.refreshing.collectLatest { busy ->
+                _uiState.update { it.copy(refreshing = busy) }
+            }
+        }
+        viewModelScope.launch {
             settings.activeSourceId.collectLatest { sourceId ->
+                activeSourceId = sourceId
                 if (sourceId == null) {
                     resetCatalog(hasSource = false)
                     return@collectLatest
@@ -199,7 +246,7 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                 // Only the selected category's channels are loaded (bounded) -- the guide is
                 // strictly per-category now, so we never materialize the 100k+ catalog.
                 val channels = repository.channelsByCategory(source.id, group, GUIDE_CHANNEL_LIMIT)
-                maybeRefreshEpg(source, group, channels)
+                maybeRefreshEpg(source, channels)
                 val ids = channels.map { it.id }
                 val programsFlow = if (ids.isEmpty()) flowOf(emptyList()) else epgRepository.observeForChannels(ids, window.first, window.second)
                 programsFlow.map { programs -> GuideEmission(day, group, groups, window, buildRows(channels, programs, window)) }
@@ -221,13 +268,54 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
             }
     }
 
-    /** Fetches EPG for [category]'s [channels] once per session. monolean: re-downloads the
-     * source's XMLTV export per distinct category visited -- upgrade path is caching the parsed
-     * programmes by tvgId in [EpgRepository] so later categories reuse one fetch. */
-    private fun maybeRefreshEpg(source: PlaylistSource, category: String, channels: List<Channel>) {
+    /**
+     * Fetches EPG for [source] at most once per session, and then only when the persisted cache has
+     * aged out ([EpgRepository.isFresh]).
+     *
+     * Two guards, because they cover different things: [refreshedSources] stops a second category
+     * in the same session from re-entering while the first fetch is still running, and `isFresh`
+     * stops a cold start from re-downloading a multi-MB export that is still perfectly good. The
+     * grid renders the cached rows either way -- this only ever adds to what is already on screen.
+     *
+     * [channels] is still passed through because the Xtream per-channel short-EPG fallback can only
+     * work on a bounded set; the bulk XMLTV path inside [EpgRepository] ignores it and matches the
+     * whole catalog.
+     */
+    private fun maybeRefreshEpg(source: PlaylistSource, channels: List<Channel>) {
         if (channels.isEmpty()) return
-        if (!refreshedCategories.add("${source.id}:$category")) return
-        viewModelScope.launch { epgRepository.refresh(source, channels) }
+        if (!refreshedSources.add(source.id)) return
+        viewModelScope.launch {
+            if (epgRepository.isFresh(source.id)) return@launch
+            epgRepository.refresh(source, channels)
+        }
+    }
+
+    /**
+     * Programme-title search across the whole cached guide for the active source (every category,
+     * not just visited ones -- see [maybeRefreshEpg]). One-shot per query rather than a Flow: the
+     * dialog debounces keystrokes itself and there is nothing to observe between them.
+     */
+    suspend fun searchProgrammes(query: String): List<EpgSearchHit> {
+        val sourceId = activeSourceId ?: return emptyList()
+        return epgRepository.searchProgrammes(sourceId, query)
+    }
+
+    /**
+     * Navigate the grid to a search hit: switch to whichever day's window contains it and to its
+     * channel's category, then hand the screen a [GuideJump] to scroll and focus with. Category and
+     * day both have to move first -- the row simply isn't in [GuideUiState.rows] otherwise.
+     */
+    fun jumpTo(hit: EpgSearchHit) {
+        hit.categoryName?.let { selectGroup(it) }
+        _day.value = GuideDay.entries.firstOrNull { day ->
+            val (start, end) = windowFor(day)
+            hit.startMs < end && hit.endMs > start
+        } ?: GuideDay.Today
+        _uiState.update { it.copy(jump = GuideJump(hit.channelId, hit.startMs)) }
+    }
+
+    fun consumeJump() {
+        _uiState.update { it.copy(jump = null) }
     }
 
     private data class GuideEmission(
@@ -265,7 +353,7 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                     // scale-up overflows and gets cropped ("moves out of the box") at the guide
                     // lane's clip edge. A normal-width cell focuses cleanly like a real programme.
                     val placeholderEnd = (window.first + 90 * 60_000L).coerceAtMost(window.second)
-                    listOf(GuideProgramSlot(title = getApplication<Application>().getString(R.string.player_no_programme_data), description = null, startMs = window.first, endMs = placeholderEnd, isNow = false))
+                    listOf(GuideProgramSlot(title = getApplication<Application>().getString(R.string.player_no_programme_data), description = null, startMs = window.first, endMs = placeholderEnd, isNow = false, isPlaceholder = true))
                 },
             )
         }

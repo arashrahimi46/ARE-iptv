@@ -429,6 +429,7 @@
     <string name="guide_focus_hint">Наведіть на програму, щоб побачити деталі</string>
     <string name="guide_live_badge">В ЕФІРІ</string>
     <string name="guide_catchup_available_desc">Доступний архів</string>
+    <string name="guide_search_placeholder">Пошук програм</string>
     <string name="guide_day_yesterday">Учора</string>
     <string name="guide_day_today">Сьогодні</string>
     <string name="guide_day_tomorrow">Завтра</string>

@@ -501,6 +501,7 @@
     <string name="guide_catchup_watch_from_start">از ابتدا ببینید</string>
     <string name="guide_catchup_go_live">رفتن به پخش زنده</string>
     <string name="guide_catchup_record_soon">ضبط (به‌زودی)</string>
+    <string name="guide_search_placeholder">جست‌وجوی برنامه‌ها</string>
     <string name="guide_day_yesterday">دیروز</string>
     <string name="guide_day_today">امروز</string>
     <string name="guide_day_tomorrow">فردا</string>

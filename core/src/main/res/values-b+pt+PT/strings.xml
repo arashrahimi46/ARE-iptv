@@ -393,6 +393,7 @@
     <string name="guide_focus_hint">Foque um programa para ver detalhes</string>
     <string name="guide_live_badge">EM DIRETO</string>
     <string name="guide_catchup_available_desc">Repetição disponível</string>
+    <string name="guide_search_placeholder">Pesquisar programas</string>
     <string name="guide_day_yesterday">Ontem</string>
     <string name="guide_day_today">Hoje</string>
     <string name="guide_day_tomorrow">Amanhã</string>

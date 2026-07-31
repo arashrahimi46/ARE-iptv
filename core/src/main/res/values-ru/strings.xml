@@ -428,6 +428,7 @@
     <string name="guide_focus_hint">Наведите на программу, чтобы увидеть детали</string>
     <string name="guide_live_badge">В ЭФИРЕ</string>
     <string name="guide_catchup_available_desc">Доступен архив</string>
+    <string name="guide_search_placeholder">Поиск передач</string>
     <string name="guide_day_yesterday">Вчера</string>
     <string name="guide_day_today">Сегодня</string>
     <string name="guide_day_tomorrow">Завтра</string>

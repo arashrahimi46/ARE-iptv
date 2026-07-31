@@ -430,6 +430,7 @@
     <string name="guide_focus_hint">Fokusera ett program för att se detaljer</string>
     <string name="guide_live_badge">LIVE</string>
     <string name="guide_catchup_available_desc">Catch-up tillgänglig</string>
+    <string name="guide_search_placeholder">Sök program</string>
     <string name="guide_day_yesterday">Igår</string>
     <string name="guide_day_today">Idag</string>
     <string name="guide_day_tomorrow">Imorgon</string>

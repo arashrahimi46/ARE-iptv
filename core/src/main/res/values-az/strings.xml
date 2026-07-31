@@ -393,6 +393,7 @@
     <string name="guide_focus_hint">Detalları görmək üçün proqrama fokuslanın</string>
     <string name="guide_live_badge">CANLI</string>
     <string name="guide_catchup_available_desc">Təkrar izləmə mövcuddur</string>
+    <string name="guide_search_placeholder">Verilişlərdə axtar</string>
     <string name="guide_day_yesterday">Dünən</string>
     <string name="guide_day_today">Bu gün</string>
     <string name="guide_day_tomorrow">Sabah</string>

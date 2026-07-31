@@ -3,6 +3,8 @@ package com.arashrahimi46.iptv.data.repository
 import android.content.Context
 import androidx.room.withTransaction
 import com.arashrahimi46.iptv.data.db.AppDatabase
+import com.arashrahimi46.iptv.data.db.ChannelTvgId
+import com.arashrahimi46.iptv.data.db.EpgSearchHit
 import com.arashrahimi46.iptv.data.model.Channel
 import com.arashrahimi46.iptv.data.model.EPGProgram
 import com.arashrahimi46.iptv.data.model.PlaylistSource
@@ -12,6 +14,7 @@ import com.arashrahimi46.iptv.data.parser.XmlTvParser
 import com.arashrahimi46.iptv.data.parser.XmlTvProgramme
 import com.arashrahimi46.iptv.data.parser.XtreamClient
 import com.arashrahimi46.iptv.data.settings.CredentialsStore
+import com.arashrahimi46.iptv.data.settings.UserSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,20 @@ import java.util.zip.GZIPInputStream
 
 /** Safe chunk size for `IN (...)` binds -- under SQLite's historical 999 host-parameter limit. */
 private const val SQLITE_MAX_VARIABLES = 900
+
+/** How long a fetched guide is considered current. Six hours is a guide window, so a user who
+ *  scrolls past the end of what's cached is also past the point where a re-fetch is warranted. */
+private const val FRESH_FOR_MS = 6 * 3_600_000L
+
+/** Retained past/future span. The Guide's furthest reach is yesterday's hour-floored window and
+ *  tomorrow's + 6h; these round that out so a day boundary can't clip the edges. */
+private const val RETAIN_PAST_MS = 86_400_000L
+private const val RETAIN_FUTURE_MS = 2 * 86_400_000L
+
+/** Programme-search bounds. The title LIKE can't use an index (see the DAO), so the cap is what
+ *  keeps a one-character query from scanning the whole table into memory. */
+private const val SEARCH_LIMIT = 60
+internal const val MIN_SEARCH_CHARS = 2
 
 /**
  * P0.4: distinguishes "we successfully talked to the EPG source and it genuinely has no
@@ -60,13 +77,23 @@ private fun normalizeTvgId(raw: String): String = raw.trim().lowercase()
  * the Guide is unit-testable without Room/OkHttp. Unmatched programmes and channels without a
  * usable `tvgId` are simply dropped.
  */
-internal fun matchXmlTvProgrammes(channels: List<Channel>, programmes: List<XmlTvProgramme>): List<EPGProgram> {
+internal fun matchXmlTvProgrammes(
+    channels: List<ChannelTvgId>,
+    programmes: List<XmlTvProgramme>,
+    retainFromMs: Long = Long.MIN_VALUE,
+    retainToMs: Long = Long.MAX_VALUE,
+): List<EPGProgram> {
     if (channels.isEmpty() || programmes.isEmpty()) return emptyList()
     // groupBy (not associateBy): playlists routinely list SD/HD/backup variants of a channel that
     // share one tvg-id. associateBy kept only the LAST variant, so every other one rendered "No
     // programme data". Fan each programme out to ALL channels sharing its id instead.
-    val byKey = channels.filter { !it.tvgId.isNullOrBlank() }.groupBy { normalizeTvgId(it.tvgId!!) }
+    val byKey = channels.groupBy { normalizeTvgId(it.tvgId) }
     return programmes.flatMap { p ->
+        // Retention bound, applied BEFORE the fan-out. A full XMLTV export routinely carries a
+        // week or more per channel, and the Guide only ever renders yesterday..tomorrow -- without
+        // this, matching a whole source (rather than one category, as it used to) multiplies a
+        // week of programmes by every SD/HD variant and writes hundreds of thousands of dead rows.
+        if (p.stopMs < retainFromMs || p.startMs > retainToMs) return@flatMap emptyList()
         val matched = byKey[normalizeTvgId(p.channelRef)] ?: return@flatMap emptyList()
         matched.map { channel ->
             EPGProgram(
@@ -109,8 +136,35 @@ class EpgRepository(context: Context) {
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
 
+    private val settings = UserSettings(context)
+
     private val _availability = MutableStateFlow<EpgAvailability>(EpgAvailability.Idle)
     val availability: StateFlow<EpgAvailability> = _availability.asStateFlow()
+
+    /** True while [refresh] is fetching -- the Guide shows a "Refreshing…" pill rather than leaving
+     *  the user staring at cached rows with no sign that anything is happening. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
+    /** One source's cached guide, searched by programme title. Covers whatever [refresh] retained --
+     *  which, since it matches the whole export, is every category rather than only visited ones. */
+    suspend fun searchProgrammes(sourceId: Long, query: String, limit: Int = SEARCH_LIMIT): List<EpgSearchHit> =
+        withContext(Dispatchers.IO) {
+            val trimmed = query.trim()
+            if (trimmed.length < MIN_SEARCH_CHARS) return@withContext emptyList()
+            // LIKE's own wildcards have to be neutralized or a user typing "%" matches everything.
+            val escaped = trimmed.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            db.epgProgramDao().searchByTitle(
+                sourceId = sourceId,
+                pattern = "%$escaped%",
+                fromMs = System.currentTimeMillis() - RETAIN_PAST_MS,
+                limit = limit,
+            )
+        }
+
+    /** True when [sourceId]'s cached EPG is younger than [FRESH_FOR_MS] -- callers skip refresh. */
+    suspend fun isFresh(sourceId: Long): Boolean =
+        System.currentTimeMillis() - settings.epgFetchedAt(sourceId) < FRESH_FOR_MS
 
     fun observeForChannels(channelIds: List<Long>, windowStartMs: Long, windowEndMs: Long): Flow<List<EPGProgram>> {
         if (channelIds.isEmpty()) return flowOf(emptyList())
@@ -131,6 +185,15 @@ class EpgRepository(context: Context) {
      * "the source couldn't be reached at all". */
     suspend fun refresh(source: PlaylistSource, channels: List<Channel>) = withContext(Dispatchers.IO) {
         if (channels.isEmpty()) return@withContext
+        _refreshing.value = true
+        try {
+            refreshInner(source, channels)
+        } finally {
+            _refreshing.value = false
+        }
+    }
+
+    private suspend fun refreshInner(source: PlaylistSource, channels: List<Channel>) {
 
         val xmlTvUrl = source.epgUrl ?: when (source.type) {
             SourceType.XTREAM -> {
@@ -160,6 +223,12 @@ class EpgRepository(context: Context) {
         // channel in the batch happened to match.
         val coveredChannelIds = mutableSetOf<Long>()
 
+        // Retention window: what the Guide can actually render (yesterday's hour-floored window
+        // through tomorrow's + 6h), rounded out to whole days.
+        val nowMs = System.currentTimeMillis()
+        val retainFrom = nowMs - RETAIN_PAST_MS
+        val retainTo = nowMs + RETAIN_FUTURE_MS
+
         // P0.4: tracks whether a real network call was made for the bulk XMLTV export, and
         // whether it actually succeeded -- feeds resolveEpgAvailability below.
         var xmlTvAttempted = false
@@ -171,7 +240,12 @@ class EpgRepository(context: Context) {
             if (body != null) {
                 xmlTvSucceeded = true
                 val programmes = runCatching { XmlTvParser.parse(body) }.getOrDefault(emptyList())
-                val matched = matchXmlTvProgrammes(channels, programmes)
+                // Matched against EVERY channel of the source, not just the [channels] the caller
+                // asked about. One export covers the whole catalog, so visiting a second category
+                // costs nothing -- it used to re-download the same multi-MB file per category, and
+                // per app session, because nothing outside the visited category was ever persisted.
+                val all = db.channelDao().tvgIdsForSource(source.id)
+                val matched = matchXmlTvProgrammes(all, programmes, retainFrom, retainTo)
                 bulkRows += matched
                 coveredChannelIds += matched.map { it.channelId }
             }
@@ -206,7 +280,7 @@ class EpgRepository(context: Context) {
             }
         }
 
-        val rows = bulkRows + fallbackRows
+        val rows = (bulkRows + fallbackRows).filter { it.endMs >= retainFrom && it.startMs <= retainTo }
         if (rows.isNotEmpty()) {
             // ONE transaction for the whole replace. Two reasons, both felt on a TV:
             //  - each chunked delete and the insert were separate transactions, so each paid its own
@@ -216,12 +290,26 @@ class EpgRepository(context: Context) {
             //    could briefly render empty between the delete and the insert. Wrapping them makes
             //    the swap atomic: observers see the old rows, then the new ones, never neither.
             db.withTransaction {
-                // Same SQLite host-param cap as observeForChannels -- chunk the delete's IN(...) list.
-                channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES)
-                    .forEach { db.epgProgramDao().deleteForChannels(it) }
+                if (xmlTvSucceeded) {
+                    // The export covered the whole source, so the whole source's EPG is replaced.
+                    // Scoping the delete to [channels] instead would leave the previous run's rows
+                    // for every OTHER category behind, duplicated against the ones just matched.
+                    db.epgProgramDao().deleteForSource(source.id)
+                } else {
+                    // Fallback-only run: the per-channel short EPG knows nothing about the rest of
+                    // the catalog, so wiping the source would destroy good cached rows. Same
+                    // SQLite host-param cap as observeForChannels -- chunk the delete's IN(...).
+                    channels.map { it.id }.chunked(SQLITE_MAX_VARIABLES)
+                        .forEach { db.epgProgramDao().deleteForChannels(it) }
+                }
                 db.epgProgramDao().insertAll(rows)
+                db.epgProgramDao().deleteEndedBefore(retainFrom)
             }
         }
+
+        // Only a successful bulk export starts the freshness clock. A fallback-only run covered one
+        // category, so treating it as fresh would starve every other category until the TTL expired.
+        if (xmlTvSucceeded) settings.setEpgFetchedAt(source.id, nowMs)
 
         _availability.value = resolveEpgAvailability(
             rowsEmpty = rows.isEmpty(),

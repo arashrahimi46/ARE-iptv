@@ -412,6 +412,7 @@
     <string name="guide_focus_hint">Фокусирайте предаване, за да видите детайли</string>
     <string name="guide_live_badge">НА ЖИВО</string>
     <string name="guide_catchup_available_desc">Достъпно за гледане по-късно</string>
+    <string name="guide_search_placeholder">Търсене на предавания</string>
     <string name="guide_day_yesterday">Вчера</string>
     <string name="guide_day_today">Днес</string>
     <string name="guide_day_tomorrow">Утре</string>

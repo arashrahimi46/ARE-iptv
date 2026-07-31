@@ -363,6 +363,7 @@
     <string name="guide_focus_hint">ركّز على برنامج لرؤية التفاصيل</string>
     <string name="guide_live_badge">مباشر</string>
     <string name="guide_catchup_available_desc">إعادة المشاهدة متاحة</string>
+    <string name="guide_search_placeholder">ابحث في البرامج</string>
     <string name="guide_day_yesterday">أمس</string>
     <string name="guide_day_today">اليوم</string>
     <string name="guide_day_tomorrow">غدًا</string>

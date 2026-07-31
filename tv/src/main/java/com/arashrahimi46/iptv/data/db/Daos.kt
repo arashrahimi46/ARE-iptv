@@ -39,6 +39,29 @@ data class CategoryCount(val name: String, val count: Int)
  */
 data class RowKey(val id: Long, val matchKey: String?)
 
+/**
+ * A channel's EPG identity, without the rest of the row. [EpgRepository.refresh] matches a whole
+ * XMLTV export against every channel of a source, and loading full [Channel] rows for a 100k-channel
+ * catalog to read two fields is exactly the allocation that made "just match everything" look
+ * expensive. Only channels with a usable `tvgId` can match, so the query filters them out in SQL.
+ */
+data class ChannelTvgId(val id: Long, val tvgId: String)
+
+/**
+ * One programme-search hit: the programme plus enough of its channel to render a result row and to
+ * navigate the guide to it ([categoryName] is what the Guide's category filter is keyed on, so
+ * jumping to a hit outside the current category needs it).
+ */
+data class EpgSearchHit(
+    val channelId: Long,
+    val channelName: String,
+    val logoUrl: String?,
+    val categoryName: String?,
+    val title: String,
+    val startMs: Long,
+    val endMs: Long,
+)
+
 @Dao
 interface PlaylistSourceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -115,6 +138,11 @@ interface ChannelDao {
 
     @Query("SELECT COUNT(*) FROM channels WHERE sourceId = :sourceId")
     suspend fun countForSource(sourceId: Long): Int
+
+    /** EPG match set: every channel of the source that carries a `tvg-id`, as id + id only.
+     *  See [ChannelTvgId] for why this isn't `observeForSource`. */
+    @Query("SELECT id, tvgId FROM channels WHERE sourceId = :sourceId AND tvgId IS NOT NULL AND tvgId != ''")
+    suspend fun tvgIdsForSource(sourceId: Long): List<ChannelTvgId>
 
     // --- Large-catalog browse (Paging 3): only the visible window is ever in memory. ---
 
@@ -356,6 +384,28 @@ interface EPGProgramDao {
      *  and its immediate aired neighbours for the ⏮/⏭ hop. See docs/catchup-v1-design.md. */
     @Query("SELECT * FROM epg_programs WHERE channelId = :channelId AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
     suspend fun programsForChannelInWindow(channelId: Long, windowStartMs: Long, windowEndMs: Long): List<EPGProgram>
+
+    /** Drop programmes that fall entirely outside the retained window -- [EpgRepository.refresh]
+     *  only ever persists yesterday..tomorrow, so anything older is dead weight in a table that is
+     *  already the app's largest. */
+    @Query("DELETE FROM epg_programs WHERE endMs < :beforeMs")
+    suspend fun deleteEndedBefore(beforeMs: Long)
+
+    /**
+     * Programme title search across one source's whole cached guide, newest-first from [fromMs].
+     *
+     * A `LIKE '%needle%'` cannot use the `(channelId, startMs)` index, so this is a scan of
+     * `epg_programs` -- bounded by [limit] and by the fact that refresh only ever retains ~3 days.
+     * The join is what lets a hit outside the currently-selected category still be navigable.
+     */
+    @Query(
+        "SELECT p.channelId AS channelId, c.name AS channelName, c.logoUrl AS logoUrl, " +
+            "c.categoryName AS categoryName, p.title AS title, p.startMs AS startMs, p.endMs AS endMs " +
+            "FROM epg_programs p JOIN channels c ON c.id = p.channelId " +
+            "WHERE c.sourceId = :sourceId AND p.endMs >= :fromMs AND p.title LIKE :pattern " +
+            "ORDER BY p.startMs LIMIT :limit",
+    )
+    suspend fun searchByTitle(sourceId: Long, pattern: String, fromMs: Long, limit: Int): List<EpgSearchHit>
 }
 
 /**

@@ -429,6 +429,7 @@
     <string name="guide_focus_hint">Kohdista ohjelmaan nähdäksesi tiedot</string>
     <string name="guide_live_badge">SUORA</string>
     <string name="guide_catchup_available_desc">Katsottavissa jälkikäteen</string>
+    <string name="guide_search_placeholder">Hae ohjelmia</string>
     <string name="guide_day_yesterday">Eilen</string>
     <string name="guide_day_today">Tänään</string>
     <string name="guide_day_tomorrow">Huomenna</string>

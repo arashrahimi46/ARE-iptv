@@ -6,9 +6,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -64,14 +68,16 @@ import java.time.Instant
 import java.time.ZoneId
 
 /**
- * px-per-minute scale for proportional GuideCell widths (mirrors Guide.jsx `PX`).
+ * dp-per-minute scale for proportional GuideCell widths (mirrors Guide.jsx `PX`).
  *
- * Left at 3dp deliberately. It was tried at 2.4 to fit more of the window on screen, and that is the
- * wrong axis to compress: a 30-minute programme is then 72dp wide, which after the cell's padding
- * leaves ~52dp of title -- every real programme rendered as "Hom...". The screen's wasted space was
- * vertical (the category chip strip and 64dp rows), and that is where the density came from.
+ * Compression on this axis costs legibility, not density: it was tried at 2.4 and a 30-minute
+ * programme became 72dp, which after padding left ~52dp of title, so every real programme rendered
+ * as "Hom...". At 4.5 that same block is ~130dp -- enough for a readable title -- and the screen's
+ * density still comes from the vertical axis (row height, gaps, no chip strip), where the wasted
+ * space actually was. The cost is more horizontal scrolling to cross the 6-hour window, which is a
+ * D-pad hold rather than information lost.
  */
-private val DpPerMinute = 3.dp
+private val DpPerMinute = 4.5.dp
 
 /**
  * TV Guide (Guide.jsx): 6-hour rolling window, day chips, channel-group
@@ -91,6 +97,10 @@ fun GuideScreen(
         factory = GuideViewModel.factory(context.applicationContext as android.app.Application),
     )
     val state by viewModel.uiState.collectAsState()
+    // Read at the screen root, unlike `focused` below, and that is a considered difference: this
+    // changes once per 30s, so the whole-Guide recomposition it triggers costs one frame every
+    // half-minute. `focused` changes on every D-pad keypress, which is why it must not be read here.
+    val nowMs by viewModel.nowMs.collectAsState()
     // PERF: `focused` is deliberately NOT read here. Every D-pad move writes it, and reading it at
     // this level made the ENTIRE Guide recompose on every keypress -- the grid, the timeline header
     // and every visible cell -- to update one info bar. FocusedInfoBar collects it itself, so the
@@ -135,6 +145,7 @@ fun GuideScreen(
         if (hasGroups && lastPlayedChannelId == null) groupFocusRequester.requestFocusWhenReady()
     }
     var categoryPickerOpen by remember { mutableStateOf(false) }
+    var searchOpen by remember { mutableStateOf(false) }
 
     // P0.2: fillMaxSize (not just padding) so this root Column has a real bounded height to
     // hand down -- GuideScreen's caller (MainActivity) no longer wraps this tab in a
@@ -166,7 +177,23 @@ fun GuideScreen(
                 selected = true,
                 modifier = Modifier.focusRequester(groupFocusRequester),
             )
+            AreChip(
+                text = stringResource(R.string.action_search),
+                onClick = { searchOpen = true },
+                icon = Icons.Filled.Search,
+            )
             Box(Modifier.weight(1f))
+            // Refreshing pill. Deliberately beside the controls rather than over the grid: the
+            // cached rows stay readable and interactive throughout a refresh, so this reports
+            // progress without ever implying the screen is blocked.
+            if (state.refreshing) {
+                Text(
+                    text = stringResource(R.string.settings_refreshing),
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textTertiary,
+                    modifier = Modifier.padding(end = spacing.sp2),
+                )
+            }
             AreSegmentedControl(
                 options = GuideDay.entries,
                 selected = state.day,
@@ -213,6 +240,25 @@ fun GuideScreen(
             val laneWidthPx = with(LocalDensity.current) {
                 (maxWidth - spacing.guideChannelWidth - 8.dp).coerceAtLeast(0.dp).roundToPx()
             }
+            val density = LocalDensity.current
+            val gridState = rememberLazyListState()
+            // Search navigation: the ViewModel has already switched day + category, so the target
+            // row exists in `rows` by the time this fires. Scroll both axes -- the cell has to be
+            // COMPOSED before it can take focus, and the lane only composes what is near the scroll
+            // position (see GuideLane) -- then the cell itself requests focus (see its LaunchedEffect).
+            val jump = state.jump
+            val jumpRow = remember(jump, state.rows) {
+                jump?.let { j -> state.rows.indexOfFirst { it.channel.id == j.channelId } } ?: -1
+            }
+            LaunchedEffect(jump, jumpRow, state.windowStartMs) {
+                if (jump == null || jumpRow < 0 || state.windowStartMs <= 0L) return@LaunchedEffect
+                val minutes = ((jump.startMs - state.windowStartMs) / 60_000L).coerceAtLeast(0L)
+                // Backed off by a third of a viewport so the target lands inside the lane rather
+                // than flush against its left edge, where it reads as clipped.
+                val target = with(density) { (DpPerMinute * minutes.toInt()).roundToPx() } - laneWidthPx / 3
+                gridState.animateScrollToItem(jumpRow)
+                scrollState.animateScrollTo(target.coerceIn(0, scrollState.maxValue))
+            }
         Column(modifier = Modifier.fillMaxSize()) {
             // Channel column is PINNED (drawn outside the shared horizontalScroll) on both the
             // timeline header and every row, so the channel you're browsing stays visible no
@@ -225,8 +271,11 @@ fun GuideScreen(
             // that's hundreds of rows composed up front. LazyColumn only composes the rows
             // actually visible (plus a small buffer). weight(1f) fills the remaining height
             // left in this Column after the timeline header row above.
+            // Box, so the now-line can overlay the whole grid without being an item in it.
+            Box(modifier = Modifier.weight(1f)) {
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                state = gridState,
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 // Headroom INSIDE the viewport (CLAUDE.md's grid rule): a focused cell's ring and
                 // glow are drawn outside the row's own bounds, so without this the first and last
@@ -289,6 +338,36 @@ fun GuideScreen(
                                     lastPlayedChannelId = null
                                     lastPlayedSlotStartMs = null
                                 }
+                                // Search jump. Can't ride on rememberPlaybackFocusRequester above:
+                                // that fires from LaunchedEffect(Unit), so it only ever lands on a
+                                // cell composed for the first time -- a jump to something already
+                                // on screen would move the scroll and leave focus behind. Keyed on
+                                // the match instead, so it fires whenever this becomes the target.
+                                val isJumpTarget = jump != null &&
+                                    jump.channelId == row.channel.id && jump.startMs == slot.programStartMs
+                                LaunchedEffect(isJumpTarget) {
+                                    if (!isJumpTarget) return@LaunchedEffect
+                                    // Re-asserted across frames for the same reason the playback
+                                    // restore does it: the scroll animations above are still running
+                                    // and Android's default-focus pass can win the first few frames.
+                                    repeat(30) {
+                                        runCatching { focusRequester.requestFocus() }
+                                        androidx.compose.runtime.withFrameNanos { }
+                                    }
+                                    viewModel.consumeJump()
+                                }
+                                // Live/elapsed derived from the ticking clock, NOT from slot.isNow --
+                                // that was baked once by buildRows and only ever re-evaluated when
+                                // Room re-emitted, so the "on now" cell went stale and the elapsed
+                                // fill (which the screen never passed at all) could not move.
+                                // Against the TRUE broadcast bounds, not the window-clamped ones,
+                                // or a programme straddling the window edge reports a wrong ratio.
+                                val isNow = !slot.isPlaceholder &&
+                                    nowMs >= slot.programStartMs && nowMs < slot.programEndMs
+                                val elapsed = if (!isNow) 0f else {
+                                    (nowMs - slot.programStartMs).toFloat() /
+                                        (slot.programEndMs - slot.programStartMs).coerceAtLeast(1L)
+                                }
                                 AreGuideCell(
                                     title = slot.title,
                                     time = timeLabel,
@@ -303,8 +382,9 @@ fun GuideScreen(
                                             onChannelSelected(row.channel.id)
                                         }
                                     },
-                                    live = slot.isNow,
-                                    now = slot.isNow,
+                                    live = isNow,
+                                    now = isNow,
+                                    progress = elapsed,
                                     catchup = slot.catchupEligible,
                                     width = cell.width,
                                     onFocusChange = { isFocused -> if (isFocused) viewModel.setFocused(GuideFocusedInfo(row.channel, slot)) },
@@ -321,8 +401,27 @@ fun GuideScreen(
                     }
                 }
             }
+            NowLine(
+                nowMs = nowMs,
+                windowStartMs = state.windowStartMs,
+                windowEndMs = state.windowEndMs,
+                scrollPx = scrollState.value,
+                laneStart = spacing.guideChannelWidth + 8.dp,
+            )
+            }
         }
         }
+    }
+
+    if (searchOpen) {
+        GuideSearchDialog(
+            onSearch = viewModel::searchProgrammes,
+            onSelect = {
+                viewModel.jumpTo(it)
+                searchOpen = false
+            },
+            onDismiss = { searchOpen = false },
+        )
     }
 
     if (categoryPickerOpen) {
@@ -361,6 +460,186 @@ fun GuideScreen(
         )
     }
 }
+
+/**
+ * The current-time marker: a capped vertical line drawn across every channel row at wherever "now"
+ * falls in the window, moving with both the clock and the horizontal scroll.
+ *
+ * This is the indicator the Guide never actually had. What looked like one was the static accent bar
+ * on the left edge of the on-air cell -- fixed to the programme's *start*, so it never moved, and
+ * per-cell, so it said nothing about the grid as a whole. Drawn as an overlay sibling of the
+ * LazyColumn rather than inside it: the rows are virtualized and each clips its own lane, so nothing
+ * living inside a row could span them.
+ *
+ * Purely decorative -- no focusable, no click target, so it stays out of D-pad travel entirely.
+ */
+@Composable
+private fun BoxScope.NowLine(
+    nowMs: Long,
+    windowStartMs: Long,
+    windowEndMs: Long,
+    scrollPx: Int,
+    laneStart: Dp,
+) {
+    // Nothing to draw when "now" is outside the shown window -- i.e. on the Yesterday/Tomorrow tabs.
+    if (windowStartMs <= 0L || nowMs < windowStartMs || nowMs > windowEndMs) return
+    val colors = AreIptvTheme.colors
+    val minutes = (nowMs - windowStartMs) / 60_000f
+    val x = DpPerMinute * minutes - with(LocalDensity.current) { scrollPx.toDp() }
+    // Scrolled off the left of the lane. clipToBounds below would hide it anyway, but a negative
+    // offset still costs a layout pass per frame of a scroll.
+    if (x < 0.dp) return
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .padding(start = laneStart)
+            // The lane scrolls under the pinned channel column; without this the marker would
+            // draw straight over the channel names once scrolled past.
+            .clipToBounds(),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxHeight().offset(x = x - 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(Modifier.size(8.dp).background(colors.accent, CircleShape))
+            // Translucent below the cap: at full strength a solid line across thirteen rows reads
+            // as a UI seam splitting the grid rather than as a time marker.
+            Box(Modifier.width(2.dp).weight(1f).background(colors.accent.copy(alpha = 0.55f)))
+        }
+    }
+}
+
+/**
+ * Programme search: type a title, get every matching programme in the source's cached guide, pick
+ * one to jump the grid to it (see [GuideViewModel.jumpTo]).
+ *
+ * Searches the CACHE, not the network -- which is only useful because [EpgRepository.refresh] now
+ * persists the whole XMLTV export rather than just the categories the user happened to open.
+ *
+ * A real [androidx.compose.ui.window.Dialog] window, so D-pad focus is trapped (CLAUDE.md).
+ */
+@Composable
+private fun GuideSearchDialog(
+    onSearch: suspend (String) -> List<com.arashrahimi46.iptv.data.db.EpgSearchHit>,
+    onSelect: (com.arashrahimi46.iptv.data.db.EpgSearchHit) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    var query by remember { mutableStateOf("") }
+    var results by remember { mutableStateOf<List<com.arashrahimi46.iptv.data.db.EpgSearchHit>>(emptyList()) }
+    val searchFocus = remember { FocusRequester() }
+    val zone = remember { ZoneId.systemDefault() }
+    val timeFormatter = rememberClockFormatter()
+
+    // Debounced: the query is a LIKE scan of the whole epg_programs table (see the DAO), which is
+    // not something to run per keystroke on a TV SoC.
+    LaunchedEffect(query) {
+        if (query.trim().length < MinSearchChars) {
+            results = emptyList()
+            return@LaunchedEffect
+        }
+        kotlinx.coroutines.delay(250)
+        results = onSearch(query)
+    }
+
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        AreDialog(
+            onDismiss = onDismiss,
+            title = stringResource(R.string.action_search),
+            width = 620.dp,
+        ) {
+            com.arashrahimi46.iptv.ui.components.AreTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = stringResource(R.string.guide_search_placeholder),
+                icon = Icons.Filled.Search,
+                activateOnClick = true,
+                modifier = Modifier.focusRequester(searchFocus),
+            )
+            Box(Modifier.height(8.dp))
+            when {
+                query.trim().length < MinSearchChars -> Text(
+                    text = stringResource(R.string.search_min_chars, MinSearchChars),
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+                results.isEmpty() -> Text(
+                    text = stringResource(R.string.search_no_results, query),
+                    style = AreIptvTheme.typography.body,
+                    color = colors.textSecondary,
+                )
+                else -> LazyColumn(
+                    // Same heightIn(max) reasoning as the category picker: bounded so the card
+                    // can't outgrow a 540dp screen, but free to shrink to a two-result list.
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp),
+                ) {
+                    // Keyed on channel + start: a title can legitimately repeat across channels
+                    // and across the day, so the title alone is not unique.
+                    items(
+                        results,
+                        key = { "${it.channelId}:${it.startMs}" },
+                        contentType = { "hit" },
+                    ) { hit ->
+                        GuideSearchRow(hit = hit, zone = zone, timeFormatter = timeFormatter, onClick = { onSelect(hit) })
+                    }
+                }
+            }
+        }
+    }
+    LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
+}
+
+@Composable
+private fun GuideSearchRow(
+    hit: com.arashrahimi46.iptv.data.db.EpgSearchHit,
+    zone: ZoneId,
+    timeFormatter: java.time.format.DateTimeFormatter,
+    onClick: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    val start = remember(hit.startMs, zone, timeFormatter) {
+        Instant.ofEpochMilli(hit.startMs).atZone(zone).format(timeFormatter)
+    }
+    com.arashrahimi46.iptv.ui.theme.TvFocusable(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AreIptvTheme.radius.sm),
+        backgroundColor = colors.surface2,
+    ) { _, _ ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ChannelLogo(logoUrl = hit.logoUrl, name = hit.channelName, size = 30.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = hit.title,
+                    style = AreIptvTheme.typography.label,
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = "${hit.channelName} · $start",
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+/** Mirrors [com.arashrahimi46.iptv.data.repository.MIN_SEARCH_CHARS] -- below it the repository
+ *  returns nothing, so the dialog says so rather than querying and rendering an empty list. */
+private const val MinSearchChars = 2
 
 /** Combining marks left by an NFD decomposition -- stripping them is what makes the category
  *  filter diacritic-insensitive ("Deportes" matches "Déportes", "Turkiye" matches "Türkiye"). */

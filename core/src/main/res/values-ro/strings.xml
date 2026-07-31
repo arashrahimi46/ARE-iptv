@@ -393,6 +393,7 @@
     <string name="guide_focus_hint">Focalizează un program pentru a vedea detaliile</string>
     <string name="guide_live_badge">LIVE</string>
     <string name="guide_catchup_available_desc">Reluare disponibilă</string>
+    <string name="guide_search_placeholder">Caută programe</string>
     <string name="guide_day_yesterday">Ieri</string>
     <string name="guide_day_today">Azi</string>
     <string name="guide_day_tomorrow">Mâine</string>

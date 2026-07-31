@@ -393,6 +393,7 @@
     <string name="guide_focus_hint">Εστιάστε σε ένα πρόγραμμα για λεπτομέρειες</string>
     <string name="guide_live_badge">ΖΩΝΤΑΝΑ</string>
     <string name="guide_catchup_available_desc">Διαθέσιμη επανάληψη</string>
+    <string name="guide_search_placeholder">Αναζήτηση προγραμμάτων</string>
     <string name="guide_day_yesterday">Χθες</string>
     <string name="guide_day_today">Σήμερα</string>
     <string name="guide_day_tomorrow">Αύριο</string>

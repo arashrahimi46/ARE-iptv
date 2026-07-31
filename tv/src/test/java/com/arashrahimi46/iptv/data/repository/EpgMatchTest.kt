@@ -1,6 +1,6 @@
 package com.arashrahimi46.iptv.data.repository
 
-import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.data.db.ChannelTvgId
 import com.arashrahimi46.iptv.data.parser.XmlTvParser
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -41,9 +41,9 @@ class EpgMatchTest {
 
     // Note the casing differs from the XMLTV ids on purpose -- this is the real-world mismatch.
     private val channels = listOf(
-        Channel(id = 1, sourceId = 1, name = "BBC One", streamUrl = "http://x/1", tvgId = "BBCOne.uk"),
-        Channel(id = 2, sourceId = 1, name = "ITV 1", streamUrl = "http://x/2", tvgId = "ITV1.uk"),
-        Channel(id = 3, sourceId = 1, name = "No EPG Channel", streamUrl = "http://x/3", tvgId = "unmatched.id"),
+        ChannelTvgId(id = 1, tvgId = "BBCOne.uk"),
+        ChannelTvgId(id = 2, tvgId = "ITV1.uk"),
+        ChannelTvgId(id = 3, tvgId = "unmatched.id"),
     )
 
     @Test

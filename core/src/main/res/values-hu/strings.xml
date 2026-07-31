@@ -393,6 +393,7 @@
     <string name="guide_focus_hint">Fókuszáljon egy műsorra a részletekért</string>
     <string name="guide_live_badge">ÉLŐ</string>
     <string name="guide_catchup_available_desc">Visszanézés elérhető</string>
+    <string name="guide_search_placeholder">Műsorok keresése</string>
     <string name="guide_day_yesterday">Tegnap</string>
     <string name="guide_day_today">Ma</string>
     <string name="guide_day_tomorrow">Holnap</string>
