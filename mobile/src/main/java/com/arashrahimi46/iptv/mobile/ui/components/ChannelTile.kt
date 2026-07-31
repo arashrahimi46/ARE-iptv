@@ -191,7 +191,9 @@ fun AreChannelTile(
                         )
                     }
                 }
-                if (onToggleFavorite != null) {
+                // Hidden while obscured -- same parental-lock leak as PosterTile: the tile's click
+                // and long-press are gated but the heart called onToggleFavorite directly.
+                if (onToggleFavorite != null && !obscured) {
                     AreIconButton(
                         icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = if (isFavorite == true) {

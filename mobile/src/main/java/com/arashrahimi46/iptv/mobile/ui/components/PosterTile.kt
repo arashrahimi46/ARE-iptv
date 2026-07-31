@@ -159,7 +159,12 @@ fun ArePosterTile(
                 if (progress != null) {
                     ProgressRail(progress)
                 }
-                if (onToggleFavorite != null) {
+                // Hidden while obscured: the tile's click routes to blur.onReveal and its long-press
+                // is nulled, but the heart called onToggleFavorite directly -- so a parentally
+                // blurred title could still be favorited (and thereby surfaced in the Favorites
+                // rail) without ever entering the PIN. The lock leaked through the one control that
+                // wasn't gated.
+                if (onToggleFavorite != null && !obscured) {
                     AreIconButton(
                         icon = if (isFavorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                         contentDescription = if (isFavorite == true) {

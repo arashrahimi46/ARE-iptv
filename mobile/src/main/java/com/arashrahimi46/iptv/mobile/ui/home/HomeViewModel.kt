@@ -151,13 +151,24 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         // Continue-watching resolves straight from Room, not from the sampled
                         // pools, so it needs the same filter applied at its own source.
                         val continueWatching = resolveContinueWatching(cwEntries, sourceId, parental)
+                        // Resolved by id from Room, NOT by filtering the sampled pools. The pools
+                        // are a bounded 200-row hashed curation sample, so any favorite outside
+                        // that sample simply never appeared -- the rail silently under-reported,
+                        // and on a large catalog it could come up empty for a user who definitely
+                        // has favorites. Same reason continue-watching resolves from Room above.
+                        val favoriteChannels = repository.channelsByIds(favChannelIds.toList())
+                            .filter { it.sourceId == sourceId && !parental.hidden(it.categoryName) }
+                            .take(20)
+                        val favoriteTitles = repository.titlesByIds(favVodIds.toList())
+                            .filter { it.sourceId == sourceId && !parental.hidden(it.categoryName) }
+                            .take(20)
                         HomeUiState(
                             hasSource = true,
                             continueWatching = continueWatching.titles,
                             continueWatchingEpisodeIds = continueWatching.episodeIdsByTitleId,
                             continueWatchingProgress = continueWatching.progressByTitleId,
-                            favoriteChannels = channelPool.filter { it.id in favChannelIds }.take(20),
-                            favoriteTitles = vodPool.filter { it.id in favVodIds }.take(20),
+                            favoriteChannels = favoriteChannels,
+                            favoriteTitles = favoriteTitles,
                             recommended = recommended,
                             liveNow = liveNow,
                             isLoading = false,
@@ -199,18 +210,28 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val titles = mutableListOf<VodTitle>()
         val episodeIdsByTitleId = mutableMapOf<Long, Long>()
         val progressByTitleId = mutableMapOf<Long, Float>()
+        // One row per TITLE, not per entry. Two in-progress episodes of the same series (or a movie
+        // bookmarked twice) both resolve to the same VodTitle, and the rail renders with
+        // `key = { it.id }` -- a repeated id makes Compose throw "Key was already used" and takes
+        // the whole Home screen down. `entries` arrives newest-first, so keeping the first
+        // occurrence keeps the most recent progress, which is also what the maps below already did.
+        val seenTitleIds = mutableSetOf<Long>()
         entries.forEach { entry ->
             when {
                 entry.vodTitleId != null -> titlesById[entry.vodTitleId]?.let {
-                    titles += it
-                    progressByTitleId[it.id] = entry.watchedFraction()
+                    if (seenTitleIds.add(it.id)) {
+                        titles += it
+                        progressByTitleId[it.id] = entry.watchedFraction()
+                    }
                 }
                 entry.seriesEpisodeId != null -> {
                     val episode = episodesById[entry.seriesEpisodeId] ?: return@forEach
                     val title = titlesById[episode.seriesTitleId] ?: return@forEach
-                    titles += title
-                    episodeIdsByTitleId[title.id] = episode.id
-                    progressByTitleId[title.id] = entry.watchedFraction()
+                    if (seenTitleIds.add(title.id)) {
+                        titles += title
+                        episodeIdsByTitleId[title.id] = episode.id
+                        progressByTitleId[title.id] = entry.watchedFraction()
+                    }
                 }
             }
         }

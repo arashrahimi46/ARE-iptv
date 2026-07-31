@@ -96,7 +96,12 @@ fun ParentalPinDialog(
                 submit()
             },
             modifier = Modifier.fillMaxWidth(),
-            label = stringResource(CoreR.string.settings_change_pin),
+            // Reuse the dialog's own per-flow title (Set / Confirm / Enter). It was hardcoded to
+            // "Change PIN", so setting a first PIN, confirming it, and verifying to DISABLE the
+            // lock all showed a field labelled "Change PIN". No new keys needed -- and therefore no
+            // 24-locale translation round -- because these three strings already exist and already
+            // say the right thing.
+            label = title,
             enabled = !verifying,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),

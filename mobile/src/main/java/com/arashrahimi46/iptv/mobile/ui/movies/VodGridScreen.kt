@@ -110,10 +110,11 @@ fun VodGridScreen(
 
             AreRefreshBox(
                 refreshing = isRefreshing,
-                onRefresh = {
-                    viewModel.refresh()
-                    pagingItems.refresh()
-                },
+                // Only the VM refresh. It re-fetches the source into Room, and the Room-backed
+                // PagingSource invalidates itself on write -- so calling pagingItems.refresh() too
+                // fired a second, immediate reload that reset the grid to the top before the
+                // network fetch had even returned, and the list then flashed again when it did.
+                onRefresh = viewModel::refresh,
                 modifier = Modifier.fillMaxSize(),
             ) {
                 val refreshState = pagingItems.loadState.refresh
