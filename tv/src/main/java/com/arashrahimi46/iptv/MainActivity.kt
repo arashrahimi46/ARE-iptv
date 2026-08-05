@@ -708,11 +708,19 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
 
     // Reveal-on-tap: a blurred adult tile's click routes here; a correct PIN unlocks the session.
     var showRevealPin by remember { mutableStateOf(false) }
-    val parentalBlur = ParentalBlurState(
-        enabled = parentalLock && lockedDisplay == LockedContentDisplay.BLUR && !sessionUnlocked && hasPin,
-        keywords = parentalKeywords,
-        onReveal = { showRevealPin = true },
-    )
+    // PERF: remembered, not rebuilt per recomposition. `ParentalBlurState` holds a `Set<String>`, so
+    // Compose infers it UNSTABLE and compares it by IDENTITY -- and the `content` lambda handed to
+    // AreIptvAppShell captures it. A fresh instance each time therefore defeated that lambda's
+    // memoization, so the shell could never skip and every ShellHost recomposition re-ran the whole
+    // app shell with it.
+    val enabled = parentalLock && lockedDisplay == LockedContentDisplay.BLUR && !sessionUnlocked && hasPin
+    val parentalBlur = remember(enabled, parentalKeywords) {
+        ParentalBlurState(
+            enabled = enabled,
+            keywords = parentalKeywords,
+            onReveal = { showRevealPin = true },
+        )
+    }
     // Launch gate: require the PIN before the shell is usable (once per process; a relaunch re-locks).
     var launchUnlocked by rememberSaveable { mutableStateOf(false) }
     val needsLaunchPin = pinOnLaunch && parentalLock && hasPin && !launchUnlocked
@@ -758,6 +766,10 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
     // Report the focused tab content's bounds to the mini overlay so it can dodge out of the way.
     // Scoped to the shell only (NOT the whole outer Box) so focus landing on the mini itself --
     // which sits outside this wrapper -- reports null instead of the mini self-triggering a dodge.
+    // NOT read in this scope: onFocusedBoundsChanged fires on every LAYOUT pass that repositions the
+    // focused node -- not just when focus moves -- so a composition read here recomposed the whole
+    // shell on every frame of every bring-into-view scroll. The overlay reads it itself, through a
+    // lambda, below its not-docked early return.
     Box(modifier = Modifier.fillMaxSize().onFocusedBoundsChanged { focusedContentBounds = it?.boundsInRoot() }) {
     AreIptvAppShell(
         activeNav = activeNav,
@@ -902,7 +914,7 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
             controller = controller,
             onExpand = { channelId -> rootNav.navigate("player/$channelId") },
             behavior = miniBehavior,
-            focusedContentBounds = focusedContentBounds,
+            focusedContentBounds = { focusedContentBounds },
             reducedMotion = reducedMotion,
             focusRequester = miniFocus,
         )

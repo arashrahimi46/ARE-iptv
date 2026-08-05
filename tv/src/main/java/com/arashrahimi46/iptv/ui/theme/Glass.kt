@@ -43,7 +43,19 @@ val GlassElevation: Dp = 6.dp
  * shadow reads too hard/dark for glass ("still strong shadows"). This is a whisper of depth that
  * mostly shows in light mode; in dark the lit edge carries the separation. Draw BEFORE the fill.
  *
- * PERF: the blurred shadow is RASTERIZED ONCE into a cached bitmap and blitted thereafter.
+ * PERF: the blurred shadow is RASTERIZED ONCE **per size/shape** into a cached bitmap and blitted
+ * thereafter -- but only because the block below is `remember`ed. [drawWithCache]'s element compares
+ * its lambda by reference IDENTITY (`DrawWithCacheElement.equals` uses `!==`), and that lambda captures
+ * shape/colour/alpha/blur/offset, so an unremembered call minted a fresh instance every time the OWNER
+ * recomposed -- taking the `update(node)` path, whose `block` setter calls `invalidateDrawCache()`, so
+ * the whole `ImageBitmap` allocation plus the CPU `BlurMaskFilter` pass re-ran inside the next draw.
+ * "Rasterized once" was therefore never true for any owner that recomposes, which is most of them:
+ * [Modifier.glassSurface] re-invokes this on every recomposition of its caller (Guide's focused-info
+ * bar recomposes on EVERY D-pad step -- a ~630 KB bitmap and a Gaussian blur ~8x/second), and
+ * [TvFocusable] rebuilds its chain on every focus enter AND exit, so every elevated chip, button and
+ * tab re-baked twice per keypress. Remembering cannot stale the bake: `CacheDrawModifierNodeImpl`
+ * still invalidates on measure-result, density and layout-direction changes, which is exactly what
+ * the `bake = false` sidebar relies on.
  *
  * A previous pass moved the [Path] and [BlurMaskFilter] paint construction into [drawWithCache] so
  * they were built once per size/shape rather than per draw. That fixed the allocation churn but not
@@ -60,6 +72,7 @@ val GlassElevation: Dp = 6.dp
  * Verified against the un-baked version by pixel diff of the Settings screen: 1.3% of pixels differ,
  * all by a max of 2/255 -- below the quantisation floor of a shadow drawn at 10% alpha.
  */
+@Composable
 fun Modifier.softShadow(
     shape: Shape,
     color: Color = Color.Black,
@@ -76,7 +89,23 @@ fun Modifier.softShadow(
      * once laid out and bakes.
      */
     bake: Boolean = true,
-): Modifier = if (alpha <= 0f) this else if (!bake) drawWithCache {
+): Modifier = this.then(
+    // The element is remembered so its lambda keeps ONE identity across the owner's recompositions --
+    // see the PERF paragraph above for why that is the whole point of this modifier.
+    remember(shape, color, alpha, blur, offsetY, bake) {
+        if (alpha <= 0f) Modifier else softShadowElement(shape, color, alpha, blur, offsetY, bake)
+    },
+)
+
+/** [Modifier.softShadow]'s draw element. Non-composable so the `remember` above owns its identity. */
+private fun softShadowElement(
+    shape: Shape,
+    color: Color,
+    alpha: Float,
+    blur: Dp,
+    offsetY: Dp,
+    bake: Boolean,
+): Modifier = if (!bake) Modifier.drawWithCache {
     val offPx = offsetY.toPx()
     val paint = NativePaint().apply {
         isAntiAlias = true
@@ -85,7 +114,7 @@ fun Modifier.softShadow(
     }
     val path = shadowPath(shape, size, layoutDirection, this, offPx).asAndroidPath()
     onDrawBehind { drawIntoCanvas { it.nativeCanvas.drawPath(path, paint) } }
-} else drawWithCache {
+} else Modifier.drawWithCache {
     val offPx = offsetY.toPx()
     val blurPx = blur.toPx()
     // The blur fringe spills well past the shape. Pad by 3x sigma so the mask is never clipped, and

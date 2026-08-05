@@ -44,6 +44,23 @@ private val XTREAM_QUERY_KEYS = setOf("username", "password", "type", "output")
 /** Rows flushed to Room per batch during a streaming M3U import (bounds peak memory). */
 private const val IMPORT_BATCH_SIZE = 1500
 
+/**
+ * One process-wide client for catalog and EPG fetches.
+ *
+ * PERF: OkHttp 4's constructor is not free. With the default TLS `connectionSpecs` and no custom SSL
+ * config it eagerly builds a platform X509TrustManager (a `TrustManagerFactory.init` over the
+ * AndroidCAStore) and an `SSLContext` -- per instance. Both [PlaylistRepositoryImpl] and
+ * [EpgRepository] built their own as eager constructor fields, and both are constructed inside
+ * ViewModel constructors, i.e. synchronously on the composition thread as a destination first
+ * composes; Home and Guide paid it twice. Sharing one instance also shares the connection pool.
+ */
+internal val catalogHttpClient: OkHttpClient by lazy {
+    OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
+        .build()
+}
+
 /** Ids per `DELETE ... WHERE id IN (...)` batch during a refresh -- keeps the bound-variable count
  * well under SQLite's ~999 limit when a provider drops a large chunk of a catalog. */
 private const val DELETE_CHUNK = 500
@@ -249,10 +266,7 @@ class PlaylistRepositoryImpl(context: Context) : PlaylistRepository {
     private val settings = UserSettings(context)
     private val credentials = CredentialsStore(context)
     private val recordings = RecordingRepository(context)
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .build()
+    private val httpClient = catalogHttpClient
 
     override fun observeSources(): Flow<List<PlaylistSource>> = db.playlistSourceDao().observeAll()
 

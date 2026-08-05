@@ -23,10 +23,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.InputStream
-import java.util.concurrent.TimeUnit
 import java.util.zip.GZIPInputStream
 
 /** Safe chunk size for `IN (...)` binds -- under SQLite's historical 999 host-parameter limit. */
@@ -131,10 +129,7 @@ internal fun resolveEpgAvailability(rowsEmpty: Boolean, attemptedAny: Boolean, s
 class EpgRepository(context: Context) {
     private val db = AppDatabase.get(context)
     private val credentials = CredentialsStore(context)
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .build()
+    private val httpClient = catalogHttpClient
 
     private val settings = UserSettings(context)
 

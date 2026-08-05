@@ -16,6 +16,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.data.settings.ParentalFilter
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -256,6 +258,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                     }
                 }
             }
+            // A `combine` transform runs in the COLLECTOR's context, and this chain is collected by
+            // launchIn(viewModelScope) == Dispatchers.Main.immediate -- the Room flows' own dispatcher
+            // only governs where the query runs, not this block. So all of the curation above ran on
+            // the UI thread: HomeRailCurator.baseName() applies 12 compiled quality regexes plus two
+            // more per title, over 200-title pools for channels/movies/series and a 400-title merged
+            // pool for `recommend`, i.e. ~14k regex passes plus the groupBy/sort work in `diversify` --
+            // on every catalog, parental or layout emission, right as Home is first painting.
+            .flowOn(Dispatchers.Default)
             // Preserves categoryRails AND continueWatching (each owned by a separate pipeline
             // below) instead of the plain `_uiState.value = it` this replaced -- that would reset
             // them to the fresh HomeUiState()'s empty defaults on every rail/category/layout

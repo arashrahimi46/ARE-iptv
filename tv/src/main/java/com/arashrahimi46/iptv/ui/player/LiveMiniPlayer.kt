@@ -85,8 +85,15 @@ private const val MINI_DODGE_DEBOUNCE_MS = 200L
  * Anti-occlusion (the user's choice, per-user setting): when browsing focus lands on content behind
  * its home (bottom-right) slot, [MiniPlayerBehavior.DODGE] slides it to the bottom-left and back
  * home once focus leaves; [MiniPlayerBehavior.FADE] instead fades+shrinks it while it isn't focused.
- * [focusedContentBounds] is the shell-reported rect (root coords) of whatever tab content currently
- * holds focus -- null when nothing in the tabs is focused (e.g. the mini itself is).
+ * [focusedContentBounds] lazily yields the shell-reported rect (root coords) of whatever tab content
+ * currently holds focus -- null when nothing in the tabs is focused (e.g. the mini itself is).
+ *
+ * PERF: it is a lambda, not a value, on purpose. The shell writes that state from the LAYOUT phase --
+ * foundation's `FocusableNode` notifies `onFocusedBoundsChanged` whenever the focused node is
+ * REPOSITIONED, not only when focus moves -- so it changes on every frame of every bring-into-view
+ * scroll, which is the app's dominant D-pad interaction. Read in the shell's own scope it invalidated
+ * the entire shell on each of those frames; invoked here, below the not-docked early return, the
+ * subscription only exists while a mini is actually docked and only this overlay recomposes.
  */
 @Composable
 fun LiveMiniPlayerOverlay(
@@ -94,7 +101,7 @@ fun LiveMiniPlayerOverlay(
     onExpand: (channelId: Long) -> Unit,
     modifier: Modifier = Modifier,
     behavior: MiniPlayerBehavior = MiniPlayerBehavior.DODGE,
-    focusedContentBounds: Rect? = null,
+    focusedContentBounds: () -> Rect? = { null },
     reducedMotion: Boolean = false,
     // Hoisted by the shell so its ancestor key handler can jump focus back to the docked mini
     // (the remote's Window/PiP key) from anywhere -- the tab grids otherwise trap D-pad focus.
@@ -145,7 +152,8 @@ fun LiveMiniPlayerOverlay(
             Rect(right - miniSize.width, bottom - miniSize.height, right, bottom)
         }
     }
-    val obstructed = focusedContentBounds != null && homeRect != null && homeRect.overlaps(focusedContentBounds)
+    val bounds = focusedContentBounds()
+    val obstructed = bounds != null && homeRect != null && homeRect.overlaps(bounds)
 
     // Debounce the obstruction: a scroll container briefly drags the focused item THROUGH the mini's
     // corner before settling it elsewhere, which would otherwise start a dodge and snap it back (a

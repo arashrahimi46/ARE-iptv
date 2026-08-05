@@ -1121,3 +1121,124 @@ left on a Home sweep is **composition and measure of new rails**, and after the 
 has no single dominant item — text is ~19 % of `measureAndLayout`, the rest is spread across the
 layout tree. The next real win would have to be structural (fewer rails composed per scroll, or a
 tile with materially fewer layout nodes), not another modifier-level fix.
+
+---
+
+## Round 6: the shell recomposed on every frame of every scroll (2026-08-05)
+
+Sweep of the whole app, not just Home: a 9-dimension static audit (shell, Home, Guide, Settings,
+grids, theme-draw, animations, data-load, build config) with every finding adversarially verified,
+plus the first **Perfetto traces of Settings and the Guide**, which this document had never measured.
+
+### Where the app actually stands now
+
+Release build, `speed-profile` AOT-compiled, XL95, RTL (the user's real config), 11 s captures.
+
+| screen | main-thread `draw`/frame | worst frame | frames > 16.7 ms |
+|---|---|---|---|
+| Home + sidebar (16 expand/collapse) | 1.8 ms | 8 ms | **0** |
+| Guide | 2.0 ms | 55 ms | 3 |
+| Settings | 3.2 ms | 75 ms | 5 |
+
+**Home and the sidebar are finished.** Rounds 1-5 worked; zero janky frames. RenderThread is a flat
+~6 ms/frame on all three screens. Everything left is a handful of large **first-paint** frames on
+Settings and the Guide, and Settings' worst frame is not draw-bound at all: of 156 ms,
+`AndroidOwner:measureAndLayout` is **113 ms**, and 39 ms of that is 31 `TextAnnotatedStringNode:measure`
+calls — lazy-list subcomposition inside the measure pass. Settings' `LazyColumn` emits a whole
+section *card* per item, so entering a pane composes every row in it regardless of visibility. That is
+the next structural lever there; it was not taken this round.
+
+### Compose compiler metrics (wire up `composeCompiler { metricsDestination/reportsDestination }` to reproduce)
+
+**0 non-skippable composables**, strong skipping and `IntrinsicRemember` already on (Kotlin 2.2.10).
+79 unstable classes, all `*UiState`/row types made unstable by plain `List`/`Map`/`Set` fields. The
+composition layer is clean; do not go looking for skippability wins.
+
+### Shipped, and what it was worth
+
+Scored with the `perfBisect` launch-extra so both variants ran **interleaved inside one batch** —
+mandatory here, see the drift warning below. Movies grid (uniform tiles, no video), D-pad sweep
+driving bring-into-view scrolls, 2 reps per variant.
+
+| | before | after | Δ |
+|---|---|---|---|
+| `Compose:recompose` | 357 / 361 ms | **290 / 281 ms** | **−20 %** |
+| main-thread Running | 2094 / 2100 ms | **1973 / 1957 ms** | **−6.3 %** |
+| RenderThread Running | 974 / 985 ms | 955 / 945 ms | −2.3 % |
+
+Reps cluster to ±8 ms inside each variant and all four runs move the same way. Three changes:
+
+**1. `onFocusedBoundsChanged` was recomposing the entire shell on every frame of every scroll.**
+`MainActivity` wrote the focused content's `Rect` into a `ShellHost`-scoped state and **read it back in
+`ShellHost`'s own scope** to hand to the mini-player overlay. Foundation's `FocusableNode` fires
+`onFocusedBoundsChanged` whenever the focused node is **repositioned**, not only when focus moves — so
+during a bring-into-view scroll the rect changes every frame and invalidated the whole shell every
+frame, on the app's dominant interaction, on every screen. Now passed as a **lambda** and invoked
+inside `LiveMiniPlayerOverlay` below its not-docked early return, so the subscription only exists
+while a mini is actually docked.
+
+**2. `ParentalBlurState` was rebuilt every recomposition.** It holds a `Set<String>`, so Compose infers
+it unstable and compares by identity; the `content` lambda handed to `AreIptvAppShell` captures it, so
+a fresh instance defeated that lambda's memoization and **`AreIptvAppShell` could never skip**. Now
+`remember`ed. This compounds with (1): every shell invalidation was re-running the whole app shell.
+
+**3. `softShadow`'s bake was thrown away on every recomposition of its owner.** The KDoc promised
+"RASTERIZED ONCE"; it never was for any owner that recomposes. `drawWithCache`'s element compares its
+lambda by **reference identity** (`DrawWithCacheElement.equals` uses `!==`, verified in the
+compose-ui 1.11.1 sources), and `softShadow` was a plain non-composable function minting a fresh
+capturing lambda per call → `update(node)` → `block` setter → `invalidateDrawCache()` → the whole
+`ImageBitmap` allocation plus CPU `BlurMaskFilter` pass re-ran inside the next draw. Guide's
+`FocusedInfoBar` recomposes on **every D-pad step**, so it was allocating a ~630 KB bitmap and running
+a Gaussian blur ~8×/second; every elevated chip/button/tab re-baked twice per keypress through
+`TvFocusable`. `softShadow` is now `@Composable` and `remember`s its element. Alone it measured only
+main −1.3 % / RT −1.8 % on Settings — real, free and pixel-identical, but small; the win above is
+mostly (1)+(2). Remembering cannot stale the bake: `CacheDrawModifierNodeImpl` still invalidates on
+measure-result, density and layout-direction changes, which is exactly what the `bake = false`
+sidebar relies on.
+
+### Also shipped: main-thread work during page load
+
+Neutral on a steady-state grid sweep (confirmed, no regression), but all three were blocking the UI
+thread while a screen was first painting:
+
+- **`HomeViewModel`'s curation pipeline** — a `combine` transform runs in the **collector's** context,
+  and `launchIn(viewModelScope)` is `Dispatchers.Main.immediate`; the Room flows' dispatcher only
+  governs where the *query* runs. So `HomeRailCurator` ran on the UI thread: `baseName()` applies 12
+  compiled quality regexes plus two more per title over 200-title pools ×3 and a 400-title merged pool
+  for `recommend` — ~14 k regex passes, plus the `groupBy`/sort work in `diversify` — on every catalog,
+  parental or layout emission. Added `.flowOn(Dispatchers.Default)`; the `_uiState` write stays on Main.
+- **`GuideViewModel.buildRows`** — same mechanism: a `groupBy` over every programme in the 6 h window
+  plus a per-channel sort/map/filter for up to 300 channels (~1800 slot allocations), on Main, on every
+  day-chip and category change and every `epg_programs` invalidation. Wrapped in
+  `withContext(Dispatchers.Default)`.
+- **`OkHttpClient` per repository** — OkHttp 4 eagerly builds a platform `X509TrustManager` and an
+  `SSLContext` per instance when using default TLS specs. `PlaylistRepositoryImpl` and `EpgRepository`
+  each built their own as eager constructor fields, and both are constructed in ViewModel constructors,
+  i.e. synchronously on the composition thread as a destination composes — Home and Guide paid it twice.
+  Now one process-wide `catalogHttpClient`, which also shares the connection pool.
+
+### Latent bug: the shipped baseline profile contains ZERO app classes
+
+`tv/src/release/generated/baselineProfiles/` **does not exist**, so the 6367-rule
+`assets/dexopt/baseline.prof` this document calls "one IS shipped" is entirely library consumer
+profiles (androidx, coil, kotlin). No composable, focus or tile code is AOT-compiled on a cold start.
+Regeneration was also impossible: `BaselineProfileGenerator.PACKAGE_NAME` still held the Kotlin
+**namespace** (`com.arashrahimi46.iptv`) while the plugin installs the nonMinifiedRelease APK under the
+**applicationId** (`com.areiptv.tv`), so `BaselineProfileRule.collect` fails with "Unable to find target
+package". The constant is fixed; **generating the profile is still to do**, and whoever does it must
+seed a playlist into the nonMinifiedRelease install first — it gets a fresh empty DataStore and Room DB
+under the new applicationId, so the sweep would otherwise profile onboarding and an empty Home and miss
+`ArePosterTile`/`AreChannelTile`/`tvFocusable` entirely.
+
+### Method notes
+
+- **Cross-batch drift is still larger than most effects.** A first attempt to A/B `softShadow` by
+  building it out entirely showed draw total 883 → 712 ms *and* `animation` 391 → 956 ms in the same
+  run — removing a shadow cannot triple animation cost. Two builds compared across batches is not a
+  measurement. Re-add a `perfBisect` launch-extra (`--ei perfBisect N`) and interleave.
+- `-a` for `perfetto` is the **applicationId** (`com.areiptv.tv`); this document's older commands say
+  `com.arashrahimi46.iptv` and capture nothing.
+- Of 43 audit findings, **21 were refuted** on inspection — including several that read as obvious
+  (marquee re-recording the rail at 60 fps, the Guide's shared `ScrollState` read in composition,
+  `AreSegmentedControl`'s `onGloballyPositioned` writes, Favorites' missing lazy keys). Verify against
+  the source before acting; plausible mechanisms here are usually already handled.

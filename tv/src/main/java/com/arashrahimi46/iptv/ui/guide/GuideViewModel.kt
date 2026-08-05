@@ -18,6 +18,7 @@ import com.arashrahimi46.iptv.data.repository.PlaylistRepository
 import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
 import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.settings.UserSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -249,7 +251,17 @@ class GuideViewModel(app: Application) : AndroidViewModel(app) {
                 maybeRefreshEpg(source, channels)
                 val ids = channels.map { it.id }
                 val programsFlow = if (ids.isEmpty()) flowOf(emptyList()) else epgRepository.observeForChannels(ids, window.first, window.second)
-                programsFlow.map { programs -> GuideEmission(day, group, groups, window, buildRows(channels, programs, window)) }
+                programsFlow.map { programs ->
+                    // Room delivers on the COLLECTOR's context, and this chain is collected from
+                    // viewModelScope == Dispatchers.Main.immediate. buildRows is a groupBy over every
+                    // programme in the 6h window plus a per-channel sort/map/filter for up to
+                    // GUIDE_CHANNEL_LIMIT (300) channels -- ~1800 slot allocations -- so it ran on the
+                    // UI thread on every day-chip and category change and on every epg_programs
+                    // invalidation. Only the pure transform moves; maybeRefreshEpg's `refreshedSources`
+                    // guard above stays serialized on Main, as does the _uiState.update below.
+                    val rows = withContext(Dispatchers.Default) { buildRows(channels, programs, window) }
+                    GuideEmission(day, group, groups, window, rows)
+                }
             }
             .collectLatest { e ->
                 // Atomic read-modify-write: epgUnavailable is carried forward from `it` inside

@@ -60,6 +60,16 @@ class BaselineProfileGenerator {
     }
 
     private companion object {
-        const val PACKAGE_NAME = "com.arashrahimi46.iptv"
+        /**
+         * Must match tv/build.gradle.kts `applicationId` -- NOT the `namespace`
+         * (com.arashrahimi46.iptv), which is what this used to hold. The two were deliberately split
+         * when the store identity became `com.areiptv.tv`, and the baselineprofile plugin installs and
+         * launches the nonMinifiedRelease APK under the applicationId -- so with the namespace here
+         * `BaselineProfileRule.collect` fails with "Unable to find target package" and the profile can
+         * never be regenerated. (`tv/src/release/generated/baselineProfiles/` does not exist, so the
+         * shipped `assets/dexopt/baseline.prof` is currently 100% library rules and contains ZERO
+         * app classes -- no composable, focus or tile code is AOT-compiled on a cold start.)
+         */
+        const val PACKAGE_NAME = "com.areiptv.tv"
     }
 }
