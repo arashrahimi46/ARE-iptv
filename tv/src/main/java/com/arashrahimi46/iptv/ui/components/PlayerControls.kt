@@ -469,12 +469,15 @@ fun ArePlayerControls(
         Row(
             modifier = Modifier
                 .horizontalScroll(rememberScrollState())
-                // Headroom INSIDE the scroll clip, edit mode only. `horizontalScroll` clips to its
-                // bounds on BOTH axes, and the row's bounds are exactly the 52dp buttons -- so the
-                // editor's held-button lift was having its top sliced off by the scroll container.
-                // Padding placed after the scroll modifier grows the clip rect and insets the
-                // content, giving the lift somewhere to go; the live HUD keeps its tight row.
-                .then(if (editSlot != null) Modifier.padding(vertical = 16.dp) else Modifier),
+                // Headroom INSIDE the scroll clip. `horizontalScroll` clips to its bounds on BOTH
+                // axes, and the row's bounds are exactly the 52dp buttons -- so anything a button
+                // draws outside itself gets sliced. Two things do: the editor's held-button lift
+                // (hence the taller 16dp in edit mode), and, on the LIVE HUD, every focused button's
+                // 1.06x focus scale -- clipped top and bottom on all of them and additionally on the
+                // left edge of the first one, which is Rewind. That is the "the rewind button is cut
+                // off" report. Padding placed AFTER the scroll modifier grows the clip rect and
+                // insets the content, so the ring has somewhere to go.
+                .padding(horizontal = 4.dp, vertical = if (editSlot != null) 16.dp else 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             // 6dp, not 8: at the full 13-button default the row was ~25dp over the bar's inner
             // width, so the last glyph was sliced down the middle. Twelve gaps at 2dp less buys

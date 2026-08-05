@@ -17,6 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.runtime.withFrameNanos
 
 import androidx.compose.ui.Modifier
 import com.arashrahimi46.iptv.data.settings.SidebarStyle
@@ -26,7 +28,6 @@ import com.arashrahimi46.iptv.ui.components.AreSidebarNav
 import com.arashrahimi46.iptv.ui.theme.AmbientBackdrop
 import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork
 import com.arashrahimi46.iptv.ui.theme.LocalAppBackdrop
-import com.arashrahimi46.iptv.ui.theme.requestFocusWhenReady
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
@@ -84,11 +85,26 @@ fun AreIptvAppShell(
     // Counter, not a Boolean: re-selecting the tab you are already on must still hand focus over, and
     // a Boolean would not change state on the second press.
     var contentFocusRequests by remember { mutableIntStateOf(0) }
+    // Whether focus is genuinely INSIDE the content group. requestFocusWhenReady can't tell us this:
+    // it treats "the requester is attached" as success, and this Box -- a bare focusGroup that always
+    // exists -- is attached from frame 0. So the request "succeeded" on attempt 0 while the group had
+    // no focusable child yet (the NavHost cross-fade still showing the outgoing screen, paging not
+    // past its first page), focus went nowhere, and Compose's fallback handed it to the first
+    // focusable in the window -- the top bar's "+"/search. That is the reported "switching tab drops
+    // me on the search icon", and it reads far worse in RTL, where the top bar sits at the far LEFT,
+    // so the D-pad press that should enter the content appears to fly across the whole screen.
+    var contentHasFocus by remember { mutableStateOf(false) }
     LaunchedEffect(contentFocusRequests) {
-        // requestFocusWhenReady retries across the tab swap AND re-asserts after a settle delay --
-        // needed because the sidebar row the user just clicked wins focus back for a few frames as
-        // the transition completes.
-        if (contentFocusRequests > 0) contentFocus.requestFocusWhenReady()
+        if (contentFocusRequests == 0) return@LaunchedEffect
+        // Keep asking until focus ACTUALLY lands in the content, not until the requester exists.
+        // Bounded so a screen with genuinely nothing focusable (empty catalogue) stops instead of
+        // spinning, and short enough that it can't fight a user who has already moved on.
+        repeat(CONTENT_FOCUS_ATTEMPTS) {
+            withFrameNanos { }
+            runCatching { contentFocus.requestFocus() }
+            if (contentHasFocus) return@LaunchedEffect
+            delay(CONTENT_FOCUS_GAP_MS)
+        }
     }
 
     // Nav is CONCURRENT: picking an item swaps the screen on the very same frame as the key press,
@@ -143,6 +159,7 @@ fun AreIptvAppShell(
                             .weight(1f)
                             .fillMaxWidth()
                             .focusRequester(contentFocus)
+                            .onFocusChanged { contentHasFocus = it.hasFocus }
                             .focusGroup(),
                     ) {
                         content()
@@ -171,3 +188,7 @@ fun AreIptvAppShell(
         }
     }
 }
+
+/** ~640ms of retrying for the content to actually take focus after a nav selection. */
+private const val CONTENT_FOCUS_ATTEMPTS = 16
+private const val CONTENT_FOCUS_GAP_MS = 40L

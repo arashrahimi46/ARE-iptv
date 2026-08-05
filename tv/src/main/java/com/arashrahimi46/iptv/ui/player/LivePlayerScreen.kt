@@ -470,15 +470,25 @@ fun LivePlayerScreen(
                         }
                         else -> false
                     }
-                } else if (keyEvent.type == KeyEventType.KeyDown &&
-                    state.media?.isLive == false && panelFocused && seekBarFocused &&
-                    (keyEvent.key == Key.DirectionLeft || keyEvent.key == Key.DirectionRight)
-                ) {
-                    // Consume Left/Right on the DOWN edge while the seek bar is focused. Our seek
-                    // runs on KeyUp; if the down edge isn't consumed the focus system moves focus
-                    // first -- Right had no focusable neighbour so it stayed and "worked", but Left
-                    // jumped to the Back button, dropping the KeyUp seek (the "can't go back" bug).
-                    true
+                } else if (keyEvent.type == KeyEventType.KeyDown) {
+                    // Everything this handler acts on must ALSO be consumed on the down edge.
+                    // Our actions run on KeyUp; anything left unconsumed on KeyDown is handled by
+                    // Compose's focus search FIRST, so a single press travels twice.
+                    when (keyEvent.key) {
+                        // Up/Down are ours in every panel state (channel switch when closed, explicit
+                        // row moves when open). Unconsumed, one Up from the button row went
+                        // Play -> seek bar (focus search, down edge) -> Back (our handler, up edge),
+                        // so the scrub bar could never be reached from below and Back looked like it
+                        // "jumped"; Down out of Back skipped the bar the same way in reverse.
+                        Key.DirectionUp, Key.DirectionDown -> true
+                        // Left/Right only while the seek bar owns the row -- otherwise the focus
+                        // system must stay in charge so it can walk the transport buttons. (Right had
+                        // no focusable neighbour so it stayed and "worked", but Left jumped to the
+                        // Back button, dropping the KeyUp seek -- the old "can't go back" bug.)
+                        Key.DirectionLeft, Key.DirectionRight ->
+                            state.media?.isLive == false && panelFocused && seekBarFocused
+                        else -> false
+                    }
                 } else {
                     false
                 }
