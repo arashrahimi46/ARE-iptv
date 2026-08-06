@@ -32,7 +32,12 @@ object HomeRailCurator {
     private val QUALITY_TOKENS = listOf("4K", "UHD", "FHD", "HD", "SD", "HQ", "H265", "HEVC", "1080P", "720P", "576P", "480P")
 
     private val bracketed = Regex("[\\[(][^\\])]*[\\])]")
-    private val nonAlnum = Regex("[^a-z0-9]+")
+    // Unicode-aware. As `[^a-z0-9]+` this deleted every Persian, Arabic, Cyrillic and Greek
+    // character in the name, leaving an empty string -- so the `ifEmpty` guard below fell back to the
+    // RAW name and "شبکه ۳ hd" / "شبکه ۳ sd" stayed distinct keys. The whole point of baseName is to
+    // collapse those into one rail entry, and it silently did nothing for any non-Latin catalogue.
+    // (Persian-Indic digits still key apart from ASCII ones -- folding those is a separate call.)
+    private val nonAlnum = Regex("[^\\p{L}\\p{N}]+")
     private val qualityWordRegexes = QUALITY_TOKENS.map { Regex("(?<![A-Za-z0-9])${Regex.escape(it)}(?![A-Za-z0-9])", RegexOption.IGNORE_CASE) }
 
     /** De-dup identity: lowercased, bracketed segments and edition/quality tokens removed,

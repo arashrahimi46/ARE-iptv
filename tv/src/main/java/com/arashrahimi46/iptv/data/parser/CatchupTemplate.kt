@@ -2,6 +2,7 @@ package com.arashrahimi46.iptv.data.parser
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.Locale
 
 /**
  * Expands an M3U `catchup-source` template (or derives an archive URL straight from the live URL)
@@ -50,12 +51,17 @@ private fun fillTemplate(template: String, startSec: Long, endSec: Long, nowSec:
         "utcend" to endSec.toString(), "end" to endSec.toString(),
         "duration" to durationSec.toString(),
         "offset" to (nowSec - startSec).coerceAtLeast(0).toString(),
-        "Y" to "%04d".format(dt.year),
-        "m" to "%02d".format(dt.monthValue),
-        "d" to "%02d".format(dt.dayOfMonth),
-        "H" to "%02d".format(dt.hour),
-        "M" to "%02d".format(dt.minute),
-        "S" to "%02d".format(dt.second),
+        // Locale.ROOT is load-bearing, not tidiness. Kotlin's String.format delegates to
+        // java.util.Formatter with Locale.getDefault(), which substitutes the locale's OWN zero digit
+        // for %d. On a Persian device (zero digit U+06F0) "%04d".format(2026) yields "۲۰۲۶", so the
+        // archive URL came out as .../timeshift/user/pass/۹۰/۲۰۲۶-۰۸-۰۶:۲۰-۰۰/123.ts, the provider
+        // 404'd, and catch-up simply never played -- with no clue why.
+        "Y" to String.format(Locale.ROOT, "%04d", dt.year),
+        "m" to String.format(Locale.ROOT, "%02d", dt.monthValue),
+        "d" to String.format(Locale.ROOT, "%02d", dt.dayOfMonth),
+        "H" to String.format(Locale.ROOT, "%02d", dt.hour),
+        "M" to String.format(Locale.ROOT, "%02d", dt.minute),
+        "S" to String.format(Locale.ROOT, "%02d", dt.second),
     )
     var out = template
     for ((k, v) in values) out = out.replace("{$k}", v).replace("\${$k}", v)
@@ -91,6 +97,7 @@ private fun xtreamStyleArchive(liveUrl: String, startSec: Long, durationSec: Lon
     val root = if (beforeUser.endsWith("/live", true)) beforeUser.dropLast("/live".length) else beforeUser
     val durationMin = (durationSec / 60).coerceAtLeast(1)
     val start = LocalDateTime.ofEpochSecond(startSec, 0, ZoneOffset.UTC)
-        .let { "%04d-%02d-%02d:%02d-%02d".format(it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute) }
+        // Locale.ROOT -- see the note above; a Persian default locale emits Persian-Indic digits here too.
+        .let { String.format(Locale.ROOT, "%04d-%02d-%02d:%02d-%02d", it.year, it.monthValue, it.dayOfMonth, it.hour, it.minute) }
     return "$root/timeshift/$user/$pass/$durationMin/$start/$id.$ext$query"
 }

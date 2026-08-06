@@ -96,8 +96,13 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .padding(horizontal = spacing.safeX)
             .widthIn(max = 900.dp)
-            .focusGroup()
-            .focusProperties { enter = { tabsFocus } },
+            // ORDER IS LOAD-BEARING: focusProperties BEFORE focusGroup. `focusGroup()` expands to
+            // `focusProperties { canFocus = false }.focusTarget()`, and focusProperties only applies
+            // to focus targets that come AFTER it in the chain -- so declared last, this `enter`
+            // redirect was inert and the very regression the comment above describes was live.
+            // Matches SidebarNav and Rail, which have always had it this way round.
+            .focusProperties { enter = { tabsFocus } }
+            .focusGroup(),
     ) {
         // Page title lives in the shell top bar; content starts straight in on the tab strip.
         SettingsTabStrip(selected = selectedTab, onSelect = { selectedTab = it }, tabsFocus = tabsFocus)

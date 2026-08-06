@@ -295,7 +295,15 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
 
     private fun loadMedia(source: PlaybackSource) {
         currentSource = source
-        viewModelScope.launch {
+        // Cancel the in-flight load first. Each call does 3-4 Room reads including a full
+        // idsForSource() (a 9000-row id list on a real catalogue), so a burst of channel-up presses
+        // spawned that many independent coroutines -- and the last one to FINISH wrote _uiState, not
+        // the last one started. You landed on an arbitrary channel from the burst, and every
+        // intermediate load handed ExoPlayer a fresh stream URL, i.e. ~8 provider connection attempts
+        // in a second, which is exactly the pattern that gets the IP rate-limited. The shared
+        // lastResolveError/lastResolveOnPlay fields were racy for the same reason.
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.value = _uiState.value.copy(loading = true, errorMessage = null)
             lastResolveError = null
             lastResolveOnPlay = false
@@ -696,6 +704,9 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
      *  can't cycle back onto them. Cleared only on a USER-initiated move (see [reload]/[switchChannel]) --
      *  never in [loadMedia], which the fallback itself calls. */
     private val exhaustedChannelIds = mutableSetOf<Long>()
+
+    /** The in-flight [loadMedia] coroutine, cancelled when a newer load supersedes it. */
+    private var loadJob: kotlinx.coroutines.Job? = null
 
     companion object {
         /** Fraction of a title watched past which it counts as finished (drops off Continue Watching). */

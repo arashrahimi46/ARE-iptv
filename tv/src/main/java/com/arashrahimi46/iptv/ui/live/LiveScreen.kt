@@ -140,6 +140,10 @@ fun LiveScreen(onChannelSelected: (channelId: Long) -> Unit, modifier: Modifier 
             number = channel.number,
             category = channel.categoryName,
             isRadio = channel.isRadio,
+            // BLUR mode obscures a tile from its category; without this the tile computes
+            // `obscured` from a null lockCategory and adult items stayed fully visible and
+            // directly playable here while Series correctly blurred them.
+            lockCategory = channel.categoryName,
             logoUrl = channel.logoUrl,
             isFavorite = isFavorite(channel.id),
             onToggleFavorite = { viewModel.toggleFavorite(channel.id) },

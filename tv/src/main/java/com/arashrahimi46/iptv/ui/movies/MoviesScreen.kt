@@ -127,6 +127,8 @@ fun MoviesScreen(onMovieSelected: (VodTitle) -> Unit, modifier: Modifier = Modif
             onClick = { lastSelectedId = movie.id; onMovieSelected(movie) },
             meta = listOfNotNull(movie.year, movie.categoryName).joinToString(" · ").ifEmpty { null },
             rating = movie.rating,
+            // See LiveScreen: required for BLUR mode to actually obscure adult tiles here.
+            lockCategory = movie.categoryName,
             posterUrl = movie.posterUrl,
             fillWidth = true,
             isFavorite = isFavorite(movie.id),
