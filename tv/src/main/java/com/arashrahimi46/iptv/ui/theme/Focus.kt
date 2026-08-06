@@ -123,13 +123,25 @@ fun Modifier.tvFocusable(
         label = "tvFocusRingAlpha",
     )
 
-    return this
-        .then(if (ownsFocusable) Modifier.focusable(interactionSource = interactionSource) else Modifier)
-        .graphicsLayer {
+    // PERF: both modifier elements below are `remember`ed on the state objects they read.
+    // `Modifier.graphicsLayer { }` and `Modifier.drawWithCache { }` hold their block as a LAMBDA, and
+    // their elements compare it by REFERENCE IDENTITY -- a capturing lambda is a fresh instance on
+    // every call, so rebuilding the chain re-created both nodes and re-ran the ring's cache block
+    // (`shape.createOutline` + a `Stroke` alloc) every time. This function recomposes on every focus
+    // AND press change, i.e. twice per D-pad step across every focusable in the app, so that churn
+    // was paid app-wide. `animateFloatAsState` returns a stable `State`, so keying on the state
+    // objects (not their values) keeps the deferred draw-time reads intact -- the animation still
+    // runs without recomposing. Same fix already applied to `softShadow` (see Glass.kt).
+    val scaleLayer = remember(scaleState) {
+        Modifier.graphicsLayer {
             val sc = scaleState.value
             scaleX = sc
             scaleY = sc
         }
+    }
+    return this
+        .then(if (ownsFocusable) Modifier.focusable(interactionSource = interactionSource) else Modifier)
+        .then(scaleLayer)
         // Design system `--focus-glow-tight` was `0 0 0 3px ring, 0 0 22px glow`. The GLOW half is
         // gone: product call -- the blue halo around a focused switch/button read as a smudge, and it
         // was the last per-frame CPU Gaussian blur in the focus path. The crisp ring alone carries
@@ -144,8 +156,10 @@ fun Modifier.tvFocusable(
         // This used to be `.border(color = glowColor.copy(alpha = ringAlpha))`, which additionally
         // minted a fresh Color and border node per tween frame.
         .then(
-            if (drawRing) Modifier.focusRingCached(glowColor, shape, ringWidth) { ringAlphaState.value }
-            else Modifier,
+            remember(drawRing, glowColor, shape, ringWidth, ringAlphaState) {
+                if (drawRing) Modifier.focusRingCached(glowColor, shape, ringWidth) { ringAlphaState.value }
+                else Modifier
+            },
         )
 }
 

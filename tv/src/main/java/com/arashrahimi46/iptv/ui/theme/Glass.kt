@@ -377,14 +377,23 @@ fun Modifier.glassWell(shape: Shape): Modifier {
         // drawWithCache, not drawBehind: this gradient is size-dependent, so it can't be a plain
         // remember -- but built in drawBehind it was re-created on every DRAW pass, i.e. on every
         // focus-ring alpha frame of every text field. The cache re-runs only on a size change.
-        .drawWithCache {
-            val brush = Brush.verticalGradient(
-                colors = listOf(shadow, Color.Transparent),
-                startY = 0f,
-                endY = size.height * 0.55f,
-            )
-            onDrawBehind { drawRect(brush) }
-        }
+        //
+        // ...and the element itself is remembered, because `drawWithCache` compares its block by
+        // reference identity: unremembered, a capturing lambda is a new instance per call, so every
+        // recomposition of the field replaced the node and re-ran the cache anyway, defeating the
+        // point of the line above. Same fix as `softShadow`.
+        .then(
+            remember(shadow) {
+                Modifier.drawWithCache {
+                    val brush = Brush.verticalGradient(
+                        colors = listOf(shadow, Color.Transparent),
+                        startY = 0f,
+                        endY = size.height * 0.55f,
+                    )
+                    onDrawBehind { drawRect(brush) }
+                }
+            },
+        )
         .border(1.dp, wellBorderBrush(), shape)
 }
 
