@@ -28,21 +28,21 @@ import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.FormatSize
-import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
@@ -241,7 +241,7 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                 ) {
                     ChipChoiceRow(
                         modifier = Modifier.weight(1f),
-                        options = StartScreen.values().asIterable(),
+                        options = StartScreen.entries,
                         isSelected = { it == startScreen },
                         label = { stringResource(it.labelRes()) },
                         onSelect = { viewModel.setStartScreen(it) },
@@ -254,14 +254,14 @@ internal fun GeneralPane(viewModel: SettingsViewModel, modifier: Modifier = Modi
                 ) {
                     ChipChoiceRow(
                         modifier = Modifier.weight(1f),
-                        options = AutoRefreshInterval.values().asIterable(),
+                        options = AutoRefreshInterval.entries,
                         isSelected = { it == autoRefreshInterval },
                         label = { stringResource(it.labelRes()) },
                         onSelect = { viewModel.setAutoRefreshInterval(it) },
                     )
                 }
                 SettingsRow(
-                    icon = Icons.Filled.ExitToApp,
+                    icon = Icons.AutoMirrored.Filled.ExitToApp,
                     title = stringResource(CoreR.string.settings_confirm_exit_title),
                     desc = stringResource(CoreR.string.settings_confirm_exit_desc),
                 ) {
@@ -503,7 +503,7 @@ private fun OmdbBlock(
                     onClick = onHowTo,
                     variant = AreButtonVariant.Ghost,
                     size = AreButtonSize.Small,
-                    icon = Icons.Filled.HelpOutline,
+                    icon = Icons.AutoMirrored.Filled.HelpOutline,
                 )
             }
         }
@@ -913,7 +913,7 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
                                     onClick = { guide = IntegrationGuide.OpenSubsAccount },
                                     variant = AreButtonVariant.Ghost,
                                     size = AreButtonSize.Small,
-                                    icon = Icons.Filled.HelpOutline,
+                                    icon = Icons.AutoMirrored.Filled.HelpOutline,
                                 )
                             }
                         }
@@ -949,7 +949,7 @@ internal fun SubtitlesPane(viewModel: SettingsViewModel, modifier: Modifier = Mo
                                 onClick = { guide = IntegrationGuide.OpenSubsKey },
                                 variant = AreButtonVariant.Ghost,
                                 size = AreButtonSize.Small,
-                                icon = Icons.Filled.HelpOutline,
+                                icon = Icons.AutoMirrored.Filled.HelpOutline,
                             )
                         }
                     }
@@ -1106,7 +1106,7 @@ internal fun ParentalPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
                     desc = stringResource(CoreR.string.settings_relock_desc),
                 ) {
                     ChipChoiceRow(
-                        options = AutoRelock.values().asIterable(),
+                        options = AutoRelock.entries,
                         isSelected = { it == autoRelock },
                         label = { stringResource(it.labelRes()) },
                         onSelect = { viewModel.setParentalAutoRelock(it) },
@@ -1118,14 +1118,14 @@ internal fun ParentalPane(viewModel: SettingsViewModel, modifier: Modifier = Mod
                     desc = stringResource(CoreR.string.settings_locked_display_desc),
                 ) {
                     ChipChoiceRow(
-                        options = LockedContentDisplay.values().asIterable(),
+                        options = LockedContentDisplay.entries,
                         isSelected = { it == lockedDisplay },
                         label = { stringResource(it.labelRes()) },
                         onSelect = { viewModel.setLockedContentDisplay(it) },
                     )
                 }
                 SettingsRow(
-                    icon = Icons.Filled.Login,
+                    icon = Icons.AutoMirrored.Filled.Login,
                     title = stringResource(CoreR.string.settings_pin_launch_title),
                     desc = stringResource(CoreR.string.settings_pin_launch_desc),
                 ) {
@@ -1202,7 +1202,7 @@ private fun ParentalKeywordsBlock(
                     value = input,
                     onValueChange = onInput,
                     placeholder = stringResource(CoreR.string.settings_keywords_placeholder),
-                    icon = Icons.Filled.Label,
+                    icon = Icons.AutoMirrored.Filled.Label,
                     activateOnClick = true,
                 )
             }

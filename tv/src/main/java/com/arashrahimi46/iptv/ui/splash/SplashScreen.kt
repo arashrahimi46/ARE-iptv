@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -84,15 +83,19 @@ fun AreSplashScreen() {
     LaunchedEffect(Unit) {
         if (!reduced) intro.animateTo(1f, tween(1900, easing = LinearEasing))
     }
-    val p = intro.value
-    val markIn = seg(p, 0.05f, 0.50f, EaseOutBack)
-    val brandIn = seg(p, 0.34f, 0.68f, FastOutSlowInEasing)
-    val globeIn = seg(p, 0.20f, 1f, FastOutSlowInEasing)
-
+    // PERF: none of the four animated values below is unwrapped here. `intro` is a 1900ms one-shot
+    // and the other three are INFINITE, so a composition-scope read (`val p = intro.value`, or `by`
+    // on the transitions) re-executed this entire composable at 60fps for the whole
+    // SPLASH_FLOOR_MS = 3400ms cold start -- rebuilding the root drawBehind lambda, the Column, the
+    // 132dp mark with its own drawBehind + graphicsLayer, two painterResource Images, a Text with a
+    // stringResource lookup and the shimmer. That is pure waste competing with catalogue load and
+    // Room open on a 4x A55, on the one screen whose whole job is to get out of the way quickly.
+    // Every consumer is already a drawBehind/graphicsLayer lambda, so the reads just move inside
+    // them and nothing about the animation changes.
     val transition = rememberInfiniteTransition(label = "splash")
-    val breathe by transition.pulse(reduced, mid = 0.7f, from = 0.45f, to = 1f, durationMs = 2600)
-    val sweep by transition.sweepPass(reduced, durationMs = 3400)
-    val spin by transition.sweepPass(reduced, durationMs = 20_000)
+    val breathe = transition.pulse(reduced, mid = 0.7f, from = 0.45f, to = 1f, durationMs = 2600)
+    val sweep = transition.sweepPass(reduced, durationMs = 3400)
+    val spin = transition.sweepPass(reduced, durationMs = 20_000)
 
     val cells = remember { landCells() }
 
@@ -100,6 +103,7 @@ fun AreSplashScreen() {
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
+                val globeIn = seg(intro.value, 0.20f, 1f, FastOutSlowInEasing)
                 drawRect(Color.Black)
 
                 // Globe: centred exactly on the bottom edge so precisely half the sphere shows,
@@ -141,7 +145,7 @@ fun AreSplashScreen() {
                     style = Stroke(width = 1.dp.toPx()),
                 )
 
-                drawGlobeDots(cells, cx, cy, radius, spin, accent, globeIn * (0.85f + 0.15f * breathe))
+                drawGlobeDots(cells, cx, cy, radius, spin.value, accent, globeIn * (0.85f + 0.15f * breathe.value))
             },
     ) {
         Column(
@@ -161,9 +165,10 @@ fun AreSplashScreen() {
                 modifier = Modifier
                     .size(132.dp)
                     .drawBehind {
+                        val markIn = seg(intro.value, 0.05f, 0.50f, EaseOutBack)
                         drawCircle(
                             brush = Brush.radialGradient(
-                                colors = listOf(accent.copy(alpha = (0.16f + 0.13f * breathe) * markIn), Color.Transparent),
+                                colors = listOf(accent.copy(alpha = (0.16f + 0.13f * breathe.value) * markIn), Color.Transparent),
                                 center = center,
                                 radius = size.minDimension * 1.30f,
                             ),
@@ -171,6 +176,7 @@ fun AreSplashScreen() {
                         )
                     }
                     .graphicsLayer {
+                        val markIn = seg(intro.value, 0.05f, 0.50f, EaseOutBack)
                         val s = 0.80f + 0.20f * markIn
                         scaleX = s
                         scaleY = s
@@ -197,6 +203,7 @@ fun AreSplashScreen() {
                 style = AreIptvTheme.typography.h2,
                 color = White,
                 modifier = Modifier.graphicsLayer {
+                    val brandIn = seg(intro.value, 0.34f, 0.68f, FastOutSlowInEasing)
                     alpha = brandIn.coerceIn(0f, 1f)
                     translationY = (1f - brandIn) * 16.dp.toPx()
                 },
@@ -208,11 +215,11 @@ fun AreSplashScreen() {
                 modifier = Modifier
                     .width(128.dp)
                     .height(3.dp)
-                    .graphicsLayer { alpha = brandIn.coerceIn(0f, 1f) }
+                    .graphicsLayer { alpha = seg(intro.value, 0.34f, 0.68f, FastOutSlowInEasing).coerceIn(0f, 1f) }
                     .clip(RoundedCornerShape(AreIptvTheme.radius.pill))
                     .drawBehind {
                         drawRect(White.copy(alpha = 0.08f))
-                        val head = sweep * 1.4f - 0.2f
+                        val head = sweep.value * 1.4f - 0.2f
                         drawRect(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(Color.Transparent, accent, Color.Transparent),

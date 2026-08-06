@@ -40,7 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -1508,14 +1508,24 @@ private fun formatPlaybackTime(ms: Long): String {
 private fun BufferingIndicator() {
     val colors = AreIptvTheme.colors
     val transition = rememberInfiniteTransition(label = "buffering")
-    val angle by transition.animateFloat(
+    // Held as State and read inside the graphicsLayer, NOT unwrapped with `by`: an infinite
+    // transition never settles, so a composition-scope read would re-execute this whole Column --
+    // Icon, modifier chain, Text and its stringResource lookup -- 60x/second, on top of live video
+    // decode, for exactly as long as the stream is struggling. Modifier.rotate(d) IS
+    // graphicsLayer(rotationZ = d), same TransformOrigin.Center, so this is pixel-identical.
+    val angle = transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart),
         label = "bufferingAngle",
     )
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Filled.Autorenew, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.rotate(angle))
+        Icon(
+            Icons.Filled.Autorenew,
+            contentDescription = null,
+            tint = colors.textPrimary,
+            modifier = Modifier.graphicsLayer { rotationZ = angle.value },
+        )
         Box(Modifier.padding(top = 8.dp))
         Text(text = stringResource(CoreR.string.player_buffering), style = AreIptvTheme.typography.caption, color = colors.textSecondary)
     }

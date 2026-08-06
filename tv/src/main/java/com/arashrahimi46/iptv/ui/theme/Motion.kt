@@ -2,7 +2,6 @@ package com.arashrahimi46.iptv.ui.theme
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
@@ -65,5 +64,14 @@ val AreIptvMotionReduced = AreIptvMotion(
  */
 val LocalReducedMotion = staticCompositionLocalOf { false }
 
-/** Convenience CompositionLocal exposing the resolved motion token set. */
-val LocalAreIptvMotion = compositionLocalOf { AreIptvMotionDefault }
+/**
+ * Convenience CompositionLocal exposing the resolved motion token set.
+ *
+ * STATIC, like the other ten theme locals. It was the one non-static local left, so every reader --
+ * and `tvFocusable` reads it, i.e. every focusable in the app -- paid for a tracked snapshot
+ * subscription it can never benefit from. Its value only flips between the two constant token sets
+ * when the user toggles "Reduce motion", which flips the (already static) [LocalReducedMotion] in the
+ * same `AreIptvTheme` call, so the subtree recomposes wholesale either way. Non-static is only worth
+ * it for a local whose value changes at runtime *independently* of its subtree being rebuilt.
+ */
+val LocalAreIptvMotion = staticCompositionLocalOf { AreIptvMotionDefault }

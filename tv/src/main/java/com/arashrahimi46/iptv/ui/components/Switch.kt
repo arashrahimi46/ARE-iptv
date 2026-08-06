@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +28,8 @@ import com.arashrahimi46.iptv.ui.theme.accentLensBrush
 import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
 import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
 import com.arashrahimi46.iptv.ui.theme.tvGlow
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 /** Switch — on/off toggle (theme, parental lock, PiP, autoplay) (Switch.jsx). */
 @Composable
@@ -47,7 +48,12 @@ fun AreSwitch(
     // and it is a per-draw CPU Gaussian blur. The lens fill + bright rim already say "on".
     val onBrush = if (checked && !disabled) accentLensBrush() else null
     val offColor = if (disabled) colors.glassTrackTint.copy(alpha = 0.5f) else colors.glassTrackTint
-    val thumbOffset by animateDpAsState(
+    // Held as State and read inside the offset LAMBDA, not unwrapped: `by` made this a composition
+    // read, so every frame of the toggle tween recomposed AreSwitch -- TvFocusable, its whole content
+    // lambda and this modifier chain -- and the non-lambda `Modifier.offset(x = Dp)` then re-ran
+    // layout from composition too. The lambda form defers the read to the LAYOUT phase, and (unlike
+    // `absoluteOffset`) it still mirrors under RTL, so the thumb travels the correct way in Persian.
+    val thumbOffset = animateDpAsState(
         targetValue = if (checked) 28.dp else 4.dp,
         animationSpec = tween(motion.durFastMs, easing = motion.easeEmph),
         label = "switchThumb",
@@ -76,7 +82,7 @@ fun AreSwitch(
         Box(Modifier.padding(4.dp)) {
             Box(
                 modifier = Modifier
-                    .offset(x = thumbOffset - 4.dp)
+                    .offset { IntOffset((thumbOffset.value - 4.dp).toPx().roundToInt(), 0) }
                     .size(26.dp)
                     .shadow(4.dp, CircleShape)
                     .background(Color.White, CircleShape),
