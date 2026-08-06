@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.player
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R as TvR
 import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.settings.MiniPlayerBehavior
 import com.arashrahimi46.iptv.ui.components.AreBadge
@@ -241,8 +243,13 @@ fun LiveMiniPlayerOverlay(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {
-                    PlayerView(context).apply {
-                        useController = false
+                    // Inflated, not `PlayerView(context)` -- see are_player_view.xml: only the XML
+                    // can carry `player_layout_id`, which is what stops media3 inflating a
+                    // PlayerControlView this app never shows (~44ms on the XL95).
+                    (
+                        LayoutInflater.from(context)
+                            .inflate(TvR.layout.are_player_view, null) as PlayerView
+                        ).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT,

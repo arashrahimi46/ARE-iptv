@@ -1,5 +1,6 @@
 package com.arashrahimi46.iptv.ui.multiview
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -62,6 +63,7 @@ import androidx.media3.ui.PlayerView
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.arashrahimi46.iptv.R as TvR
 import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.data.db.AppDatabase
 import com.arashrahimi46.iptv.data.model.Channel
@@ -557,8 +559,13 @@ private fun MultiViewPane(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {
-                    PlayerView(context).apply {
-                        useController = false
+                    // Inflated, not `PlayerView(context)` -- see are_player_view.xml. Multi-View is
+                    // where this hurts most: media3's unused PlayerControlView was inflated once PER
+                    // PANE, so a four-up grid paid ~44ms of it four times over on open.
+                    (
+                        LayoutInflater.from(context)
+                            .inflate(TvR.layout.are_player_view, null) as PlayerView
+                        ).apply {
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         player = exoPlayer
                     }

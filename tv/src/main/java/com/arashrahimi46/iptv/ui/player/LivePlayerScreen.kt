@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv.ui.player
 
 import android.os.SystemClock
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -1017,8 +1018,11 @@ fun LivePlayerScreen(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = {
-                    PlayerView(context).apply {
-                        useController = false
+                    // Inflated, not `PlayerView(context)`: only the XML can carry `player_layout_id`,
+                    // which is what stops media3 building a PlayerControlView nobody ever sees.
+                    // Measured on the XL95 -- 60.4ms of View inflation per player open, ~44ms of it
+                    // avoidable. See are_player_view.xml.
+                    (LayoutInflater.from(context).inflate(R.layout.are_player_view, null) as PlayerView).apply {
                         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                         player = exoPlayer
                         resizeMode = aspectMode.resizeMode

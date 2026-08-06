@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Replacement for media3's own `exo_player_view` content layout, passed to every PlayerView in the
+  app via `app:player_layout_id` (see are_player_view.xml).
+
+  WHY: PlayerView's constructor looks up `exo_controller_placeholder` in whatever layout it is given
+  and, if it finds one, builds a full `PlayerControlView` in its place — transport controls, a
+  DefaultTimeBar, a settings RecyclerView and a HorizontalScrollView. It does this REGARDLESS of
+  `use_controller`; that flag only decides whether the already-built controller is ever shown.
+  Verified in the 1.10.0 bytecode, and measured on the real Sony XL95 with Perfetto: opening a player
+  spent 60.4ms inflating Views on the main thread, of which ~38.4ms was the controller nobody sees.
+  This app draws its own HUD (ArePlayerControls), so every one of those Views was pure waste — and
+  Multi-View paid it once PER PANE.
+
+  Omitting the placeholder leaves `controller == null`, which makes PlayerView force `useController`
+  false by itself and skips the inflation entirely.
+
+  Everything else here is optional as far as PlayerView is concerned (it findViewById's each one and
+  null-checks it), so the rest of media3's layout is dropped too:
+    - exo_buffering    — the app draws its own BufferingIndicator; media3's spinner was a second,
+                          competing one, and the single most expensive child at 6.2ms.
+    - exo_error_message— the app renders playback errors in its own HUD.
+    - exo_artwork /
+      exo_image        — never enabled; the app never calls setDefaultArtwork/setUseArtwork.
+    - exo_ad_overlay /
+      exo_overlay      — no ad playback, no view overlays.
+
+  KEPT, because they are load-bearing:
+    - exo_content_frame must be an AspectRatioFrameLayout for `resizeMode` (the aspect-ratio control)
+      to work at all, and the video surface is inserted as its first child.
+    - exo_shutter is the black fill that hides the surface between items — without it a channel
+      switch flashes the previous frame.
+    - exo_subtitles is the SubtitleView the player screen styles from the user's subtitle settings.
+-->
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <androidx.media3.ui.AspectRatioFrameLayout
+    android:id="@id/exo_content_frame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center">
+
+    <!-- Video surface is inserted as the first child of the content frame by PlayerView. -->
+
+    <View
+      android:id="@id/exo_shutter"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/black"/>
+
+    <androidx.media3.ui.SubtitleView
+      android:id="@id/exo_subtitles"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"/>
+
+  </androidx.media3.ui.AspectRatioFrameLayout>
+
+</merge>

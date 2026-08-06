@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The app's PlayerView. Every video surface in the app (fullscreen player, docked mini-player, each
+  Multi-View pane) inflates THIS rather than calling `PlayerView(context)`, because `player_layout_id`
+  can only be supplied as an XML attribute — it is read in the constructor, so setting it afterwards
+  from Kotlin is not possible. See are_player_content.xml for what that buys and why it matters.
+
+  surface_type is SurfaceView (media3's default, pinned here so it can't drift): a TextureView would
+  be composited through the GPU on every frame instead of going out on a hardware overlay plane,
+  which on a weak set-top SoC is the difference between free and expensive.
+-->
+<androidx.media3.ui.PlayerView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  app:player_layout_id="@layout/are_player_content"
+  app:surface_type="surface_view"
+  app:use_controller="false"/>
