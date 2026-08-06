@@ -288,6 +288,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     /** Re-run the load for the current source. Used by the player's manual Retry so a Stalker source
      *  re-mints its short-lived link (resolve-on-play) instead of replaying a URL that may have expired. */
     fun reload() {
+        // A user-initiated retry earns a fresh fallback budget.
+        exhaustedChannelIds.clear()
         currentSource?.let { loadMedia(it) }
     }
 
@@ -493,6 +495,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     /** [direction] +1 = channel up (next), -1 = channel down (previous). No-op for VOD/episode
      * playback or a single-channel catalog (nothing meaningful to switch to). */
     fun switchChannel(direction: Int) {
+        // Deliberately moving to another channel ends the previous channel's fallback chain.
+        exhaustedChannelIds.clear()
         val state = _uiState.value
         val ids = state.siblingChannelIds
         val current = state.currentChannelId ?: return
@@ -669,10 +673,29 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
     suspend fun fallbackToAlternateSource(): Boolean {
         val currentId = _uiState.value.currentChannelId ?: return false
         val current = db.channelDao().getById(currentId) ?: return false
-        val alternate = db.channelDao().findAlternateByName(current.name, currentId) ?: return false
+        exhaustedChannelIds += currentId
+        // Candidates, not one candidate, minus everything already burned this session. With a single
+        // LIMIT 1 lookup that excluded only the CURRENT row, two same-named channels were each
+        // other's fallback: A -> B -> A -> B forever. Each hop reset the retry budget (it is keyed on
+        // media.streamUrl), burned three backoffs, rebuilt ExoPlayer three times and hopped back --
+        // so the user sat on a spinner with no error and no Retry (that branch only runs when the
+        // fallback returns false), while every rebuild opened a fresh provider connection. Duplicate
+        // names across categories/backup feeds are routine in a 9000-channel playlist.
+        //
+        // Compared against the current ROW's streamUrl, not uiState.media.streamUrl: for
+        // resolve-on-play sources (Stalker) the latter is a freshly minted session URL that never
+        // equals any stored row, which would make the guard a no-op exactly where it is needed.
+        val alternate = db.channelDao().alternatesByName(current.name, currentId)
+            .firstOrNull { it.id !in exhaustedChannelIds && it.streamUrl != current.streamUrl }
+            ?: return false
         loadMedia(PlaybackSource.Channel(alternate.id))
         return true
     }
+
+    /** Channel rows whose source has already been exhausted this session, so [fallbackToAlternateSource]
+     *  can't cycle back onto them. Cleared only on a USER-initiated move (see [reload]/[switchChannel]) --
+     *  never in [loadMedia], which the fallback itself calls. */
+    private val exhaustedChannelIds = mutableSetOf<Long>()
 
     companion object {
         /** Fraction of a title watched past which it counts as finished (drops off Continue Watching). */

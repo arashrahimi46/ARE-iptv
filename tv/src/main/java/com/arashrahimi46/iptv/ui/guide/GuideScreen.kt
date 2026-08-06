@@ -240,6 +240,18 @@ fun GuideScreen(
             val laneWidthPx = with(LocalDensity.current) {
                 (maxWidth - spacing.guideChannelWidth - 8.dp).coerceAtLeast(0.dp).roundToPx()
             }
+            // The scrollable extent EVERY lane must report, regardless of how much EPG it has.
+            //
+            // All lanes and the TimelineHeader share one ScrollState, and Compose's ScrollNode writes
+            // `scrollState.maxValue` on each of its OWN measure passes -- and that setter clamps
+            // `value` down to the new max immediately. A later lane restoring the larger max does NOT
+            // restore `value`. So one short lane was enough to drag the whole grid back to the window
+            // start and keep it there: a channel with no EPG renders a single 90-minute
+            // "No programme data" placeholder (~399dp) against a ~684dp viewport, i.e. maxValue = 0.
+            // With ~9000 channels such a row is on screen essentially always, so D-pad RIGHT stopped
+            // advancing and the search-jump animateScrollTo silently became a no-op.
+            val windowWidth = DpPerMinute *
+                (((state.windowEndMs - state.windowStartMs) / 60_000L).toInt().coerceAtLeast(0))
             val density = LocalDensity.current
             val gridState = rememberLazyListState()
             // Search navigation: the ViewModel has already switched day + category, so the target
@@ -312,7 +324,9 @@ fun GuideScreen(
                             // Full-width spacer: the lane's scrollable extent must stay the extent of the
                             // whole window no matter how few cells are composed, or the shared scroll
                             // range would shrink to the visible slice and the header would desync.
-                            Box(Modifier.width(lane.totalWidth).height(spacing.guideRowHeight))
+                            // maxOf, not windowWidth: the 24dp minimum cell clamp can make a lane
+                            // legitimately overrun the window, and clipping it there would lose cells.
+                            Box(Modifier.width(maxOf(lane.totalWidth, windowWidth)).height(spacing.guideRowHeight))
                             for (index in visibleRange) {
                                 val cell = lane.cells[index]
                                 val slot = cell.slot

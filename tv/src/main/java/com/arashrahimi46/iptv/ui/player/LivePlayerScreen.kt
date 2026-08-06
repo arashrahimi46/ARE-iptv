@@ -517,6 +517,20 @@ fun LivePlayerScreen(
             // see the listener below and the reset LaunchedEffect -- so a source that recovers
             // gets a fresh retry budget instead of inheriting exhaustion from an earlier stretch.
             var autoRetryAttempt by remember(media.streamUrl) { mutableStateOf(0) }
+            // The REAL "we already gave up" state, kept separate from the message.
+            //
+            // This used to be inferred by comparing `playerError == playbackFailedText`. But
+            // `onPlayerError` produces that exact same string for a plain HttpDataSourceException --
+            // an ordinary socket read timeout, connection reset, DNS failure or unexpected EOF on the
+            // .ts socket, i.e. the routine Xtream/ISP blip. So the first such blip made the effect
+            // below bail on its very next run, before the backoff, before `autoRetryAttempt++` and
+            // before `fallbackToAlternateSource()` -- and since nothing else changes its keys, the
+            // effect was then permanently dead for that stream. Zero auto-retries, zero fallback, the
+            // user parked on a manual Retry overlay. HTTP-status failures dodged it only because
+            // InvalidResponseCodeException appends ": HTTP 461" and so misses the sentinel, which is
+            // why 461/403 lines DID self-recover and plain network drops did not. This is the most
+            // likely cause of "live TV sometimes stops playing after a while".
+            var gaveUp by remember(media.streamUrl) { mutableStateOf(false) }
             // Set true just before minimizing so the DisposableEffect below hands the live player
             // to LivePlaybackController instead of releasing it (seamless dock, no re-buffer).
             var handedOffToMini by remember { mutableStateOf(false) }
@@ -603,13 +617,22 @@ fun LivePlayerScreen(
                         playWhenReady = true
                         prepare()
                     }
-                }.also { playerError = null }
+                }.also { playerError = null; gaveUp = false }
             }
 
             // Autoplay-next (Phase 2): the player listener flips [playbackEnded] true on STATE_ENDED;
             // keyed to the player instance so switching episodes (a fresh player) clears it.
             // [autoAdvanceRemaining] drives the countdown dialog (null = inactive).
             var playbackEnded by remember(exoPlayer) { mutableStateOf(false) }
+            // A LIVE stream reaching STATE_ENDED is never legitimate -- a clean EOF means the
+            // server dropped us (line hit its connection cap, source re-mux, an HLS window that
+            // stopped refreshing or gained EXT-X-ENDLIST). ExoPlayer reports that as end-of-stream,
+            // NOT as an error, so onPlayerError never fires: isBuffering goes false, playerError
+            // stays null, and the retry effect's `degraded` predicate was false. The result was a
+            // frozen last frame with no spinner, no error, no reachable Retry -- and a green
+            // "Stable" health chip. Tracked separately from [playbackEnded], which drives
+            // autoplay-next and is deliberately ignored for live.
+            var liveEnded by remember(exoPlayer) { mutableStateOf(false) }
             var autoAdvanceRemaining by remember(exoPlayer) { mutableStateOf<Int?>(null) }
 
             // Opening a fullscreen player that did NOT adopt the docked instance supersedes it:
@@ -648,9 +671,14 @@ fun LivePlayerScreen(
                         if (playbackState == Player.STATE_READY) {
                             playerError = null
                             autoRetryAttempt = 0
+                            gaveUp = false
+                            liveEnded = false
                         }
                         // Arm autoplay-next; the LaunchedEffect below decides if it actually applies.
-                        if (playbackState == Player.STATE_ENDED) playbackEnded = true
+                        if (playbackState == Player.STATE_ENDED) {
+                            playbackEnded = true
+                            if (media.isLive) liveEnded = true
+                        }
                     }
 
                     // Feeds the subtitle picker: text tracks become known once the stream is parsed
@@ -719,22 +747,28 @@ fun LivePlayerScreen(
             // Retry button except playerError being non-null, and none of this effect's keys
             // would ever change again to re-evaluate. Surface a real error message in that case
             // so the existing manual-retry path becomes reachable.
-            LaunchedEffect(playerError, isBuffering, autoRetryAttempt) {
-                val degraded = playerError != null || isBuffering
+            LaunchedEffect(playerError, isBuffering, liveEnded, autoRetryAttempt) {
+                val degraded = playerError != null || isBuffering || liveEnded
                 if (!degraded) return@LaunchedEffect
                 // QA nit: once we've already given up (set the synthetic "playback failed" error
                 // below), don't re-query for an alternate every time this effect re-runs on an
                 // unrelated key change -- the answer won't change until autoRetryAttempt resets
                 // (new source/manual retry), which already re-triggers this branch fresh.
-                if (playerError == playbackFailedText) return@LaunchedEffect
+                if (gaveUp) return@LaunchedEffect
                 if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
                     val fellBack = viewModel.fallbackToAlternateSource()
-                    if (!fellBack && playerError == null) {
-                        playerError = playbackFailedText
+                    if (!fellBack) {
+                        gaveUp = true
+                        if (playerError == null) playerError = playbackFailedText
                     }
                     return@LaunchedEffect
                 }
-                delay(if (playerError != null) StreamRetryPolicy.backoffMillis(autoRetryAttempt) else StreamRetryPolicy.BUFFERING_GRACE_MS)
+                // An ended live stream is dead -- use the error backoff, not the cold-start
+                // buffering grace; there is nothing to wait out.
+                delay(
+                    if (playerError != null || liveEnded) StreamRetryPolicy.backoffMillis(autoRetryAttempt)
+                    else StreamRetryPolicy.BUFFERING_GRACE_MS,
+                )
                 // P2: persist the VOD position before the rebuild (VM no-ops for live) so the new
                 // player's resume-seek restores it instead of restarting the movie/episode at 0:00.
                 viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
@@ -1066,6 +1100,7 @@ fun LivePlayerScreen(
                         AreStreamHealth(
                             level = when {
                                 playerError != null -> AreStreamHealthLevel.Poor
+                                liveEnded -> AreStreamHealthLevel.Poor
                                 isBuffering -> AreStreamHealthLevel.Moderate
                                 else -> AreStreamHealthLevel.Stable
                             },
@@ -1093,6 +1128,7 @@ fun LivePlayerScreen(
                             onRetry = {
                                 viewModel.saveProgress(exoPlayer.currentPosition, exoPlayer.duration)
                                 autoRetryAttempt = 0
+                                gaveUp = false
                                 // Stalker (resolve-on-play): re-mint the short-lived link via the
                                 // resolver rather than replaying a possibly-expired URL. The reload
                                 // changes media.streamUrl, which rebuilds the player on its own; other

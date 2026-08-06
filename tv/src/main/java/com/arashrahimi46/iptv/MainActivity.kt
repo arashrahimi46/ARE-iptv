@@ -15,6 +15,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import com.arashrahimi46.iptv.core.R
 import com.arashrahimi46.iptv.ui.player.LiveMiniPlayerOverlay
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.arashrahimi46.iptv.ui.player.LiveMiniMode
 import com.arashrahimi46.iptv.ui.player.LivePlaybackController
 import com.arashrahimi46.iptv.ui.player.LocalLivePlaybackController
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -273,6 +277,33 @@ class MainActivity : AppCompatActivity() {
             // player and the shell's tabs. Released when the Activity's composition tears down.
             val livePlayback = androidx.compose.runtime.remember { LivePlaybackController() }
             DisposableEffect(Unit) { onDispose { livePlayback.closeMini() } }
+            // Backgrounding must stop the docked decoder -- the same rule MultiViewPane already
+            // follows, and for the same reason. The shell's composition SURVIVES ON_STOP, so the
+            // onDispose above never fires when the user presses HOME: the minimized player kept
+            // decoding, kept pulling the provider stream and kept playing audio over the launcher,
+            // indefinitely, until the process was killed. Media3 just swaps to a placeholder surface
+            // when the window goes away, so nothing else stops it. On a provider that caps concurrent
+            // connections that also held a live connection open forever.
+            //
+            // The fullscreen player tears down on ON_STOP and every MultiView pane pauses on ON_STOP;
+            // the mini was the one playback surface with neither. Pause rather than release so
+            // returning to the app resumes in place. Both branches are gated on the controller still
+            // being docked -- takeIfAdopting()/closeMini() clear the player and change the mode, and
+            // ON_START must not resume something the fullscreen screen has taken ownership of.
+            val playbackLifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(playbackLifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    when (event) {
+                        Lifecycle.Event.ON_STOP ->
+                            if (livePlayback.mode == LiveMiniMode.Mini) livePlayback.player?.pause()
+                        Lifecycle.Event.ON_START ->
+                            if (livePlayback.mode == LiveMiniMode.Mini) livePlayback.player?.play()
+                        else -> Unit
+                    }
+                }
+                playbackLifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { playbackLifecycleOwner.lifecycle.removeObserver(observer) }
+            }
             // Derive layout direction from the locale that is actually rendering, rather than
             // trusting Configuration.layoutDirection. On API < 33 AppCompatDelegate applies the
             // per-app locale through an override Configuration built with `setLocales()`, which

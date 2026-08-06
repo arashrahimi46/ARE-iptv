@@ -223,6 +223,12 @@ interface ChannelDao {
      * to switch to once retry/backoff on [excludeId] is exhausted. */
     @Query("SELECT * FROM channels WHERE name = :name AND id != :excludeId ORDER BY id LIMIT 1")
     suspend fun findAlternateByName(name: String, excludeId: Long): Channel?
+
+    /** Same as [findAlternateByName] but returns SEVERAL candidates, so the player can skip the
+     *  ones it has already exhausted this session. With only one candidate the fallback ping-ponged
+     *  A -> B -> A forever on any duplicated channel name, reconnecting to the provider every hop. */
+    @Query("SELECT * FROM channels WHERE name = :name AND id != :excludeId ORDER BY id LIMIT 8")
+    suspend fun alternatesByName(name: String, excludeId: Long): List<Channel>
 }
 
 @Dao
