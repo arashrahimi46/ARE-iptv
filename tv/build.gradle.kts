@@ -70,19 +70,8 @@ android {
             val releaseSigning = signingConfigs.getByName("release")
             signingConfig = if (releaseSigning.storeFile != null) releaseSigning else signingConfigs.getByName("debug")
         }
-        // The baselineprofile plugin creates `nonMinifiedRelease` by copying `release` and setting
-        // the legacy `isMinifyEnabled = false`. AGP 9's `optimization { enable }` is a SEPARATE
-        // switch that the copy inherits and the plugin does not clear -- so R8 ran on the variant
-        // the profile is generated from, and the collected rules came back with obfuscated names
-        // (`Lxb3;`) that no longer match anything in the real release build. Every UI rule was
-        // silently dropped: the first generated profile contained the Room DAOs (whose names R8
-        // keeps) and nothing else -- no composables, no focus/glass code. Clearing it here is what
-        // makes the generated profile actually apply.
-        all {
-            if (name == "nonMinifiedRelease" || name == "benchmarkRelease") {
-                optimization { enable = false }
-            }
-        }
+        // See the afterEvaluate block at the bottom of this file: `nonMinifiedRelease` has to have
+        // R8 turned off there, not here.
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -170,4 +159,42 @@ dependencies {
     // Only needed so XmlTvParserTest can exercise android.util.Xml.newPullParser() on the
     // JVM (unmocked otherwise) -- see XmlTvParserTest's @RunWith(RobolectricTestRunner::class).
     testImplementation(libs.robolectric)
+}
+
+/*
+ * Turn R8 OFF for the two variants the Baseline Profile is generated from.
+ *
+ * `finalizeDsl` is load-bearing here -- it is the one hook that runs in the right window, and both
+ * obvious alternatives miss it:
+ *
+ *   - `buildTypes { all { ... } }` runs too EARLY. The baselineprofile plugin creates
+ *     `nonMinifiedRelease`/`benchmarkRelease` with `initWith(release)`, which copies release's
+ *     `optimization.enable = true` straight back over anything set there. Probed: the `all` block
+ *     did set false, and by afterEvaluate the value was true again.
+ *   - `project.afterEvaluate { }` runs too LATE. AGP registers its own DSL finalization when it is
+ *     applied -- i.e. before this file's callback -- so by the time ours runs the value is already
+ *     locked and Gradle reports every task UP-TO-DATE.
+ *
+ * `finalizeDsl` sits between the two: after all DSL configuration (so the plugin's copy has already
+ * happened) and before variants are created (so AGP still reads it).
+ *
+ * Note AGP 9 has TWO switches and only one of them matters: `release` reports
+ * `isMinifyEnabled == false` yet is fully minified, because `optimization { enable }` is what now
+ * drives R8. The legacy flag the baselineprofile plugin clears is the one with no effect, which is
+ * why the plugin does not get this right on its own.
+ *
+ * Getting it wrong fails silently rather than loudly, which is how it survived this long: R8 ran on
+ * the profiled variant, the collected rules came back as obfuscated names (`La0;`) from a mapping
+ * the shipped build does not share, and every one was dropped when merged into the release profile.
+ * What shipped had 204 app rules -- 193 Room DAOs (whose names R8 keeps) and 8 MainActivity entries
+ * -- and ZERO composable, theme, focus or tile code, so nothing the UI actually spends its first
+ * paint in was AOT-compiled. The profile must be collected UNMINIFIED; R8 rewrites it through the
+ * release mapping when the shipping APK is built.
+ */
+androidComponents {
+    finalizeDsl { ext ->
+        listOf("nonMinifiedRelease", "benchmarkRelease").forEach { variant ->
+            ext.buildTypes.findByName(variant)?.optimization?.enable = false
+        }
+    }
 }

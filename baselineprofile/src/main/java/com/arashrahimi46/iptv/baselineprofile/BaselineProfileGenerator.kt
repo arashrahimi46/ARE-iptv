@@ -8,11 +8,18 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Generates a Baseline Profile that AOT-compiles the app's two hottest journeys -- Home
- * scroll/focus travel and sidebar tab switching -- the exact flows that felt janky. Run it
- * on a connected API 28+ device (a real TV or a Play/AOSP emulator):
+ * Generates a Baseline Profile that AOT-compiles the app's hottest journeys -- Home scroll/focus
+ * travel, sidebar tab switching, and Settings -- the exact flows that felt janky. Run it with:
  *
  *   ./gradlew :tv:generateReleaseBaselineProfile
+ *
+ * RUN IT ON AN API 33+ EMULATOR, NOT THE TV. Collection needs API 33+, or a rooted adb session on
+ * API 28+. The Sony XL95 this app is tuned against is API 31 and unrootable, so pointing the task at
+ * it fails with "Baseline Profile collection requires API 33+..." and leaves the shipped profile at
+ * ZERO app classes. The Television_1080p AVD (API 36) is the machine for this.
+ *
+ * Run it in an LTR locale -- the journey below drives the nav rail with `pressDPadLeft`, which walks
+ * the wrong way in fa/ar. The generated profile is locale-independent either way.
  *
  * The profile is written to tv/src/release/generated/baselineProfiles and shipped in the APK;
  * ProfileInstaller applies it on first launch. Re-generate after significant UI changes.
@@ -46,8 +53,14 @@ class BaselineProfileGenerator {
         // Horizontal rail scroll on whatever row currently has focus.
         repeat(10) { device.pressDPadRight(); device.waitForIdle() }
 
-        // Sidebar tab switching: move focus to the left rail and step through the tabs so the
+        // Sidebar tab switching: move focus to the nav rail and step through the tabs so the
         // per-tab content composition + first paging/DB read paths get profiled.
+        //
+        // ASSUMES AN LTR LOCALE on the generating device -- the nav rail sits on the LEFT in LTR and
+        // mirrors to the RIGHT in RTL (fa/ar), so in an RTL locale every `pressDPadLeft` below walks
+        // AWAY from the rail and the tab half of this journey profiles nothing. See the note on
+        // running this in the KDoc above; the profile itself is a list of classes and methods, so it
+        // applies identically whatever locale the user later runs the app in.
         repeat(6) { device.pressDPadLeft(); device.waitForIdle() }
         listOf("live", "movies", "series", "favorites", "home").forEach { _ ->
             device.pressDPadDown(); device.waitForIdle()
@@ -57,6 +70,18 @@ class BaselineProfileGenerator {
             // Return focus to the sidebar for the next selection.
             repeat(4) { device.pressDPadLeft(); device.waitForIdle() }
         }
+
+        // Settings last, and deliberately: it is the app's most expensive first paint -- measured on
+        // the real XL95 at a 244ms frame, 125ms of it measure/layout -- and not one of its panes,
+        // rows or controls was in the profile before. Walk to the bottom of the rail for the gear,
+        // open it, sweep the tab strip so every pane composes once, then drop into the pane itself
+        // so the section/row/control code is profiled rather than just the strip.
+        repeat(6) { device.pressDPadLeft(); device.waitForIdle() }
+        repeat(10) { device.pressDPadDown(); device.waitForIdle() }
+        device.pressDPadCenter()
+        device.wait(Until.hasObject(By.pkg(PACKAGE_NAME).depth(0)), 3_000)
+        repeat(5) { device.pressDPadRight(); device.waitForIdle() }
+        repeat(4) { device.pressDPadDown(); device.waitForIdle() }
     }
 
     private companion object {
