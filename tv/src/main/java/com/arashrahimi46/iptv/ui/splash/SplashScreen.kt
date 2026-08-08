@@ -183,16 +183,20 @@ fun AreSplashScreen() {
                         alpha = markIn.coerceIn(0f, 1f)
                     },
             ) {
+                // Tinted with the user's accent, the same two-tone treatment the in-app brand mark
+                // uses everywhere else (see AreLogoMark: accentHover over accentPress). The splash was
+                // the one surface still hardcoding white-on-black, so the first thing the app ever drew
+                // ignored the accent the rest of it follows.
                 Image(
                     painter = painterResource(R.drawable.ic_logo_glyph),
                     contentDescription = stringResource(CoreR.string.splash_logo_content_description),
-                    colorFilter = ColorFilter.tint(White, BlendMode.SrcIn),
+                    colorFilter = ColorFilter.tint(AreIptvTheme.colors.accentHover, BlendMode.SrcIn),
                     modifier = Modifier.fillMaxSize(),
                 )
                 Image(
                     painter = painterResource(R.drawable.ic_logo_glyph_detail),
                     contentDescription = null,
-                    colorFilter = ColorFilter.tint(Color.Black, BlendMode.SrcIn),
+                    colorFilter = ColorFilter.tint(AreIptvTheme.colors.accentPress, BlendMode.SrcIn),
                     modifier = Modifier.fillMaxSize(),
                 )
             }
