@@ -1242,3 +1242,201 @@ under the new applicationId, so the sweep would otherwise profile onboarding and
   (marquee re-recording the rail at 60 fps, the Guide's shared `ScrollState` read in composition,
   `AreSegmentedControl`'s `onGloballyPositioned` writes, Favorites' missing lazy keys). Verify against
   the source before acting; plausible mechanisms here are usually already handled.
+
+## Round 7: the baseline profile was never real, and a player controller nobody sees (2026-08-08)
+
+First round measured on the **user's own catalogue** (9020 channels) on the XL95, English/LTR. Round 6
+closed with "generating the profile is still to do". Doing it turned out to be the single largest win
+recorded in this document — and the reason it had never worked was not the constant Round 6 fixed.
+
+### The headline: Settings first paint, 244 ms → 85 ms
+
+Same harness, same navigation (cold launch → settle 14 s → walk the sidebar to the gear → start the
+trace → open Settings), same catalogue, 2 reps after.
+
+| | before | after (rep 1 / rep 2) | Δ |
+|---|---|---|---|
+| worst frame | **244 ms** | **90 / 83 ms** | **−65 %** |
+| `AndroidOwner:measureAndLayout` | 188 ms | 57 / 59 ms | −69 % |
+| `Compose:recompose` | 134 ms | 42 / 35 ms | −71 % |
+| `TextAnnotatedStringNode:measure` | 33 calls, 43 ms | **33 calls**, 15 ms | −65 % at equal count |
+| main-thread Running | 574 ms | 231 / 225 ms | −60 % |
+| **`Jit thread pool` Running** | **130 ms** | **1 ms** | **−99 %** |
+
+The text-measure row is the proof of mechanism: **the same 33 measures cost a third as much.** No work
+was removed. The code was simply compiled instead of interpreted-then-JIT-ed, and the JIT row collapsing
+to 1 ms says the same thing from the other side.
+
+Note this "before" (244 ms) is larger than the 75 ms in Round 6's table. Not a contradiction: that
+number came from a settle-then-sweep capture, this harness traces the **genuine first paint** of the
+screen after a cold launch. Round 7's before/after share one harness, so the delta stands regardless.
+
+### Why the profile had never worked — two independent silent failures
+
+**1. R8 ran on the variant the profile is generated from.** So every collected rule came back as an
+obfuscated name (`La0;`) belonging to a mapping the shipped build does not share, and all of them were
+dropped at merge. What shipped had 204 app rules: 193 Room DAOs (whose names R8 keeps) and 8
+`MainActivity` entries. Zero composables, zero theme, zero focus, zero tile code.
+
+A mitigation for exactly this already existed in `buildTypes { all { optimization { enable = false } } }`
+and it *did* fire — and was then overwritten. The baselineprofile plugin creates
+`nonMinifiedRelease`/`benchmarkRelease` with `initWith(release)` **after** the `android { }` block is
+evaluated, copying release's `enable = true` straight back. Probed: `all` set false, and by
+`afterEvaluate` the value was `true`.
+
+Moving it to `project.afterEvaluate { }` fails the other way — AGP registers its own DSL finalization
+when it is applied, i.e. before this file's callback, so the write lands after the DSL is locked and
+Gradle reports every task `UP-TO-DATE`. The one hook in the window is
+**`androidComponents { finalizeDsl { } }`**: after the plugin's copy, before variants are created.
+
+Verification that beats reading the flag — count readable app classes in the generation APK:
+
+```
+~/Library/Android/sdk/build-tools/36.0.0/dexdump -f \
+  tv/build/outputs/apk/nonMinifiedRelease/tv-nonMinifiedRelease.apk | grep -c "arashrahimi46/iptv/ui"
+# broken: 0        fixed: 24130
+```
+
+> **AGP 9 has two minify switches and only one of them matters.** `release` reports
+> `isMinifyEnabled == false` while being fully minified, because `optimization { enable }` is what
+> drives R8 now. The legacy flag is the one the baselineprofile plugin clears, which is why the plugin
+> does not get this right by itself.
+
+**2. The profile can never be generated on this TV.** Collection needs **API 33+**, or root on API 28+.
+The XL95 is API 31 and unrootable, so pointing `:tv:generateReleaseBaselineProfile` at it fails with
+"Baseline Profile collection requires API 33+…". Use the `Television_1080p` AVD (API 36). This is now in
+the generator's KDoc, along with the LTR requirement its `pressDPadLeft` navigation silently assumes —
+in an RTL locale every one of those presses walks *away* from the nav rail and the tab half of the
+journey profiles nothing.
+
+**Do not aim that task at a device you care about.** It is a connected-android-test task and it
+**uninstalls the app when it finishes**, which wipes app data. It destroyed the playlist, favourites and
+settings on the real TV mid-session.
+
+### Result, and the honest limit of it
+
+| | before | after |
+|---|---|---|
+| generated profile, app rules | 204 | **1107** |
+| merged release profile, app rules | **0** | **1107** |
+| shipped `assets/dexopt/baseline.prof` | 12985 B | 15033 B |
+
+Coverage is **partial**: theme 290 rules, components 67, player 23, data layer 442 — but Home, Browse,
+Guide and the Settings *screens* are absent, because the profile must be generated on the emulator and
+the emulator has no catalogue, so the journey cannot reach those screens. What is covered is the shared
+hot path every screen pays (`ColorKt`, `AreIptvColors`, `FocusKt`, `GlassKt`, `AreIptvTypography`,
+`UserSettings`), which is where the win above comes from. **Seeding a playlist on the generating
+emulator is the remaining lever here** and should extend the same effect to every screen's own code.
+
+### `PlayerView` inflated a controller the app never shows — 60.4 ms → 14.3 ms
+
+Opening a player spent **60.4 ms inflating Android Views on the main thread**; ~44 ms of it was media3
+UI that is never visible.
+
+`PlayerView`'s constructor looks up `exo_controller_placeholder` in its layout and, finding one, builds a
+full `PlayerControlView` in its place — transport controls, a `DefaultTimeBar`, a settings
+`RecyclerView`, a `HorizontalScrollView`. **It does this regardless of `useController`**; that flag only
+decides whether the already-built controller is ever shown. Confirmed in the media3 1.10.0 bytecode
+(`exo_controller_placeholder` → `new PlayerControlView`, with no `useController` test on the path). All
+three call sites set `useController = false` *after* construction, so they paid for every view and
+displayed none of them.
+
+`player_layout_id` is only readable from XML attrs in the constructor, so the fix is a layout:
+`are_player_view.xml` → `are_player_content.xml`, which keeps only what is load-bearing (the
+`AspectRatioFrameLayout` that `resizeMode` needs, the shutter, the `SubtitleView`) and drops the
+placeholder along with media3's own buffering spinner — at 6.2 ms the single most expensive child, and a
+second spinner competing with the app's own `BufferingIndicator` — plus its error `TextView`, the
+artwork/image views and the ad/overlay frames, none of which this app enables.
+
+| | before | after |
+|---|---|---|
+| `inflate` total, player open | 60.4 ms | **14.3 ms** |
+| `ProgressBar` / `RecyclerView` / `HorizontalScrollView` slices | 6.2 / 3.4 / 2.3 ms | **gone** |
+
+**Multi-View is where this compounds** — the controller was inflated once *per pane*, so a four-up grid
+paid it four times on open.
+
+### `tvFocusable` rebuilt two modifier elements on every focus and press change
+
+Same reference-identity mechanism Round 6 found in `softShadow`, in the modifier that every focusable in
+the app composes. `Modifier.graphicsLayer { }` and `Modifier.drawWithCache { }` hold their block as a
+lambda and compare it by **identity**, so an unremembered capturing lambda replaces the node on every
+call — and for `drawWithCache`, re-runs the cache block (`shape.createOutline` + a `Stroke` alloc).
+`tvFocusable` reads focused/pressed state in composition, so it recomposes twice per D-pad step, on the
+element losing focus *and* the one gaining it, across every focusable on screen.
+
+Both are now `remember`ed **on the `State` objects rather than their values**, which keeps the deferred
+draw-time reads from Round 2 intact — the tweens still animate without recomposing. `glassWell` had the
+same bug, which silently defeated the comment directly above it.
+
+Honest scoring: this is composition-side and lands below the noise floor of the harnesses here. It is
+directionally right, free and pixel-identical, **not a measured win**.
+
+### Where the app stands now — XL95, the user's 9020-channel catalogue, English/LTR, `speed-profile` AOT
+
+| journey | frames | frames > 16.7 ms | worst frame | dominant cost in it |
+|---|---|---|---|---|
+| **Home**, D-pad sweep (down/up + rail) | 181 | **0** | 8 ms | — |
+| **Settings** first paint | — | — | 83–90 ms | `draw` 32 ms ≈ `measure` 31 ms |
+| **Guide** first paint | 101 | 4 | 64 ms | `measureAndLayout` 39.5 ms |
+| cold start (`am start -W` TotalTime, ×3) | — | — | 346 / 456 / 367 ms | — |
+
+**Home is finished** — 181 frames, zero over budget, worst frame 8 ms on a 16.7 ms budget. Settings is no
+longer measure-bound: it is now an even draw/measure split, so the next lever there is glass
+rasterisation, not subcomposition. The Guide's first paint is the last clearly-jank surface.
+
+### Refuted this round
+
+- **Persian is not slower than English.** The standing report was that Settings is terrible in Persian.
+  Measured with the locale flipped between interleaved runs on one build: worst frame **en 30/30 ms vs
+  fa 27 ms**, composition en 55/60 ms vs fa 39 ms. Vazirmatn shapes no slower than Manrope here.
+  Whatever the user is seeing on that screen, RTL/complex-script text measurement is not it.
+- **Round 6's structural claim about Settings' panes is wrong.** It reads: "Settings' `LazyColumn` emits
+  a whole section *card* per item, so entering a pane composes every row in it regardless of
+  visibility." `GeneralPane` splits into **7** `item {}`s (playlists / preferences / provider ×2 /
+  language / metadata / storage), and the 33 text measures in its first-paint frame are the ~5 rows that
+  are genuinely on screen, not off-screen waste. There is no free structural win there.
+- **The composition layer has no skippability wins left.** Compose compiler metrics over the whole
+  module: **190 of 190 restartable composables are skippable**, zero exceptions. (Round 6 said "0
+  non-skippable"; this confirms it against a changed codebase.) The 45 non-restartable ones are
+  inline/lambda/return-value composables, which is correct.
+- **Coil is already correctly configured** — explicit `size()` on every request, `crossfade(false)`,
+  tuned memory/disk caches. No unsized decode anywhere.
+
+### Not taken: the 3400 ms splash floor
+
+`SPLASH_FLOOR_MS = 3400` holds the splash for 3.4 s. The reveal choreography is a 1900 ms tween and
+`am start -W` reports the Activity up in **346–456 ms**, so ~1.5 s of every cold start is deliberate
+dwell on a finished animation over ready data. Cutting it to 1900 ms is by far the largest
+perceived-performance win still available in the app.
+
+**Asked and declined — the product call is to keep the brand moment.** Recorded here so nobody
+re-derives it as a bug: it is a decision, and the 1.5 s is its known price.
+
+### Method notes
+
+- **The TV screensaver silently invalidates traces, and it will happen to you.** A capture that looks
+  perfectly well-formed can contain Google TV's ambient screensaver instead of the app, because the
+  harness's settle windows are long enough to trigger it. It produced a *plausible* "244 ms → 47 ms"
+  before the screenshot showed the app was never on screen. Disable it first:
+  ```
+  adb shell settings put secure screensaver_enabled 0
+  adb shell settings put secure sleep_timeout -1
+  ```
+- **Screenshot every trace and look at it before believing a number.** Two of this round's captures were
+  invalid — one screensaver, one that had landed in Home's *edit* mode rather than Home — and in both
+  cases the numbers looked like good news. `set.sh`/`j.sh` in the scratchpad now `screencap` at the end
+  of every run for this reason.
+- **`adb` CAN type into `AreTextField`, and `TAB` is how you leave one.** The older note that
+  `input text` never reaches these fields is wrong for the current build — text lands fine. What does
+  not work is D-pad focus travel *between* fields: `DPAD_DOWN` is swallowed as cursor movement, and
+  `BACK` propagates past edit mode and navigates the whole step away (losing what was typed).
+  `input keyevent 61` (TAB) moves focus and is the only way through a multi-field form from adb.
+  **This is a real D-pad bug worth chasing** — a remote has no TAB key, and Onboarding's Credentials
+  step is the first screen a new user meets.
+- The splash mark was a 320×405 webp in `drawable-xxxhdpi` (an 80 dp natural size) drawn at **132 dp** —
+  a 1.65× upscale, which is why it read as soft while the 32 dp sidebar mark off the same asset looked
+  fine. Both glyph layers are now VectorDrawables traced from the alpha channel (marching squares →
+  circular box-smooth → Douglas-Peucker, `fillType="evenOdd"`, IoU 0.965/0.934 against the source).
+  A density-qualified resource beats a default-config one, so the `.webp` files had to be **deleted** —
+  left in place they would have kept winning and the vector would never have been used.

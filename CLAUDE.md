@@ -518,3 +518,38 @@ heterogeneous lazy list needs the same treatment** — `key` alone is not enough
 Open leads: ~5ms RenderThread + ~4ms sync/upload still unattributed, and **input latency**
 (241 high-latency events per 14 keypresses), untouched. Ruled out: `computePalette` (0.79ms
 across a whole 20s trace — a red herring).
+
+### Baseline profile: generate it on the EMULATOR, never the TV (round 7, 2026-08-08)
+
+The shipped profile contained **zero app classes** for months, silently, and fixing it took Settings'
+first paint from **244ms to 85ms** (JIT 130ms → 1ms). Three things to keep straight:
+
+- **`:tv:generateReleaseBaselineProfile` must run on the `Television_1080p` AVD (API 36).** Collection
+  needs API 33+ (or root on 28+); the XL95 is **API 31 and unrootable**, so aiming the task at it just
+  fails. It is also a connected-android-test task that **uninstalls the app when it finishes** — it wiped
+  the real TV's playlist, favourites and settings once. Never point it at a device you care about.
+- **R8 must be off for `nonMinifiedRelease`, and only `finalizeDsl` can do it.** `buildTypes { all { } }`
+  runs before the plugin's `initWith(release)` copies `enable = true` back; `afterEvaluate` runs after AGP
+  locks the DSL. Verify by counting readable classes, not by reading the flag:
+  `dexdump -f tv/build/outputs/apk/nonMinifiedRelease/*.apk | grep -c "arashrahimi46/iptv/ui"` — 0 is
+  broken, ~24000 is right. (AGP 9: `optimization { enable }` drives R8; `isMinifyEnabled` reads false on a
+  fully-minified `release`.)
+- Coverage is still partial — no Home/Browse/Guide/Settings *screen* code, because the generating emulator
+  has no catalogue and the journey can't reach those screens. **Seeding a playlist there is the open
+  lever.**
+
+### Two measurement traps that produce believable wrong numbers
+
+- **Disable the TV screensaver before any capture** (`adb shell settings put secure screensaver_enabled 0`
+  and `sleep_timeout -1`). The settle windows are long enough to trigger Google TV's ambient mode, and the
+  resulting trace is well-formed but contains the screensaver, not the app. It read as a 5× improvement.
+- **Screenshot at the end of every trace and look at it.** Two round-7 captures were invalid (one
+  screensaver, one that landed in Home's *edit* mode) and both looked like good news.
+
+### media3 `PlayerView` builds its controller even when `useController = false`
+
+That flag only hides an already-built `PlayerControlView`; the constructor builds one whenever
+`exo_controller_placeholder` is present in the layout. Every video surface therefore inflates it via
+`are_player_view.xml` (→ `are_player_content.xml`), which omits the placeholder: **60.4ms → 14.3ms** of
+main-thread inflation per player open, ×N panes in Multi-View. Do not go back to `PlayerView(context)` —
+`player_layout_id` is constructor-only and unreachable from Kotlin.
