@@ -74,6 +74,7 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.TeeDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -149,7 +150,18 @@ fun LivePlayerScreen(
     val pendingRecord by viewModel.pendingRecord.collectAsState()
     val recordingSink = viewModel.recordingSink
     val mediaSourceFactory = remember(recordingSink) {
-        val upstream = DefaultDataSource.Factory(context)
+        // `Connection: close` on every stream request, and it is not a nicety.
+        //
+        // DefaultHttpDataSource speaks through Android's HttpURLConnection, which is OkHttp-backed:
+        // closing the data source hands the socket back to a connection POOL that keeps it idle and
+        // open for ~5 minutes. The server cannot tell a pooled socket from a watching viewer, so an
+        // Xtream line that counts concurrent connections still counted the channel we just left --
+        // and answered the next channel with HTTP 458 (connection limit reached). Releasing the
+        // player promptly is not enough on its own; the socket has to actually go away.
+        // OkHttp honours this header by not pooling the connection.
+        val http = DefaultHttpDataSource.Factory()
+            .setDefaultRequestProperties(mapOf("Connection" to "close"))
+        val upstream = DefaultDataSource.Factory(context, http)
         val teeFactory = DataSource.Factory { TeeDataSource(upstream.createDataSource(), recordingSink) }
         DefaultMediaSourceFactory(teeFactory)
     }
@@ -628,7 +640,8 @@ fun LivePlayerScreen(
                         // for raw .ts / other URLs -- covers both shapes real M3U/Xtream sources hand back.
                         setMediaItem(MediaItem.fromUri(media.streamUrl))
                         playWhenReady = true
-                        prepare()
+                        // NOT prepared here -- see the prepare() effect below. Building a player is
+                        // free; preparing it is what opens the connection.
                     }
                 }.also { playerError = null; gaveUp = false }
             }
@@ -654,6 +667,24 @@ fun LivePlayerScreen(
             // is a no-op.
             LaunchedEffect(media.streamUrl) {
                 if (livePlayback?.session?.streamUrl != media.streamUrl) livePlayback?.closeMini()
+            }
+
+            // Opening the connection is deliberately an EFFECT, not part of the remember() above.
+            //
+            // remember's calculation runs during composition, while the player it replaces is still
+            // alive -- that instance is only released in the DisposableEffect onDispose below, which
+            // Compose runs when it applies the frame. So preparing inline started the new stream
+            // BEFORE the old one closed, and an Xtream line counts CONCURRENT connections: the
+            // provider answers HTTP 458 (connection limit reached). Every channel switch and every
+            // retry crossed that way, and because auto-retry bumps retryCount -- a key of this very
+            // remember -- a line already at its cap kept re-doubling and the 458 fed itself.
+            // Compose dispatches onForgotten (the old release) before onRemembered (this effect), so
+            // preparing here means exactly one connection at a time.
+            //
+            // STATE_IDLE only: an adopted mini-player instance is already prepared and playing, and
+            // re-preparing it would restart buffering and undo the seamless expand.
+            LaunchedEffect(exoPlayer) {
+                if (exoPlayer.playbackState == Player.STATE_IDLE) exoPlayer.prepare()
             }
 
             // Keep the screen awake while actually playing so the system screensaver / display
@@ -715,6 +746,15 @@ fun LivePlayerScreen(
                         // Surface the real HTTP status when the server rejects the stream (e.g. a
                         // 461/403 from an expired, connection-limited or IP-locked line) -- far more
                         // actionable than ExoPlayer's generic "bad http status" code name.
+                        // A connection-limit rejection is the one failure retrying CANNOT fix: the
+                        // line is full, so every attempt asks for a slot that isn't there -- and an
+                        // attempt the server counts before rejecting keeps the line full, which is
+                        // how one 458 turned into "live TV returns 458" for minutes on end. Give up
+                        // immediately (gaveUp also stops the alternate-source fallback, which on
+                        // Xtream is usually another URL on the SAME capped line). The manual Retry
+                        // button still rebuilds the player and clears this.
+                        val status = (error.cause as? androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)?.responseCode
+                        if (status != null && status in StreamRetryPolicy.CONNECTION_LIMIT_STATUSES) gaveUp = true
                         playerError = when (val cause = error.cause) {
                             is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException ->
                                 "$playbackFailedText: HTTP ${cause.responseCode}"

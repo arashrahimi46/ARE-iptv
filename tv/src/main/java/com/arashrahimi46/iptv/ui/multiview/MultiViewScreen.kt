@@ -408,6 +408,9 @@ private fun MultiViewPane(
     // (a fresh instance/reconnect attempt), same pattern as LivePlayerScreen's retryCount.
     var retryCount by remember(channel.id) { mutableStateOf(0) }
     var autoRetryAttempt by remember(currentSource.id) { mutableStateOf(0) }
+    /** Set when the provider rejected this pane for being over its connection cap -- retrying that
+     *  can only keep the line full, so this pane stops asking. Cleared by a source change. */
+    var connectionLimited by remember(currentSource.id) { mutableStateOf(false) }
 
     val exoPlayer = remember(currentSource.streamUrl, retryCount) {
         // Multi-view runs up to 4 decoders at once, but a TV box has only a handful of hardware
@@ -442,9 +445,16 @@ private fun MultiViewPane(
             .build().apply {
                 setMediaItem(MediaItem.fromUri(currentSource.streamUrl))
                 playWhenReady = true
-                prepare()
+                // NOT prepared here -- see the prepare() effect below.
             }
     }
+
+    // Same reason as LivePlayerScreen's prepare() effect: this remember() runs during composition
+    // while the pane's outgoing player is still alive (release happens in the onDispose below), so
+    // preparing inline held TWO connections for this one pane across a source fallback or a retry --
+    // and an Xtream line that counts concurrent connections answers HTTP 458. A 4-up grid is already
+    // at four connections by design; it must not silently ask for a fifth.
+    LaunchedEffect(exoPlayer) { exoPlayer.prepare() }
 
     // Backgrounding must stop the decoders. Without this, pressing HOME left all four panes decoding
     // AND pulling four streams off the network indefinitely -- the composable never leaves the tree,
@@ -488,6 +498,12 @@ private fun MultiViewPane(
 
             override fun onPlayerError(error: PlaybackException) {
                 health = AreStreamHealthLevel.Poor
+                // Connection-limit rejection: stop this pane instead of retrying (see
+                // StreamRetryPolicy.CONNECTION_LIMIT_STATUSES). A 4-up grid is the most likely place
+                // to hit a line's cap, and four panes each retrying on backoff is the surest way to
+                // keep it capped -- including for the fullscreen player the user goes back to.
+                val status = (error.cause as? androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException)?.responseCode
+                if (status != null && status in StreamRetryPolicy.CONNECTION_LIMIT_STATUSES) connectionLimited = true
             }
         }
         exoPlayer.addListener(listener)
@@ -500,8 +516,9 @@ private fun MultiViewPane(
     // P0.1: same degraded-health -> auto-retry-with-backoff -> fallback-to-next-source
     // policy as LivePlayerScreen (see StreamRetryPolicy), applied per pane instead of
     // leaving a failed pane permanently dead.
-    LaunchedEffect(health, autoRetryAttempt, currentSource.id) {
+    LaunchedEffect(health, autoRetryAttempt, currentSource.id, connectionLimited) {
         if (health == AreStreamHealthLevel.Stable) return@LaunchedEffect
+        if (connectionLimited) return@LaunchedEffect
         if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
             val alternate = AppDatabase.get(context).channelDao().findAlternateByName(currentSource.name, currentSource.id)
             if (alternate != null) {

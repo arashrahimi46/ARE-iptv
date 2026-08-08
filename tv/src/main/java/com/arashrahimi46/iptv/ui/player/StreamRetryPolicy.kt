@@ -11,6 +11,18 @@ object StreamRetryPolicy {
      * to the next available source for the channel. */
     const val MAX_RETRIES = 3
 
+    /**
+     * HTTP statuses that mean "this line is already at its concurrent-connection cap" rather than
+     * "try again". Xtream panels answer **458** for it; proxies in front of them sometimes use 509.
+     *
+     * These are the one failure class retry makes WORSE. The slot does not exist until something
+     * else stops streaming, so no amount of backoff conjures it -- and each attempt the server
+     * counts before rejecting keeps the line full, so the retry loop sustains the error it is
+     * trying to recover from. Both players treat these as give-up-immediately, which also skips the
+     * alternate-source fallback (on Xtream that is usually another URL on the same capped line).
+     */
+    val CONNECTION_LIMIT_STATUSES = setOf(458, 509)
+
     /** Sustained buffering (no error, but stuck) this long counts as degraded
      * health and enters the same retry/backoff cycle as a hard playback error. */
     const val BUFFERING_GRACE_MS = 8_000L
