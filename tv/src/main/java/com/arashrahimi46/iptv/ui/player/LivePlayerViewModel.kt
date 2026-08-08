@@ -310,7 +310,8 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
             val media = when (val s = source) {
                 is PlaybackSource.Channel -> db.channelDao().getById(s.channelId)?.let { ch ->
                     resolvePlayUrl(ch.sourceId, StreamKind.LIVE, ch.externalId, ch.streamUrl)?.let { url ->
-                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = url, isLive = true, artworkUrl = ch.logoUrl)
+                        storedLiveUrl = url
+                        PlayableMedia(title = ch.name, subtitle = ch.categoryName, streamUrl = singleConnectionLiveUrl(url), isLive = true, artworkUrl = ch.logoUrl)
                     }
                 }
                 is PlaybackSource.Vod -> db.vodTitleDao().getById(s.vodTitleId)?.let { title ->
@@ -630,6 +631,40 @@ class LivePlayerViewModel(app: Application, initialSource: PlaybackSource) : And
      * `…/live/<user>/<pass>/<id>.m3u8` and `…/live/<user>/<pass>/<id>.ts`; only that shape is
      * converted, so plain M3U/HLS-only sources (no `.ts` sibling) stay non-recordable.
      */
+    /**
+     * What a live channel actually plays: the raw-TS sibling of an Xtream HLS URL, when there is one.
+     *
+     * HLS costs **two concurrent provider connections per channel** -- media3 refreshes the media
+     * playlist on one Loader while segments load on another -- and Xtream lines are sold by
+     * concurrent connection. On a 1-2 connection line a single channel therefore sits at the cap, so
+     * every channel change overlapped the outgoing stream and the provider answered HTTP 458
+     * (connection limit reached). The identical stream is served as ONE continuous MPEG-TS socket at
+     * `…/<id>.ts`: same picture, half the connections. It is also the variant recording already
+     * switches to, so REC no longer has to rebuild the player at all.
+     *
+     * Only the Xtream `/live/…/<id>.m3u8` shape is converted -- a plain M3U/HLS-only source has no
+     * `.ts` sibling and is left exactly as catalogued. If a panel turns out to serve HLS only, the
+     * retry path reverts this channel to its stored URL (see [revertToStoredUrl]).
+     */
+    private fun singleConnectionLiveUrl(url: String): String = xtreamTsVariant(url) ?: url
+
+    /**
+     * Undo [singleConnectionLiveUrl] for the current channel: play the catalogued `.m3u8` again.
+     * Returns false when there is nothing to undo, so the caller can fall through to its next
+     * recovery step. This is the escape hatch for a panel that only serves HLS live.
+     */
+    fun revertToStoredUrl(): Boolean {
+        val media = _uiState.value.media ?: return false
+        if (!media.isLive || !media.streamUrl.endsWith(".ts", ignoreCase = true)) return false
+        val stored = storedLiveUrl ?: return false
+        if (stored == media.streamUrl) return false
+        _uiState.value = _uiState.value.copy(media = media.copy(streamUrl = stored))
+        return true
+    }
+
+    /** The catalogued URL of the live channel currently loaded, before [singleConnectionLiveUrl]. */
+    private var storedLiveUrl: String? = null
+
     private fun xtreamTsVariant(url: String): String? {
         val base = url.substringBefore('?')
         if (!base.endsWith(".m3u8", ignoreCase = true)) return null

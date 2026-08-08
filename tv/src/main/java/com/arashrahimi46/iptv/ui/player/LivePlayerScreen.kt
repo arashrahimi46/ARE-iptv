@@ -74,7 +74,6 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.TeeDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
@@ -150,18 +149,14 @@ fun LivePlayerScreen(
     val pendingRecord by viewModel.pendingRecord.collectAsState()
     val recordingSink = viewModel.recordingSink
     val mediaSourceFactory = remember(recordingSink) {
-        // `Connection: close` on every stream request, and it is not a nicety.
-        //
-        // DefaultHttpDataSource speaks through Android's HttpURLConnection, which is OkHttp-backed:
-        // closing the data source hands the socket back to a connection POOL that keeps it idle and
-        // open for ~5 minutes. The server cannot tell a pooled socket from a watching viewer, so an
-        // Xtream line that counts concurrent connections still counted the channel we just left --
-        // and answered the next channel with HTTP 458 (connection limit reached). Releasing the
-        // player promptly is not enough on its own; the socket has to actually go away.
-        // OkHttp honours this header by not pooling the connection.
-        val http = DefaultHttpDataSource.Factory()
-            .setDefaultRequestProperties(mapOf("Connection" to "close"))
-        val upstream = DefaultDataSource.Factory(context, http)
+        // No `Connection: close` here, deliberately. It looks like the right lever for a
+        // connection-counted line, but DefaultHttpDataSource closes through OkHttp's
+        // HttpURLConnection bridge, whose disconnect() cancels the call and drops the socket anyway --
+        // while the header additionally forbids REUSE, so an HLS stream would open a brand-new TCP
+        // connection for every playlist refresh and every segment. On a provider that counts
+        // connections that is the opposite of what we want. Fewer streams, not fewer keep-alives, is
+        // the fix (see LivePlayerViewModel.singleConnectionLiveUrl).
+        val upstream = DefaultDataSource.Factory(context)
         val teeFactory = DataSource.Factory { TeeDataSource(upstream.createDataSource(), recordingSink) }
         DefaultMediaSourceFactory(teeFactory)
     }
@@ -809,6 +804,10 @@ fun LivePlayerScreen(
                 // (new source/manual retry), which already re-triggers this branch fresh.
                 if (gaveUp) return@LaunchedEffect
                 if (autoRetryAttempt >= StreamRetryPolicy.MAX_RETRIES) {
+                    // First escape hatch: this live channel may be playing the derived single-
+                    // connection `.ts` variant on a panel that only serves HLS. Put the catalogued
+                    // URL back before writing the channel off and hopping to another source.
+                    if (viewModel.revertToStoredUrl()) return@LaunchedEffect
                     val fellBack = viewModel.fallbackToAlternateSource()
                     if (!fellBack) {
                         gaveUp = true

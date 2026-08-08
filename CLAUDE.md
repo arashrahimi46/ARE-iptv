@@ -388,6 +388,33 @@ apps at once; there is no per-app strings file to keep in step.
   connection for several minutes**, which **stops the live stream inside the app**. Verify streams
   on-device (ExoPlayer sends a player User-Agent and is what actually matters), never from the shell.
 
+### Live plays the `.ts` endpoint, NOT `.m3u8` — one connection per channel
+
+Xtream lines are sold by **concurrent connection**, and HLS costs **two per channel**: media3 refreshes
+the media playlist on one `Loader` while segments load on another. On a 1–2 connection line a single
+channel therefore sits at the cap, and every channel change overlapped the outgoing stream — the
+provider answered **HTTP 458** (connection limit reached) and zapping was effectively broken. Fixed by
+playing the raw-TS sibling Xtream serves at the same path (`LivePlayerViewModel.singleConnectionLiveUrl`,
+applied at playback time so no catalogue refresh is needed). Channels stay catalogued as `.m3u8`;
+`revertToStoredUrl()` is the escape hatch for a panel that serves HLS only. Verified on the XL95: five
+channel switches plus a 5-key burst zap, no 458 — where every single switch failed before.
+
+Two related traps, both measured on device:
+
+- **Never open the new stream before closing the old one.** Both players used to build *and* `prepare()`
+  the replacement `ExoPlayer` inside `remember { }` — that calculation runs during composition while the
+  outgoing instance is still alive (its `release()` only happens in `onDispose`, after the frame is
+  applied). `prepare()` now lives in a `LaunchedEffect(exoPlayer)`; Compose dispatches `onForgotten`
+  before `onRemembered`, so it is strictly sequential. Confirm by logging BUILD/PREPARE/RELEASE and
+  reading the order **on the emulator** (free playlist, no cap) — never by probing a real provider.
+- **Do not retry a 458.** The slot does not exist until something else stops streaming, and each attempt
+  keeps the line hot; the old loop burned MAX_RETRIES then hopped to an "alternate source" that on Xtream
+  is another URL on the same capped line. See `StreamRetryPolicy.CONNECTION_LIMIT_STATUSES`.
+- `Connection: close` looks like the fix and is not: OkHttp's `disconnect()` already drops the socket,
+  while the header forbids reuse — so an HLS stream opens a brand-new TCP connection per segment.
+- `adb shell am force-stop` abandons a live connection, so repeated force-stops during testing pin the
+  line at its cap for minutes. Multi-view panes each hold one connection too.
+
 ## TV UX conventions (do not regress)
 
 - **Focus:** every focusable composes `TvFocusable` / `Modifier.tvFocusable` (accent ring + glow).
