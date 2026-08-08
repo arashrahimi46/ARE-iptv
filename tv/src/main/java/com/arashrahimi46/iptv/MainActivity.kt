@@ -30,6 +30,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -459,6 +460,19 @@ fun AreIptvApp() {
         }
     }
 
+    // A tab a full-bleed screen wants selected when it hands control back to the shell (the player's
+    // "open guide"). Held here rather than re-navigating to `shell?tab=guide`, which needed
+    // popUpTo(shell) { inclusive = true } -- and an INCLUSIVE pop that reaches the graph's start
+    // destination queues one more pop operation than the back stack has entries, so
+    // NavController.executePopOperations ends up calling backQueue.last() on an emptied deque and the
+    // app dies (verified on device: navigation-runtime 2.8.9, stack [graph, shell, player]).
+    // Popping only what sits ABOVE the shell keeps the "Back exits the app" stack AND reuses the live
+    // shell instead of tearing it down and rebuilding it.
+    // Held as the STATE OBJECT, not its value: reading the value here would recompose AreIptvApp, and
+    // NavHost re-keys its graph on the builder lambda -- a new graph means setGraph(), which pops the
+    // whole back stack and rebuilds the shell from scratch (blank screen). Only ShellHost reads it.
+    val pendingShellTab = remember { mutableStateOf<String?>(null) }
+
     AreIptvTheme(isDark = isDarkTheme, accent = accent, reducedMotion = isReducedMotion) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("language") {
@@ -540,7 +554,11 @@ fun AreIptvApp() {
             route = "shell?tab={tab}",
             arguments = listOf(navArgument("tab") { type = NavType.StringType; nullable = true; defaultValue = null }),
         ) { backStackEntry ->
-            ShellHost(rootNav = navController, initialTab = backStackEntry.arguments?.getString("tab"))
+            ShellHost(
+                rootNav = navController,
+                initialTab = backStackEntry.arguments?.getString("tab"),
+                pendingTab = pendingShellTab,
+            )
         }
         composable(
             route = "player/{channelId}",
@@ -551,13 +569,17 @@ fun AreIptvApp() {
                 source = PlaybackSource.Channel(channelId),
                 onBack = { navController.popBackStack() },
                 onMultiView = { navController.navigate("multiview") },
-                // Return to the shell with the Guide tab selected (via the shell's `tab` arg),
-                // not popBackStack -- which landed on whatever launched the player (Home/Detail).
-                // inclusive pops the old shell so the new instance recomposes with tab=guide.
+                // Return to the shell with the Guide tab selected -- pop back to the SHELL
+                // (not a bare popBackStack, which landed on whatever launched the player), and
+                // ask it for the Guide tab via [pendingShellTab]. See that declaration for why
+                // this no longer re-navigates to "shell?tab=guide".
                 onOpenGuide = {
-                    navController.navigate("shell?tab=guide") {
-                        popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
-                    }
+                    pendingShellTab.value = "guide"
+                    // Exactly ONE Back-step -- the same popBackStack() every other full-bleed screen
+                    // uses -- never by route and never popUpTo: an inclusive popUpTo that reaches the
+                    // graph's start destination queues one more pop operation than the back stack has
+                    // entries and dies on backQueue.last() (that was the crash).
+                    navController.popBackStack()
                 },
             )
         }
@@ -668,7 +690,11 @@ fun AreIptvApp() {
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
+private fun ShellHost(
+    rootNav: NavHostController,
+    initialTab: String?,
+    pendingTab: MutableState<String?>,
+) {
     val innerNav = rememberNavController()
     val backStackEntry by innerNav.currentBackStackEntryAsState()
     // Route pattern -> base id (e.g. "search?category={category}" -> "search").
@@ -766,6 +792,15 @@ private fun ShellHost(rootNav: NavHostController, initialTab: String?) {
         if (initialTab != null && initialTab in KnownRoutes && initialTab != activeNav) {
             innerNav.selectTab(initialTab)
         }
+    }
+
+    // Same, for a caller that popped back to THIS shell instance instead of creating a new one --
+    // its `tab` arg can't change, so the request arrives as state. Cleared once honored, so a second
+    // request for the same tab still fires.
+    LaunchedEffect(pendingTab.value) {
+        val tab = pendingTab.value ?: return@LaunchedEffect
+        if (tab in KnownRoutes && tab != activeNav) innerNav.selectTab(tab)
+        pendingTab.value = null
     }
 
     fun openDetail(contentType: String, contentId: Long) {

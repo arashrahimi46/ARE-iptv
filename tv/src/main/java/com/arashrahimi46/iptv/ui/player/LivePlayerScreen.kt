@@ -263,6 +263,18 @@ fun LivePlayerScreen(
             }
         }
     }
+    // "Open guide" leaves this screen too, so it shares the SAME one-shot latch: it pops this
+    // destination, that pop STOPs this back stack entry, and the ON_STOP observer below would
+    // otherwise call onBack() as well -- a second pop that takes the shell down with the player and
+    // leaves the NavHost with an empty back stack (blank screen). Reproduced on device.
+    val handleOpenGuide = remember {
+        {
+            if (!backHandled) {
+                backHandled = true
+                onOpenGuide()
+            }
+        }
+    }
 
     // The full-screen Box grabs initial focus and owns the player D-pad model.
     val channelSwitchFocusRequester = remember { FocusRequester() }
@@ -1205,7 +1217,7 @@ fun LivePlayerScreen(
                         onSkipNext = skipNext,
                         skipPreviousLabel = skipPreviousLabel,
                         skipNextLabel = skipNextLabel,
-                        onOpenGuide = onOpenGuide,
+                        onOpenGuide = handleOpenGuide,
                         onUpNext = { showUpNext = true },
                         onMultiView = onMultiView,
                         // Add-to-multi-view: live channels only (movies/series don't belong there).
