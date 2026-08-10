@@ -55,6 +55,38 @@ android {
         }
     }
 
+    // Play will not accept a debug-signed AAB, and the fallback in `release` below produces one
+    // SILENTLY when the credentials are missing or a property name is misspelled -- you find out
+    // after a full release build and an upload attempt, on the day you are trying to ship. So the
+    // one artifact that actually goes to Play refuses to build without the real upload key.
+    //
+    // Deliberately scoped to bundleRelease alone: assembleRelease/installRelease KEEP the debug
+    // fallback, because installing an R8-optimized build locally without release credentials is
+    // the entire reason that fallback exists (see the comment on it below).
+    // The requested task must belong to THIS project. Gradle configures every project on every
+    // invocation, so matching the bare task name made `:tv:bundleRelease` trip :mobile's copy of
+    // this guard and fail a build that was correctly credentialed. An unqualified "bundleRelease"
+    // (no project prefix) does target every module, so that still counts.
+    if (gradle.startParameter.taskNames.any { raw ->
+            val t = raw.removePrefix(":")
+            t == "bundleRelease" || t == "${project.path.removePrefix(":")}:bundleRelease"
+        } &&
+        signingConfigs.getByName("release").storeFile == null
+    ) {
+        throw GradleException(
+            """
+            :tv:bundleRelease needs the real upload key -- refusing to build a debug-signed AAB.
+
+            Set the four TV_RELEASE_* values as env vars, or in ~/.gradle/gradle.properties --
+            NOT the repo's gradle.properties, which is tracked and this repo is public.
+
+            Verify afterwards (no password needed, reads the cert out of the artifact):
+              keytool -printcert -jarfile tv/build/outputs/bundle/release/tv-release.aab
+            An Owner of "CN=Android Debug" means the fallback was used anyway.
+            """.trimIndent(),
+        )
+    }
+
     buildTypes {
         release {
             // R8 full mode: code + resource shrinking and optimization. This -- not the app

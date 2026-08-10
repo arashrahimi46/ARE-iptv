@@ -63,6 +63,29 @@ android {
         }
     }
 
+    // Same guard as :tv -- Play rejects a debug-signed AAB, and the fallback below produces one
+    // silently when the MOBILE_RELEASE_* values are missing or misspelled. Scoped to bundleRelease
+    // only; assembleRelease/installRelease keep the fallback on purpose.
+    // Must belong to THIS project -- see the note in tv/build.gradle.kts: matching the bare task
+    // name made :tv:bundleRelease fail on this module's guard.
+    if (gradle.startParameter.taskNames.any { raw ->
+            val t = raw.removePrefix(":")
+            t == "bundleRelease" || t == "${project.path.removePrefix(":")}:bundleRelease"
+        } &&
+        signingConfigs.getByName("release").storeFile == null
+    ) {
+        throw GradleException(
+            """
+            :mobile:bundleRelease needs the real upload key -- refusing to build a debug-signed AAB.
+
+            Set the four MOBILE_RELEASE_* values as env vars, or in ~/.gradle/gradle.properties --
+            NOT the repo's gradle.properties, which is tracked and this repo is public.
+            The phone app's upload keystore is ~/.android/keystores/are-iptv-mobile-upload.jks
+            (alias are-iptv-mobile-upload).
+            """.trimIndent(),
+        )
+    }
+
     buildTypes {
         release {
             optimization {
