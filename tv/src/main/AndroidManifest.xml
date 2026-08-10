@@ -8,9 +8,16 @@
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
+    <!-- REQUIRED, not optional: this is what restricts the app to TV devices on Play.
+         With required="false" Play treats :tv as phone-eligible, makes phone screenshots
+         mandatory on the store listing, and would let it install on a handset, where a
+         D-pad-only UI with no touch targets is unusable. The phone app is a separate
+         listing (:mobile, applicationId com.areiptv.mobile), so there is nothing to gain
+         from :tv being installable off-TV.
+         touchscreen stays required="false" above: a TV has none. -->
     <uses-feature
         android:name="android.software.leanback"
-        android:required="false" />
+        android:required="true" />
 
     <application
         android:name=".IptvApp"
