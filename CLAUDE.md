@@ -412,6 +412,15 @@ Two related traps, both measured on device:
   is another URL on the same capped line. See `StreamRetryPolicy.CONNECTION_LIMIT_STATUSES`.
 - `Connection: close` looks like the fix and is not: OkHttp's `disconnect()` already drops the socket,
   while the header forbids reuse — so an HLS stream opens a brand-new TCP connection per segment.
+- **Every playback surface must supersede the docked mini, not just the fullscreen player.**
+  `LivePlaybackController` is Activity-scoped, so a minimized channel keeps streaming even on screens
+  that never draw the mini overlay (it lives in the shell; Multi-view and the player are full-bleed).
+  Multi-view referenced the controller nowhere, so "minimize, then open Multi-view" ran the mini
+  invisibly alongside one connection per pane — 458 on panes the user can see, caused by a player they
+  can't. Fixed in `f4cd513`. A new live surface needs the same `closeMini()`.
+- **"Release theirs, then open ours" must be sequential statements, not two effects.** Ordering that
+  relies on parent-effect dispatch order holds by accident; one reordering or an early `return` between
+  them and the connections overlap again. The supersede now sits inside the `prepare()` effect.
 - `adb shell am force-stop` abandons a live connection, so repeated force-stops during testing pin the
   line at its cap for minutes. Multi-view panes each hold one connection too.
 

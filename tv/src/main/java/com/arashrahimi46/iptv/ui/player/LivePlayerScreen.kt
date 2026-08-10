@@ -656,14 +656,6 @@ fun LivePlayerScreen(
             var liveEnded by remember(exoPlayer) { mutableStateOf(false) }
             var autoAdvanceRemaining by remember(exoPlayer) { mutableStateOf<Int?>(null) }
 
-            // Opening a fullscreen player that did NOT adopt the docked instance supersedes it:
-            // release the stale mini (a different channel, or any VOD -- the choice to close the
-            // live mini when VOD starts). After an adopt, the session is already cleared so this
-            // is a no-op.
-            LaunchedEffect(media.streamUrl) {
-                if (livePlayback?.session?.streamUrl != media.streamUrl) livePlayback?.closeMini()
-            }
-
             // Opening the connection is deliberately an EFFECT, not part of the remember() above.
             //
             // remember's calculation runs during composition, while the player it replaces is still
@@ -678,7 +670,17 @@ fun LivePlayerScreen(
             //
             // STATE_IDLE only: an adopted mini-player instance is already prepared and playing, and
             // re-preparing it would restart buffering and undo the seamless expand.
+            //
+            // Superseding the docked mini happens HERE, in the same block, immediately before the
+            // prepare -- not in its own effect. A docked mini owns a second provider connection, and
+            // "release theirs, then open ours" only holds if the two run in that order. As separate
+            // LaunchedEffects it held by accident (parent effects dispatch in declaration order); one
+            // reordering or an early `return` in between and the two connections overlap again, which
+            // on a line sold by concurrent connection is an HTTP 458 on a channel that was fine a
+            // moment ago. Sequential statements can't drift. After an adopt the session is already
+            // cleared, so closeMini() is a no-op on the instance we just took.
             LaunchedEffect(exoPlayer) {
+                if (livePlayback?.session?.streamUrl != media.streamUrl) livePlayback?.closeMini()
                 if (exoPlayer.playbackState == Player.STATE_IDLE) exoPlayer.prepare()
             }
 

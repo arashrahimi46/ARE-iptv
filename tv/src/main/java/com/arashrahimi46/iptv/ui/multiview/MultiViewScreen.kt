@@ -78,6 +78,7 @@ import com.arashrahimi46.iptv.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.ui.components.AreStreamHealth
 import com.arashrahimi46.iptv.ui.components.AreStreamHealthLevel
 import com.arashrahimi46.iptv.ui.components.AreTextField
+import com.arashrahimi46.iptv.ui.player.LocalLivePlaybackController
 import com.arashrahimi46.iptv.ui.player.StreamRetryPolicy
 import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
 import com.arashrahimi46.iptv.ui.theme.Ink950
@@ -116,6 +117,17 @@ fun MultiViewScreen(onBack: () -> Unit, onOpenChannel: (Long) -> Unit, modifier:
     LaunchedEffect(state.hasSource) {
         if (state.hasSource) firstSlotFocus.requestFocusWhenReady()
     }
+
+    // A docked live mini-player owns its OWN provider connection, and Multi-view is about to open one
+    // per pane. This screen is full-bleed, so the mini overlay (which lives in the shell) isn't even
+    // drawn here -- its ExoPlayer is Activity-scoped and just kept streaming INVISIBLY. On a line sold
+    // by concurrent connection that is a guaranteed overlap: minimize a channel, open Multi-view, and
+    // the provider answers HTTP 458 for panes the user can see because of a player they can't.
+    // LivePlayerScreen already supersedes the mini on entry; this is the same rule for the other
+    // playback surface. Dispatched before the panes' own prepare() effects (parent effects run first),
+    // so the mini's connection is released before any pane asks for one.
+    val livePlayback = LocalLivePlaybackController.current
+    LaunchedEffect(Unit) { livePlayback?.closeMini() }
 
     BackHandler(onBack = onBack)
 
