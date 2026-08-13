@@ -41,6 +41,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.ui.components.AreBadge
+import com.arashrahimi46.iptv.mobile.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.mobile.ui.components.AreBottomSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
@@ -240,7 +242,18 @@ fun GuideScreen(
     if (target != null) {
         GuideProgrammeSheet(
             target = target,
-            timeLabel = clock.rangeLabel(target.slot.startMs, target.slot.endMs),
+            // An archive programme is described by when it AIRED, not by a range you might still
+            // catch -- so it gets the catch-up wording instead of the neutral one.
+            timeLabel = if (target.slot.catchup) {
+                stringResource(
+                    CoreR.string.guide_catchup_aired,
+                    clock.atLabel(target.slot.startMs),
+                    clock.atLabel(target.slot.endMs),
+                )
+            } else {
+                clock.rangeLabel(target.slot.startMs, target.slot.endMs)
+            },
+            catchup = target.slot.catchup,
             onDismiss = { sheet = null },
             onWatch = {
                 sheet = null
@@ -337,6 +350,7 @@ private fun GuideChannelHeader(channel: Channel, obscured: Boolean, onPlay: () -
 private fun GuideProgrammeSheet(
     target: GuideSheetTarget,
     timeLabel: String,
+    catchup: Boolean,
     onDismiss: () -> Unit,
     onWatch: () -> Unit,
     onWatchFromStart: (() -> Unit)?,
@@ -365,11 +379,22 @@ private fun GuideProgrammeSheet(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = target.channel.name,
-                style = AreIptvTheme.typography.label,
-                color = colors.accent,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = target.channel.name,
+                    style = AreIptvTheme.typography.label,
+                    color = colors.accent,
+                )
+                if (catchup) {
+                    AreBadge(
+                        text = stringResource(CoreR.string.guide_catchup_label),
+                        tone = AreBadgeTone.Catchup,
+                    )
+                }
+            }
             Text(
                 text = timeLabel,
                 style = AreIptvTheme.typography.mono,
@@ -408,6 +433,10 @@ private fun GuideProgramSlot.progress(nowMs: Long): Float {
     if (span <= 0f) return 0f
     return ((nowMs - startMs) / span).coerceIn(0f, 1f)
 }
+
+/** One clock time, for the two halves of the "Aired %1$s – %2$s" catch-up label. */
+private fun DateTimeFormatter.atLabel(ms: Long): String =
+    format(Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()))
 
 private fun DateTimeFormatter.rangeLabel(startMs: Long, endMs: Long): String {
     val zone = ZoneId.systemDefault()

@@ -23,6 +23,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +49,7 @@ import com.arashrahimi46.iptv.mobile.ui.nav.AppNavHost
 import com.arashrahimi46.iptv.mobile.ui.nav.isPlayerRoute
 import com.arashrahimi46.iptv.mobile.ui.nav.tabRoutes
 import com.arashrahimi46.iptv.mobile.ui.onboarding.OnboardingScreen
+import com.arashrahimi46.iptv.mobile.ui.legal.PrivacyTermsScreen
 import com.arashrahimi46.iptv.mobile.ui.splash.MobileSplashScreen
 import com.arashrahimi46.iptv.mobile.ui.theme.AreIptvMobileTheme
 import com.arashrahimi46.iptv.mobile.ui.components.AreAlertDialog
@@ -115,14 +117,39 @@ class MainActivity : AppCompatActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     var hasSource by remember { mutableStateOf<Boolean?>(null) }
                     val hasSelectedLanguage by settings.hasSelectedLanguage.collectAsStateWithLifecycle(initialValue = null)
+                    // Privacy/Terms consent. :mobile already shipped all of this machinery
+                    // (hasAcceptedTerms / acceptedTermsVersion / acceptCurrentTerms) and the document
+                    // itself in Settings > About, but nothing ever ASKED -- so the phone app entered
+                    // the catalogue with no consent while :tv refused to. Both modules ship the same
+                    // CURRENT_TERMS_VERSION, so "accepted" now means the same thing on both.
+                    val hasAcceptedTerms by settings.hasAcceptedTerms.collectAsStateWithLifecycle(initialValue = null)
+                    val acceptedTermsVersion by settings.acceptedTermsVersion.collectAsStateWithLifecycle(initialValue = null)
+                    val gateScope = rememberCoroutineScope()
                     LaunchedEffect(Unit) {
                         hasSource = repository.hasAnySource()
                     }
-                    // Same gate order as :tv: Splash (both loads still pending) -> Language (once,
-                    // per UserSettings.hasSelectedLanguage) -> Onboarding (no source yet) -> app.
+                    // Same gate order as :tv: Splash (all loads still pending) -> Language (once,
+                    // per UserSettings.hasSelectedLanguage) -> Privacy/Terms -> Onboarding (no source
+                    // yet) -> app. Terms sits AFTER language so the summary is read in the user's own
+                    // language, and BEFORE onboarding so no playlist is added without consent.
                     when {
-                        hasSource == null || hasSelectedLanguage == null -> MobileSplashScreen()
+                        hasSource == null || hasSelectedLanguage == null || hasAcceptedTerms == null -> MobileSplashScreen()
                         hasSelectedLanguage == false -> LanguageSelectScreen(onDone = { /* hasSelectedLanguage flips via DataStore */ })
+                        hasAcceptedTerms == false -> PrivacyTermsScreen(
+                            // >0 means they accepted an EARLIER version, so show "we've updated"
+                            // rather than the first-run wording.
+                            isUpdate = (acceptedTermsVersion ?: 0) > 0,
+                            onAccepted = { crashReportingEnabled ->
+                                gateScope.launch {
+                                    // Only the DataStore write here: the CrashReporting facade lives
+                                    // in :tv and :mobile cannot depend on it. IptvApp reads this value
+                                    // on launch and applies it, which is the same path :mobile's own
+                                    // Settings screen already relies on.
+                                    settings.setCrashReportingEnabled(crashReportingEnabled)
+                                    settings.acceptCurrentTerms()
+                                }
+                            },
+                        )
                         hasSource == false -> OnboardingScreen(onDone = { hasSource = true })
                         else -> {
                             // Phase: General "Start screen" + "Confirm before exit" -- startScreen

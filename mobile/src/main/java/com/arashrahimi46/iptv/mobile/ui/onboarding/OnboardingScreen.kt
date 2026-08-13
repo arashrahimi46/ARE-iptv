@@ -18,6 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
@@ -36,6 +39,8 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.mobile.ui.components.AreErrorState
 import com.arashrahimi46.iptv.mobile.ui.components.AreTabs
 import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
+import com.arashrahimi46.iptv.mobile.ui.explore.EXPLORE_ENABLED
+import com.arashrahimi46.iptv.mobile.ui.explore.ExploreScreen
 import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /**
@@ -48,16 +53,34 @@ import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
  * chips-as-radios stack was a D-pad affordance); every field chains `ImeAction.Next` to
  * `FocusManager.moveFocus(Down)` with `Done` on the last one; the scroll column carries
  * `imePadding()` so the keyboard can never cover the submit button.
+ *
+ * @param showSkip first-run copy ("Skip for now"). Off when this form is pushed from
+ *   [com.arashrahimi46.iptv.mobile.ui.sources.SourcesScreen] to add another playlist, where the
+ *   cancel affordance is system Back.
  */
 @Composable
-fun OnboardingScreen(onDone: () -> Unit, viewModel: OnboardingViewModel = viewModel()) {
+fun OnboardingScreen(
+    onDone: () -> Unit,
+    showSkip: Boolean = true,
+    viewModel: OnboardingViewModel = viewModel(),
+) {
     val state by viewModel.state.collectAsState()
     val colors = AreIptvTheme.colors
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
 
+    // Explore is hosted here rather than reached by a nav route because this screen is also mounted
+    // by MainActivity as the first-run gate, outside the NavHost entirely -- and a brand-new user
+    // with no provider credentials is exactly who needs the free catalogue.
+    var showExplore by rememberSaveable { mutableStateOf(false) }
+
     LaunchedEffect(state.added) {
         if (state.added) onDone()
+    }
+
+    if (showExplore) {
+        ExploreScreen(onAdded = { onDone() }, onBack = { showExplore = false })
+        return
     }
 
     val next = KeyboardOptions(imeAction = ImeAction.Next)
@@ -227,14 +250,27 @@ fun OnboardingScreen(onDone: () -> Unit, viewModel: OnboardingViewModel = viewMo
             full = true,
             loading = state.isSubmitting,
         )
-        AreButton(
-            text = stringResource(CoreR.string.onboarding_skip_for_now),
-            onClick = onDone,
-            modifier = Modifier.fillMaxWidth(),
-            variant = AreButtonVariant.Ghost,
-            full = true,
-            enabled = !state.isSubmitting,
-        )
+        // Hidden, not disabled: a dead button with no explanation reads worse than no button at all.
+        if (EXPLORE_ENABLED) {
+            AreButton(
+                text = stringResource(CoreR.string.explore_link),
+                onClick = { showExplore = true },
+                modifier = Modifier.fillMaxWidth(),
+                variant = AreButtonVariant.Secondary,
+                full = true,
+                enabled = !state.isSubmitting,
+            )
+        }
+        if (showSkip) {
+            AreButton(
+                text = stringResource(CoreR.string.onboarding_skip_for_now),
+                onClick = onDone,
+                modifier = Modifier.fillMaxWidth(),
+                variant = AreButtonVariant.Ghost,
+                full = true,
+                enabled = !state.isSubmitting,
+            )
+        }
     }
 }
 

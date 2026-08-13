@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Wifi
@@ -70,6 +71,7 @@ fun SettingsScreen(
     onOpenSubtitles: () -> Unit = {},
     onOpenParental: () -> Unit = {},
     onOpenAbout: () -> Unit = {},
+    onOpenSources: () -> Unit = {},
     viewModel: SettingsViewModel = viewModel(),
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
@@ -120,6 +122,20 @@ fun SettingsScreen(
             // The Library section (Favorites / Recordings / Streams) moved to Home's quick-action
             // cards -- they are destinations you browse to, not preferences, and three taps deep
             // in a settings list was the wrong place for them.
+
+            // ---- Playlists -----------------------------------------------------------------
+            // First section, above General: which playlist is active decides what every other
+            // screen shows, and until this existed a phone user was locked to the one they
+            // onboarded with (:tv has always had the picker).
+            item(contentType = "header") { AreSectionHeader(stringResource(CoreR.string.settings_section_playlists)) }
+            item(contentType = "row") {
+                AreListRow(
+                    title = stringResource(CoreR.string.sources_choose_title),
+                    supporting = activeSource?.name ?: stringResource(CoreR.string.sources_choose_subtitle),
+                    leadingIcon = Icons.Filled.PlaylistPlay,
+                    onClick = onOpenSources,
+                )
+            }
 
             // ---- General -------------------------------------------------------------------
             item(contentType = "header") { AreSectionHeader(stringResource(CoreR.string.settings_section_general)) }

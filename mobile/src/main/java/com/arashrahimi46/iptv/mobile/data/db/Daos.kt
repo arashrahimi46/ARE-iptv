@@ -359,6 +359,11 @@ interface EPGProgramDao {
      *  and its immediate aired neighbours for the ⏮/⏭ hop. See docs/catchup-v1-design.md. */
     @Query("SELECT * FROM epg_programs WHERE channelId = :channelId AND endMs >= :windowStartMs AND startMs <= :windowEndMs ORDER BY startMs")
     suspend fun programsForChannelInWindow(channelId: Long, windowStartMs: Long, windowEndMs: Long): List<EPGProgram>
+
+    /** Row-id lookup: the phone routes catch-up playback as `player/catchup/{programId}`, so the player
+     *  recovers the channel and the aired window from the programme id alone. */
+    @Query("SELECT * FROM epg_programs WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): EPGProgram?
 }
 
 /**

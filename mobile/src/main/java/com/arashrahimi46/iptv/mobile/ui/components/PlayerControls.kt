@@ -283,6 +283,17 @@ fun ArePlayerControls(
                         )
                     }
                     Spacer(Modifier.weight(1f))
+                    // A catch-up playback is NOT live -- it has a real timeline, so it gets the
+                    // scrubber above and its way back to the live edge has to live here. (The live
+                    // branch keeps its own copy next to the LIVE badge, where there is no seek row.)
+                    if (!live && onGoLive != null) {
+                        AreButton(
+                            text = stringResource(CoreR.string.player_go_live),
+                            onClick = onGoLive,
+                            variant = AreButtonVariant.Secondary,
+                            size = AreButtonSize.Small,
+                        )
+                    }
                     if (onMore != null) {
                         AreIconButton(
                             icon = Icons.Filled.MoreVert,

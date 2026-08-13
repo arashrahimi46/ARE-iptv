@@ -38,6 +38,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.arashrahimi46.iptv.core.R as CoreR
 import com.arashrahimi46.iptv.mobile.ui.detail.MovieDetailScreen
+import com.arashrahimi46.iptv.mobile.ui.explore.ExploreScreen
 import com.arashrahimi46.iptv.mobile.ui.favorites.FavoritesScreen
 import com.arashrahimi46.iptv.mobile.ui.guide.GuideScreen
 import com.arashrahimi46.iptv.mobile.ui.home.HomeScreen
@@ -50,6 +51,8 @@ import com.arashrahimi46.iptv.mobile.ui.player.PlayerScreen
 import com.arashrahimi46.iptv.mobile.ui.player.PlayerTarget
 import com.arashrahimi46.iptv.mobile.ui.recordings.RecordingsScreen
 import com.arashrahimi46.iptv.mobile.ui.series.SeriesDetailScreen
+import com.arashrahimi46.iptv.mobile.ui.onboarding.OnboardingScreen
+import com.arashrahimi46.iptv.mobile.ui.sources.SourcesScreen
 import com.arashrahimi46.iptv.mobile.ui.streams.StreamsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SettingsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.AboutSettingsScreen
@@ -232,6 +235,17 @@ fun AppNavHost(
             GuideScreen(
                 onOpenChannel = { navController.navigate(playerRoute("channel", it.id)) },
                 onBack = { navController.popBackStack() },
+                // Catch-up: the {id} carried here is the EPGProgram row id, which PlayerViewModel
+                // re-loads to recover the channel and the aired window.
+                //
+                // The `!slot.placeholder` guard is deliberate. A programme-less channel still renders
+                // one placeholder slot whose id is `-channel.id` (GuideViewModel), NOT a programme id.
+                // That slot ships `catchup = false` so GuideScreen should never offer the action for
+                // it, but that invariant lives in another file, and if it ever broke this would not
+                // fail loudly -- it would play a DIFFERENT programme. Cheap to rule out here.
+                onOpenCatchup = { _, slot ->
+                    if (!slot.placeholder) navController.navigate(playerRoute("catchup", slot.id))
+                },
             )
         }
         composable("search") {
@@ -255,6 +269,26 @@ fun AppNavHost(
                 onOpenSubtitles = { navController.navigate("settings/subtitles") },
                 onOpenParental = { navController.navigate("settings/parental") },
                 onOpenAbout = { navController.navigate("settings/about") },
+                onOpenSources = { navController.navigate("sources") },
+            )
+        }
+        composable("sources") {
+            SourcesScreen(
+                onAddNew = { navController.navigate("sources/add") },
+                onOpenExplore = { navController.navigate("explore") },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        // The add-a-playlist form is the onboarding form: same validation, same repository calls.
+        // Reached from Sources, it just pops back to the list instead of entering the app.
+        // showSkip = false: "Skip for now" is first-run copy, and here system Back is the cancel.
+        composable("sources/add") {
+            OnboardingScreen(onDone = { navController.popBackStack() }, showSkip = false)
+        }
+        composable("explore") {
+            ExploreScreen(
+                onAdded = { navController.popBackStack() },
+                onBack = { navController.popBackStack() },
             )
         }
         composable("settings/playback") { PlaybackSettingsScreen(onBack = { navController.popBackStack() }) }
@@ -317,6 +351,9 @@ fun AppNavHost(
                 "episode" -> PlayerTarget.Episode(id)
                 "recording" -> PlayerTarget.Recording(id)
                 "direct" -> PlayerTarget.DirectStream(id)
+                // Must be an explicit branch: without it "catchup" falls through to the `else` and the
+                // EPGProgram id gets read as a CHANNEL id, which plays the wrong thing silently.
+                "catchup" -> PlayerTarget.Catchup(id)
                 else -> PlayerTarget.LiveChannel(id)
             }
             PlayerScreen(target)

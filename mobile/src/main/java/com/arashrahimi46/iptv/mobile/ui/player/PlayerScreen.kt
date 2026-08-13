@@ -33,7 +33,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrightnessMedium
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -85,6 +88,7 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.mobile.ui.components.AreChoiceSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreErrorState
+import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreLoadingState
 import com.arashrahimi46.iptv.mobile.ui.components.ArePlayerControls
 import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
@@ -114,7 +118,7 @@ private data class TrackChoice(val label: String, val group: Tracks.Group?, val 
 private enum class NoneRow { Off, Auto }
 
 /** Which sheet, if any, is open. */
-private enum class PlayerSheet { Subtitles, Audio, Speed }
+private enum class PlayerSheet { Subtitles, OnlineSubtitles, Audio, Speed }
 
 /**
  * Touch-first player. `PlayerView` renders video only (`useController = false`) -- every affordance
@@ -135,6 +139,10 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
     val activity = context as? Activity
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val player = viewModel.player
+    // Which OpenSubtitles onboarding step the online sheet should open on. Collected here rather than
+    // read once, so finishing a step inside the sheet advances it without reopening.
+    val subsCredential by viewModel.openSubsCredential.collectAsState(initial = null)
+    val subsUsername by viewModel.openSubsUsername.collectAsState(initial = null)
 
     LaunchedEffect(target) { viewModel.load(target) }
 
@@ -235,6 +243,26 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
     LaunchedEffect(state.error) { if (state.error != null) hudVisible = true }
 
     LaunchedEffect(playerView, resizeMode) { playerView?.resizeMode = resizeMode }
+
+    // A just-downloaded subtitle goes on the moment media3 reports it as a real text track -- the user
+    // asked for it, so making them pick it out of the list again would be busywork. Matched by the
+    // sentinel label the view model stamps on every sideloaded configuration.
+    LaunchedEffect(tracks, state.pendingExternalSubtitle) {
+        if (!state.pendingExternalSubtitle) return@LaunchedEffect
+        val group = tracks.groups.firstOrNull { g ->
+            g.type == C.TRACK_TYPE_TEXT &&
+                (0 until g.length).any { g.getTrackFormat(it).label == EXTERNAL_SUBTITLE_LABEL }
+        } ?: return@LaunchedEffect
+        val index = (0 until group.length)
+            .first { group.getTrackFormat(it).label == EXTERNAL_SUBTITLE_LABEL }
+        applyTrack(
+            player,
+            C.TRACK_TYPE_TEXT,
+            TrackChoice(EXTERNAL_SUBTITLE_LABEL, group, index),
+            NoneRow.Off,
+        )
+        viewModel.onExternalSubtitleSelected()
+    }
 
     val audioManager = remember(context) { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     val currentHudVisible by rememberUpdatedState(hudVisible)
@@ -514,6 +542,8 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
                     bump()
                 },
                 onBack = { back() },
+                // Only an archive playback has a live edge to return to.
+                onGoLive = state.catchup?.let { { viewModel.goLive() } },
                 onPrevious = state.prevEpisodeId?.let { id -> { viewModel.playEpisode(id) } },
                 onNext = state.nextEpisodeId?.let { id -> { viewModel.playEpisode(id) } },
                 onSubtitles = { sheet = PlayerSheet.Subtitles },
@@ -602,15 +632,44 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
         PlayerSheet.Subtitles -> {
             val offLabel = stringResource(CoreR.string.subtitle_off)
             val options = remember(tracks) { trackChoices(tracks, C.TRACK_TYPE_TEXT, offLabel) }
-            AreChoiceSheet(
-                title = stringResource(CoreR.string.subtitle_picker_title),
+            SubtitleTrackSheet(
                 options = options,
                 selected = options.firstOrNull { it.group?.isTrackSelected(it.index) == true }
                     ?: options.firstOrNull { it.group == null },
-                label = { it.label },
-                onSelect = { applyTrack(player, C.TRACK_TYPE_TEXT, it, NoneRow.Off) },
+                onSelect = {
+                    applyTrack(player, C.TRACK_TYPE_TEXT, it, NoneRow.Off)
+                    sheet = null
+                    bump()
+                },
+                // A live channel is deliberately not searchable: OpenSubtitles indexes films and
+                // episodes, and a channel name matches nothing.
+                onSearchOnline = state.searchName?.let { { sheet = PlayerSheet.OnlineSubtitles } },
                 onDismiss = { sheet = null; bump() },
             )
+        }
+        PlayerSheet.OnlineSubtitles -> {
+            val query = state.searchName
+            if (query == null) {
+                sheet = null
+            } else {
+                val subtitleLanguage by viewModel.subtitleLanguage.collectAsState(initial = "en")
+                OnlineSubtitleSheet(
+                    initialQuery = query,
+                    defaultLanguage = subtitleLanguage,
+                    credential = subsCredential,
+                    signedIn = subsUsername != null,
+                    onConnectKey = { viewModel.connectOpenSubsKey(it) },
+                    onConnectAccount = { user, phrase ->
+                        // The credential is stored by the time the account form renders, so the empty
+                        // fallback is unreachable -- and if it ever were reached, the service's own 401
+                        // is a truer answer than a fabricated success.
+                        viewModel.connectOpenSubsAccount(subsCredential.orEmpty(), user, phrase)
+                    },
+                    onSearch = { q, lang -> viewModel.searchOnlineSubtitles(q, lang) },
+                    onPick = { viewModel.downloadAndApplySubtitle(it) },
+                    onDismiss = { sheet = null; bump() },
+                )
+            }
         }
         PlayerSheet.Audio -> {
             val autoLabel = stringResource(CoreR.string.settings_audio_auto)
@@ -644,6 +703,73 @@ fun PlayerScreen(target: PlayerTarget, viewModel: PlayerViewModel = viewModel())
 
 /** Undecided → one of the four terminal gesture interpretations. */
 private enum class GestureMode { Undecided, Vertical, Dismiss, Pinch, Ignored }
+
+/**
+ * The subtitle picker: off, the stream's own text tracks, then the online-search row.
+ *
+ * Not [AreChoiceSheet] any more -- that is a pure single-choice list, and "Search online…" is a
+ * NAVIGATION row, not another choice, so it needs a separator above it and must never render as
+ * selected state. A plain [Column] rather than a lazy list: a track list is off plus a handful.
+ */
+// Fully qualified: this file imports androidx.annotation.OptIn for media3's UnstableApi, and that
+// annotation does NOT satisfy Kotlin's own opt-in requirement for ExperimentalMaterial3Api.
+@kotlin.OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SubtitleTrackSheet(
+    options: List<TrackChoice>,
+    selected: TrackChoice?,
+    onSelect: (TrackChoice) -> Unit,
+    onSearchOnline: (() -> Unit)?,
+    onDismiss: () -> Unit,
+) {
+    val colors = AreIptvTheme.colors
+    AreBottomSheet(onDismiss = onDismiss, title = stringResource(CoreR.string.subtitle_picker_title)) {
+        Column(Modifier.fillMaxWidth()) {
+            options.forEach { option ->
+                AreListRow(
+                    title = option.label,
+                    onClick = { onSelect(option) },
+                    trailing = if (option == selected) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = stringResource(CoreR.string.subtitle_selected),
+                                tint = colors.accent,
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                )
+            }
+            // Only the "Off" row: the stream carries no text track at all, so say so rather than
+            // leaving a one-row list that looks like a loading failure.
+            if (options.size == 1) {
+                Text(
+                    text = stringResource(CoreR.string.subtitle_none_in_stream),
+                    style = AreIptvTheme.typography.caption,
+                    color = colors.textTertiary,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+                )
+            }
+            if (onSearchOnline != null) {
+                Box(
+                    Modifier
+                        .padding(horizontal = 20.dp, vertical = 6.dp)
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(colors.borderDefault),
+                )
+                AreListRow(
+                    title = stringResource(CoreR.string.subtitle_search_online),
+                    leadingIcon = Icons.Filled.Search,
+                    onClick = onSearchOnline,
+                )
+            }
+        }
+    }
+}
 
 /** `1x`, `1.25x` -- a numeral plus the universal multiplier glyph, deliberately not translated. */
 private fun speedLabel(speed: Float): String =
