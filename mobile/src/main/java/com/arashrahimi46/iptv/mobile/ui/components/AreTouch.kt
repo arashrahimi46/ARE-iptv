@@ -26,9 +26,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ControlSkin
-import com.arashrahimi46.iptv.ui.theme.softShadow
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ControlSkin
+import com.arashrahimi46.iptv.mobile.design.softShadow
 
 /**
  * Phone press surface. Ripple-indicated, 48dp-guaranteed, no focus machinery.

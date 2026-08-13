@@ -298,14 +298,55 @@ theming. App package: `com.arashrahimi46.iptv`.
 
 | Module | What it is |
 |--------|------------|
-| `:tv` | **The app** — nearly all work happens here |
-| `:mobile` | The phone app — its own complete, independent source tree |
+| `:tv` | **The app** — the only `.application` module. Owns the applicationId, version and signing. Nearly all TV work happens here |
+| `:mobile` | The phone UI, as an **`android-library`** dexed into `:tv`'s AAB. Its own complete, independent source tree |
 | `:core` | **Strings only.** 24 `values*/strings.xml` files. No Kotlin, ever. |
 | `:baselineprofile` | Startup baseline profile generation |
 
 Layout under `tv/src/main/java/com/arashrahimi46/iptv/`: `data/` (db=Room, repository, parser,
 settings=DataStore, model) · `ui/` (one package per screen + `ui/components` + `ui/theme`).
-`:mobile` mirrors that layout with its own copy, plus a `mobile/` package for phone-only screens.
+`:mobile` mirrors that layout with its own copy under `…iptv.mobile.*`, plus a `mobile/ui/` package
+for phone-only screens and `mobile/design/` for its copy of the design tokens.
+
+### One app, two form factors — one Play listing
+
+There is **one** Play listing and **one** AAB: `applicationId com.areiptv.tv`, permanent because it
+is already published. It installs on TVs *and* phones. Routing is done entirely by launcher category
+in the merged manifest — no runtime form-factor check picks the Activity:
+
+| Device | Launcher category | Activity |
+|--------|-------------------|----------|
+| TV | `LEANBACK_LAUNCHER` only | `…iptv.MainActivity` (D-pad UI) |
+| Phone | `LAUNCHER` only | `…iptv.mobile.MainActivity` (touch UI) |
+
+Do not add the other category to either activity: with both, a phone shows **two** icons for one app
+and the second opens an unusable D-pad UI. `uses-feature android.software.leanback` is
+`required="false"` — `true` is what filtered phones out of the closed-testing track and made the
+opt-in link look broken to testers. Declaring leanback at all (optional) is still what qualifies the
+listing for the Android TV section of Play, so the TV banner and TV screenshots stay meaningful.
+
+Consequences to respect:
+
+- **`minSdk` is 26 for both** (was 23 on `:tv`). A library cannot demand a higher minSdk than its
+  consumer, and `:mobile` needs 26 for `PictureInPictureParams`.
+- **`:mobile` has no `applicationId`, `versionCode`, `versionName` or `signingConfig`.** A library
+  has none of those. The `MOBILE_RELEASE_*` keystore is dead — there is no second listing.
+- **Nothing in `:mobile` may sit in a Kotlin package `:tv` also uses.** Both modules own a full copy
+  of the data layer, and those copies used to share the *identical* packages
+  (`…iptv.data.*`, `…iptv.ui.theme`). Two APKs never cared; one APK is a duplicate-class failure at
+  dex time. `:mobile`'s copies now live under `…iptv.mobile.*`, with the token layer in
+  `…iptv.mobile.design` because `…mobile.ui.theme` already existed and both `Type.kt` files declare
+  `AreIptvTypographyDefault`.
+- **Same for resource names and persisted file names.** One APK is one resource namespace, so
+  `:tv`'s resource silently wins any name collision. `:mobile`'s style is `Theme.IptvMobile`, its
+  glyphs are `ic_logo_glyph*_mobile`, and it persists to `are_iptv_mobile.db` /
+  `are_iptv_mobile_settings` / `are_iptv_mobile_credentials` — **never** `:tv`'s `are_iptv.db` /
+  `are_iptv_settings` / `are_iptv_credentials`. Sharing a DB filename would put two Room instances
+  on one SQLite file in one process.
+- **`IptvApp` is the one place allowed to know about both data layers.** It is the single
+  `Application` for both form factors, and it branches on
+  `packageManager.hasSystemFeature(FEATURE_LEANBACK)` so a phone user's crash-reporting/analytics
+  opt-outs are read from the store their Settings screen actually writes.
 
 ### `:tv` and `:mobile` share NOTHING but strings — do not "fix" this
 
@@ -339,7 +380,12 @@ Rules that follow from this:
   (all 24 locales — see the i18n section below, which still applies verbatim, just at that path).
 - Consumers reference strings as `com.arashrahimi46.iptv.core.R.string.*` (AGP's non-transitive R
   class), aliased to `CoreR` in the few files that also use their own module's `R.drawable`/`R.font`.
-- A `:tv` change needs `:tv` verification only. That is the entire point.
+- A `:tv` change needs `:tv` verification only. That is the entire point, and single-APK packaging
+  did **not** weaken it: the dependency is one-way (`:tv` → `:mobile`), they still share no Kotlin,
+  so no `:mobile` edit can alter a `:tv` code path.
+- What single-APK packaging **did** change is the reverse direction: a `:mobile` change now breaks
+  `:tv`'s build and ships in `:tv`'s release. So verify **both** when you touch `:mobile` — and
+  `./gradlew :tv:assembleDebug` is now the check that a `:mobile` edit compiles at all.
 
 ## Build / test / run (Gradle, JDK 21)
 
@@ -350,11 +396,21 @@ Rules that follow from this:
 - Release APK: `./gradlew :tv:assembleRelease` → `tv/build/outputs/apk/release/tv-release.apk`
 - Unit tests: `./gradlew :tv:testDebugUnitTest` (JUnit, in `tv/src/test`)
 - Lint: `./gradlew :tv:lintDebug`
-- e2e: TV emulator `emulator-5554`; `adb install -r` the debug APK, launch, screenshot to verify.
+- e2e: **both form factors come out of the one `:tv` APK.** TV emulator `Television_1080p`
+  (`emulator-5554`) and phone emulator `Medium_Phone` (`emulator-5556`); `adb -s <serial> install -r`
+  the same `tv/build/outputs/apk/debug/tv-debug.apk`, launch, screenshot to verify. Launch each the
+  way its launcher would, so the category routing is actually exercised:
+  `adb shell monkey -p com.areiptv.tv -c android.intent.category.LEANBACK_LAUNCHER 1` on the TV and
+  `… -c android.intent.category.LAUNCHER 1` on the phone. The phone AVD reports **zero** leanback
+  features, which is what makes it a real test of the `IptvApp` form-factor branch.
+- There is no `:mobile` APK any more. `./gradlew :mobile:assembleDebug` produces an AAR.
 - Never commit build outputs (`**/build/`), `.idea/`, or `.kotlin/`.
-- **Release:** bump `versionCode` AND `versionName` in `tv/build.gradle.kts`. Signing uses the
-  keystore only if `TV_RELEASE_KEYSTORE_PATH`/`TV_RELEASE_KEYSTORE_PASSWORD` (+ key alias/pass)
-  are set, else falls back to debug signing.
+- **Release:** bump `areVersionCode` AND `areVersionName` in **`gradle.properties`** — not
+  `tv/build.gradle.kts`, which now reads both from there, and not `mobile/build.gradle.kts`, whose
+  `BuildConfig.VERSION_NAME` is injected from the same value (an android-library has no
+  `VERSION_NAME` of its own). One app, one version. Signing uses the keystore only if
+  `TV_RELEASE_KEYSTORE_PATH`/`TV_RELEASE_KEYSTORE_PASSWORD` (+ key alias/pass) are set, else falls
+  back to debug signing.
 
 ## Internationalization — READ BEFORE ADDING ANY USER-FACING STRING
 
@@ -589,3 +645,13 @@ That flag only hides an already-built `PlayerControlView`; the constructor build
 `are_player_view.xml` (→ `are_player_content.xml`), which omits the placeholder: **60.4ms → 14.3ms** of
 main-thread inflation per player open, ×N panes in Multi-View. Do not go back to `PlayerView(context)` —
 `player_layout_id` is constructor-only and unreachable from Kotlin.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

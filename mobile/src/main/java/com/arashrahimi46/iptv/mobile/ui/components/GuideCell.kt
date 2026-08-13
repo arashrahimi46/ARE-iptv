@@ -23,8 +23,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassBorderBrush
 
 /**
  * One programme in the Guide. The phone Guide is a vertical AGENDA list, not a time-axis grid, so

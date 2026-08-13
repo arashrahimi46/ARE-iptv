@@ -32,7 +32,7 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader
 import com.arashrahimi46.iptv.mobile.ui.components.AreSwitchRow
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 import com.arashrahimi46.iptv.core.R as CoreR
 
 private const val SUPPORT_URL = "https://buymeacoffee.com/arashrahimi46"

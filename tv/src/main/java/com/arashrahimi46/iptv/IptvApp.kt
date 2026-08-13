@@ -1,6 +1,7 @@
 package com.arashrahimi46.iptv
 
 import android.app.Application
+import android.content.pm.PackageManager
 import com.arashrahimi46.iptv.core.R
 import io.sentry.android.core.SentryAndroid
 import com.arashrahimi46.iptv.analytics.Analytics
@@ -14,6 +15,11 @@ import coil.decode.VideoFrameDecoder
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.arashrahimi46.iptv.data.repository.RecordingRepository
+// :mobile's independent copies of the same two classes. This Application is the single entry point
+// for BOTH form factors, so it is the one place in the app that is allowed to know about both data
+// layers -- and it has to, because they persist to different files (see onCreate).
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings as MobileUserSettings
+import com.arashrahimi46.iptv.mobile.data.repository.RecordingRepository as MobileRecordingRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,11 +73,30 @@ class IptvApp : Application(), ImageLoaderFactory {
         RemoteFlags.init(this)
 
         val crashReason = getString(R.string.recording_reason_crash)
+        // One APK now serves TVs and phones, and :tv and :mobile own SEPARATE data layers writing to
+        // separate files (are_iptv.db / are_iptv_settings vs are_iptv_mobile.db /
+        // are_iptv_mobile_settings). So this launch work has to read the store the running UI
+        // actually writes to. Doing it unconditionally against :tv's -- as it did when :tv was a
+        // TV-only app -- would mean a phone user's crash-reporting and analytics opt-outs were read
+        // from a store their Settings screen never touches, i.e. silently ignoring a privacy choice.
+        // It would also open a second Room instance on a database the phone UI never uses.
+        //
+        // FEATURE_LEANBACK, not a screen-size heuristic: it is the same signal the manifest's
+        // launcher-category split resolves to, so this branch can never disagree with which Activity
+        // the system actually launched.
+        val isTv = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            val settings = UserSettings(this@IptvApp)
-            runCatching { CrashReporting.setEnabled(settings.isCrashReportingEnabled.first()) }
-            runCatching { Analytics.setEnabled(settings.isAnalyticsEnabled.first()) }
-            runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
+            if (isTv) {
+                val settings = UserSettings(this@IptvApp)
+                runCatching { CrashReporting.setEnabled(settings.isCrashReportingEnabled.first()) }
+                runCatching { Analytics.setEnabled(settings.isAnalyticsEnabled.first()) }
+                runCatching { RecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
+            } else {
+                val settings = MobileUserSettings(this@IptvApp)
+                runCatching { CrashReporting.setEnabled(settings.isCrashReportingEnabled.first()) }
+                runCatching { Analytics.setEnabled(settings.isAnalyticsEnabled.first()) }
+                runCatching { MobileRecordingRepository(this@IptvApp).reconcileOnLaunch(crashReason) }
+            }
         }
     }
 

@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.Channel
 import com.arashrahimi46.iptv.mobile.ui.components.AreBottomSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
@@ -55,7 +55,7 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreTabs
 import com.arashrahimi46.iptv.mobile.ui.components.LocalParentalBlur
 import com.arashrahimi46.iptv.mobile.ui.components.rememberClockFormatter
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant

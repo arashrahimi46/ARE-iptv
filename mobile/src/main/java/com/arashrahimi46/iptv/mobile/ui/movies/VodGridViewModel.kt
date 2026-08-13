@@ -8,12 +8,12 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
-import com.arashrahimi46.iptv.data.model.ContentType
-import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.data.repository.FavoritesRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.model.ContentType
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.repository.FavoritesRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,7 +86,7 @@ abstract class VodGridViewModel(application: Application, val isSeries: Boolean)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private fun mapNames(flow: Flow<List<com.arashrahimi46.iptv.data.db.CategoryCount>>): Flow<List<String>> =
+    private fun mapNames(flow: Flow<List<com.arashrahimi46.iptv.mobile.data.db.CategoryCount>>): Flow<List<String>> =
         flow.map { list -> list.map { it.name } }
 
     val items: Flow<PagingData<VodTitle>> = combine(

@@ -3,18 +3,18 @@ package com.arashrahimi46.iptv.mobile.ui.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arashrahimi46.iptv.data.db.AppDatabase
-import com.arashrahimi46.iptv.data.model.Channel
-import com.arashrahimi46.iptv.data.model.ContentType
-import com.arashrahimi46.iptv.data.model.ContinueWatchingEntry
-import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
-import com.arashrahimi46.iptv.data.repository.FavoritesRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.ParentalFilter
-import com.arashrahimi46.iptv.data.settings.UserSettings
-import com.arashrahimi46.iptv.ui.home.HomeRailCurator
+import com.arashrahimi46.iptv.mobile.data.db.AppDatabase
+import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.ContentType
+import com.arashrahimi46.iptv.mobile.data.model.ContinueWatchingEntry
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.repository.ContinueWatchingRepository
+import com.arashrahimi46.iptv.mobile.data.repository.FavoritesRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.settings.ParentalFilter
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.ui.home.HomeRailCurator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -217,7 +217,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Resolves raw [ContinueWatchingEntry] rows to [VodTitle]s for the rail -- a movie resolves
      * directly by [ContinueWatchingEntry.vodTitleId]; a series episode resolves via its
-     * [com.arashrahimi46.iptv.data.model.SeriesEpisode.seriesTitleId] to the parent series title
+     * [com.arashrahimi46.iptv.mobile.data.model.SeriesEpisode.seriesTitleId] to the parent series title
      * (mirrors :tv's HomeViewModel), and its episode id is kept alongside so the rail can resume
      * that exact episode (see [HomeUiState.continueWatchingEpisodeIds]) instead of only reopening
      * the series' episode picker. Only titles in [activeSourceId] resolve; unresolvable entries

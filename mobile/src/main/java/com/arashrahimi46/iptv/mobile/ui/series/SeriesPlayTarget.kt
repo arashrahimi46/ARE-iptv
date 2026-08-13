@@ -6,7 +6,7 @@ package com.arashrahimi46.iptv.mobile.ui.series
  * A grouped series has no stream of its own -- only its episodes do -- so the button has to resolve
  * to a concrete row before it can navigate anywhere. The degenerate case is an M3U entry that was
  * imported as `isSeries = true` but never matched `SxxEyy`, so it has zero episode rows and a
- * perfectly playable [com.arashrahimi46.iptv.data.model.VodTitle.streamUrl] of its own. That case
+ * perfectly playable [com.arashrahimi46.iptv.mobile.data.model.VodTitle.streamUrl] of its own. That case
  * is [WholeTitle], and it is exactly the branch whose absence produced the
  * "This item has no playable stream" dead end on :mobile.
  */

@@ -9,7 +9,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /**
  * Pull-to-refresh for the catalog screens (Home, Live, Movies, Series, Guide, Favorites, Series

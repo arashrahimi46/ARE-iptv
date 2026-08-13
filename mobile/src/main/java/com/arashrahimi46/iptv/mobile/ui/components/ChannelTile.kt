@@ -36,13 +36,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
-import com.arashrahimi46.iptv.ui.theme.glassChild
-import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
-import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
-import com.arashrahimi46.iptv.ui.theme.sampleTileWashHue
-import com.arashrahimi46.iptv.ui.theme.tileWash
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassBorderBrush
+import com.arashrahimi46.iptv.mobile.design.glassChild
+import com.arashrahimi46.iptv.mobile.design.rememberTileArtwork
+import com.arashrahimi46.iptv.mobile.design.rememberTileWashHue
+import com.arashrahimi46.iptv.mobile.design.sampleTileWashHue
+import com.arashrahimi46.iptv.mobile.design.tileWash
 
 /** Stream reliability level. Declared here because the tile is its primary consumer. */
 enum class AreStreamHealthLevel { Stable, Moderate, Poor }

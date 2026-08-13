@@ -25,9 +25,9 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.controlSkin
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ControlTone
+import com.arashrahimi46.iptv.mobile.design.controlSkin
 
 /** Visual heights 34 / 42 dp; both carry a 48dp touch target. */
 enum class AreChipSize { Small, Medium }

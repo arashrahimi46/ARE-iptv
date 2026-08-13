@@ -41,10 +41,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassLens
-import com.arashrahimi46.iptv.ui.theme.glassTrack
-import com.arashrahimi46.iptv.ui.theme.lensContentColor
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassLens
+import com.arashrahimi46.iptv.mobile.design.glassTrack
+import com.arashrahimi46.iptv.mobile.design.lensContentColor
 
 private val TrackHeight = 48.dp
 private val TrackInset = 8.dp

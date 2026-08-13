@@ -58,8 +58,8 @@ import com.arashrahimi46.iptv.mobile.ui.settings.PlaybackSettingsScreen
 import com.arashrahimi46.iptv.mobile.ui.settings.SubtitleSettingsScreen
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /** Bottom-nav destinations, per product-lead's Phase 1 spec: Home / Live / Movies / Series / Settings. */
 sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -72,7 +72,7 @@ sealed class Tab(val route: String, val labelRes: Int, val icon: androidx.compos
 
 private val tabs = listOf(Tab.Home, Tab.Live, Tab.Movies, Tab.Series, Tab.Settings)
 
-/** Routes eligible for [com.arashrahimi46.iptv.data.settings.StartScreen.LAST_USED] tracking and
+/** Routes eligible for [com.arashrahimi46.iptv.mobile.data.settings.StartScreen.LAST_USED] tracking and
  * for [AppNavHost]'s startDestination -- the 5 bottom-nav tab routes only, not any child screen. */
 val tabRoutes: Set<String> = tabs.map { it.route }.toSet()
 

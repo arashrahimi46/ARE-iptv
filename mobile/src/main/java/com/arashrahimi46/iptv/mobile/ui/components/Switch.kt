@@ -32,10 +32,10 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.accentLensBrush
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
-import com.arashrahimi46.iptv.ui.theme.lensBorderBrush
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.accentLensBrush
+import com.arashrahimi46.iptv.mobile.design.glassBorderBrush
+import com.arashrahimi46.iptv.mobile.design.lensBorderBrush
 
 private val TrackWidth = 58.dp
 private val TrackHeight = 34.dp

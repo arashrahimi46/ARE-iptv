@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /** One supported UI language, keyed by its BCP-47 tag (matches `UserSettings.languageTag`). */
 data class AreLanguageOption(val tag: String, val nativeNameRes: Int)

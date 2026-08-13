@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Text
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /**
  * "Recording in progress" badge — the camcorder metaphor: a pulsing red dot + REC + a live elapsed

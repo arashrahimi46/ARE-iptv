@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
 import com.arashrahimi46.iptv.mobile.ui.components.AreBadge
 import com.arashrahimi46.iptv.mobile.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
@@ -53,9 +53,9 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreIconButtonSize
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButtonVariant
 import com.arashrahimi46.iptv.mobile.ui.components.AreLoadingState
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.glassSurface
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ProvideOnGlass
+import com.arashrahimi46.iptv.mobile.design.glassSurface
 
 /** Height of the edge-to-edge hero. 4:5 keeps the artwork generous without eating the whole page. */
 private const val HeroAspect = 4f / 5f

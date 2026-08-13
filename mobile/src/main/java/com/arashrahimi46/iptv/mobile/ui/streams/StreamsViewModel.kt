@@ -3,8 +3,8 @@ package com.arashrahimi46.iptv.mobile.ui.streams
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arashrahimi46.iptv.data.db.AppDatabase
-import com.arashrahimi46.iptv.data.model.DirectStream
+import com.arashrahimi46.iptv.mobile.data.db.AppDatabase
+import com.arashrahimi46.iptv.mobile.data.model.DirectStream
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

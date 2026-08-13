@@ -35,14 +35,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.parser.OmdbClient
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassBorderBrush
-import com.arashrahimi46.iptv.ui.theme.glassChild
-import com.arashrahimi46.iptv.ui.theme.glassTrack
-import com.arashrahimi46.iptv.ui.theme.rememberTileArtwork
-import com.arashrahimi46.iptv.ui.theme.rememberTileWashHue
-import com.arashrahimi46.iptv.ui.theme.tileWash
+import com.arashrahimi46.iptv.mobile.data.parser.OmdbClient
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassBorderBrush
+import com.arashrahimi46.iptv.mobile.design.glassChild
+import com.arashrahimi46.iptv.mobile.design.glassTrack
+import com.arashrahimi46.iptv.mobile.design.rememberTileArtwork
+import com.arashrahimi46.iptv.mobile.design.rememberTileWashHue
+import com.arashrahimi46.iptv.mobile.design.tileWash
 
 /** Fallback decode bound when the tile fills a grid cell whose width isn't known in composition. */
 private val GridPosterDecodeWidth = 220.dp

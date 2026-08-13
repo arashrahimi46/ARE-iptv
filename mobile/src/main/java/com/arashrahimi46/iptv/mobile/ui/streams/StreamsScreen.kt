@@ -46,8 +46,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.DirectStream
-import com.arashrahimi46.iptv.data.model.directStreamLabel
+import com.arashrahimi46.iptv.mobile.data.model.DirectStream
+import com.arashrahimi46.iptv.mobile.data.model.directStreamLabel
 import com.arashrahimi46.iptv.mobile.ui.components.AreBottomSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
@@ -59,8 +59,8 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSwipeToDismissRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassWell
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassWell
 import kotlinx.coroutines.launch
 
 /**

@@ -1,16 +1,22 @@
 plugins {
-    alias(libs.plugins.android.application)
+    // LIBRARY, not application. The phone UI ships *inside* :tv's single AAB (applicationId
+    // com.areiptv.tv) rather than as a second Play listing -- see tv/build.gradle.kts and the
+    // "One app, two form factors" section of CLAUDE.md for why. A library has no applicationId,
+    // no versionCode/versionName and no signingConfig; :tv owns all four.
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
 
 android {
-    // namespace intentionally differs from :tv's "com.arashrahimi46.iptv" -- :mobile depends on
-    // :tv (reuses its data layer as-is), and AGP dexes both modules' R classes into one APK. Same
-    // namespace on both would generate two classes with the identical FQN
-    // (com.arashrahimi46.iptv.R) and fail with a duplicate-class error at merge time. applicationId
-    // is untouched (still collides with :tv's -- flagged separately to release-manager as a
-    // packaging/store concern, not a compile-time one).
+    // Every source file in this module lives under this namespace, and that is load-bearing now
+    // that :tv and :mobile dex into ONE APK: both modules own a full, independent copy of the data
+    // layer (deliberately -- see CLAUDE.md), and those copies used to sit in the *identical* Kotlin
+    // packages (com.arashrahimi46.iptv.data.*, .ui.theme). Two separate APKs never cared; one APK
+    // is a duplicate-class failure at dex time. So :mobile's copies were moved under
+    // com.arashrahimi46.iptv.mobile.* (the token layer landed in .mobile.design, because
+    // .mobile.ui.theme already existed and both Type.kt files declare AreIptvTypographyDefault).
+    // Keep it that way: nothing in this module may sit in a package :tv also uses.
     namespace = "com.arashrahimi46.iptv.mobile"
     // Matches :tv's compileSdk: :tv's `backdrop` (glass blur) dependency's AAR metadata requires
     // compileSdk 37+ from every module on the classpath, including consumers like :mobile.
@@ -21,82 +27,29 @@ android {
     }
 
     defaultConfig {
-        // MUST differ from :tv's "com.areiptv.tv" -- this isn't just a Play Store collision: with an
-        // *identical* applicationId, AGP's resource linker treats :mobile as if it were a
-        // dynamic-feature split of :tv and processDebugResources hard-fails ("not configured to use
-        // dynamic features"). Sharing an id across two independent .application modules isn't
-        // supported at all.
-        //
-        // Permanent once published. Unlike `namespace` above (still the internal
-        // com.arashrahimi46.iptv.mobile Kotlin package), this is the public store identity.
-        applicationId = "com.areiptv.mobile"
-        // 26 (Android 8.0/Oreo), not :tv's 36 -- a phone app needs real device-market reach, and
-        // PictureInPictureParams (real Android PiP, per the v1 spec) requires API 26 anyway.
+        // 26 = Android 8.0/Oreo, required by PictureInPictureParams (real Android PiP, per the v1
+        // spec). A library cannot require a HIGHER minSdk than the app that consumes it, so :tv's
+        // minSdk was raised 23 -> 26 to match. That is the deliberate cost of one-app packaging.
         minSdk = 26
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+
+        // An android-library's BuildConfig has no VERSION_NAME field -- that only exists for
+        // application modules. AboutSettingsScreen (the version row) and OpenSubtitlesClient (its
+        // User-Agent) both need it, so it is injected from the same gradle.properties value :tv
+        // reads for its versionName. One source of truth: bump `areVersionName` there, not here.
+        buildConfigField(
+            "String",
+            "VERSION_NAME",
+            "\"${providers.gradleProperty("areVersionName").get()}\"",
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Release signing is intentionally NOT committed, mirroring :tv's convention. Populate via
-    // env vars or gradle.properties (local, git-ignored) when a real release build is needed:
-    //   MOBILE_RELEASE_KEYSTORE_PATH, MOBILE_RELEASE_KEYSTORE_PASSWORD,
-    //   MOBILE_RELEASE_KEY_ALIAS, MOBILE_RELEASE_KEY_PASSWORD
-    // Separate var names from :tv's TV_RELEASE_* because :mobile ships as its own Play Store
-    // listing (applicationId com.arashrahimi46.iptv.mobile) with its own upload key -- reusing
-    // :tv's keystore/alias here would be silently wrong if the two apps end up on different keys.
-    signingConfigs {
-        create("release") {
-            val keystorePath = System.getenv("MOBILE_RELEASE_KEYSTORE_PATH")
-                ?: findProperty("MOBILE_RELEASE_KEYSTORE_PATH") as String?
-            if (keystorePath != null) {
-                storeFile = file(keystorePath)
-                storePassword = System.getenv("MOBILE_RELEASE_KEYSTORE_PASSWORD")
-                    ?: findProperty("MOBILE_RELEASE_KEYSTORE_PASSWORD") as String?
-                keyAlias = System.getenv("MOBILE_RELEASE_KEY_ALIAS")
-                    ?: findProperty("MOBILE_RELEASE_KEY_ALIAS") as String?
-                keyPassword = System.getenv("MOBILE_RELEASE_KEY_PASSWORD")
-                    ?: findProperty("MOBILE_RELEASE_KEY_PASSWORD") as String?
-            }
-        }
-    }
+    // No signingConfigs and no bundleRelease guard here any more: a library produces no installable
+    // artifact and nothing to sign. The phone UI reaches Play inside :tv's AAB, so :tv's TV_RELEASE_*
+    // guard is the one that protects the upload. The MOBILE_RELEASE_* keystore
+    // (~/.android/keystores/are-iptv-mobile-upload.jks) is now unused -- there is no second listing.
 
-    // Same guard as :tv -- Play rejects a debug-signed AAB, and the fallback below produces one
-    // silently when the MOBILE_RELEASE_* values are missing or misspelled. Scoped to bundleRelease
-    // only; assembleRelease/installRelease keep the fallback on purpose.
-    // Must belong to THIS project -- see the note in tv/build.gradle.kts: matching the bare task
-    // name made :tv:bundleRelease fail on this module's guard.
-    if (gradle.startParameter.taskNames.any { raw ->
-            val t = raw.removePrefix(":")
-            t == "bundleRelease" || t == "${project.path.removePrefix(":")}:bundleRelease"
-        } &&
-        signingConfigs.getByName("release").storeFile == null
-    ) {
-        throw GradleException(
-            """
-            :mobile:bundleRelease needs the real upload key -- refusing to build a debug-signed AAB.
-
-            Set the four MOBILE_RELEASE_* values as env vars, or in ~/.gradle/gradle.properties --
-            NOT the repo's gradle.properties, which is tracked and this repo is public.
-            The phone app's upload keystore is ~/.android/keystores/are-iptv-mobile-upload.jks
-            (alias are-iptv-mobile-upload).
-            """.trimIndent(),
-        )
-    }
-
-    buildTypes {
-        release {
-            optimization {
-                enable = false
-            }
-            // Sign with the real release key when configured, otherwise fall back to the debug
-            // key so a release build is still installable locally without release credentials.
-            val releaseSigning = signingConfigs.getByName("release")
-            signingConfig = if (releaseSigning.storeFile != null) releaseSigning else signingConfigs.getByName("debug")
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

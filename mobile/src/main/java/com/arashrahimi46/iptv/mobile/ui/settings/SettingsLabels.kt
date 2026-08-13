@@ -1,15 +1,15 @@
 package com.arashrahimi46.iptv.mobile.ui.settings
 
 import androidx.annotation.StringRes
-import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
-import com.arashrahimi46.iptv.data.settings.AutoRelock
-import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
-import com.arashrahimi46.iptv.data.settings.StartScreen
-import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleEdge
-import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
-import com.arashrahimi46.iptv.data.settings.ThemeMode
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRefreshInterval
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRelock
+import com.arashrahimi46.iptv.mobile.data.settings.LockedContentDisplay
+import com.arashrahimi46.iptv.mobile.data.settings.StartScreen
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleColorChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleEdge
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleFontChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.mobile.data.settings.ThemeMode
 import java.util.Locale
 import com.arashrahimi46.iptv.core.R as CoreR
 

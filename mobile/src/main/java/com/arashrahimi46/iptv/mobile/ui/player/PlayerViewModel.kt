@@ -12,17 +12,17 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.datasource.HttpDataSource
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.db.AppDatabase
-import com.arashrahimi46.iptv.data.model.directStreamLabel
-import com.arashrahimi46.iptv.data.player.DefaultStreamUrlResolver
-import com.arashrahimi46.iptv.data.player.StreamKind
-import com.arashrahimi46.iptv.data.recording.RecordingStorage
-import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.repository.RecordingRepository
-import com.arashrahimi46.iptv.data.settings.CredentialsStore
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.db.AppDatabase
+import com.arashrahimi46.iptv.mobile.data.model.directStreamLabel
+import com.arashrahimi46.iptv.mobile.data.player.DefaultStreamUrlResolver
+import com.arashrahimi46.iptv.mobile.data.player.StreamKind
+import com.arashrahimi46.iptv.mobile.data.recording.RecordingStorage
+import com.arashrahimi46.iptv.mobile.data.repository.ContinueWatchingRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.repository.RecordingRepository
+import com.arashrahimi46.iptv.mobile.data.settings.CredentialsStore
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import java.net.UnknownHostException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,9 +42,9 @@ sealed interface PlayerTarget {
     data class LiveChannel(val channelId: Long) : PlayerTarget
     data class Movie(val vodTitleId: Long) : PlayerTarget
     data class Episode(val episodeId: Long) : PlayerTarget
-    /** A saved "Open network stream" URL, resolved from [com.arashrahimi46.iptv.data.model.DirectStream]. */
+    /** A saved "Open network stream" URL, resolved from [com.arashrahimi46.iptv.mobile.data.model.DirectStream]. */
     data class DirectStream(val streamId: Long) : PlayerTarget
-    /** A completed/interrupted local [com.arashrahimi46.iptv.data.model.Recording], played straight
+    /** A completed/interrupted local [com.arashrahimi46.iptv.mobile.data.model.Recording], played straight
      * from its SAF document URI -- no source/credentials lookup needed. */
     data class Recording(val recordingId: Long) : PlayerTarget
 }

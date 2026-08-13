@@ -13,10 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.controlSkin
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ControlTone
+import com.arashrahimi46.iptv.mobile.design.ProvideOnGlass
+import com.arashrahimi46.iptv.mobile.design.controlSkin
 
 enum class AreIconButtonVariant { Solid, Glass, Ghost }
 

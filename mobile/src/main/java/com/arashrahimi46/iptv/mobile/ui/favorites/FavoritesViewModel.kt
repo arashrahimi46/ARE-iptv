@@ -3,14 +3,14 @@ package com.arashrahimi46.iptv.mobile.ui.favorites
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arashrahimi46.iptv.data.model.Channel
-import com.arashrahimi46.iptv.data.model.ContentType
-import com.arashrahimi46.iptv.data.model.Favorite
-import com.arashrahimi46.iptv.data.model.VodTitle
-import com.arashrahimi46.iptv.data.repository.FavoritesRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.ParentalFilter
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.ContentType
+import com.arashrahimi46.iptv.mobile.data.model.Favorite
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.repository.FavoritesRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.settings.ParentalFilter
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,7 +57,7 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
 
     /** [parental] drops adult favourites under the lock's HIDE mode -- favouriting an item before
      * the lock went on must not become a bypass around it. BLUR mode leaves
-     * [com.arashrahimi46.iptv.data.settings.ParentalFilter.hideLocked] false, so the rows stay and
+     * [com.arashrahimi46.iptv.mobile.data.settings.ParentalFilter.hideLocked] false, so the rows stay and
      * the tile obscures them instead. */
     private suspend fun buildState(
         sourceId: Long?,

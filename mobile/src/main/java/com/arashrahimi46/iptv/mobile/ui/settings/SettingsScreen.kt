@@ -36,12 +36,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.arashrahimi46.iptv.data.model.SourceType
-import com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
-import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
-import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
-import com.arashrahimi46.iptv.data.settings.StartScreen
-import com.arashrahimi46.iptv.data.settings.ThemeMode
+import com.arashrahimi46.iptv.mobile.data.model.SourceType
+import com.arashrahimi46.iptv.mobile.data.parser.StalkerAccountInfo
+import com.arashrahimi46.iptv.mobile.data.parser.XtreamAccountInfo
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRefreshInterval
+import com.arashrahimi46.iptv.mobile.data.settings.StartScreen
+import com.arashrahimi46.iptv.mobile.data.settings.ThemeMode
 import com.arashrahimi46.iptv.mobile.ui.components.AreAlertDialog
 import com.arashrahimi46.iptv.mobile.ui.components.AreBottomSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreChoiceRow
@@ -51,7 +51,7 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader
 import com.arashrahimi46.iptv.mobile.ui.components.AreSwitchRow
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 import com.arashrahimi46.iptv.core.R as CoreR
 import java.util.Locale
 

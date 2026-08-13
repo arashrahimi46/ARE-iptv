@@ -14,7 +14,7 @@ import com.arashrahimi46.iptv.mobile.R
  * files), but keeping brand font *files* out of it avoids widening :core's manifest/AAR surface
  * for a design-token concern the two apps could plausibly diverge on later. The font .ttf files
  * are copied 1:1 into mobile/res/font, including the Vazirmatn RTL swap (see
- * [AreIptvTypographyVazir]) mirroring :tv's [com.arashrahimi46.iptv.ui.theme.AreIptvTheme]
+ * [AreIptvTypographyVazir]) mirroring :tv's [com.arashrahimi46.iptv.mobile.design.AreIptvTheme]
  * `LocalLayoutDirection` check.
  */
 private val DisplayFontFamily: FontFamily = FontFamily(
@@ -52,7 +52,7 @@ internal const val LineHeightNormal = 1.45f
 
 /**
  * Step 6: phone-appropriate type scale -- same role names/weights/families as :tv's (now :core's)
- * [com.arashrahimi46.iptv.ui.theme.AreIptvTypography], but :tv's sizes (hero 64sp/display 44sp/
+ * [com.arashrahimi46.iptv.mobile.design.AreIptvTypography], but :tv's sizes (hero 64sp/display 44sp/
  * h1 34sp/...) assume a ~10ft arm's-length TV viewport and are oversized on a handset held at
  * reading distance. Roughly a 60% scale-down, rounded to sizes that still read cleanly at phone
  * DPI; body/label/caption land close to Android's own Material defaults (16/14/12sp) since those
@@ -69,7 +69,7 @@ internal const val PhoneLabelSp = 14
 internal const val PhoneCaptionSp = 12
 internal const val PhoneMonoSp = 12
 
-/** Same composite text roles as :tv's [com.arashrahimi46.iptv.ui.theme.AreIptvTypography]. */
+/** Same composite text roles as :tv's [com.arashrahimi46.iptv.mobile.design.AreIptvTypography]. */
 data class AreIptvTypography(
     val hero: TextStyle,
     val display: TextStyle,

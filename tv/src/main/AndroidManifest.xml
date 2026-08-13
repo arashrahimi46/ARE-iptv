@@ -19,16 +19,21 @@
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
-    <!-- REQUIRED, not optional: this is what restricts the app to TV devices on Play.
-         With required="false" Play treats :tv as phone-eligible, makes phone screenshots
-         mandatory on the store listing, and would let it install on a handset, where a
-         D-pad-only UI with no touch targets is unusable. The phone app is a separate
-         listing (:mobile, applicationId com.areiptv.mobile), so there is nothing to gain
-         from :tv being installable off-TV.
+    <!-- required="false", deliberately reversed from the TV-only stance this used to take.
+         required="true" is what made Play treat this as a TV-exclusive listing, and that is
+         precisely why closed-test users could not install it: their phones were filtered out of
+         the track and the opt-in link looked broken.
+
+         There is no longer anything to gain from TV-exclusivity, because the phone UI now ships in
+         THIS app (:mobile is an android-library dexed into this AAB). A handset that installs it
+         gets the touch-first phone Activity, never the D-pad TV one; see the launcher-category
+         split on the two activities below, which is what actually routes per form factor.
+         Declaring leanback at all (even optional) is still what qualifies the listing for the
+         Android TV section of Play, so the TV banner and TV screenshots stay meaningful.
          touchscreen stays required="false" above: a TV has none. -->
     <uses-feature
         android:name="android.software.leanback"
-        android:required="true" />
+        android:required="false" />
 
     <application
         android:name=".IptvApp"
@@ -47,13 +52,18 @@
             android:value="https://9bb62839f8142cbc73cb39fe4185ff4c@o298398.ingest.us.sentry.io/4511785384869888" />
         <meta-data android:name="io.sentry.auto-init" android:value="false" />
 
+        <!-- The TV entry point. LEANBACK_LAUNCHER *only*: dropping LAUNCHER is load-bearing now
+             that this AAB also installs on phones: with both categories a handset would show TWO
+             icons for one app, and the second would open the D-pad TV UI, which is unusable without
+             a remote. Phone/TV routing is entirely this category split; there is no runtime
+             form-factor check deciding which Activity launches.
+             Android TV and Google TV launchers surface LEANBACK_LAUNCHER, so the TV is unaffected. -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>

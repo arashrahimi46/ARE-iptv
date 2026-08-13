@@ -87,10 +87,10 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreChoiceSheet
 import com.arashrahimi46.iptv.mobile.ui.components.AreErrorState
 import com.arashrahimi46.iptv.mobile.ui.components.AreLoadingState
 import com.arashrahimi46.iptv.mobile.ui.components.ArePlayerControls
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.glassSurface
-import com.arashrahimi46.iptv.ui.theme.glassTrack
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ProvideOnGlass
+import com.arashrahimi46.iptv.mobile.design.glassSurface
+import com.arashrahimi46.iptv.mobile.design.glassTrack
 import java.util.Locale
 import kotlin.math.abs
 

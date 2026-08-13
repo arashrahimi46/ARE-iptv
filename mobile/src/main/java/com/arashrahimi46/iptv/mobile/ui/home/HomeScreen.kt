@@ -41,8 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.Channel
-import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
 import com.arashrahimi46.iptv.mobile.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.mobile.ui.components.AreEmptyState
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButton
@@ -53,9 +53,9 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSkeleton
 import com.arashrahimi46.iptv.mobile.ui.components.AreTileActionSheet
 import com.arashrahimi46.iptv.mobile.ui.components.areTouch
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.glassSurface
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ProvideOnGlass
+import com.arashrahimi46.iptv.mobile.design.glassSurface
 
 /** Phone-scale rail tile widths. The TV `tilePosterWidth`/`tileLandWidth` tokens (208dp/320dp) are
  * sized for a ~1920px arm's-length viewport; on a ~360-411dp portrait phone they would fit ~1.5

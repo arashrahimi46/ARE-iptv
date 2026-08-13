@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.glassChild
-import com.arashrahimi46.iptv.ui.theme.tvGlow
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.glassChild
+import com.arashrahimi46.iptv.mobile.design.tvGlow
 
 /** Status tone. */
 enum class AreBadgeTone { Live, New, Quality, Catchup, Smart, Neutral }

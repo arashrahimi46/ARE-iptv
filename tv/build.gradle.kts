@@ -22,16 +22,26 @@ android {
     defaultConfig {
         // Play Store identity, and permanent once published -- it cannot be changed for the life of
         // the listing. Deliberately NOT the same as `namespace` above: namespace is the internal
-        // Kotlin/R package (277 source files), which no store surface ever shows, so rebranding the
-        // product only requires this line. Suffixed `.tv` because :mobile ships as its own listing
-        // (com.areiptv.mobile) -- two .application modules cannot share an applicationId.
+        // Kotlin/R package, which no store surface ever shows, so rebranding the product only
+        // requires this line.
+        //
+        // The `.tv` suffix is now a historical artifact, NOT a description: this single listing
+        // ships BOTH form factors. :mobile is an android-library dexed into this AAB, and the
+        // manifest below drops `leanback required` so Play serves the same app to phones. Users
+        // never see an applicationId, so the misleading suffix is not worth a new listing -- and a
+        // new listing would have restarted the closed-testing clock this one has already banked.
         applicationId = "com.areiptv.tv"
-        minSdk = 23
+        // 26 (was 23) because :mobile requires it for PictureInPictureParams, and a library cannot
+        // demand a higher minSdk than its consumer. Cost: Android 6.0/7.x TVs are no longer
+        // eligible -- a negligible slice of Android TV, and below the API 28 floor Play now applies
+        // to new releases anyway.
+        minSdk = 26
         //noinspection OldTargetApi
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.8.3"
-
+        // From gradle.properties so :mobile's BuildConfig.VERSION_NAME cannot drift from what the
+        // store shows -- there is only one app now, so there must be only one version.
+        versionCode = providers.gradleProperty("areVersionCode").get().toInt()
+        versionName = providers.gradleProperty("areVersionName").get()
     }
 
     // Release signing is intentionally NOT committed. Populate via env vars or
@@ -127,6 +137,14 @@ dependencies {
     // (AGP's non-transitive R class), aliased to CoreR in the three files that also use :tv's own
     // R.drawable/R.font.
     implementation(project(":core"))
+
+    // The phone UI. :mobile is an android-library, so its Activity, screens and its OWN full copy of
+    // the data layer are dexed into this app's AAB -- one applicationId, one listing, both form
+    // factors. The dependency is one-way (:mobile knows nothing about :tv) and shares no Kotlin with
+    // it, which is exactly the isolation CLAUDE.md requires: a :mobile change still cannot alter a
+    // single :tv code path. What it CAN now do is break this module's build and ship in this
+    // module's release, so verify both when you touch it.
+    implementation(project(":mobile"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

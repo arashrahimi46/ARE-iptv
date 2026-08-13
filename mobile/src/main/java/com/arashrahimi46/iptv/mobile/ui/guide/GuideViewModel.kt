@@ -5,16 +5,16 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.db.AppDatabase
-import com.arashrahimi46.iptv.data.model.Channel
-import com.arashrahimi46.iptv.data.model.EPGProgram
-import com.arashrahimi46.iptv.data.model.PlaylistSource
-import com.arashrahimi46.iptv.data.repository.EpgAvailability
-import com.arashrahimi46.iptv.data.repository.EpgRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.ParentalFilter
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.db.AppDatabase
+import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.EPGProgram
+import com.arashrahimi46.iptv.mobile.data.model.PlaylistSource
+import com.arashrahimi46.iptv.mobile.data.repository.EpgAvailability
+import com.arashrahimi46.iptv.mobile.data.repository.EpgRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.settings.ParentalFilter
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

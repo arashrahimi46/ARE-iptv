@@ -47,8 +47,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.Channel
-import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
 import com.arashrahimi46.iptv.mobile.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.mobile.ui.components.AreEmptyState
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButton

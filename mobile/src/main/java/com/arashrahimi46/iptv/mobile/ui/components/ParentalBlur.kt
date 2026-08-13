@@ -18,9 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
-import com.arashrahimi46.iptv.data.settings.AdultContentFilter
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors
-import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
+import com.arashrahimi46.iptv.mobile.data.settings.AdultContentFilter
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvColors
+import com.arashrahimi46.iptv.mobile.design.LocalGlassTier
 
 /**
  * Tile-level context for the parental "blur locked content" mode (Settings > Parental). When

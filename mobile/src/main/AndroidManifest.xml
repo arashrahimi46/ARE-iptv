@@ -1,24 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<?xml version="1.0" encoding="utf-8"?><!--
+    LIBRARY manifest. Everything here is merged into :tv's manifest, which owns the <application>
+    element (icon, label, theme, allowBackup, the Sentry meta-data, the AppLocales service). So this
+    file deliberately declares NO <application> attributes: any it set would either lose to :tv's
+    silently or, worse, win and change the shipping TV app's behaviour. It contributes exactly one
+    thing: the phone Activity.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.Iptv">
+    <application>
+        <!-- The phone entry point, paired with :tv's TV entry point. LAUNCHER *only*: a
+             LEANBACK_LAUNCHER category here would put the touch UI in the Android TV launcher, and
+             the category split is the whole form-factor routing mechanism (see the comment on
+             :tv's MainActivity).
+
+             android:name is fully qualified on purpose. A relative ".MainActivity" in a library
+             manifest resolves against this module's namespace, which happens to be correct today,
+             but it reads as though it resolved against the merged application's package
+             com.arashrahimi46.iptv, where no such class exists.
+
+             android:theme overrides the application-level Theme.Iptv that :tv sets. Theme.IptvMobile
+             is a separate style precisely because a merged single-APK build has one resource
+             namespace: while both modules called their style "Theme.Iptv", :tv's would have won at
+             merge time and this Activity would have silently lost its pre-Compose window
+             background (the anti-flash on cold start). -->
         <activity
-            android:name=".MainActivity"
+            android:name="com.arashrahimi46.iptv.mobile.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Iptv"
+            android:theme="@style/Theme.IptvMobile"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:supportsPictureInPicture="true"
             android:windowSoftInputMode="adjustResize">
@@ -28,18 +39,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Required by AndroidX per-app language APIs (AppCompatDelegate.setApplicationLocales)
-             so the selected locale is auto-persisted and restored across process death/cold
-             start on API < 33, where there is no framework-level per-app language storage. -->
-        <service
-            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
-            android:enabled="false"
-            android:exported="false">
-            <meta-data
-                android:name="autoStoreLocales"
-                android:value="true" />
-        </service>
     </application>
 
 </manifest>

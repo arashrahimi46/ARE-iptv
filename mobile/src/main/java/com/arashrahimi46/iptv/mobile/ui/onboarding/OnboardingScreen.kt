@@ -29,19 +29,19 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.SourceType
+import com.arashrahimi46.iptv.mobile.data.model.SourceType
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonVariant
 import com.arashrahimi46.iptv.mobile.ui.components.AreErrorState
 import com.arashrahimi46.iptv.mobile.ui.components.AreTabs
 import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /**
  * Single-screen "add a source" form -- a phone-appropriate collapse of :tv's multi-step wizard
  * (Source -> Credentials -> EPG -> Confirm) into one scrollable form, reusing the same
- * [com.arashrahimi46.iptv.data.repository.PlaylistRepository] calls and the same `CoreR` copy so
+ * [com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository] calls and the same `CoreR` copy so
  * the concepts read identically between the two apps.
  *
  * Touch mechanics: the source-type picker is an [AreTabs] segmented control (the old full-width

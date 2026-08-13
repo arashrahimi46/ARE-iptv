@@ -39,7 +39,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.Channel
+import com.arashrahimi46.iptv.mobile.data.model.Channel
 import com.arashrahimi46.iptv.mobile.ui.components.AreChannelTile
 import com.arashrahimi46.iptv.mobile.ui.components.AreEmptyState
 import com.arashrahimi46.iptv.mobile.ui.components.AreErrorState

@@ -4,24 +4,24 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.PlaylistSource
-import com.arashrahimi46.iptv.data.model.SourceType
-import com.arashrahimi46.iptv.data.parser.StalkerAccountInfo
-import com.arashrahimi46.iptv.data.parser.XtreamAccountInfo
-import com.arashrahimi46.iptv.data.repository.ContinueWatchingRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
-import com.arashrahimi46.iptv.data.settings.AutoRefreshInterval
-import com.arashrahimi46.iptv.data.settings.AutoRelock
-import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
-import com.arashrahimi46.iptv.data.settings.ParentalGate
-import com.arashrahimi46.iptv.data.settings.PinHasher
-import com.arashrahimi46.iptv.data.settings.StartScreen
-import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleEdge
-import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
-import com.arashrahimi46.iptv.data.settings.ThemeMode
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.model.PlaylistSource
+import com.arashrahimi46.iptv.mobile.data.model.SourceType
+import com.arashrahimi46.iptv.mobile.data.parser.StalkerAccountInfo
+import com.arashrahimi46.iptv.mobile.data.parser.XtreamAccountInfo
+import com.arashrahimi46.iptv.mobile.data.repository.ContinueWatchingRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRefreshInterval
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRelock
+import com.arashrahimi46.iptv.mobile.data.settings.LockedContentDisplay
+import com.arashrahimi46.iptv.mobile.data.settings.ParentalGate
+import com.arashrahimi46.iptv.mobile.data.settings.PinHasher
+import com.arashrahimi46.iptv.mobile.data.settings.StartScreen
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleColorChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleEdge
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleFontChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.mobile.data.settings.ThemeMode
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +54,7 @@ sealed interface MobileRefreshState {
  * See the Phase 3 report for this scope call.
  *
  * Dark/Light/System [themeMode] IS included even though it wasn't in the original Phase 3 list:
- * mobile's `MainActivity` shipped only reading the legacy [com.arashrahimi46.iptv.data.settings.UserSettings.isDarkTheme]
+ * mobile's `MainActivity` shipped only reading the legacy [com.arashrahimi46.iptv.mobile.data.settings.UserSettings.isDarkTheme]
  * boolean (always true, i.e. permanently dark) with no way for the user to change it, which left
  * light theme -- explicitly called out as needing to be best-in-class -- unreachable in the app.
  * Ported minimally: just the picker, not :tv's whole "Display" pane (accent/reduce-motion/list-

@@ -4,9 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.SourceType
-import com.arashrahimi46.iptv.data.repository.PlaylistRepository
-import com.arashrahimi46.iptv.data.repository.PlaylistRepositoryImpl
+import com.arashrahimi46.iptv.mobile.data.model.SourceType
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepository
+import com.arashrahimi46.iptv.mobile.data.repository.PlaylistRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

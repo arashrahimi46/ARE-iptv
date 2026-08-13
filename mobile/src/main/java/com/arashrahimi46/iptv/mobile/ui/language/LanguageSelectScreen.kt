@@ -32,13 +32,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreButtonSize
 import com.arashrahimi46.iptv.mobile.ui.components.AreLanguageOptions
 import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreTextField
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 import kotlinx.coroutines.launch
 import java.util.Locale
 

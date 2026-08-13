@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import com.arashrahimi46.iptv.mobile.R
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
 
 /**
  * The brand mark as in-app chrome: the plateless tower glyph, tinted to the user's [AccentPreset]
@@ -33,13 +33,13 @@ fun AreLogoMark(size: Dp, modifier: Modifier = Modifier) {
     val colors = AreIptvTheme.colors
     Box(modifier.size(size)) {
         Image(
-            painter = painterResource(R.drawable.ic_logo_glyph),
+            painter = painterResource(R.drawable.ic_logo_glyph_mobile),
             contentDescription = null,
             colorFilter = ColorFilter.tint(colors.accentHover, BlendMode.SrcIn),
             modifier = Modifier.size(size),
         )
         Image(
-            painter = painterResource(R.drawable.ic_logo_glyph_detail),
+            painter = painterResource(R.drawable.ic_logo_glyph_detail_mobile),
             contentDescription = null,
             colorFilter = ColorFilter.tint(colors.accentPress, BlendMode.SrcIn),
             modifier = Modifier.size(size),

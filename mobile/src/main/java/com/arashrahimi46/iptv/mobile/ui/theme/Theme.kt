@@ -11,29 +11,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import com.arashrahimi46.iptv.ui.theme.AreIptvColors
-import com.arashrahimi46.iptv.ui.theme.AreIptvDarkColors
-import com.arashrahimi46.iptv.ui.theme.AreIptvLightColors
-import com.arashrahimi46.iptv.ui.theme.AreIptvMotionDefault
-import com.arashrahimi46.iptv.ui.theme.AreIptvMotionReduced
-import com.arashrahimi46.iptv.ui.theme.AreIptvRadiusDefault
-import com.arashrahimi46.iptv.ui.theme.AreIptvSpacingDefault
-import com.arashrahimi46.iptv.ui.theme.LocalAmbientArtwork as CoreLocalAmbientArtwork
-import com.arashrahimi46.iptv.ui.theme.LocalGlassTier
-import com.arashrahimi46.iptv.ui.theme.LocalReducedMotion
-import com.arashrahimi46.iptv.ui.theme.rememberGlassTier
-import com.arashrahimi46.iptv.ui.theme.withBlurredBackdrop
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvColors as CoreLocalAreIptvColors
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvMotion as CoreLocalAreIptvMotion
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvRadius as CoreLocalAreIptvRadius
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvSpacing as CoreLocalAreIptvSpacing
-import com.arashrahimi46.iptv.ui.theme.LocalAreIptvTypography as CoreLocalAreIptvTypography
-import com.arashrahimi46.iptv.ui.theme.LocalThemeIsDark as CoreLocalThemeIsDark
-import com.arashrahimi46.iptv.ui.theme.AreIptvTypography as CoreAreIptvTypography
-import com.arashrahimi46.iptv.ui.theme.DisplayFontFamily as CoreDisplayFontFamily
-import com.arashrahimi46.iptv.ui.theme.BodyFontFamily as CoreBodyFontFamily
-import com.arashrahimi46.iptv.ui.theme.MonoFontFamily as CoreMonoFontFamily
-import com.arashrahimi46.iptv.ui.theme.VazirFontFamily as CoreVazirFontFamily
+import com.arashrahimi46.iptv.mobile.design.AreIptvColors
+import com.arashrahimi46.iptv.mobile.design.AreIptvDarkColors
+import com.arashrahimi46.iptv.mobile.design.AreIptvLightColors
+import com.arashrahimi46.iptv.mobile.design.AreIptvMotionDefault
+import com.arashrahimi46.iptv.mobile.design.AreIptvMotionReduced
+import com.arashrahimi46.iptv.mobile.design.AreIptvRadiusDefault
+import com.arashrahimi46.iptv.mobile.design.AreIptvSpacingDefault
+import com.arashrahimi46.iptv.mobile.design.LocalAmbientArtwork as CoreLocalAmbientArtwork
+import com.arashrahimi46.iptv.mobile.design.LocalGlassTier
+import com.arashrahimi46.iptv.mobile.design.LocalReducedMotion
+import com.arashrahimi46.iptv.mobile.design.rememberGlassTier
+import com.arashrahimi46.iptv.mobile.design.withBlurredBackdrop
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvColors as CoreLocalAreIptvColors
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvMotion as CoreLocalAreIptvMotion
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvRadius as CoreLocalAreIptvRadius
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvSpacing as CoreLocalAreIptvSpacing
+import com.arashrahimi46.iptv.mobile.design.LocalAreIptvTypography as CoreLocalAreIptvTypography
+import com.arashrahimi46.iptv.mobile.design.LocalThemeIsDark as CoreLocalThemeIsDark
+import com.arashrahimi46.iptv.mobile.design.AreIptvTypography as CoreAreIptvTypography
+import com.arashrahimi46.iptv.mobile.design.DisplayFontFamily as CoreDisplayFontFamily
+import com.arashrahimi46.iptv.mobile.design.BodyFontFamily as CoreBodyFontFamily
+import com.arashrahimi46.iptv.mobile.design.MonoFontFamily as CoreMonoFontFamily
+import com.arashrahimi46.iptv.mobile.design.VazirFontFamily as CoreVazirFontFamily
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * Phone theming, wired to this module's own copy of the design-system tokens
- * ([com.arashrahimi46.iptv.ui.theme.AreIptvColors]/[AreIptvTypography]) -- the same token *values*
+ * ([com.arashrahimi46.iptv.mobile.design.AreIptvColors]/[AreIptvTypography]) -- the same token *values*
  * :tv uses, so the two apps read as one product, but a separate source tree (:core is
  * resources-only; only strings are shared). Built on standard `androidx.compose.material3`, NEVER
  * `androidx.tv.material3`, which is D-pad specific and wrong for touch.
@@ -115,7 +115,7 @@ fun AreIptvMobileTheme(
     CompositionLocalProvider(
         LocalAreIptvColors provides colors,
         LocalAreIptvTypography provides typography,
-        // Bridges the CompositionLocals declared in `com.arashrahimi46.iptv.ui.theme` -- the glass
+        // Bridges the CompositionLocals declared in `com.arashrahimi46.iptv.mobile.design` -- the glass
         // layer this module owns a copy of -- which are a distinct set from the two above despite
         // the matching names. (The `Core*` import aliases are legacy naming from when that package
         // lived in :core; :core is resources-only now.) Without this, everything built on that

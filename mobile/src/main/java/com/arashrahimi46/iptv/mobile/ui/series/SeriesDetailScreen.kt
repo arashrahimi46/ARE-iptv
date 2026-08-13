@@ -46,8 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.SeriesEpisode
-import com.arashrahimi46.iptv.data.model.VodTitle
+import com.arashrahimi46.iptv.mobile.data.model.SeriesEpisode
+import com.arashrahimi46.iptv.mobile.data.model.VodTitle
 import com.arashrahimi46.iptv.mobile.ui.components.AreBadge
 import com.arashrahimi46.iptv.mobile.ui.components.AreBadgeTone
 import com.arashrahimi46.iptv.mobile.ui.components.AreButton
@@ -63,10 +63,10 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreRefreshBox
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader
 import com.arashrahimi46.iptv.mobile.ui.components.AreTabs
 import com.arashrahimi46.iptv.mobile.ui.components.areTouch
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ProvideOnGlass
-import com.arashrahimi46.iptv.ui.theme.glassSurface
-import com.arashrahimi46.iptv.ui.theme.glassWell
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ProvideOnGlass
+import com.arashrahimi46.iptv.mobile.design.glassSurface
+import com.arashrahimi46.iptv.mobile.design.glassWell
 
 /** Same 4:5 hero the movie screen uses, so the two detail pages read as one family. */
 private const val HeroAspect = 4f / 5f

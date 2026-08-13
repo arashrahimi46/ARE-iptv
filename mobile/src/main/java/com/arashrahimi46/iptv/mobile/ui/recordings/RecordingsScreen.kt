@@ -35,7 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.model.Recording
+import com.arashrahimi46.iptv.mobile.data.model.Recording
 import com.arashrahimi46.iptv.mobile.ui.components.AreEmptyState
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButton
 import com.arashrahimi46.iptv.mobile.ui.components.AreIconButtonSize
@@ -45,9 +45,9 @@ import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader
 import com.arashrahimi46.iptv.mobile.ui.components.AreSwipeToDismissRow
 import com.arashrahimi46.iptv.mobile.ui.components.RecordingIndicator
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.LocalReducedMotion
-import com.arashrahimi46.iptv.ui.theme.glassWell
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.LocalReducedMotion
+import com.arashrahimi46.iptv.mobile.design.glassWell
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

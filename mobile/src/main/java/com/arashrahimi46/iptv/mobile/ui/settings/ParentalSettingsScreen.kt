@@ -15,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.settings.AutoRelock
-import com.arashrahimi46.iptv.data.settings.LockedContentDisplay
+import com.arashrahimi46.iptv.mobile.data.settings.AutoRelock
+import com.arashrahimi46.iptv.mobile.data.settings.LockedContentDisplay
 import com.arashrahimi46.iptv.mobile.ui.components.AreChoiceRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreListRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold

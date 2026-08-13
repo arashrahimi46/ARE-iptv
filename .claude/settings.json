@@ -30,6 +30,24 @@
             "timeout": 4000
           }
         ]
+      },
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/arash.rahimi/.local/bin/graphify hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/arash.rahimi/.local/bin/graphify hook-guard read"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -242,7 +260,7 @@
   },
   "attribution": {
     "commit": "Co-Authored-By: nokhodian <nokhodian@gmail.com>",
-    "pr": "🤖 Generated with [monomind](https://github.com/monoes/monomind)"
+    "pr": "\ud83e\udd16 Generated with [monomind](https://github.com/monoes/monomind)"
   },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",

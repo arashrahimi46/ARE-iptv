@@ -24,9 +24,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.ui.theme.AreIptvTheme
-import com.arashrahimi46.iptv.ui.theme.ControlTone
-import com.arashrahimi46.iptv.ui.theme.controlSkin
+import com.arashrahimi46.iptv.mobile.design.AreIptvTheme
+import com.arashrahimi46.iptv.mobile.design.ControlTone
+import com.arashrahimi46.iptv.mobile.design.controlSkin
 
 enum class AreButtonVariant { Primary, Secondary, Ghost, Danger }
 

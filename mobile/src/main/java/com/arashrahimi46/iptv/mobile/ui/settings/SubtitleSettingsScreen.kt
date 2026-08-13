@@ -12,10 +12,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arashrahimi46.iptv.core.R as CoreR
-import com.arashrahimi46.iptv.data.settings.SubtitleColorChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleEdge
-import com.arashrahimi46.iptv.data.settings.SubtitleFontChoice
-import com.arashrahimi46.iptv.data.settings.SubtitleTextScale
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleColorChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleEdge
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleFontChoice
+import com.arashrahimi46.iptv.mobile.data.settings.SubtitleTextScale
 import com.arashrahimi46.iptv.mobile.ui.components.AreChoiceRow
 import com.arashrahimi46.iptv.mobile.ui.components.AreScreenScaffold
 import com.arashrahimi46.iptv.mobile.ui.components.AreSectionHeader

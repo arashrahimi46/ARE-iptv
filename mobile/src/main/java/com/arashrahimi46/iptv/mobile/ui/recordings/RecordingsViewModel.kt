@@ -4,12 +4,12 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arashrahimi46.iptv.data.model.Recording
-import com.arashrahimi46.iptv.data.model.RecordingStatus
-import com.arashrahimi46.iptv.data.recording.RecordingStorage
-import com.arashrahimi46.iptv.data.recording.RecordingSupervisor
-import com.arashrahimi46.iptv.data.repository.RecordingRepository
-import com.arashrahimi46.iptv.data.settings.UserSettings
+import com.arashrahimi46.iptv.mobile.data.model.Recording
+import com.arashrahimi46.iptv.mobile.data.model.RecordingStatus
+import com.arashrahimi46.iptv.mobile.data.recording.RecordingStorage
+import com.arashrahimi46.iptv.mobile.data.recording.RecordingSupervisor
+import com.arashrahimi46.iptv.mobile.data.repository.RecordingRepository
+import com.arashrahimi46.iptv.mobile.data.settings.UserSettings
 import com.arashrahimi46.iptv.core.R as CoreR
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
